@@ -1,0 +1,77 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<BaseLayout
+  title="Grove"
+  description="Learn tree-based machine learning through clear explanations, from-scratch implementations, and interactive visuals."
+  wide
+>
+  <section class="home-hero">
+    <div>
+      <p class="eyebrow">An open learning project</p>
+      <h1>See how tree-based models think.</h1>
+      <p class="lede">
+        Learn decision trees, forests, and boosting through plain-English
+        explanations, from-scratch code, and visuals driven by the real model.
+      </p>
+      <div class="hero-actions">
+        <a class="button-link" href={`${base}/learn/decision-trees`}>
+          Start with decision trees <span aria-hidden="true">→</span>
+        </a>
+        <a class="text-link" href={`${base}/roadmap`}>Explore the learning path</a>
+      </div>
+    </div>
+
+    <div class="learning-tree" aria-label="The Grove learning path">
+      <article class="learning-step">
+        <small>01 · Available</small>
+        <h2>Ask one useful question</h2>
+        <p>See how a tree searches for the split that makes groups purer.</p>
+      </article>
+      <article class="learning-step">
+        <small>02 · Next</small>
+        <h2>Grow and control a tree</h2>
+        <p>Turn one split into a model, then study depth, leaves, and overfitting.</p>
+      </article>
+      <article class="learning-step">
+        <small>03 · Planned</small>
+        <h2>Combine many trees</h2>
+        <p>Build forests and boosting from the same reusable tree foundation.</p>
+      </article>
+      <article class="learning-step">
+        <small>04 · Specialization</small>
+        <h2>Apply trees to reinforcement learning</h2>
+        <p>Use interpretable models to study values, policies, and failure modes.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section-block">
+    <div class="section-heading">
+      <p class="eyebrow">Built differently</p>
+      <h2>One model, from calculation to picture.</h2>
+      <p>
+        Grove does not animate a hand-written approximation. The algorithm emits
+        a trace, and every diagram reads from that same source of truth.
+      </p>
+    </div>
+    <div class="principle-grid">
+      <article>
+        <h3>From first principles</h3>
+        <p>The machine-learning core is implemented without an ML library.</p>
+      </article>
+      <article>
+        <h3>Inspectable</h3>
+        <p>Splits, impurities, leaves, and predictions remain visible and testable.</p>
+      </article>
+      <article>
+        <h3>Open by default</h3>
+        <p>The lessons, implementation, and experiments live in one public project.</p>
+      </article>
+    </div>
+  </section>
+</BaseLayout>
+

@@ -1,0 +1,57 @@
+---
+import Brand from "../components/Brand.astro";
+import ChapterNav from "../components/ChapterNav.astro";
+import { siteCopy } from "../i18n/en";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+  wide?: boolean;
+}
+
+const { title, description, wide = false } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const pathname = Astro.url.pathname;
+const activePath = base && pathname.startsWith(base)
+  ? pathname.slice(base.length) || "/"
+  : pathname;
+const homeHref = `${base}/` || "/";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f5f3ec" />
+    <title>{title === siteCopy.brand ? title : `${title} · ${siteCopy.brand}`}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">{siteCopy.skipToContent}</a>
+
+    <aside class="sidebar">
+      <div class="sidebar-inner">
+        <Brand href={homeHref} />
+        <ChapterNav activePath={activePath} base={base} />
+        <p class="sidebar-note">Open source. Built from first principles.</p>
+      </div>
+    </aside>
+
+    <header class="mobile-header">
+      <Brand href={homeHref} />
+      <details class="mobile-menu">
+        <summary>{siteCopy.browseChapters}</summary>
+        <div class="mobile-menu-panel">
+          <ChapterNav activePath={activePath} base={base} />
+        </div>
+      </details>
+    </header>
+
+    <main id="main-content" class:list={["main-content", { wide }]}>
+      <slot />
+    </main>
+  </body>
+</html>
+

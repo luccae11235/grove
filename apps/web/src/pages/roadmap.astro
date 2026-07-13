@@ -1,0 +1,48 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Learning path"
+  description="The planned Grove curriculum for tree-based machine learning."
+>
+  <header class="page-header">
+    <p class="eyebrow">Project roadmap</p>
+    <h1>Learn from one split to a forest.</h1>
+    <p class="lede">
+      Each chapter adds one reusable idea. The sequence will grow with the code,
+      so later lessons can reveal how ensembles are composed from simple trees.
+    </p>
+  </header>
+
+  <section class="roadmap-grid">
+    <article>
+      <h2>1 · Foundations</h2>
+      <ul>
+        <li>How trees learn</li>
+        <li>Gini and entropy</li>
+        <li>Regression trees</li>
+        <li>Depth, leaves, and overfitting</li>
+      </ul>
+    </article>
+    <article>
+      <h2>2 · Ensembles</h2>
+      <ul>
+        <li>Bagging and bootstrap samples</li>
+        <li>Random forests</li>
+        <li>Gradient boosting</li>
+        <li>Modern boosting systems</li>
+      </ul>
+    </article>
+    <article>
+      <h2>3 · Applications</h2>
+      <ul>
+        <li>Failure investigations</li>
+        <li>Interpretability</li>
+        <li>Paper reproductions</li>
+        <li>Reinforcement learning</li>
+      </ul>
+    </article>
+  </section>
+</BaseLayout>
+

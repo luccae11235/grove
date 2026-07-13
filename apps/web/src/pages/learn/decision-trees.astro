@@ -1,0 +1,65 @@
+---
+import { FirstSplitExplorer } from "@grove/tree-visuals";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<BaseLayout
+  title="How decision trees learn"
+  description="A visual introduction to how classification trees choose questions and split data."
+  wide
+>
+  <header class="page-header">
+    <p class="eyebrow">Decision trees · Chapter 1</p>
+    <h1>How does a decision tree learn?</h1>
+    <p class="lede">
+      A decision tree learns by asking a sequence of simple questions. Its job is
+      to choose questions that separate the training examples into cleaner groups.
+    </p>
+  </header>
+
+  <article class="lesson-body">
+    <h2>Begin with one question</h2>
+    <p>
+      Imagine ten observations described by two numeric features. Each one belongs
+      to <strong>Class A</strong> or <strong>Class B</strong>. At the root, all ten
+      are mixed together.
+    </p>
+    <p>
+      The tree tries questions such as <code>Feature 1 ≤ 2.75?</code>. Every
+      possible threshold creates a left group and a right group. The tree scores
+      those groups and keeps the question that reduces impurity the most.
+    </p>
+  </article>
+
+  <div class="interactive-breakout">
+    <FirstSplitExplorer client:load />
+  </div>
+
+  <article class="lesson-body">
+    <h2>What just happened?</h2>
+    <p>
+      The dashed line and the root node come from the same trained model. Samples
+      on the “yes” side move to the left leaf; samples on the “no” side move to
+      the right leaf. Each leaf predicts its majority class.
+    </p>
+    <p>
+      <strong>Information gain</strong> is the parent impurity minus the weighted
+      impurity of both children. Larger gain means the question produced cleaner
+      groups. A full tree repeats this process inside every new node until a
+      stopping rule says to create a leaf.
+    </p>
+    <p>
+      This first version deliberately trains a one-level tree, also called a
+      <strong>decision stump</strong>. It gives us a small, testable unit that can
+      later be reused recursively to grow a complete tree.
+    </p>
+  </article>
+
+  <a class="next-link" href={`${base}/learn/gini-vs-entropy`}>
+    <span>Next chapter<strong>Gini or entropy?</strong></span>
+    <b aria-hidden="true">→</b>
+  </a>
+</BaseLayout>
+

@@ -1,46 +1,69 @@
-# Tree-Based ML Lab
+# Grove
 
-Plataforma aberta, visual e gratuita para aprender algoritmos baseados em árvores a partir de implementações próprias.
+**Tree-based machine learning, made visible.**
 
-O projeto tem dois objetivos inseparáveis:
+Grove is an open learning project that connects plain-English explanations, from-scratch algorithms, and interactive visualizations. The same trained model and versioned trace drive the calculations, predictions, and diagrams shown in each lesson.
 
-1. ensinar como algoritmos baseados em árvores realmente funcionam;
-2. formar uma base técnica reutilizável para experimentos, estudos de caso e conteúdo público.
+The first release focuses on one question: **how does a classification tree choose its first split?**
 
-`Tree-Based ML Lab` é um nome de trabalho. O primeiro lançamento será uma experiência interativa sobre **como uma árvore de decisão para classificação aprende**, publicada como site estático no GitHub Pages.
+## What is available
 
-## Princípios
+- a simple, responsive learning interface with chapter navigation;
+- an introduction and curriculum roadmap;
+- the first interactive decision-tree lesson;
+- Gini and entropy implemented from first principles;
+- a real decision-stump trainer with a serializable training trace;
+- a reusable visualization package connected directly to the model;
+- focused unit tests for impurity and split selection.
 
-- **Uma fonte de verdade:** a visualização usa a árvore e os rastros produzidos pelo algoritmo real.
-- **Do zero onde importa:** o núcleo de machine learning não depende de bibliotecas de ML.
-- **Visual antes de ornamental:** cada animação deve explicar uma decisão do algoritmo.
-- **Progressão pedagógica:** conceitos simples se tornam blocos dos ensembles posteriores.
-- **Static-first:** todo o MVP funciona localmente no navegador e pode ser hospedado gratuitamente.
-- **Evolução aberta:** arquitetura, decisões e roadmap ficam documentados no repositório.
+## Project structure
 
-## Planejamento
+```text
+apps/web                 Astro site and English lesson content
+packages/tree-core       Framework-independent tree algorithms and contracts
+packages/tree-visuals    React/SVG teaching components driven by tree-core
+docs                     Product, architecture, roadmap, and decisions
+```
 
-- [Escopo do produto](docs/product-scope.md)
-- [Arquitetura](docs/architecture.md)
+## Run locally
+
+Requirements: Node.js 22 or later and pnpm.
+
+```bash
+pnpm install
+pnpm dev
+```
+
+The local site runs at `http://localhost:4321` by default.
+
+## Quality checks
+
+```bash
+pnpm run check
+```
+
+This runs type checks, algorithm tests, and the production build.
+
+## Design principles
+
+- **One source of truth:** visuals use the tree and trace produced by the real algorithm.
+- **From scratch where it matters:** the machine-learning core has no ML dependency.
+- **Visual before ornamental:** an interaction must reveal a decision made by the model.
+- **Progressive depth:** simple trees become reusable parts of later ensembles.
+- **Static-first:** lessons run locally in the browser and remain compatible with GitHub Pages.
+- **English-first, translation-ready:** the first interface is English, with shared navigation and shell copy kept behind a locale boundary.
+
+## Planning
+
+- [Product scope](docs/product-scope.md)
+- [Architecture](docs/architecture.md)
 - [Roadmap](docs/roadmap.md)
-- [Fluxo de contribuição](CONTRIBUTING.md)
-- [ADR 0001 — aplicação estática com motor no navegador](docs/adr/0001-static-first-browser-engine.md)
+- [Contribution workflow](CONTRIBUTING.md)
+- [ADR 0001 — static application with a browser-based engine](docs/adr/0001-static-first-browser-engine.md)
 
-## Primeiro marco
+## Proposed licensing
 
-O marco `v0.1.0` deverá entregar:
+- code: MIT;
+- original writing and illustrations: CC BY 4.0.
 
-- uma página pública e responsiva;
-- uma explicação curta de árvore de classificação;
-- um laboratório 2D com datasets pequenos predefinidos;
-- comparação entre índice de Gini e entropia;
-- reprodução passo a passo das divisões escolhidas;
-- árvore, regiões de decisão e métricas derivadas da mesma execução;
-- testes do núcleo e deploy automático para GitHub Pages.
-
-## Licenciamento proposto
-
-- código: MIT;
-- textos e ilustrações autorais: CC BY 4.0.
-
-A escolha será formalizada antes da primeira publicação.
+The licenses will be formalized before the first public release.

@@ -16,7 +16,7 @@ O diferencial não será a quantidade de artigos. Será a conexão verificável 
 
 O produto será escrito primeiro para pessoas que já conhecem Python ou fundamentos de machine learning, mas ainda tratam árvores como uma caixa-preta. O conteúdo deve continuar compreensível para estudantes iniciantes por meio de exemplos concretos, linguagem direta e divulgação progressiva de detalhes.
 
-Idioma inicial: português. A estrutura de conteúdo deverá permitir tradução futura, mas internacionalização não faz parte do primeiro lançamento.
+Idioma inicial: inglês simples. Navegação, shell e metadados compartilhados devem permanecer atrás de uma fronteira de locale para permitir traduções futuras, mas internacionalização completa não faz parte do primeiro lançamento.
 
 ## Pilares editoriais
 

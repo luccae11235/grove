@@ -1,0 +1,39 @@
+---
+import { navigation, siteCopy } from "../i18n/en";
+
+interface Props {
+  activePath: string;
+  base: string;
+}
+
+const { activePath, base } = Astro.props;
+const withBase = (path: string) => `${base}${path}` || "/";
+---
+
+<nav class="chapter-nav" aria-label="Chapters">
+  {navigation.map((section) => (
+    <section class="nav-section">
+      <h2>{section.label}</h2>
+      <ul>
+        {section.items.map((item) => (
+          <li>
+            {"href" in item && item.href ? (
+              <a
+                href={withBase(item.href)}
+                aria-current={activePath === item.href ? "page" : undefined}
+              >
+                <span>{item.label}</span>
+              </a>
+            ) : (
+              <span class="nav-disabled">
+                <span>{item.label}</span>
+                <small>{siteCopy.comingSoon}</small>
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+</nav>
+

@@ -1,0 +1,65 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<BaseLayout
+  title="Gini or entropy?"
+  description="Understand the two common impurity measures used by classification trees."
+>
+  <header class="page-header">
+    <p class="eyebrow">Decision trees · Chapter 2</p>
+    <h1>Gini or entropy?</h1>
+    <p class="lede">
+      Both measures answer the same practical question: how mixed are the classes
+      inside this node?
+    </p>
+  </header>
+
+  <section class="comparison-grid">
+    <article>
+      <h2>Gini impurity</h2>
+      <p>
+        Gini is the probability of misclassifying a randomly chosen sample when
+        labels are assigned according to the node's class distribution.
+      </p>
+      <div class="formula">Gini = 1 − Σ pᵢ²</div>
+    </article>
+    <article>
+      <h2>Entropy</h2>
+      <p>
+        Entropy measures uncertainty. It is zero in a pure node and increases as
+        the class distribution becomes more even.
+      </p>
+      <div class="formula">Entropy = −Σ pᵢ log₂(pᵢ)</div>
+    </article>
+    <article>
+      <h2>The practical choice</h2>
+      <p>
+        They often choose the same split. Their numeric scales differ, so compare
+        gains within one criterion rather than comparing raw Gini and entropy
+        values directly.
+      </p>
+    </article>
+  </section>
+
+  <article class="lesson-body">
+    <h2>A balanced binary node</h2>
+    <p>
+      With two samples from Class A and two from Class B, Gini is
+      <strong>0.5</strong> and entropy is <strong>1 bit</strong>. If all four
+      samples share one class, both measures become zero.
+    </p>
+    <p>
+      Return to the first lesson and switch the impurity measure. The control runs
+      the training algorithm again; it does not replace the number in the interface.
+    </p>
+  </article>
+
+  <a class="next-link" href={`${base}/learn/decision-trees`}>
+    <span>Try it live<strong>Return to the first split</strong></span>
+    <b aria-hidden="true">↗</b>
+  </a>
+</BaseLayout>
+

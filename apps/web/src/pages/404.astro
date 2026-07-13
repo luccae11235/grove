@@ -1,0 +1,17 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<BaseLayout title="Page not found" description="This Grove page does not exist.">
+  <header class="page-header">
+    <p class="eyebrow">404</p>
+    <h1>This branch does not exist.</h1>
+    <p class="lede">The page may have moved, or it has not grown yet.</p>
+    <div class="hero-actions">
+      <a class="button-link" href={`${base}/`}>Return to the introduction</a>
+    </div>
+  </header>
+</BaseLayout>
+
