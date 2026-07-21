@@ -20,7 +20,7 @@ references for longer-term editorial direction.
 | Phase | Gate | Status | Depends on |
 | --- | --- | --- | --- |
 | 1 | Organize GitHub | Blocked | GitHub branch-protection capability |
-| 2 | Validate CI | In progress | A repository and published branch |
+| 2 | Validate CI | Done | A repository and published branch |
 | 3 | Create staging on Railway | Backlog | Phase 2 |
 | 4 | Create production on Railway | Backlog | Phase 3 |
 | 5 | Formalize publication | Backlog | Phases 2–4 |
@@ -30,25 +30,6 @@ references for longer-term editorial direction.
 | 9 | Protect operations | Backlog | Production services; before public data |
 | 10 | Prepare future visualizations | Backlog | Current performance baseline |
 
-## In progress
-
-### Release and platform readiness
-
-- [ ] **Phase 2 — Validate CI**
-  - [x] Run tests, type checking, project validation, production build, and the
-    newsletter preview locally.
-  - [x] Define stable PR checks for `Typecheck`, `Tests`, `Production build`, and
-    `Newsletter preview` on every pull request.
-  - [x] Upload the draft web, HTML email, plain-text email, and assets as the
-    `newsletter-preview` artifact.
-  - [ ] Open a real pull request into `develop` and confirm all four checks pass.
-  - [ ] Download and inspect the newsletter artifact from that pull request.
-  - [ ] Merge the validated pull request into `develop`.
-  - Completion check: a real pull request reaches `develop` only after all four
-    checks pass and its newsletter artifact is inspectable. Automated
-    enforcement additionally requires the Phase 1 branch-protection blocker to
-    be resolved.
-
 ## Blocked
 
 ### Release and platform readiness
@@ -56,8 +37,7 @@ references for longer-term editorial direction.
 - [ ] **Phase 1 — Organize GitHub**
   - [x] Create the official private repository at `luccae11235/grove`.
   - [x] Version and publish the current work and permanent branches.
-  - [ ] Complete the first pull-request merge; the Phase 2 validation PR can
-    satisfy this step.
+  - [x] Complete the first pull-request merge through Phase 2 validation PR #1.
   - [ ] Protect `main` and require reviewed, up-to-date checks.
   - Blocker: GitHub returns HTTP 403 because branch protection for this private
     repository requires GitHub Pro or making the repository public.
@@ -167,6 +147,20 @@ references for longer-term editorial direction.
     verify consent and retention behavior against the privacy policy.
 
 ## Done
+
+### Release and platform readiness
+
+- [x] **Phase 2 — Validate CI** — 2026-07-21
+  - Tests, type checking, standalone-project validation, the production build,
+    and newsletter artifact validation pass locally and in GitHub Actions.
+  - Every pull request runs stable `Typecheck`, `Tests`, `Production build`, and
+    `Newsletter preview` checks.
+  - PR #1 produced and exercised the downloadable `newsletter-preview` artifact,
+    including the draft web issue, HTML email, plain-text email, manifest, and
+    assets, before merging into `develop`.
+  - Completion check: PR #1 passed all four checks, its artifact was inspected,
+    and it was merged. Automatic enforcement still depends on resolving the
+    Phase 1 branch-protection blocker.
 
 ### Editorial operations
 
