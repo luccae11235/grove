@@ -75,6 +75,8 @@ Resend, weekly publishing, delivery safeguards, and performance reporting.
 
 ## Planning
 
+- [Delivery phases and gates](docs/delivery-phases.md)
+- [Operational task queue](docs/task-queue.md)
 - [Curriculum plan](docs/curriculum-plan.md)
 - [Article organization, references, and difficulty](docs/article-system.md)
 - [Publication platform and newsletter boundaries](docs/publication-platform.md)

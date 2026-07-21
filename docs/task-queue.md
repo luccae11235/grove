@@ -1,30 +1,48 @@
 # Grove task queue
 
-This is the operational kanban for work that has not yet been completed. It is
-the source of truth for current project tasks; the curriculum plan and roadmap
-remain references for longer-term editorial direction.
+This is the source of truth for unfinished operational, product, content, and
+release work. The ordered release gates are explained in
+[`delivery-phases.md`](delivery-phases.md); the curriculum plan and roadmap are
+references for longer-term editorial direction.
 
 ## How to use this board
 
-- Move a task left to right as it progresses: **Backlog** → **Ready** → **In
-  progress** → **Done**.
-- Keep **In progress** small: one active task per person whenever possible.
-- Add a concise completion check to a task before moving it to **Ready**.
-- Record a dependency or decision in the task itself. Move completed tasks to
-  **Done** rather than deleting them, then periodically archive that section.
+- Move work through **Backlog** → **Ready** → **In progress** → **Done**.
+- Use **Blocked** only when an external decision or capability prevents the next
+  action, and record the exact unblock condition.
+- Keep **In progress** to one active card per person whenever possible.
+- Do not begin a later delivery phase merely because preparation for it exists.
+- Update the relevant phase checklist and completion check whenever its state
+  changes; move completed cards to **Done** rather than deleting them.
 
-## In progress
+## Delivery gate status
+
+| Phase | Gate | Status | Depends on |
+| --- | --- | --- | --- |
+| 1 | Organize GitHub | Blocked | GitHub branch-protection capability |
+| 2 | Validate CI | Done | A repository and published branch |
+| 3 | Create staging on Railway | Backlog | Phase 2 |
+| 4 | Create production on Railway | Backlog | Phase 3 |
+| 5 | Formalize publication | Backlog | Phases 2–4 |
+| 6 | Prove the newsletter in staging | Backlog | Phase 3 |
+| 7 | Configure the `.com.br` domain | Backlog | Stable Railway services |
+| 8 | Open the newsletter | Backlog | Phases 6 and 7 |
+| 9 | Protect operations | Backlog | Production services; before public data |
+| 10 | Prepare future visualizations | Backlog | Current performance baseline |
+
+## Blocked
 
 ### Release and platform readiness
 
-- [ ] **Verify GitHub repository and deployment configuration**
-  - Confirm repository visibility, default branch protection, required checks,
-    Pages/deployment settings, and the GitHub Actions secrets/variables needed
-    by the existing workflows.
-  - Confirm that CI, Pages, newsletter preview/delivery, and project-export
-    workflows have appropriate permissions and a documented release trigger.
-  - Done when a pull request exercises the required checks and the deployment
-    path is documented and tested.
+- [ ] **Phase 1 — Organize GitHub**
+  - [x] Create the official private repository at `luccae11235/grove`.
+  - [x] Version and publish the current work and permanent branches.
+  - [x] Complete the first pull-request merge through Phase 2 validation PR #1.
+  - [ ] Protect `main` and require reviewed, up-to-date checks.
+  - Blocker: GitHub returns HTTP 403 because branch protection for this private
+    repository requires GitHub Pro or making the repository public.
+  - Completion check: `main` rejects direct, unreviewed changes and records a
+    successful pull-request merge.
 
 ## Ready
 
@@ -46,16 +64,7 @@ remain references for longer-term editorial direction.
   - Done when every published article has a reviewed `pt-BR` version and locale
     switching works for all published pages.
 
-### Release and platform readiness
-
-- [ ] **Verify and complete Railway production configuration**
-  - Validate the existing web and newsletter API service definitions in a real
-    Railway project, including build context, health checks, domains, and
-    environment variables.
-  - Provision and connect the production PostgreSQL database; run migrations
-    through the documented deployment path.
-  - Done when both services deploy successfully from the intended branch and
-    their public health checks pass.
+### Public release
 
 - [ ] **Finalize public-release essentials**
   - Choose licenses for original writing, illustrations, and remaining workspace
@@ -67,6 +76,60 @@ remain references for longer-term editorial direction.
 
 ## Backlog
 
+### Delivery phases
+
+- [ ] **Phase 3 — Create staging on Railway**
+  - Create isolated web, newsletter API, and PostgreSQL services using
+    Railway-generated URLs; configure variables and run migrations.
+  - Show draft articles and restrict all newsletter delivery to an explicit test
+    allowlist.
+  - Completion check: the complete platform is safely reviewable with staging
+    data and recipients only.
+
+- [ ] **Phase 4 — Create production on Railway**
+  - Create production web, newsletter API, and PostgreSQL services connected to
+    `main`, with secrets and data isolated from staging.
+  - Keep drafts hidden and verify public health checks and rollback.
+  - Completion check: the public platform works on Railway URLs and can recover
+    from a failed deployment.
+
+- [ ] **Phase 5 — Formalize publication**
+  - Use a branch per article, PR artifact review, staging review, approval before
+    `main`, and a post-publication smoke test.
+  - Completion check: an article follows a repeatable documented path without
+    being tested directly in production.
+
+- [ ] **Phase 6 — Prove the newsletter in staging**
+  - Test signup, confirmation, invalid and duplicate tokens, bounce, complaint,
+    unsubscribe, signed webhooks, and reports.
+  - Keep recipients limited to test addresses.
+  - Completion check: consent, suppression, events, and reporting work end to end
+    without a public audience.
+
+- [ ] **Phase 7 — Configure the `.com.br` domain**
+  - Register the selected domain; point web and API; create the sending subdomain;
+    configure SPF, DKIM, and DMARC; verify the domain in Resend.
+  - Completion check: the site has its own address and authenticated sending.
+
+- [ ] **Phase 8 — Open the newsletter**
+  - Configure postal/contact details and the production segment; perform an
+    internal send; review Gmail, another provider, mobile, and plain text.
+  - Enable the public form only after those checks pass.
+  - Completion check: real readers can subscribe, confirm, receive, and
+    unsubscribe safely.
+
+- [ ] **Phase 9 — Protect operations**
+  - Enable backups and prove PostgreSQL restoration; configure monitoring,
+    alerts, cost limits, ownership, and incident response.
+  - Completion check: failures are detected and data can be restored through a
+    tested procedure.
+
+- [ ] **Phase 10 — Prepare future visualizations**
+  - Define bundle and performance budgets, lazy loading, Web Worker boundaries,
+    weak-device fallbacks, and the evolution toward remote training.
+  - Completion check: new visuals have measurable budgets and graceful execution
+    paths across devices.
+
 ### Content and learning experience
 
 - [ ] **Publish the next curriculum articles**
@@ -74,14 +137,6 @@ remain references for longer-term editorial direction.
     article when it is ready to be scoped.
 
 ### Operations and quality
-
-- [ ] **Set up production monitoring and operational alerts**
-  - Choose monitoring for the web app, newsletter API, database, and scheduled
-    delivery jobs; define owners and response steps for failures.
-
-- [ ] **Establish backups and recovery procedures for newsletter data**
-  - Document PostgreSQL backup retention, restore testing, and the recovery
-    owner before collecting production subscribers.
 
 - [ ] **Add an accessibility and responsive-design review pass**
   - Audit published routes and interactive visuals for keyboard access, screen
@@ -92,6 +147,20 @@ remain references for longer-term editorial direction.
     verify consent and retention behavior against the privacy policy.
 
 ## Done
+
+### Release and platform readiness
+
+- [x] **Phase 2 — Validate CI** — 2026-07-21
+  - Tests, type checking, standalone-project validation, the production build,
+    and newsletter artifact validation pass locally and in GitHub Actions.
+  - Every pull request runs stable `Typecheck`, `Tests`, `Production build`, and
+    `Newsletter preview` checks.
+  - PR #1 produced and exercised the downloadable `newsletter-preview` artifact,
+    including the draft web issue, HTML email, plain-text email, manifest, and
+    assets, before merging into `develop`.
+  - Completion check: PR #1 passed all four checks, its artifact was inspected,
+    and it was merged. Automatic enforcement still depends on resolving the
+    Phase 1 branch-protection blocker.
 
 ### Editorial operations
 
