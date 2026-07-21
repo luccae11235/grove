@@ -1,0 +1,56 @@
+name: Newsletter artifact preview
+
+on:
+  pull_request:
+    paths:
+      - "apps/web/src/content/issues/**"
+      - "apps/web/src/layouts/NewsletterEmailLayout.astro"
+      - "apps/web/src/content/newsletterArtifacts.ts"
+      - "scripts/publication/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build draft previews
+        env:
+          SHOW_DRAFTS: "true"
+          SITE_URL: https://newsletter-preview.invalid
+        run: pnpm build
+
+      - name: Validate newsletter artifacts
+        run: pnpm newsletter:validate
+
+      - name: Upload web and email previews
+        uses: actions/upload-artifact@v4
+        with:
+          name: newsletter-preview
+          path: |
+            apps/web/dist/newsletter
+            apps/web/dist/_astro
+          if-no-files-found: error
+          retention-days: 14

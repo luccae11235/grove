@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Um experimento interativo de reward hacking, lei de Goodhart e Q-learning tabular." />
+    <title>Reward hacking com Q-learning · Grove Lab</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><circle cx=%2232%22 cy=%2232%22 r=%2228%22 fill=%22%23146b4a%22/><path d=%22M22 42V23h20v7H30v12z%22 fill=%22white%22/></svg>" />
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <main>
+      <header class="hero">
+        <p class="eyebrow">Grove Lab · três MDPs mínimos</p>
+        <h1>O agente aprende o que você quer — ou o que você mede?</h1>
+        <p class="lede">
+          Em cada laboratório, dois agentes recebem o mesmo ambiente, o mesmo Q-learning
+          e o mesmo tempo de treino. Só a recompensa muda.
+        </p>
+      </header>
+
+      <nav class="lab-index" aria-label="Escolha um MDP">
+        <a href="#checkpoint-loop"><span>01</span><strong>Repetir a medida</strong><small>Checkpoints</small></a>
+        <a href="#sensor-manipulation"><span>02</span><strong>Manipular a medição</strong><small>Câmera</small></a>
+        <a href="#traffic-scope"><span>03</span><strong>Excluir quem perde</strong><small>Tráfego</small></a>
+      </nav>
+
+      <section class="setup" id="checkpoint-loop" aria-labelledby="setup-title">
+        <div class="section-heading">
+          <div>
+            <p class="step-label">MDP 01 · Repetição da medida</p>
+            <h2 id="setup-title">Posicione os checkpoints</h2>
+          </div>
+          <button class="quiet-button" id="reset-layout" type="button">Restaurar pista</button>
+        </div>
+
+        <p class="prediction">
+          Antes de treinar: um ponto próximo da largada ajudará o agente a correr — ou criará um atalho para pontuar?
+        </p>
+
+        <div class="editor-layout">
+          <div>
+            <div class="checkpoint-picker" role="group" aria-label="Checkpoint a reposicionar">
+              <span>Mover</span>
+              <button type="button" data-checkpoint="0" aria-pressed="true">C1</button>
+              <button type="button" data-checkpoint="1" aria-pressed="false">C2</button>
+              <button type="button" data-checkpoint="2" aria-pressed="false">C3</button>
+              <button type="button" data-checkpoint="3" aria-pressed="false">C4</button>
+            </div>
+            <div id="editor-grid" class="grid editor-grid" role="grid" aria-label="Editor da pista"></div>
+            <p class="editor-hint" id="editor-hint">C1 selecionado. Escolha uma célula livre.</p>
+          </div>
+
+          <aside class="comparison-contract" aria-label="O que permanece igual">
+            <h3>Comparação controlada</h3>
+            <dl>
+              <div><dt>Igual</dt><dd>mapa, ações, Q-learning, seed e 2.000 episódios</dd></div>
+              <div><dt>Muda</dt><dd>quando o agente recebe recompensa</dd></div>
+              <div><dt>Objetivo real</dt><dd>C1 → C2 → C3 → C4 → chegada</dd></div>
+            </dl>
+          </aside>
+        </div>
+
+        <div class="train-row">
+          <button class="primary-button" id="train" type="button">Treinar os dois agentes</button>
+          <div class="training-progress" id="training-progress" hidden>
+            <div class="progress-track" aria-hidden="true"><span id="progress-fill"></span></div>
+            <p id="progress-label" role="status">Preparando o treino…</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="results" aria-labelledby="results-title">
+        <div class="section-heading results-heading">
+          <div>
+            <p class="step-label">2 · Observe a política aprendida</p>
+            <h2 id="results-title">Pontuar não é o mesmo que completar</h2>
+          </div>
+          <button class="quiet-button" id="replay" type="button" disabled>Repetir trajetórias</button>
+        </div>
+
+        <div class="result-grid">
+          <article class="agent-card" id="proxy-card" aria-labelledby="proxy-title">
+            <div class="agent-heading">
+              <div><p>Recompensa proxy</p><h3 id="proxy-title">+1 por qualquer checkpoint</h3></div>
+              <span class="formula">repetir vale</span>
+            </div>
+            <div class="policy-grid-wrap" data-board></div>
+            <div class="metrics" data-metrics>
+              <div><span>Recompensa</span><strong>—</strong></div>
+              <div><span>Volta real</span><strong>—</strong></div>
+            </div>
+            <p class="agent-reading" data-reading>Treine os agentes para revelar a política.</p>
+          </article>
+
+          <article class="agent-card aligned-card" id="aligned-card" aria-labelledby="aligned-title">
+            <div class="agent-heading">
+              <div><p>Recompensa alinhada</p><h3 id="aligned-title">+1 só pelo próximo checkpoint</h3></div>
+              <span class="formula">progredir vale</span>
+            </div>
+            <div class="policy-grid-wrap" data-board></div>
+            <div class="metrics" data-metrics>
+              <div><span>Recompensa</span><strong>—</strong></div>
+              <div><span>Volta real</span><strong>—</strong></div>
+            </div>
+            <p class="agent-reading" data-reading>Treine os agentes para revelar a política.</p>
+          </article>
+        </div>
+
+        <p class="takeaway" id="takeaway">
+          A recompensa é a nota vista pelo agente. A volta completa é a meta humana que usamos para julgá-lo.
+        </p>
+      </section>
+
+      <section class="results mdp-lab" id="sensor-manipulation" aria-labelledby="sensor-title">
+        <div class="section-heading results-heading">
+          <div>
+            <p class="step-label">MDP 02 · Manipulação da medição</p>
+            <h2 id="sensor-title">E se o agente puder desligar o fiscal?</h2>
+          </div>
+          <button class="quiet-button" id="sensor-replay" type="button" disabled>Repetir trajetórias</button>
+        </div>
+
+        <p class="prediction">
+          A rota segura é mais longa. A rota curta cruza o piso frágil — mas passa perto do interruptor da câmera.
+          Qual caminho cada recompensa vai tornar melhor?
+        </p>
+
+        <div class="train-row">
+          <button class="primary-button" id="sensor-train" type="button">Treinar os dois agentes</button>
+          <div class="training-progress" id="sensor-progress" hidden>
+            <div class="progress-track" aria-hidden="true"><span id="sensor-progress-fill"></span></div>
+            <p id="sensor-progress-label" role="status">Preparando o treino…</p>
+          </div>
+        </div>
+
+        <div class="result-grid">
+          <article class="agent-card" id="sensor-proxy-card" aria-labelledby="sensor-proxy-title">
+            <div class="agent-heading">
+              <div><p>Recompensa proxy</p><h3 id="sensor-proxy-title">−12 se a câmera detectar</h3></div>
+              <span class="formula">ocultar vale</span>
+            </div>
+            <div class="sensor-board-wrap" data-board></div>
+            <div class="metrics metrics-three" data-metrics>
+              <div><span>Recompensa</span><strong>—</strong></div>
+              <div><span>Violações reais</span><strong>—</strong></div>
+              <div><span>Detectadas</span><strong>—</strong></div>
+            </div>
+            <p class="agent-reading" data-reading>Treine os agentes para revelar a política.</p>
+          </article>
+
+          <article class="agent-card aligned-card" id="sensor-aligned-card" aria-labelledby="sensor-aligned-title">
+            <div class="agent-heading">
+              <div><p>Recompensa alinhada</p><h3 id="sensor-aligned-title">−12 se o piso for cruzado</h3></div>
+              <span class="formula">evitar vale</span>
+            </div>
+            <div class="sensor-board-wrap" data-board></div>
+            <div class="metrics metrics-three" data-metrics>
+              <div><span>Recompensa</span><strong>—</strong></div>
+              <div><span>Violações reais</span><strong>—</strong></div>
+              <div><span>Detectadas</span><strong>—</strong></div>
+            </div>
+            <p class="agent-reading" data-reading>Treine os agentes para revelar a política.</p>
+          </article>
+        </div>
+
+        <p class="takeaway" id="sensor-takeaway">
+          Medir apenas violações detectadas cria um novo subobjetivo: controlar o detector.
+        </p>
+      </section>
+
+      <section class="results mdp-lab" id="traffic-scope" aria-labelledby="traffic-title">
+        <div class="section-heading results-heading">
+          <div>
+            <p class="step-label">MDP 03 · Falha de escopo</p>
+            <h2 id="traffic-title">Quem desaparece da métrica?</h2>
+          </div>
+          <button class="quiet-button" id="traffic-replay" type="button" disabled>Repetir controle</button>
+        </div>
+
+        <p class="prediction">
+          Liberar carros reduz a fila da rampa, mas desacelera a rodovia. Se a recompensa observar apenas a
+          velocidade da rodovia, o que acontecerá com quem ainda está esperando?
+        </p>
+
+        <div class="train-row">
+          <button class="primary-button" id="traffic-train" type="button">Treinar os dois agentes</button>
+          <div class="training-progress" id="traffic-progress" hidden>
+            <div class="progress-track" aria-hidden="true"><span id="traffic-progress-fill"></span></div>
+            <p id="traffic-progress-label" role="status">Preparando o treino…</p>
+          </div>
+        </div>
+
+        <div class="result-grid">
+          <article class="agent-card" id="traffic-proxy-card" aria-labelledby="traffic-proxy-title">
+            <div class="agent-heading">
+              <div><p>Recompensa proxy</p><h3 id="traffic-proxy-title">Velocidade na rodovia</h3></div>
+              <span class="formula">só a pista conta</span>
+            </div>
+            <div class="traffic-board-wrap" data-board></div>
+            <div class="metrics metrics-three" data-metrics>
+              <div><span>Velocidade</span><strong>—</strong></div>
+              <div><span>Fila média</span><strong>—</strong></div>
+              <div><span>Liberados</span><strong>—</strong></div>
+            </div>
+            <p class="agent-reading" data-reading>Treine os agentes para revelar a política.</p>
+          </article>
+
+          <article class="agent-card aligned-card" id="traffic-aligned-card" aria-labelledby="traffic-aligned-title">
+            <div class="agent-heading">
+              <div><p>Recompensa alinhada</p><h3 id="traffic-aligned-title">Atraso de todos os carros</h3></div>
+              <span class="formula">todos contam</span>
+            </div>
+            <div class="traffic-board-wrap" data-board></div>
+            <div class="metrics metrics-three" data-metrics>
+              <div><span>Velocidade</span><strong>—</strong></div>
+              <div><span>Fila média</span><strong>—</strong></div>
+              <div><span>Liberados</span><strong>—</strong></div>
+            </div>
+            <p class="agent-reading" data-reading>Treine os agentes para revelar a política.</p>
+          </article>
+        </div>
+
+        <p class="takeaway" id="traffic-takeaway">
+          Uma métrica pode melhorar porque transferiu o custo para pessoas que ela não conta.
+        </p>
+      </section>
+
+      <footer>
+        <p>Q-learning tabular · três MDPs · execução local no navegador</p>
+      </footer>
+    </main>
+    <script type="module" src="./src/browser.js"></script>
+    <script type="module" src="./src/sensor-browser.js"></script>
+    <script type="module" src="./src/traffic-browser.js"></script>
+  </body>
+</html>

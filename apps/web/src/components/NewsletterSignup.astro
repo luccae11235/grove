@@ -1,0 +1,145 @@
+---
+import type { Locale } from "../i18n";
+
+interface Props {
+  locale?: Locale;
+  source?: string;
+  compact?: boolean;
+}
+
+const { locale = "en", source = "website", compact = false } = Astro.props;
+const apiBase = import.meta.env.PUBLIC_NEWSLETTER_API_URL?.replace(/\/$/, "") ?? "";
+const privacyContact = import.meta.env.PUBLIC_PRIVACY_CONTACT_EMAIL?.trim() ?? "";
+if (apiBase && !privacyContact) {
+  throw new Error("PUBLIC_PRIVACY_CONTACT_EMAIL is required when newsletter signup is enabled.");
+}
+if (privacyContact && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(privacyContact)) {
+  throw new Error("PUBLIC_PRIVACY_CONTACT_EMAIL must be a valid email address.");
+}
+if (apiBase) {
+  const apiUrl = new URL(apiBase);
+  const isLocal = ["localhost", "127.0.0.1"].includes(apiUrl.hostname);
+  if (apiUrl.protocol !== "https:" && !isLocal) {
+    throw new Error("PUBLIC_NEWSLETTER_API_URL must use HTTPS outside local development.");
+  }
+}
+const endpoint = apiBase && privacyContact ? `${apiBase}/v1/subscriptions` : "";
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const privacyHref = locale === "pt-BR" ? `${base}/pt-br/privacy` : `${base}/privacy`;
+const copy = locale === "pt-BR"
+  ? {
+      eyebrow: "Uma ideia difícil por semana",
+      title: "Receba o Grove no seu e-mail.",
+      description:
+        "Um artigo visual, o experimento principal e uma pergunta para levar com você. Confirmação em duas etapas; você pode sair quando quiser.",
+      email: "Seu melhor e-mail",
+      placeholder: "voce@exemplo.com",
+      submit: "Quero receber",
+      unavailable: "As inscrições serão abertas assim que o serviço de newsletter estiver conectado.",
+      submitting: "Enviando…",
+      success: "Confira sua caixa de entrada e confirme a inscrição.",
+      error: "Não foi possível iniciar sua inscrição. Tente novamente em instantes.",
+      consent: "Ao continuar, você solicita os e-mails semanais do Grove. A inscrição só fica ativa depois da confirmação.",
+      privacy: "Privacidade e uso de dados",
+    }
+  : {
+      eyebrow: "One difficult idea each week",
+      title: "Get Grove in your inbox.",
+      description:
+        "One visual article, its central experiment, and a question worth carrying forward. Double opt-in; leave whenever you want.",
+      email: "Your email address",
+      placeholder: "you@example.com",
+      submit: "Subscribe",
+      unavailable: "Subscriptions will open as soon as the newsletter service is connected.",
+      submitting: "Sending…",
+      success: "Check your inbox and confirm your subscription.",
+      error: "We could not start your subscription. Please try again in a moment.",
+      consent: "By continuing, you request Grove's weekly emails. Your subscription becomes active only after confirmation.",
+      privacy: "Privacy and data use",
+    };
+---
+
+<section class:list={["newsletter-signup", { compact }]} aria-labelledby={`newsletter-signup-${source}`}>
+  <div class="newsletter-signup-copy">
+    <p class="eyebrow">{copy.eyebrow}</p>
+    <h2 id={`newsletter-signup-${source}`}>{copy.title}</h2>
+    <p>{copy.description}</p>
+  </div>
+  <form data-newsletter-signup data-endpoint={endpoint} novalidate>
+    <label>
+      <span>{copy.email}</span>
+      <input
+        type="email"
+        name="email"
+        inputmode="email"
+        autocomplete="email"
+        placeholder={copy.placeholder}
+        required
+        disabled={!endpoint}
+      />
+    </label>
+    <label class="newsletter-honeypot" aria-hidden="true">
+      Website
+      <input type="text" name="website" tabindex="-1" autocomplete="off" />
+    </label>
+    <input type="hidden" name="locale" value={locale} />
+    <input type="hidden" name="source" value={source} />
+    <button type="submit" disabled={!endpoint}>{copy.submit}</button>
+    <p class="newsletter-consent">{copy.consent} <a href={privacyHref}>{copy.privacy}</a>.</p>
+    <p
+      class="newsletter-form-status"
+      data-status
+      data-unavailable={copy.unavailable}
+      data-submitting={copy.submitting}
+      data-success={copy.success}
+      data-error={copy.error}
+      aria-live="polite"
+    >{!endpoint && copy.unavailable}</p>
+  </form>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>("[data-newsletter-signup]").forEach((form) => {
+    if (form.dataset.bound === "true") return;
+    form.dataset.bound = "true";
+    const endpoint = form.dataset.endpoint;
+    const status = form.querySelector<HTMLElement>("[data-status]");
+    const button = form.querySelector<HTMLButtonElement>("button[type='submit']");
+    if (!endpoint || !status || !button) return;
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const payload = Object.fromEntries(new FormData(form).entries());
+      const query = new URLSearchParams(window.location.search);
+      for (const [parameter, field] of [
+        ["utm_source", "utmSource"],
+        ["utm_medium", "utmMedium"],
+        ["utm_campaign", "utmCampaign"],
+      ] as const) {
+        const value = query.get(parameter);
+        if (value) payload[field] = value;
+      }
+      button.disabled = true;
+      status.textContent = status.dataset.submitting ?? "";
+      status.dataset.state = "loading";
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!response.ok) throw new Error(`Subscription failed with ${response.status}`);
+        form.reset();
+        status.textContent = status.dataset.success ?? "";
+        status.dataset.state = "success";
+      } catch {
+        status.textContent = status.dataset.error ?? "";
+        status.dataset.state = "error";
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+</script>

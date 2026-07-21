@@ -8,10 +8,8 @@
   },
   "scripts": {
     "build": "tsc --noEmit",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@grove/tree-core": "workspace:*"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "peerDependencies": {
     "react": "^19.2.7"
@@ -19,6 +17,7 @@
   "devDependencies": {
     "@types/react": "^19.2.17",
     "react": "^19.2.7",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
   }
 }

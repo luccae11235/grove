@@ -37,18 +37,21 @@ Todo conteúdo futuro deve pertencer a pelo menos um destes pilares:
 
 ### Experiência publicada
 
-Uma única narrativa interativa: **Como uma árvore de classificação aprende**.
+Uma única narrativa interativa: **Como inventar uma árvore de classificação**.
 
 Ela deverá conter:
 
-- intuição de nó, divisão e folha;
+- abertura em primeira pessoa cognitiva: reconhecer um limiar útil antes de nomear
+  nós, divisões ou métricas;
+- intuição de nó, divisão e folha introduzida depois da primeira separação;
 - dataset 2D predefinido e pequeno;
-- controles para critério (`gini` ou `entropy`) e profundidade máxima;
+- controle de feature e limiar em uma exploração sem fórmula, seguido por uma
+  exploração separada com Gini e ganho;
 - execução determinística do treinamento;
 - navegação por etapas relevantes do treinamento;
-- destaque visual da divisão avaliada ou escolhida;
-- árvore final ligada às regiões de decisão no plano;
-- comparação didática entre Gini e entropia no mesmo problema;
+- destaque visual da coluna e de todas as linhas que satisfazem a divisão avaliada;
+- árvore final ligada às mesmas linhas e rotas da tabela;
+- explicação de busca exaustiva local, recursão, parada, overfitting e predição;
 - indicação clara de que o algoritmo foi implementado do zero;
 - links para o código, testes e limitações conhecidas.
 
@@ -68,7 +71,8 @@ Itens deliberadamente adiados:
 - contas, autenticação, comentários ou progresso salvo;
 - API ou banco de dados hospedado;
 - árvore de regressão;
-- poda completa e tratamento extenso de valores ausentes;
+- poda completa, valores ausentes e estratégias de imputação;
+- importância de features e explicações globais/locais;
 - Random Forest, Gradient Boosting e XGBoost;
 - execução de Python no navegador;
 - editor genérico de notebooks;
@@ -98,7 +102,7 @@ O primeiro lançamento estará pronto quando:
 
 - existir uma URL pública no GitHub Pages;
 - uma pessoa conseguir completar a narrativa sem instrução externa;
-- Gini e entropia produzirem cálculos verificáveis e cobertos por testes;
+- Gini e ganho produzirem cálculos verificáveis e cobertos por testes;
 - treino, predição, árvore desenhada e regiões de decisão vierem da mesma estrutura de dados;
 - voltar e avançar etapas não alterar o resultado;
 - não houver erros no console durante o fluxo principal;

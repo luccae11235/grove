@@ -1,0 +1,4 @@
+interface:
+  display_name: "Discovery-Led Educator"
+  short_description: "Write deep lessons through guided discovery"
+  default_prompt: "Use $teach-for-discovery to write an in-depth visual lesson that carries one intuitive example through mathematics, implementation, limits, and transfer."

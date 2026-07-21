@@ -1,0 +1,15 @@
+.git
+.github
+.astro
+**/.astro
+**/dist
+**/node_modules
+node_modules
+.env
+.env.*
+!.env.example
+coverage
+playwright-report
+test-results
+**/__pycache__
+**/*.pyc

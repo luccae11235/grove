@@ -1,0 +1,42 @@
+---
+import { getSiteCopy, localeNames, locales, type Locale } from "../i18n";
+
+interface Props {
+  locale: Locale;
+  translations: Partial<Record<Locale, string>>;
+  base: string;
+}
+
+const { locale, translations, base } = Astro.props;
+const copy = getSiteCopy(locale);
+const withBase = (path: string) => `${base}${path}` || "/";
+---
+
+<div class="language-switcher" aria-label={copy.language}>
+  <span>{copy.language}</span>
+  <div>
+    {locales.map((option) => {
+      const path = translations[option];
+      return path ? (
+        <a
+          href={withBase(path)}
+          lang={option}
+          hreflang={option}
+          aria-current={option === locale ? "true" : undefined}
+          data-language={option}
+        >
+          {localeNames[option]}
+        </a>
+      ) : null;
+    })}
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLAnchorElement>("[data-language]").forEach((link) => {
+    link.addEventListener("click", () => {
+      const language = link.dataset.language;
+      if (language) window.localStorage.setItem("grove-language", language);
+    });
+  });
+</script>

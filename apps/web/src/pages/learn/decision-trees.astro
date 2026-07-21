@@ -1,65 +1,932 @@
 ---
-import { FirstSplitExplorer } from "@grove/tree-visuals";
+import {
+  DatasetComplexityPlayground,
+  ManualTreePlayground,
+  MultiFeatureSplitPlayground,
+  SplitSearchPlayground,
+  ThresholdIntuitionPlayground,
+  TreeGrowthPlayground,
+} from "@grove/tree-visuals";
+import ArticleConnections from "../../components/ArticleConnections.astro";
+import DifficultyBadge from "../../components/DifficultyBadge.astro";
+import NewsletterSignup from "../../components/NewsletterSignup.astro";
+import { getArticle } from "../../content/articles";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
-const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const article = getArticle("decision-trees-from-scratch");
+const translations = {
+  en: "/learn/decision-trees",
+  "pt-BR": "/pt-br/learn/decision-trees",
+};
+
+const seedlings = [
+  { id: "A", sunlight: 1.0, water: 1.4, outcome: "Thriving" },
+  { id: "B", sunlight: 1.4, water: 2.7, outcome: "Thriving" },
+  { id: "C", sunlight: 2.0, water: 1.9, outcome: "Thriving" },
+  { id: "D", sunlight: 2.5, water: 3.5, outcome: "Struggling" },
+  { id: "E", sunlight: 3.2, water: 2.4, outcome: "Thriving" },
+  { id: "F", sunlight: 3.8, water: 4.2, outcome: "Struggling" },
+  { id: "G", sunlight: 4.3, water: 1.5, outcome: "Struggling" },
+  { id: "H", sunlight: 4.9, water: 3.1, outcome: "Struggling" },
+  { id: "I", sunlight: 5.5, water: 2.0, outcome: "Struggling" },
+  { id: "J", sunlight: 6.1, water: 3.9, outcome: "Struggling" },
+];
+
+const plot = { left: 62, right: 528, top: 25, bottom: 292 };
+const plotX = (value: number) => plot.left + ((value - 0.5) / 6) * (plot.right - plot.left);
+const plotY = (value: number) => plot.bottom - ((value - 1) / 3.6) * (plot.bottom - plot.top);
+const giniPoints = Array.from({ length: 41 }, (_, index) => {
+  const p = index / 40;
+  const x = 54 + p * 472;
+  const y = 254 - 2 * p * (1 - p) * 400;
+  return `${x.toFixed(1)},${y.toFixed(1)}`;
+}).join(" ");
 ---
 
 <BaseLayout
-  title="How decision trees learn"
-  description="A visual introduction to how classification trees choose questions and split data."
+  title={article.title}
+  description={article.description}
+  translations={translations}
+  pageType="article"
+  publishedAt={article.publishedAt}
+  updatedAt={article.updatedAt}
   wide
 >
-  <header class="page-header">
-    <p class="eyebrow">Decision trees · Chapter 1</p>
-    <h1>How does a decision tree learn?</h1>
+  <header class="page-header lesson-header article-hero">
+    <p class="eyebrow">{article.eyebrow}</p>
+    <h1>{article.title}</h1>
     <p class="lede">
-      A decision tree learns by asking a sequence of simple questions. Its job is
-      to choose questions that separate the training examples into cleaner groups.
+      This lesson has two halves. In the first, you will build a working decision tree
+      with your eyes and your hands — no formulas. In the second, you will discover that
+      the real training algorithm is nothing more than what you just did, repeated by a
+      patient loop that scores its choices with one small number.
+    </p>
+    <div class="article-meta" aria-label="Article information">
+      <DifficultyBadge difficulty={article.difficulty} showDescription />
+      <span><strong>{article.staticVisualCount}</strong> static visual examples</span>
+      <span><strong>{article.interactiveCount}</strong> interactive playgrounds</span>
+    </div>
+    <div class="lesson-goal">
+      <strong>By the end</strong>
+      <span>
+        You will be able to explain how a computer learns a decision tree by repeating
+        one useful operation: ask a yes-or-no question that makes known outcomes less
+        mixed. You will also trace a new example through the finished tree.
+      </span>
+    </div>
+    <p class="lesson-starting-point">
+      <strong>Starting point:</strong> you only need to compare numbers and follow a
+      yes-or-no question. We will introduce every machine-learning term and unpack the
+      mathematical notation when it first becomes useful.
     </p>
   </header>
 
-  <article class="lesson-body">
-    <h2>Begin with one question</h2>
+  <article class="lesson-body deep-article">
+    <p class="lesson-stage">Part one · build it by hand</p>
+    <h2 id="tables">Machine learning is not one single method</h2>
     <p>
-      Imagine ten observations described by two numeric features. Each one belongs
-      to <strong>Class A</strong> or <strong>Class B</strong>. At the root, all ten
-      are mixed together.
+      When people say <strong>machine learning</strong>, it can sound like the name of
+      one technology. It is closer to a toolbox. The field is full of different
+      algorithms, and each one learns patterns from examples in its own way, then uses
+      those patterns to make predictions about examples it has never seen.
     </p>
     <p>
-      The tree tries questions such as <code>Feature 1 ≤ 2.75?</code>. Every
-      possible threshold creates a left group and a right group. The tree scores
-      those groups and keeps the question that reduces impurity the most.
+      Neural networks are the famous family. They are behind striking results in text,
+      images, audio, and video. But fame is not the same as fit. A great deal of
+      everyday data lives in tables — customers, houses, plants, loans, medical
+      measurements — and on tables, <strong>tree-based methods</strong> are often the
+      strong, practical choice. To see why, start with what makes a table different
+      from other data.
     </p>
+
+    <h3>Each row describes one thing</h3>
+    <p>
+      A sentence is a sequence of words: order matters. An image is a grid of pixels:
+      position matters. In our seed table, each row describes one seed, and the columns
+      record named properties of that seed. Shuffling these rows would not change their
+      meaning because no seed depends on the row before it.
+    </p>
+
+    <figure class="static-figure data-shape-figure">
+      <div class="data-shape-grid" aria-label="Three shapes of data">
+        <div class="shape-card">
+          <span class="shape-label">Sequence</span>
+          <div class="sequence-shape" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+          <strong>Order matters</strong>
+          <small>words, events, sound</small>
+        </div>
+        <div class="shape-card">
+          <span class="shape-label">Grid</span>
+          <div class="grid-shape" aria-hidden="true">{Array.from({ length: 16 }, (_, i) => <i class:list={{ active: [2, 5, 6, 9, 10, 13].includes(i) }}></i>)}</div>
+          <strong>Position matters</strong>
+          <small>images, spatial maps</small>
+        </div>
+        <div class="shape-card shape-card-accent">
+          <span class="shape-label">Table</span>
+          <div class="entity-shape" aria-hidden="true">
+            <span><i class="dot-round"></i><i class="dot-tall"></i><i class="dot-square"></i></span>
+            <span><i class="dot-square"></i><i class="dot-round"></i><i class="dot-tall"></i></span>
+            <span><i class="dot-tall"></i><i class="dot-square"></i><i class="dot-round"></i></span>
+          </div>
+          <strong>Properties matter</strong>
+          <small>people, plants, products</small>
+        </div>
+      </div>
+      <figcaption>
+        In this kind of table, each row stands on its own, so we can ask the same small
+        question of every row.
+      </figcaption>
+    </figure>
+
+    <p>
+      Think about people at a party. One person is tall, blond, and wearing glasses.
+      Another is short, brunette, without glasses. This kind of data invites yes-or-no
+      questions — <em>is the person tall? are they wearing glasses?</em> — and each
+      answer divides the group in two. A table works the same way: a question about
+      one column sends some rows one way and the rest the other way.
+    </p>
+    <p>
+      Hold on to that observation. Small questions are a natural way to organize
+      tabular data, and — as we are about to see — they may be enough to predict
+      something we do not know yet.
+    </p>
+
+    <p class="lesson-stage">Our running example</p>
+    <h2>Ten seeds and one prediction</h2>
+    <p>
+      Imagine we planted ten seeds. Each one received a certain number of sunlight
+      hours per day and a certain number of liters of water per week. At the end of
+      the experiment, each seed was either thriving or struggling.
+    </p>
+
+    <figure class="static-figure seed-table-figure">
+      <div class="seed-table-wrap">
+        <table class="seed-table">
+          <thead>
+            <tr><th>Seed</th><th>Sunlight / day</th><th>Water / week</th><th>Outcome</th></tr>
+          </thead>
+          <tbody>
+            {seedlings.map((seed) => (
+              <tr>
+                <th scope="row">{seed.id}</th>
+                <td>{seed.sunlight.toFixed(1)} h</td>
+                <td>{seed.water.toFixed(1)} L</td>
+                <td><span class:list={["outcome-mark", seed.outcome.toLowerCase()]} aria-hidden="true"></span>{seed.outcome}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="mobile-scroll-cue">Swipe horizontally to inspect every column.</p>
+      <figcaption>Each row is one seed. Sunlight and water are features. The outcome is the label.</figcaption>
+    </figure>
+
+    <dl class="example-mapping">
+      <div><dt>Entity</dt><dd>one seed</dd></div>
+      <div><dt>Features</dt><dd>sunlight and water</dd></div>
+      <div><dt>Label</dt><dd>thriving or struggling</dd></div>
+    </dl>
+
+    <p>
+      Now a friend brings us seed K. It will get <strong>3 hours of sunlight per day</strong>
+      and <strong>2 liters of water per week</strong>. Can the ten old seeds help us
+      predict what will happen to the new one?
+    </p>
+    <p>
+      This task is called <strong>classification</strong>: we are not predicting an
+      exact height, we are choosing between two labels — thriving or struggling.
+    </p>
+
+    <p class="lesson-stage">The first invention</p>
+    <h2 id="by-hand">A split is a question</h2>
+    <p>
+      Staring at the table row by row is hard, so let us spread it across two axes.
+      Sunlight runs left to right, water runs bottom to top. Circles are thriving
+      seeds; squares are struggling seeds.
+    </p>
+
+    <figure class="static-figure split-figure">
+      <svg class="seed-plot" viewBox="0 0 570 340" role="img" aria-labelledby="seed-plot-title seed-plot-desc">
+        <title id="seed-plot-title">The ten seeds before a dividing question is chosen</title>
+        <desc id="seed-plot-desc">A scatter plot of sunlight and water. Four thriving seeds are circles and six struggling seeds are squares. No dividing line has been selected yet.</desc>
+        {[1, 2, 3, 4, 5, 6].map((tick) => (
+          <g>
+            <line class="plot-gridline" x1={plotX(tick)} x2={plotX(tick)} y1={plot.top} y2={plot.bottom}></line>
+            <text class="plot-tick" x={plotX(tick)} y="312" text-anchor="middle">{tick}</text>
+          </g>
+        ))}
+        {[1, 2, 3, 4].map((tick) => (
+          <g>
+            <line class="plot-gridline" x1={plot.left} x2={plot.right} y1={plotY(tick)} y2={plotY(tick)}></line>
+            <text class="plot-tick" x="47" y={plotY(tick) + 4} text-anchor="end">{tick}</text>
+          </g>
+        ))}
+        <line class="plot-axis" x1={plot.left} x2={plot.right} y1={plot.bottom} y2={plot.bottom}></line>
+        <line class="plot-axis" x1={plot.left} x2={plot.left} y1={plot.top} y2={plot.bottom}></line>
+        {seedlings.map((seed) => (
+          <g class:list={["seed-point", seed.outcome.toLowerCase()]}>
+            {seed.outcome === "Thriving"
+              ? <circle cx={plotX(seed.sunlight)} cy={plotY(seed.water)} r="8"></circle>
+              : <rect x={plotX(seed.sunlight) - 7} y={plotY(seed.water) - 7} width="14" height="14" rx="1"></rect>}
+            <text x={plotX(seed.sunlight) + 11} y={plotY(seed.water) - 10}>{seed.id}</text>
+          </g>
+        ))}
+        <text class="plot-axis-label" x={(plot.left + plot.right) / 2} y="334" text-anchor="middle">sunlight hours per day</text>
+        <text class="plot-axis-label" x="14" y={(plot.top + plot.bottom) / 2} text-anchor="middle" transform={`rotate(-90 14 ${(plot.top + plot.bottom) / 2})`}>water per week (L)</text>
+      </svg>
+      <figcaption>
+        The same ten rows are now points. Shape carries the outcome, so color is not
+        required. No answer has been drawn for you yet.
+      </figcaption>
+    </figure>
+
+    <p>
+      A line on this graph can act like a yes-or-no question. A vertical line asks
+      whether sunlight is at most some cutoff. A horizontal line asks the same kind
+      of question about water. We have not chosen the feature or cutoff yet.
+    </p>
+    <p>
+      Your first job is only visual: find one line that leaves circles and squares less
+      mixed on its two sides. There may be several reasonable attempts. Commit to one
+      before asking the playground for its clearest answer.
+    </p>
+
+    <div class="prediction-prompt">
+      <p class="lesson-stage">Try it yourself</p>
+      <h3>Where would you place the first line?</h3>
+      <p>
+        Choose sunlight or water, then drag the line directly across the graph. No
+        formulas yet — just try to make the outcomes on each side look as uniform
+        as possible. The opening line is only a starting guess, not the answer.
+      </p>
+    </div>
   </article>
 
-  <div class="interactive-breakout">
-    <FirstSplitExplorer client:load />
+  <div class="interactive-breakout article-interactive">
+    <ThresholdIntuitionPlayground client:load />
   </div>
 
-  <article class="lesson-body">
-    <h2>What just happened?</h2>
+  <article class="lesson-body deep-article">
     <p>
-      The dashed line and the root node come from the same trained model. Samples
-      on the “yes” side move to the left leaf; samples on the “no” side move to
-      the right leaf. Each leaf predicts its majority class.
+      The reveal checks every available position and returns
+      <strong>sunlight ≤ 3.5 hours</strong>. Seeds A through E answer yes: four are
+      thriving and D is struggling. The other five answer no, and all five are
+      struggling.
     </p>
     <p>
-      <strong>Information gain</strong> is the parent impurity minus the weighted
-      impurity of both children. Larger gain means the question produced cleaner
-      groups. A full tree repeats this process inside every new node until a
-      stopping rule says to create a leaf.
+      That question turned one mixed group into two less-mixed groups. The right group
+      is finished because every seed in it struggles. The left group still contains
+      both outcomes, so it needs another question. A cutoff such as 3.5 is called a
+      <strong>threshold</strong>. A feature-and-threshold question that divides a group
+      is called a <strong>split</strong>.
+    </p>
+    <p class="lesson-stage section-kicker">Turn one question into a structure</p>
+    <h3>A mixed region can answer another question</h3>
+    <p>
+      One line is only the beginning. After a question divides the graph, each region
+      holds a smaller version of the original problem. A region where every seed has
+      the same outcome can stop. A mixed region can ask another question — using only
+      the seeds inside it.
     </p>
     <p>
-      This first version deliberately trains a one-level tree, also called a
-      <strong>decision stump</strong>. It gives us a small, testable unit that can
-      later be reused recursively to grow a complete tree.
+      This is where lines become a tree. In the playground below, select a region,
+      choose a feature, and cut only that region. The panel on the right records the
+      exact same sequence of questions as a branching structure: the first cut is the
+      root, each later cut hangs under the answer that led to it.
+    </p>
+    <div class="prediction-prompt">
+      <p class="lesson-stage">Build it by hand</p>
+      <h3>Can you make every final region contain one outcome?</h3>
+      <p>
+        Start with the whole graph. After every cut, pick a mixed region and continue.
+        There is more than one valid tree, so follow whatever pattern you can see.
+      </p>
+    </div>
+  </article>
+
+  <div class="interactive-breakout article-interactive">
+    <ManualTreePlayground client:load />
+  </div>
+
+  <article class="lesson-body deep-article">
+    <div class="reasoning-check">
+      <p class="lesson-stage">Keep seed K in view</p>
+      <h3>Can the tree already make K's prediction?</h3>
+      <p>
+        If you opened the guided solution, answer its two questions for K: 3 hours of
+        sunlight and 2 L of water. If you made a different tree, follow your own
+        questions instead.
+      </p>
+      <details>
+        <summary>Reveal the guided path</summary>
+        <p>
+          K answers yes to sunlight ≤ 3.5 and yes to water ≤ 3.1, so it reaches the
+          thriving leaf. We can already <em>use</em> the tree; the next part explains
+          how a computer can choose those questions without our visual judgment.
+        </p>
+      </details>
+    </div>
+    <p class="lesson-stage">The pivot of this lesson</p>
+    <h2>Stop and look at what you just did</h2>
+    <p>
+      Whether you completed the tree yourself or opened the guided solution, the
+      construction used no formula. A node is a question, its two answers are branches,
+      and every final region is a leaf that makes a prediction. The construction used
+      exactly three skills:
+    </p>
+
+    <ol class="mechanism-steps">
+      <li><strong>Propose.</strong> You slid a line across a region and it snapped between neighboring seeds.</li>
+      <li><strong>Judge.</strong> You looked at both sides and decided whether the outcomes became more alike.</li>
+      <li><strong>Repeat.</strong> Inside any region that stayed mixed, you did the same thing again.</li>
+    </ol>
+
+    <p>
+      Two of those skills are mechanical. Proposing lines is a loop over positions.
+      Repeating is the same procedure applied to a smaller group. A computer can do
+      both without any insight.
+    </p>
+    <p>
+      The third skill is the obstacle. “This side looks cleaner” is a judgment, not an
+      instruction. To automate the whole process, we need to replace your eyes with a
+      number — one score that says <em>how well did this question separate the
+      outcomes?</em> That single replacement is the entire second half of this lesson.
+      Everything else, you have already invented.
+    </p>
+
+    <p class="lesson-stage">Part two · automate it</p>
+    <h2 id="score">Only a few questions are worth asking</h2>
+    <p>
+      Before scoring questions, we should count them. A threshold like 2.25 can feel
+      arbitrary — why not 2.3, or 2.31? Look at the sunlight column: 2.0 and 2.5 are
+      neighboring values. <em>Every</em> line drawn between them sends the same rows
+      to the same sides. All those thresholds are the same question wearing different
+      numbers, so we test just one of them: the midpoint.
+    </p>
+
+    <div class="formula formula-wide">(2.0 + 2.5) / 2 = 2.25</div>
+
+    <p>
+      This makes the search finite. Sort the distinct values of a column and take the
+      midpoint of each neighboring pair: ten distinct values give nine candidate
+      thresholds. Two features, nine thresholds each — at the root there are exactly
+      <strong>18 questions worth testing</strong>, not infinitely many. The playgrounds
+      above were already snapping your line to these midpoints.
+    </p>
+    <p>
+      So the computer can generate every question worth asking. What it still cannot
+      do is pick the best one. “This looks cleaner” has to become a number.
+    </p>
+
+    <h3>Step one: measure the mixture of a single group</h3>
+    <p>
+      Forget splits for a moment and look at one group of seeds. What your eyes
+      actually checked, side by side, was <em>how mixed</em> each group was. A useful
+      mixture score should follow three rules:
+    </p>
+
+    <ol class="mechanism-steps compact-steps">
+      <li><strong>A pure group scores 0.</strong> If every seed has the same outcome, there is no mixture.</li>
+      <li><strong>An even mixture scores highest.</strong> A 50/50 group is as mixed as two classes can be.</li>
+      <li><strong>Only the label counts matter.</strong> The score should not care where the seeds sit or what order they are in.</li>
+    </ol>
+
+    <p>
+      The standard choice for classification trees is <strong>Gini impurity</strong>,
+      and it has a concrete meaning. Imagine drawing one seed label from a bowl, putting
+      it back, and then drawing again. Putting it back keeps the odds the same on both
+      draws. Gini is the chance that the two labels <em>disagree</em>.
+    </p>
+    <p>
+      Our full group has four thriving and six struggling seeds. Disagreement can
+      happen in two orders. We can draw thriving and then struggling, or struggling
+      and then thriving:
+    </p>
+
+    <div class="derivation-card derivation-steps">
+      <span>thriving, then struggling</span><strong>4/10 × 6/10 = 0.24</strong>
+      <span>struggling, then thriving</span><strong>6/10 × 4/10 = 0.24</strong>
+      <span>either disagreement</span><strong>Gini = 0.24 + 0.24 = 0.48</strong>
+    </div>
+
+    <p>
+      In a pure group, disagreement is impossible, so Gini is 0. In a two-class group
+      split evenly, disagreement is as likely as it can be, so Gini reaches 0.5.
+    </p>
+
+    <details class="notation-depth">
+      <summary>Optional notation: compress the same calculation</summary>
+      <p>
+        Let <em>p</em> mean “the share of the group.” Here, <em>p(thrive)</em> is 0.4
+        and <em>p(struggle)</em> is 0.6. Squaring a share means multiplying it by itself,
+        which is the chance of drawing that same label twice. So another way to count
+        disagreement is to subtract every way the labels could agree from 1:
+      </p>
+      <div class="formula formula-wide">Gini = 1 − p(thrive)² − p(struggle)² = 1 − 0.4² − 0.6² = 0.48</div>
+      <p>
+        For more than two labels, mathematicians shorten “subtract the square of every
+        class share” to <strong>Gini = 1 − Σ pₖ²</strong>. The symbol Σ means “add one
+        term for every class,” and the small <em>k</em> identifies which class a term
+        belongs to. This compact form is not needed for the rest of this lesson.
+      </p>
+    </details>
+
+    <p>
+      That is close to the maximum possible value of 0.5 for two classes. It does not
+      mean a model is wrong 48% of the time — there is no model yet. It only means the
+      group still contains a strong mixture of both labels.
+    </p>
+
+    <figure class="static-figure gini-figure">
+      <svg class="gini-curve" viewBox="0 0 580 310" role="img" aria-labelledby="gini-title gini-desc">
+        <title id="gini-title">Gini impurity for two classes</title>
+        <desc id="gini-desc">Gini impurity is zero when a group contains only one class. It rises to 0.5 when both classes are present in equal shares.</desc>
+        {[0, 0.25, 0.5].map((tick) => {
+          const y = 254 - tick * 400;
+          return <g><line class="plot-gridline" x1="54" x2="526" y1={y} y2={y}></line><text class="plot-tick" x="43" y={y + 4} text-anchor="end">{tick}</text></g>;
+        })}
+        <line class="plot-axis" x1="54" x2="526" y1="254" y2="254"></line>
+        <line class="plot-axis" x1="54" x2="54" y1="54" y2="254"></line>
+        <polyline class="gini-line" points={giniPoints}></polyline>
+        <circle class="gini-dot" cx="54" cy="254" r="5"></circle>
+        <circle class="gini-dot" cx="290" cy="54" r="5"></circle>
+        <circle class="gini-dot" cx="526" cy="254" r="5"></circle>
+        <text class="gini-note" x="62" y="240">pure</text>
+        <text class="gini-note" x="290" y="42" text-anchor="middle">maximum mixture</text>
+        <text class="gini-note" x="518" y="240" text-anchor="end">pure</text>
+        <text class="plot-tick" x="54" y="276" text-anchor="middle">0%</text>
+        <text class="plot-tick" x="290" y="276" text-anchor="middle">50%</text>
+        <text class="plot-tick" x="526" y="276" text-anchor="middle">100%</text>
+        <text class="plot-axis-label" x="290" y="301" text-anchor="middle">share of thriving seeds in the group</text>
+        <text class="plot-axis-label" x="15" y="154" text-anchor="middle" transform="rotate(-90 15 154)">Gini impurity</text>
+      </svg>
+      <figcaption>
+        For two classes, Gini peaks at a 50/50 mixture and falls to zero as either
+        class takes over the whole group — exactly the behavior we asked for.
+      </figcaption>
+    </figure>
+
+    <h3>Step two: score a question, not just a group</h3>
+    <p>
+      A question creates <em>two</em> groups, so we need to combine two Gini values
+      into one score. Take the clearest first question, sunlight ≤ 3.5. The yes side
+      has four thriving seeds and one struggling seed. The no side has five struggling
+      seeds — pure, Gini 0:
+    </p>
+
+    <div class="formula formula-wide">Gini(yes side) = 1 − (4/5)² − (1/5)² = 0.32</div>
+
+    <p>
+      Each side is weighted by the fraction of rows it received. Here the split happens
+      to send five rows each way, so the weights are equal; the same rule also works
+      when later splits create unequal groups:
+    </p>
+
+    <div class="formula formula-wide">score after the split = 5/10 × 0.32 + 5/10 × 0 = 0.16</div>
+
+    <p>
+      Before the question, the group's Gini was 0.48. After it, the weighted mixture
+      is 0.16. The improvement is called the <strong>Gini gain</strong>:
+    </p>
+
+    <div class="formula formula-wide">gain = 0.48 − 0.16 = 0.32</div>
+
+    <p>
+      This is the number that replaces your eyes. A higher gain means the question
+      removed more mixture. It uses nothing but label counts, so a computer can
+      evaluate it for any candidate question in a few multiplications.
+    </p>
+
+    <div class="reasoning-check">
+      <p class="lesson-stage">Check the idea</p>
+      <h3>Why do we weight the two sides by their row counts?</h3>
+      <p>Try to answer before opening the explanation.</p>
+      <details>
+        <summary>Reveal the reasoning</summary>
+        <p>
+          Without weights, a tiny pure group could hide a large messy one. A split
+          that isolates a single seed would look as good as a split that cleanly
+          organizes half the table. The weights make each side matter in proportion
+          to the rows it holds.
+        </p>
+      </details>
+    </div>
+
+    <h3>The score can compare any two candidates</h3>
+    <p>
+      To feel the score working, keep the feature fixed and move only the threshold.
+      Before reading the numbers below, look at the two pictures and predict which
+      question leaves less mixture behind.
+    </p>
+
+    <figure class="static-figure gini-comparison-figure">
+      <div class="gini-split-grid">
+        <section class="gini-candidate" aria-labelledby="candidate-a-title">
+          <div class="gini-candidate-heading">
+            <span>Candidate A</span>
+            <strong id="candidate-a-title">Sunlight ≤ 3.5?</strong>
+          </div>
+          <svg class="threshold-comparison-plot" viewBox="0 0 570 112" role="img" aria-labelledby="candidate-a-plot-title candidate-a-plot-desc">
+            <title id="candidate-a-plot-title">Sunlight split at 3.5 hours</title>
+            <desc id="candidate-a-plot-desc">The threshold sends four thriving and one struggling seed to the left leaf. The right leaf contains five struggling seeds.</desc>
+            <rect class="plot-region plot-region-yes" x={plot.left} y="24" width={plotX(3.5) - plot.left} height="48"></rect>
+            <rect class="plot-region plot-region-no" x={plotX(3.5)} y="24" width={plot.right - plotX(3.5)} height="48"></rect>
+            <line class="plot-axis" x1={plot.left} x2={plot.right} y1="60" y2="60"></line>
+            {[1, 2, 3, 4, 5, 6].map((tick) => (
+              <g>
+                <line class="plot-gridline" x1={plotX(tick)} x2={plotX(tick)} y1="60" y2="66"></line>
+                <text class="plot-tick" x={plotX(tick)} y="82" text-anchor="middle">{tick}</text>
+              </g>
+            ))}
+            <line class="plot-threshold" x1={plotX(3.5)} x2={plotX(3.5)} y1="18" y2="72"></line>
+            <text class="plot-threshold-label" x={plotX(3.5) + 6} y="18">3.5</text>
+            {seedlings.map((seed) => (
+              <g class:list={["seed-point", seed.outcome.toLowerCase()]}>
+                {seed.outcome === "Thriving"
+                  ? <circle cx={plotX(seed.sunlight)} cy="48" r="7"></circle>
+                  : <rect x={plotX(seed.sunlight) - 6} y="42" width="12" height="12" rx="1"></rect>}
+              </g>
+            ))}
+            <text class="plot-axis-label" x={(plot.left + plot.right) / 2} y="104" text-anchor="middle">sunlight hours per day</text>
+          </svg>
+          <details class="candidate-score-reveal">
+            <summary>Reveal Candidate A's score</summary>
+            <div class="candidate-leaves">
+              <div><span>Left leaf · 5 rows</span><strong>4 thriving · 1 struggling</strong><small>Gini = 0.320</small></div>
+              <div><span>Right leaf · 5 rows</span><strong>0 thriving · 5 struggling</strong><small>Gini = 0</small></div>
+            </div>
+            <div class="candidate-total">
+              <span>Weighted score · gain</span>
+              <strong>0.160 · gain 0.320</strong>
+            </div>
+          </details>
+        </section>
+
+        <section class="gini-candidate" aria-labelledby="candidate-b-title">
+          <div class="gini-candidate-heading">
+            <span>Candidate B</span>
+            <strong id="candidate-b-title">Sunlight ≤ 4.6?</strong>
+          </div>
+          <svg class="threshold-comparison-plot" viewBox="0 0 570 112" role="img" aria-labelledby="candidate-b-plot-title candidate-b-plot-desc">
+            <title id="candidate-b-plot-title">Sunlight split at 4.6 hours</title>
+            <desc id="candidate-b-plot-desc">The threshold sends four thriving and three struggling seeds to the left leaf. The right leaf contains three struggling seeds.</desc>
+            <rect class="plot-region plot-region-yes" x={plot.left} y="24" width={plotX(4.6) - plot.left} height="48"></rect>
+            <rect class="plot-region plot-region-no" x={plotX(4.6)} y="24" width={plot.right - plotX(4.6)} height="48"></rect>
+            <line class="plot-axis" x1={plot.left} x2={plot.right} y1="60" y2="60"></line>
+            {[1, 2, 3, 4, 5, 6].map((tick) => (
+              <g>
+                <line class="plot-gridline" x1={plotX(tick)} x2={plotX(tick)} y1="60" y2="66"></line>
+                <text class="plot-tick" x={plotX(tick)} y="82" text-anchor="middle">{tick}</text>
+              </g>
+            ))}
+            <line class="plot-threshold" x1={plotX(4.6)} x2={plotX(4.6)} y1="18" y2="72"></line>
+            <text class="plot-threshold-label" x={plotX(4.6) + 6} y="18">4.6</text>
+            {seedlings.map((seed) => (
+              <g class:list={["seed-point", seed.outcome.toLowerCase()]}>
+                {seed.outcome === "Thriving"
+                  ? <circle cx={plotX(seed.sunlight)} cy="48" r="7"></circle>
+                  : <rect x={plotX(seed.sunlight) - 6} y="42" width="12" height="12" rx="1"></rect>}
+              </g>
+            ))}
+            <text class="plot-axis-label" x={(plot.left + plot.right) / 2} y="104" text-anchor="middle">sunlight hours per day</text>
+          </svg>
+          <details class="candidate-score-reveal">
+            <summary>Reveal Candidate B's score</summary>
+            <div class="candidate-leaves">
+              <div><span>Left leaf · 7 rows</span><strong>4 thriving · 3 struggling</strong><small>Gini ≈ 0.490</small></div>
+              <div><span>Right leaf · 3 rows</span><strong>0 thriving · 3 struggling</strong><small>Gini = 0</small></div>
+            </div>
+            <div class="candidate-total">
+              <span>Weighted score · gain</span>
+              <strong>0.343 · gain 0.137</strong>
+            </div>
+          </details>
+        </section>
+      </div>
+      <figcaption>
+        Same data, same feature, different threshold. Make a visual prediction first,
+        then open both score breakdowns. The candidate with the larger gain is the one
+        that leaves less weighted mixture behind.
+      </figcaption>
+    </figure>
+
+    <p class="lesson-stage">The whole algorithm</p>
+    <h2 id="automate">Two loops and a memory</h2>
+    <p>
+      Now every ingredient is on the table, and the algorithm almost writes itself.
+      At the current group of rows:
+    </p>
+
+    <ol class="mechanism-steps">
+      <li><strong>For each feature</strong> — sunlight, then water —</li>
+      <li><strong>for each midpoint threshold</strong> of that feature,</li>
+      <li><strong>compute the Gini gain</strong> of the question they form,</li>
+      <li><strong>and remember the best one seen so far.</strong></li>
+    </ol>
+
+    <p>
+      That is the entire search: two nested loops and one remembered winner. There is
+      no cleverness inside — the computer does exactly what you did in the first
+      playground, except it checks all 18 questions and refuses to have taste. Watch
+      it run.
     </p>
   </article>
 
-  <a class="next-link" href={`${base}/learn/gini-vs-entropy`}>
-    <span>Next chapter<strong>Gini or entropy?</strong></span>
-    <b aria-hidden="true">→</b>
-  </a>
-</BaseLayout>
+  <div class="interactive-breakout article-interactive">
+    <SplitSearchPlayground client:load />
+  </div>
 
+  <article class="lesson-body deep-article">
+    <p>
+      If you ran the search to the end, the numerical winner matched the pattern your
+      eyes could see: <strong>sunlight ≤ 3.5</strong> leaves all five high-sunlight
+      seeds together in a pure struggling group and earns a gain of 0.320. The loop
+      did not invent a new idea; it measured every possible line and confirmed the
+      clearest one.
+    </p>
+
+    <h3>The third skill: repeat inside every mixed leaf</h3>
+    <p>
+      One search gives one question, and one question is not yet a tree. The winning
+      split leaves F, G, H, I, and J in a pure struggling leaf — that side is done.
+      The other side still holds both labels, so we run <em>the exact same search</em>
+      on A, B, C, D, and E alone. Water ≤ 3.1 separates D from the four thriving
+      seeds, and every leaf is pure.
+    </p>
+    <p>
+      This pattern — a procedure that applies itself to the smaller problems it
+      creates — is called <strong>recursion</strong>. The rule never changes; only
+      the set of active rows shrinks. Step through it below and try to predict which
+      group will split next.
+    </p>
+    <div class="metric-direction-bridge">
+      <strong>One winner, two equivalent score views</strong>
+      <p>
+        The previous playground kept the <em>largest gain</em>. The two charts below
+        keep the <em>smallest weighted Gini after the split</em>, one chart per feature.
+        These choose the
+        same winner because the starting Gini is fixed:
+        <strong>gain = starting Gini − Gini after the split</strong>.
+      </p>
+    </div>
+  </article>
+
+  <div class="interactive-breakout article-interactive">
+    <TreeGrowthPlayground client:load />
+  </div>
+
+  <article class="lesson-body deep-article">
+    <p>
+      The finished structure is worth a full look:
+    </p>
+
+    <figure class="static-figure tree-figure">
+      <p class="mobile-scroll-cue">Swipe horizontally to follow the complete tree.</p>
+      <svg class="tree-snapshot" viewBox="0 0 760 340" role="img" aria-labelledby="tree-title tree-desc">
+        <title id="tree-title">The complete two-question branching structure</title>
+        <desc id="tree-desc">The root asks whether sunlight is at most 3.5. Its left child asks whether water is at most 3.1. Three leaves predict thriving or struggling.</desc>
+        <g class="tree-connectors">
+          <path d="M380 82 L245 142"></path><path d="M380 82 L570 142"></path>
+          <path d="M245 204 L130 264"></path><path d="M245 204 L355 264"></path>
+        </g>
+        <g class="tree-edge-labels">
+          <text x="302" y="111">yes</text><text x="483" y="111">no</text>
+          <text x="176" y="235">yes</text><text x="308" y="235">no</text>
+        </g>
+        <g class="tree-node tree-question" transform="translate(290 22)"><rect width="180" height="60" rx="10"></rect><text x="90" y="25" text-anchor="middle">Sunlight ≤ 3.5?</text><text class="tree-rows" x="90" y="44" text-anchor="middle">A B C D E F G H I J</text></g>
+        <g class="tree-node tree-question" transform="translate(155 142)"><rect width="180" height="62" rx="10"></rect><text x="90" y="25" text-anchor="middle">Water ≤ 3.1?</text><text class="tree-rows" x="90" y="46" text-anchor="middle">A B C D E</text></g>
+        <g class="tree-node tree-leaf struggling" transform="translate(485 142)"><rect width="170" height="62" rx="10"></rect><text x="85" y="25" text-anchor="middle">Struggling</text><text class="tree-rows" x="85" y="46" text-anchor="middle">F G H I J</text></g>
+        <g class="tree-node tree-leaf thriving" transform="translate(45 264)"><rect width="170" height="52" rx="10"></rect><text x="85" y="22" text-anchor="middle">Thriving</text><text class="tree-rows" x="85" y="40" text-anchor="middle">A B C E</text></g>
+        <g class="tree-node tree-leaf struggling" transform="translate(270 264)"><rect width="170" height="52" rx="10"></rect><text x="85" y="22" text-anchor="middle">Struggling</text><text class="tree-rows" x="85" y="40" text-anchor="middle">D</text></g>
+      </svg>
+      <figcaption>
+        Two searches, two questions, three leaves. The regions you cut in the
+        graph and the leaves of this tree are two views of the same partition.
+      </figcaption>
+    </figure>
+
+    <p>
+      Compare it with the tree you built by hand. The computer may not have made your
+      exact cuts, but it followed your exact method — and now the two vocabularies
+      line up:
+    </p>
+
+    <div class="anatomy-grid">
+      <div><strong>Node</strong><span>a group of rows and a question</span></div>
+      <div><strong>Branch</strong><span>one answer to the question</span></div>
+      <div><strong>Leaf</strong><span>a final group and its prediction</span></div>
+    </div>
+
+    <p class="lesson-stage">Stress the mechanism</p>
+    <h2 id="geometry">The same small questions can build complex boundaries</h2>
+    <p>
+      The seed dataset ended after two questions because its pattern was unusually
+      cooperative. The algorithm is not limited to two cuts. Each new question acts
+      only inside one existing region, so vertical and horizontal lines can compose
+      into stripes, staircases, boxes, and many smaller rectangles.
+    </p>
+    <p>
+      Choose a point pattern below and predict what the tree will need before you run
+      it. Then step through the same Gini search you just learned: iterate over
+      <em>x</em> and <em>y</em>, try every midpoint threshold, keep the largest gain,
+      and repeat inside the remaining mixed regions.
+    </p>
+  </article>
+
+  <div class="interactive-breakout article-interactive">
+    <DatasetComplexityPlayground client:load />
+  </div>
+
+  <article class="lesson-body deep-article">
+    <p>
+      The invariant is now easier to see. A more elaborate boundary does not require
+      a more elaborate kind of question; it requires more rounds of the same search.
+      The diagonal becomes a staircase because this tree only asks one-feature,
+      axis-aligned questions. The center island needs nested cuts because no single
+      vertical or horizontal question can isolate the middle group.
+    </p>
+    <p>
+      More splits also mean more chances to fit accidents in the training points.
+      That is why tree complexity cannot grow without a stopping rule.
+    </p>
+
+    <h3>When should the tree stop?</h3>
+    <p>
+      Our toy data becomes pure after two questions. Real data is noisier, and a
+      tree that keeps splitting can end up memorizing tiny accidents of the training
+      set. Practical trees therefore stop growing a branch when any of these hold:
+    </p>
+
+    <ol class="mechanism-steps compact-steps">
+      <li><strong>The node is pure.</strong> Every active row has the same label.</li>
+      <li><strong>No split has positive gain.</strong> The available questions do not improve the group.</li>
+      <li><strong>The depth limit is reached.</strong> We refuse to ask more nested questions.</li>
+      <li><strong>Too few rows remain.</strong> We avoid making a rule from a fragile group.</li>
+    </ol>
+
+    <p>
+      When a branch stops, its leaf predicts the most common label among its rows. It
+      can also keep the class counts: a leaf with eight thriving and two struggling
+      seeds is less certain than a leaf with ten thriving seeds, even though both
+      predict thriving.
+    </p>
+
+    <h3>The tree is greedy</h3>
+    <p>
+      At each node, the search keeps the best split it can see <em>right now</em>. It
+      never asks whether a slightly worse first split might enable much better later
+      splits — testing every possible complete tree would be astronomically
+      expensive. This shortcut makes training fast, and its cost is honesty about
+      the word “best”: the winning split is only the best <em>local</em> choice,
+      under the current score, for the current rows.
+    </p>
+
+    <h3>Prediction travels through the finished questions</h3>
+    <p>
+      Training searched through many questions; prediction only answers the ones that
+      survived. A new row starts at the root and follows one branch at a time until
+      it lands in a leaf.
+    </p>
+
+    <div class="reasoning-check">
+      <p class="lesson-stage">Return to seed K</p>
+      <h3>Seed K gets 3 hours of sunlight and 2 L of water. Where does it land?</h3>
+      <p>Name each answer before opening the path.</p>
+      <details>
+        <summary>Reveal the path</summary>
+        <p>
+          Sunlight is at most 3.5, so K goes left. Water is at most 3.1, so K goes
+          left again — into the thriving leaf. This is a prediction from our tiny
+          dataset, not a claim that this sunlight and watering plan causes a seed to thrive.
+        </p>
+      </details>
+    </div>
+
+    <h3>A perfect training result can be a warning</h3>
+    <p>
+      This tree classifies all ten training seeds correctly. That is convenient for
+      teaching, because every step stays visible. On real data, perfection is often a
+      symptom: the tree may have memorized the training rows instead of learning a
+      pattern. This failure is called <strong>overfitting</strong>, and we detect it
+      by testing on labeled data the tree never used while choosing its thresholds.
+      Depth limits, minimum group sizes, minimum gain, and pruning all express the
+      same principle: a new branch must earn its complexity.
+    </p>
+
+    <div class="concept-ledger">
+      <div><strong>Human idea</strong><span>find a small question that reveals a pattern</span></div>
+      <div><strong>Mathematical rule</strong><span>maximize the drop in weighted mixture</span></div>
+      <div><strong>Learned structure</strong><span>questions connected by yes and no branches</span></div>
+      <div><strong>Prediction</strong><span>answer questions until a leaf is reached</span></div>
+    </div>
+
+    <p class="lesson-stage">Beyond the plane</p>
+    <h2 id="more-features">More features, same two loops</h2>
+    <p>
+      Every playground so far used two features, and that was a choice of scenery, not
+      of method. Two features fit on a screen, so each question could be drawn as a
+      line. But look back at what the search actually consumed: it sorted one column,
+      took midpoints, counted labels, and computed a gain. At no point did the
+      algorithm look at the picture. It read columns.
+    </p>
+    <p>
+      So let it read more of them. The table below describes twelve greenhouse
+      seedlings with <strong>three</strong> measurements each — sunlight, water, and
+      temperature. A third feature would already need a three-dimensional graph, and a
+      fourth would defeat drawing altogether. The table has no such limit, so this
+      time the table itself is the data space.
+    </p>
+    <p>
+      Nothing in the recipe changes. <strong>For each feature</strong> — now three of
+      them — and <strong>for each midpoint threshold</strong> of that feature, compute
+      the Gini gain of the question they form and remember the best one seen so far.
+      Twelve distinct values per column give eleven midpoints, so the root search
+      tests exactly 3 × 11 = 33 candidates. Then the winning question divides the
+      rows into two groups, and the same search runs again inside any group that
+      stays mixed.
+    </p>
+
+    <div class="prediction-prompt">
+      <p class="lesson-stage">Watch it generalize</p>
+      <h3>Which column would you ask about first?</h3>
+      <p>
+        Scan the table before running the search. While a question is being tested,
+        the rows that answer yes light up, and the charts under the table record the
+        weighted Gini of every threshold tried — the same ledger you already know,
+        with one extra lane.
+      </p>
+    </div>
+  </article>
+
+  <div class="interactive-breakout article-interactive">
+    <MultiFeatureSplitPlayground client:load />
+  </div>
+
+  <article class="lesson-body deep-article">
+    <p>
+      The winning root question came from the temperature column — a feature no
+      two-dimensional graph of sunlight and water could even display. The loop did not
+      need to know that in advance; temperature simply produced the largest gain, so
+      the memory kept it. The recursion then ran twice more: inside the warm group,
+      water separated the three underwatered seedlings, and inside the warm, watered
+      group, sunlight isolated the single shaded one. Three searches, three features,
+      four pure leaves — every column earned its node by winning one local search.
+    </p>
+    <p>
+      This is the entire generalization. The loop never asks how many columns the
+      table has; it only asks for the next one. Ten features would mean ten lanes in
+      the ledger and a longer loop — not a new idea. The two-feature graphs of this
+      lesson were scaffolding for your eyes. The algorithm was reading the table all
+      along.
+    </p>
+
+    <div class="boundary-note">
+      <strong>This is still a toy problem</strong>
+      <p>
+        Every playground in this introduction uses at most three numeric features, so
+        every step of every search stays visible. Real tables can have far more
+        columns, missing values, more than two classes, and
+        categorical or ordinal columns. Those cases require decisions about valid
+        questions, routing, encoding, stopping, and evaluation that this article does
+        not cover. Our goal here was narrower: expose the main principle faithfully —
+        iterate over features and thresholds, score every candidate with Gini, keep
+        the best local split, and recurse.
+      </p>
+    </div>
+
+    <p class="lesson-stage">Keep the smallest useful mental model</p>
+    <div class="mental-model">
+      <h2>A decision tree is a repeated search for useful questions.</h2>
+      <p>
+        <strong>
+          At each node, try every candidate split. Keep the one that most reduces
+          the mixture of known labels. Then repeat only where the labels are still
+          mixed.
+        </strong>
+      </p>
+    </div>
+
+    <p>
+      You built the tree first and met the algorithm second — and that order was the
+      point. The formula did not introduce a new idea; Gini gain only turned the
+      judgment your eyes were already making into a number a loop could maximize.
+      The diagram was never the starting point. It was the result.
+    </p>
+
+    <div class="transfer-check">
+      <h3>You understand the mechanism if you can now…</h3>
+      <ul>
+        <li>look at a small table and propose a useful threshold;</li>
+        <li>explain why only midpoint thresholds need to be tested;</li>
+        <li>calculate Gini impurity and weighted Gini gain;</li>
+        <li>state the training algorithm as two loops plus recursion;</li>
+        <li>predict why different point geometries require different tree shapes;</li>
+        <li>explain why the winning split is only a local winner;</li>
+        <li>trace a new row from the root to a prediction.</li>
+      </ul>
+    </div>
+  </article>
+
+  <ArticleConnections articleId={article.id} />
+  <NewsletterSignup source="decision-trees-article" compact />
+</BaseLayout>

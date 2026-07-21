@@ -1,0 +1,38 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const privacyContact = import.meta.env.PUBLIC_PRIVACY_CONTACT_EMAIL?.trim();
+---
+
+<BaseLayout
+  title="Privacy"
+  description="How Grove handles newsletter consent and delivery data."
+  translations={{ en: "/privacy", "pt-BR": "/pt-br/privacy" }}
+>
+  <header class="page-header">
+    <p class="eyebrow">Last updated · July 18, 2026</p>
+    <h1>Privacy at Grove</h1>
+    <p class="lede">The newsletter collects only what is needed to confirm consent, deliver each issue, and understand whether delivery is healthy.</p>
+  </header>
+
+  <article class="lesson-body policy-page">
+    <h2>What the newsletter stores</h2>
+    <p>When you request a subscription, Grove stores your email address, language, signup source, optional campaign parameters, and consent timestamps in PostgreSQL. Your subscription stays pending until you use the time-limited confirmation link.</p>
+    <p>The signup service uses your network address briefly for in-memory rate limiting. It is not written to the subscriber or analytics tables.</p>
+
+    <h2>Delivery providers and measurement</h2>
+    <p>Confirmed addresses are synchronized to Resend, which sends confirmation messages and newsletter issues. Railway hosts the website, API, and PostgreSQL database.</p>
+    <p>Signed Resend webhooks report sends, deliveries, opens, clicks, bounces, complaints, suppressions, and subscription changes. The analytics table stores a keyed recipient hash—not the email address—along with the event type, time, broadcast id, and clicked URL when applicable. Opens can be distorted by privacy proxies and image blocking.</p>
+
+    <h2>Retention and control</h2>
+    <p>Unconfirmed requests older than 30 days and delivery events older than 400 days are eligible for deletion. Consent and suppression records are retained to document permission and prevent unwanted future delivery. Every issue includes an unsubscribe link.</p>
+    <p>You may ask to access or delete your data. Verified deletion requests may retain the minimum suppression record needed to ensure Grove does not email the address again.</p>
+
+    <h2>Contact</h2>
+    {privacyContact ? (
+      <p>Email <a href={`mailto:${privacyContact}`}>{privacyContact}</a> with privacy questions or requests.</p>
+    ) : (
+      <p>The operator must configure a public privacy contact before newsletter signup can be enabled.</p>
+    )}
+  </article>
+</BaseLayout>

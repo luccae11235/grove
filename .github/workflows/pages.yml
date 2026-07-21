@@ -30,7 +30,13 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Configure Pages
+        id: pages
         uses: actions/configure-pages@v5
 
       - name: Resolve project base path
@@ -46,6 +52,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build static site
+        env:
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
         run: pnpm build
 
       - name: Upload Pages artifact
@@ -63,4 +71,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-

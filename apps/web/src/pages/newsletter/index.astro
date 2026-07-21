@@ -1,0 +1,47 @@
+---
+import NewsletterSignup from "../../components/NewsletterSignup.astro";
+import { getPublishedNewsletterIssues } from "../../content/issues";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const issues = getPublishedNewsletterIssues("en");
+---
+
+<BaseLayout
+  title="Newsletter"
+  description="A weekly Grove newsletter for difficult ideas made visual and interactive."
+>
+  <header class="page-header newsletter-header">
+    <p class="eyebrow">The weekly edition</p>
+    <h1>One difficult idea.<br />Made inspectable.</h1>
+    <p class="lede">
+      Each issue begins with a question, points to one interactive explanation,
+      and leaves you with a mental model you can use beyond the original example.
+    </p>
+  </header>
+
+  <NewsletterSignup source="newsletter-archive" />
+
+  <section class="newsletter-archive" aria-labelledby="newsletter-archive-title">
+    <p class="eyebrow">Archive</p>
+    <h2 id="newsletter-archive-title">Previous issues</h2>
+    {issues.length === 0 ? (
+      <div class="newsletter-empty">
+        <strong>The first issue is in preparation.</strong>
+        <p>The complete decision-tree lesson is already available while the email edition goes through its delivery checks.</p>
+      </div>
+    ) : (
+      <ol>
+        {issues.map((issue) => (
+          <li>
+            <a href={`${base}${issue.href}`}>
+              <span>Issue {String(issue.issueNumber).padStart(3, "0")}</span>
+              <strong>{issue.subject}</strong>
+              <small>{issue.publishedAt?.toLocaleDateString("en", { dateStyle: "long" })}</small>
+            </a>
+          </li>
+        ))}
+      </ol>
+    )}
+  </section>
+</BaseLayout>

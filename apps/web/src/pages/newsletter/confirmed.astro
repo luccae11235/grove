@@ -1,0 +1,29 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout
+  title="Subscription confirmed"
+  description="Your Grove newsletter subscription is confirmed."
+  noindex
+>
+  <header class="page-header newsletter-confirmation" data-confirmation>
+    <p class="eyebrow">Newsletter</p>
+    <h1 data-confirmation-title>You are on the list.</h1>
+    <p class="lede" data-confirmation-message>
+      Your subscription is confirmed. The next Grove issue will arrive in your inbox.
+    </p>
+    <p><a class="button-link" href={base}>Explore Grove →</a></p>
+  </header>
+</BaseLayout>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("status") === "invalid") {
+    const title = document.querySelector<HTMLElement>("[data-confirmation-title]");
+    const message = document.querySelector<HTMLElement>("[data-confirmation-message]");
+    if (title) title.textContent = "That confirmation link is no longer valid.";
+    if (message) message.textContent = "Request a new confirmation email from the newsletter signup form.";
+  }
+</script>

@@ -1,0 +1,67 @@
+---
+import {
+  articleHref,
+  getArticleConnections,
+  type Article,
+  type ArticleId,
+} from "../content/articles";
+import type { Locale } from "../i18n";
+
+interface Props {
+  articleId: ArticleId;
+  locale?: Locale;
+}
+
+const { articleId, locale = "en" } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const connections = getArticleConnections(articleId, locale);
+
+const groups: Array<{
+  label: string;
+  description: string;
+  articles: Article[];
+}> = [
+  {
+    label: "Read first",
+    description: "Ideas this article expects you to know",
+    articles: connections.prerequisites,
+  },
+  {
+    label: "Build from here",
+    description: "Articles that use this one as a foundation",
+    articles: connections.buildsFromHere,
+  },
+  {
+    label: "Explore nearby",
+    description: "Related ideas that are not required next steps",
+    articles: connections.related,
+  },
+].filter((group) => group.articles.length > 0);
+---
+
+{groups.length > 0 && (
+  <nav class="article-connections" aria-labelledby="article-connections-title">
+    <div class="article-connections-heading">
+      <p class="eyebrow">Keep exploring</p>
+      <h2 id="article-connections-title">Paths through Grove</h2>
+    </div>
+    <div class="article-connection-groups">
+      {groups.map((group) => (
+        <section>
+          <h3>{group.label}</h3>
+          <p>{group.description}</p>
+          <ul>
+            {group.articles.map((article) => (
+              <li>
+                <a href={articleHref(article.id, undefined, base, locale)}>
+                  <span>{article.title}</span>
+                  <small>{article.topic}</small>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  </nav>
+)}

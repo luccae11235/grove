@@ -1,0 +1,357 @@
+---
+articleId: regression-trees-from-scratch
+locale: en
+routeSlug: regression-trees
+href: /learn/regression-trees
+title: How decision trees learn to predict numbers
+navTitle: Predict numbers with trees
+description: "Turn the classification-tree procedure into a regression tree by changing how a split is judged and how each leaf predicts."
+eyebrow: Decision trees · Regression
+area: Supervised learning
+topic: Regression trees
+summary: Keep the same propose–judge–repeat procedure, replace class impurity with squared error, and let each leaf predict its mean.
+status: draft
+readingTime: 20–25 min
+interactiveCount: 3
+staticVisualCount: 3
+difficulty: foundational
+series: tree-based-machine-learning
+access: public
+prerequisites:
+  - decision-trees-from-scratch
+related: []
+implementation: mdx
+learning:
+  priorKnowledge:
+    - Follow a yes-or-no question through a decision tree.
+    - Understand that a classification tree chooses a label at each leaf.
+  likelyMisconception: Regression trees need a completely different training algorithm from classification trees.
+  transferOutcome: Explain how a regression tree chooses a numeric split, makes a leaf prediction, and uses a stopping rule.
+  motivatingQuestion: Can the same small questions that predict a class also predict a number?
+  conceptualBottleneck: The tree procedure stays the same while the score and leaf prediction change together.
+  evidenceOfUnderstanding:
+    - Explain why the mean is the leaf prediction used by squared error.
+    - Compare candidate thresholds using the total squared error of their two groups.
+    - Explain how the same threshold search compares several features.
+    - Predict how a stopping rule changes the size of a regression tree.
+---
+
+import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import RegressionPlayground from "../../../components/RegressionPlayground.astro";
+import RegressionStaticVisual from "../../../components/RegressionStaticVisual.astro";
+
+<header className="page-header lesson-header article-hero">
+  <p className="eyebrow">Decision trees · Regression</p>
+  <h1>How decision trees learn to predict numbers</h1>
+  <p className="lede">
+    A classification tree predicts a label. A regression tree predicts a number.
+    The surprising part is how little of the procedure needs to change.
+  </p>
+  <div className="article-meta" aria-label="Article information">
+    <DifficultyBadge difficulty="foundational" showDescription />
+    <span><strong>2</strong> worked datasets</span>
+    <span><strong>3</strong> interactive playgrounds</span>
+    <span><strong>Draft</strong> · complete</span>
+  </div>
+  <div className="lesson-goal">
+    <strong>By the end</strong>
+    <span>
+      You will be able to explain how a regression tree judges a split, what it
+      predicts inside each leaf, and why we need to tell it when to stop growing.
+    </span>
+  </div>
+</header>
+
+<article className="lesson-body deep-article">
+  <p className="lesson-stage">Recap</p>
+  <h2 id="recap">The procedure we already have</h2>
+
+  In Chapter 1, we invented a procedure that could repeatedly find useful
+  questions and separate data into meaningful regions. Those regions could then
+  predict a class for a new row we had not seen before.
+
+  Creating the tree involved three plain steps:
+
+  1. **Propose a split.**
+  2. **Judge the two groups it creates.**
+  3. **Repeat inside the new groups.**
+
+  This is a powerful idea, but our first tree was deliberately small. Real
+  tree-based algorithms also need to deal with missing data, different kinds of
+  input features, very large datasets, and the danger of growing too much. We
+  will address those problems one at a time in later chapters.
+
+  For now, we will change the kind of prediction the tree makes: instead of a
+  class, we want a number.
+
+  <p className="lesson-stage">A new prediction</p>
+  <h2>From classification to regression</h2>
+
+  In supervised machine learning, two common prediction tasks are **classification**
+  and **regression**.
+
+  Classification chooses from a set of labels. Predicting whether a seed will
+  struggle or thrive from the water and sunlight it receives is classification:
+  the answer is one of two named classes.
+
+  Predicting tomorrow's average temperature is different. The answer could be
+  18.2°C, 18.3°C, or another number in between. This is **regression**.
+
+  A compact way to remember the difference is:
+
+  - **Classification puts a label on a row.**
+  - **Regression puts a number on a row.**
+
+  In the last lesson, we used Gini impurity to judge a split. Gini is built for
+  classes: it measures how mixed the class labels are inside a group. When our
+  target is a continuous number, there are no classes for Gini to count.
+
+  The good news is that we do not need to invent the tree again. We can replace
+  the way we judge a split and keep the same core loop: propose, judge, repeat.
+
+  <p className="lesson-stage">The new score</p>
+  <h2 id="judge">How can we judge a regression split?</h2>
+
+  In a small classification example, we can often see a useful separation. Put
+  two features on two axes, draw one class as circles and another as squares, and
+  a clear dividing line may stand out.
+
+  For regression, let us use a simple example too. Imagine that we want to predict
+  crop yield from the amount of fertilizer used on one hectare.
+
+  - With too little fertilizer, the plants lack nutrients, so yield is low.
+  - With a moderate amount, nutrients are closer to the right level, so yield is high.
+  - With too much, damaged roots or nutrient imbalance can lower the yield again.
+
+  This gives us a hill-shaped pattern, although the two sides do not need to be
+  perfectly symmetrical.
+
+  <figure className="static-figure seed-table-figure regression-table-figure">
+    <div className="seed-table-wrap">
+      <table className="seed-table">
+        <thead>
+          <tr><th>Row</th><th>Fertilizer (kg/hectare)</th><th>Yield (tons/hectare)</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">A</th><td>0</td><td>1.5</td></tr>
+          <tr><th scope="row">B</th><td>20</td><td>2.4</td></tr>
+          <tr><th scope="row">C</th><td>40</td><td>3.8</td></tr>
+          <tr><th scope="row">D</th><td>60</td><td>5.1</td></tr>
+          <tr><th scope="row">E</th><td>80</td><td>5.7</td></tr>
+          <tr><th scope="row">F</th><td>100</td><td>5.4</td></tr>
+          <tr><th scope="row">G</th><td>120</td><td>4.8</td></tr>
+          <tr><th scope="row">H</th><td>140</td><td>4.2</td></tr>
+          <tr><th scope="row">I</th><td>160</td><td>3.7</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figcaption>
+      One input feature, fertilizer, and one numeric target, crop yield. The tree
+      may split only between neighboring fertilizer values.
+    </figcaption>
+  </figure>
+
+  Alice and Bob are trying to build a model from this data. Alice remembers the
+  first article and starts exploring thresholds. Bob takes a shortcut: he uses the
+  average yield as every prediction.
+
+  Bob's prediction is about **4.07 tons per hectare**. It is not absurd. It lands
+  near the middle of the observed yields, so it gives us a useful baseline: before
+  adding a split, can Alice do better than one prediction for everyone?
+
+  To answer that, Bob measures the distance from every observed yield to 4.07. Some
+  distances are positive and others are negative, so adding them directly would
+  cancel them out. He squares each distance first, then adds the squared distances.
+
+  <div className="derivation-card regression-derivation">
+    <span>One prediction for all rows</span><strong>ȳ = 4.07</strong>
+    <span>Total squared error</span><strong>Σ(yᵢ − ȳ)² = 15.64</strong>
+    <small>
+      Divide 15.64 by the nine rows and we get a variance of about 1.738. The
+      total and the variance tell the same story here; the total is nine times larger.
+    </small>
+  </div>
+
+  Because Bob predicts the mean, this average squared distance is also the
+  **variance** of the target values. A smaller variance means the values sit more
+  tightly around their mean, so the mean is a better prediction for that group.
+
+  Alice notices something interesting. If she places a threshold at **50 kg/ha**,
+  halfway between 40 and 60, the rows on each side can use their own mean. The two
+  groups together have a total squared error of 5.515, much less than Bob's 15.64.
+  This gives her the new judging rule:
+
+  <RegressionStaticVisual kind="split-groups" />
+
+  > Try every midpoint threshold and keep the one whose two groups leave the least
+  > total squared error.
+
+  For a candidate split, the calculation is:
+
+  <div className="formula-wide regression-formula">
+    split error = Σ<sub>i∈L</sub>(yᵢ − ȳ<sub>L</sub>)² + Σ<sub>i∈R</sub>(yᵢ − ȳ<sub>R</sub>)²
+  </div>
+
+  The first sum measures the errors around the left group's mean. The second does
+  the same for the right group. We add them because both groups are part of the
+  model. Equivalently, we can multiply each group's variance by its number of rows
+  and add the two results.
+
+  Before running the playground, predict where the lowest point in the split-error
+  chart will appear. The threshold at 50 is already better than no split, but is it
+  the best of all eight choices?
+</article>
+
+<div className="interactive-breakout article-interactive">
+  <RegressionPlayground kind="split" />
+</div>
+
+<article className="lesson-body deep-article">
+  If you run the full sweep, the best first threshold is **30 kg/ha**. The left
+  group predicts 1.95 tons/ha, the right group predicts about 4.67 tons/ha, and
+  their combined squared error is about 4.119.
+
+  This is the same search we used for classification. We still test the midpoints
+  one by one and remember the best result. Only the score has changed: instead of
+  looking for less class mixture, we look for less squared prediction error.
+
+  <p className="lesson-stage">The leaf value</p>
+  <h2 id="prediction">But what is the prediction?</h2>
+
+  We now know how to choose a regression split, but we still need a prediction for
+  each resulting group.
+
+  The fix is small: **take the mean inside each leaf**.
+
+  <RegressionStaticVisual kind="stump-means" />
+
+  If we stop Alice's model after the first split, fertilizer amounts at or below
+  30 kg/ha receive the left mean, 1.95 tons/ha. Larger amounts receive the right
+  mean, about 4.67 tons/ha. These are better estimates for the training data than
+  Bob's single 4.07 because the split lowered the total squared error.
+
+  The mean is not an arbitrary choice. Among all possible single-number predictions
+  for a group, the mean is the one that produces the smallest squared error. Since
+  squared error is the score we chose, the mean and the score belong together.
+
+  <p className="lesson-stage">Tree size</p>
+  <h2 id="stopping">But when should the tree stop?</h2>
+
+  In our first classification example, we stopped once every leaf was pure: all
+  rows in a leaf had the same class.
+
+  Regression has no classes to make pure. With a finite dataset, the tree will not
+  literally grow forever, but it can keep splitting until almost every leaf holds
+  one training row. Then its predictions copy the training data very closely and
+  may work poorly on new data.
+
+  We therefore give the tree a stopping rule. Common choices include:
+
+  1. **Maximum depth:** stop after a fixed number of nested questions.
+  2. **Minimum rows per leaf:** reject splits that create groups that are too small.
+  3. **Small-enough variance:** stop when the target values in a group are already close.
+  4. **Minimum improvement:** split only when the error falls by a meaningful amount.
+
+  These rules all make the same tradeoff. A smaller tree gives rougher, steadier
+  predictions. A larger tree follows the training data more closely. In the next
+  playground, change one stopping rule at a time and predict how many leaf
+  predictions the tree will create.
+</article>
+
+<div className="interactive-breakout article-interactive">
+  <RegressionPlayground kind="growth" />
+</div>
+
+<article className="lesson-body deep-article">
+  <p className="lesson-stage">Beyond one column</p>
+  <h2 id="more-features">More features, same two loops</h2>
+
+  Our fertilizer example used one feature so we could see the new regression
+  score without changing anything else. A real table usually gives the tree more
+  than one possible column to ask about.
+
+  Return to the greenhouse, now with twelve plots. For each plot we know the
+  temperature, the water supplied per week, the sunlight per day, and the crop
+  yield we want to predict. The target is still a number. Only the number of
+  possible questions has grown.
+
+  The search needs two loops:
+
+  1. **For each feature**, choose one column.
+  2. **For each midpoint between distinct values in that column**, measure the split error.
+
+  The tree remembers the candidate with the lowest error across both loops. Then
+  recursion sends each new group through the same search again.
+
+  Temperature has 11 distinct gaps, water has 9, and sunlight has 7, so the
+  root compares **27 candidates** in total. Repeated values do not create an
+  extra threshold because they cannot be separated by a midpoint.
+
+  Before selecting a feature below, make a prediction: which column can create
+  the lowest-error first split? The points keep the same vertical target axis as
+  you switch features. Only the horizontal feature and its threshold change.
+</article>
+
+<div className="interactive-breakout article-interactive">
+  <RegressionPlayground kind="features" />
+</div>
+
+<article className="lesson-body deep-article">
+  At the root, the best temperature question leaves a split error of about
+  **5.129**. The best water question leaves **19.542**, and the best sunlight
+  question leaves **25.302**. Temperature therefore wins the first local search
+  with the threshold **19°C**.
+
+  The process does not stop using the other columns. Inside the warmer group,
+  water at **2.5 L per week** becomes the next local winner. Inside the warm,
+  well-watered group, sunlight at **4.5 hours per day** wins the third search.
+  With a minimum improvement of 0.25, the small final tree uses all three
+  features and leaves four mean predictions.
+
+  This is the same generalization we made for classification. More columns create
+  more candidates, not a new training algorithm. Classification keeps the split
+  with the largest drop in class mixture. Regression keeps the split with the
+  lowest remaining squared error. The two loops and the recursion stay in place.
+</article>
+
+<article className="lesson-body deep-article regression-closing">
+  The entire regression-tree procedure now fits in one compact picture:
+
+  1. For each feature, propose midpoints between its distinct values.
+  2. Judge each threshold by the squared error left around the two group means.
+  3. Keep the lowest-error split across every feature and threshold.
+  4. Repeat inside the new groups until a stopping rule says that a group is a leaf.
+  5. Predict the mean of the training targets inside that leaf.
+
+  <p className="lesson-stage">Keep the smallest useful mental model</p>
+  <div className="mental-model">
+    <h2>A regression tree is the same search, judged by squared error.</h2>
+    <p>
+      <strong>
+        At each node, try every candidate split. Keep the one that leaves the
+        least squared error around the two group means. Then repeat inside the
+        groups that are still spread out, and let each leaf predict its mean.
+      </strong>
+    </p>
+  </div>
+
+  <p>
+    We did not replace the tree algorithm. We changed the question used to judge a
+    split and the value stored in a leaf — and that was the whole point. Squaring
+    the distance to a group's mean turned "these numbers are close together" into
+    a quantity the same loop could minimize, exactly as Gini gain once did for
+    class mixture. The propose–judge–repeat structure did the rest.
+  </p>
+
+  <div className="transfer-check">
+    <h3>You understand the mechanism if you can now…</h3>
+    <ul>
+      <li>explain why the mean is the leaf prediction that squared error rewards;</li>
+      <li>score a candidate threshold from the squared error of its two groups;</li>
+      <li>state the regression training algorithm as two loops plus recursion;</li>
+      <li>name a stopping rule and predict how it changes the tree's size;</li>
+      <li>explain how the same threshold search compares several features;</li>
+      <li>say what changed from the classification tree — and what did not.</li>
+    </ul>
+  </div>
+</article>

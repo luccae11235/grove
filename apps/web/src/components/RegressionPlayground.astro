@@ -1,0 +1,21 @@
+---
+import {
+  MultiFeatureRegressionPlayground,
+  RegressionSplitPlayground,
+  RegressionTreeGrowthPlayground,
+} from "@grove/tree-visuals";
+
+interface Props {
+  kind: "split" | "growth" | "features";
+}
+
+const { kind } = Astro.props;
+---
+
+{kind === "split" ? (
+  <RegressionSplitPlayground client:load />
+) : kind === "features" ? (
+  <MultiFeatureRegressionPlayground client:load />
+) : (
+  <RegressionTreeGrowthPlayground client:load />
+)}

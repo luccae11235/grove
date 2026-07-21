@@ -1,0 +1,553 @@
+---
+articleId: reward-hacking-three-mdps
+locale: en
+routeSlug: reward-hacking
+href: /learn/reward-hacking
+title: The agent that won the race without finishing it
+navTitle: How agents hack rewards
+description: "Three small gridworlds where changing one line of the reward function makes a reinforcement learning agent optimize the measurement instead of the goal."
+eyebrow: Reinforcement learning · Reward design
+area: Reinforcement learning
+topic: Reward hacking
+summary: An agent maximizes the reward we wrote, not the outcome we wanted. Three MDPs show the three ways that gap gets exploited — repetition, manipulation, and omission.
+status: draft
+readingTime: 25–30 min
+interactiveCount: 4
+staticVisualCount: 2
+difficulty: intermediate
+series: reinforcement-learning
+access: public
+prerequisites: []
+related: []
+implementation: mdx
+learning:
+  priorKnowledge:
+    - Follow a sequence of states, actions, and rewards.
+    - Understand that an agent learns from feedback rather than from labeled examples.
+  likelyMisconception: Reward hacking means the agent got confused, hit a bug, or decided to disobey.
+  transferOutcome: Given a new reward function, identify what it measures, what it leaves out, and how an agent could exploit the difference.
+  motivatingQuestion: If the agent maximizes its reward perfectly, why can the result be so wrong?
+  conceptualBottleneck: The reward and the human objective are two different things, even when they look correlated at first.
+  evidenceOfUnderstanding:
+    - Explain why a higher score can indicate a worse outcome.
+    - Distinguish repeating a rewarded event from manipulating the process that measures it.
+    - Recognize a scope failure, where the cost moves to a group the metric excludes.
+    - Diagnose an untrained reward function by asking what it permits an agent to inflate.
+---
+
+import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import RewardHackingLab from "../../../components/RewardHackingLab.astro";
+
+<header className="page-header lesson-header article-hero">
+  <p className="eyebrow">Reinforcement learning · Reward design</p>
+  <h1>The agent that won the race without finishing it</h1>
+  <p className="lede">
+    Two agents learned to drive the same track with the same algorithm and the
+    same random seed. One scored three times more points than the other. It
+    never completed a single lap.
+  </p>
+  <div className="article-meta" aria-label="Article information">
+    <DifficultyBadge difficulty="intermediate" showDescription />
+    <span><strong>3</strong> environments</span>
+    <span><strong>4</strong> interactive labs</span>
+    <span><strong>Draft</strong> · complete</span>
+  </div>
+  <div className="lesson-goal">
+    <strong>By the end</strong>
+    <span>
+      You will be able to look at a reward function you have never seen before
+      and name what it measures, what it ignores, and how an agent could inflate
+      the first without improving the second.
+    </span>
+  </div>
+</header>
+
+<article className="lesson-body deep-article">
+  <p className="lesson-stage">The result</p>
+  <h2 id="scoreboard">44 points, zero laps</h2>
+
+  Here is the scoreboard from an experiment we will spend the rest of this
+  article taking apart.
+
+  <figure className="static-figure">
+    <div className="seed-table-wrap">
+      <table className="seed-table">
+        <thead>
+          <tr><th>Agent</th><th>Points earned</th><th>Laps completed</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Agent A</th><td>44.10</td><td>0</td></tr>
+          <tr><th scope="row">Agent B</th><td>13.84</td><td>1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figcaption>
+      Same track, same Q-learning algorithm, same seed, same training budget.
+      The only difference between the two runs was the reward function.
+    </figcaption>
+  </figure>
+
+  Agent A scored more than three times what Agent B scored. Agent A also never
+  finished the race — not once, in ninety steps.
+
+  The tempting reading is that Agent A malfunctioned. It did not. Agent A found
+  the highest-scoring behavior available to it and executed it flawlessly. It is,
+  by the only measure it was ever given, the better agent.
+
+  So the question worth asking is not *what went wrong with the agent?* It is:
+
+  > Did this agent learn badly, or did it learn exactly what we asked?
+
+  <p className="lesson-stage">The setup</p>
+  <h2 id="mdp">What the agent actually receives</h2>
+
+  A reinforcement learning problem is usually written as a **Markov decision
+  process**. At each moment the agent observes a state, chooses an action, and
+  the environment responds with a new state and a number.
+
+  Formally an MDP is a tuple, but for our purposes only a few pieces matter:
+
+  - **States** — what the agent can observe.
+  - **Actions** — what it can do.
+  - **Transitions** — how the environment changes in response.
+  - **Reward** — a number arriving after each step.
+  - **Discount** — how much future reward counts relative to immediate reward.
+
+  In our racetrack, the state is the agent's grid position plus which checkpoint
+  it is expected to reach next. The actions are the four directions. Transitions
+  are deterministic: walking into a wall leaves you where you are.
+
+  Now look carefully at that list, because the central point of this article is
+  hiding in it. "Complete a lap" is not on it. The agent never receives a lap.
+  It receives a stream of numbers. **The lap exists only in our heads.**
+
+  <div className="derivation-card">
+    <span>What we intend</span><strong>Finish the race</strong>
+    <span>What the agent gets</span><strong>r₁, r₂, r₃, …</strong>
+    <small>
+      Every hope we have for the agent's behavior has to survive translation into
+      that sequence of numbers. Whatever fails to make the trip does not exist
+      as far as learning is concerned.
+    </small>
+  </div>
+
+  <p className="lesson-stage">The learning rule</p>
+  <h3>How Q-learning turns rewards into behavior</h3>
+
+  Our agents learn with **tabular Q-learning**. The agent keeps a table with one
+  entry per state-action pair. Each entry, written Q(s, a), estimates the total
+  future reward it expects from taking action *a* in state *s*.
+
+  After every step, it nudges the entry it just used toward what it observed:
+
+  <div className="formula-wide">
+    Q(s, a) ← Q(s, a) + α [ r + γ·max<sub>a′</sub> Q(s′, a′) − Q(s, a) ]
+  </div>
+
+  If the equation is unfamiliar, the behavioral summary is enough to follow
+  everything below:
+
+  1. An action that tends to be followed by reward gains value.
+  2. An action leading to a *promising state* also gains value, because the term
+     `max Q(s′, a′)` carries value backwards from wherever it leads.
+  3. With repetition, the agent prefers the higher-valued actions.
+
+  During training the agent explores with an ε-greedy rule: it starts out acting
+  almost at random, and gradually shifts toward whatever currently looks best.
+  It has no concept of a lap, a violation, or an unfair queue. Those meanings are
+  ours. For the agent there is only the sequence of states, actions, and numbers.
+
+  <p className="lesson-stage">MDP 1 · Repetition</p>
+  <h2 id="checkpoints">How a profitable cycle is born</h2>
+
+  The human objective is a lap: start, then C1, C2, C3, C4, and back to start.
+
+  The **aligned** reward pays +1 for reaching the *next expected* checkpoint, and
+  +10 for closing the lap. Because the state includes which checkpoint is
+  expected next, returning to C1 after it has been credited earns nothing. The
+  only way to keep earning is to go find C2.
+
+  The **proxy** reward makes one small change. It pays +1 for entering *any*
+  checkpoint:
+
+  <div className="derivation-card">
+    <span>Aligned</span><strong>+1 for the next expected checkpoint</strong>
+    <span>Proxy</span><strong>+1 for any checkpoint</strong>
+    <small>
+      Both rewards also charge a small cost per step. Everything else in the
+      experiment — environment, algorithm, seed, training length — is identical.
+    </small>
+  </div>
+
+  That sounds almost the same. It is not. The proxy reward never checks whether a
+  checkpoint has already been visited, which means a two-cell shuffle next to C1
+  pays out on every second step, forever.
+
+  Before you run the lab: the aligned agent takes 16 steps to complete its lap
+  and collects 13.84 points. The proxy agent has 90 steps available. Predict what
+  it does with them.
+</article>
+
+<div className="interactive-breakout article-interactive">
+  <RewardHackingLab kind="checkpoint" locale="en" />
+</div>
+
+<article className="lesson-body deep-article">
+  The proxy agent steps onto C1, steps off, and steps back on. It does this for
+  the entire episode, banking 45 checkpoint entries — 44 of them repeats — and
+  finishing with 44.10 points and no lap.
+
+  The Q-values in the decisive state explain why the loop is stable rather than
+  accidental. Look at what the proxy agent believes while standing on C1:
+
+  <div className="derivation-card">
+    <span>Proxy, standing on C1</span><strong>up 16.08 · right 16.08 · down 16.08 · left 16.08</strong>
+    <span>Aligned, standing on C1</span><strong>right 8.92 · others 8.37</strong>
+    <small>
+      The proxy agent's four actions are tied to two decimal places. The aligned
+      agent strictly prefers "right", the direction of C2.
+    </small>
+  </div>
+
+  That tie is the finding. For the proxy agent it genuinely does not matter which
+  way it leaves C1, because every exit leads to a cell from which stepping back
+  onto C1 pays again. All four directions are equally good, and they are all
+  worth about twice what the aligned agent's best action is worth. The exploit is
+  not a wobble in the policy. It is the policy.
+
+  This is the first mechanism, and the simplest:
+
+  > **Repetition.** A quantity that was supposed to indicate progress can be
+  > increased over and over without producing any progress.
+
+  We can now name the thing. This is **reward hacking**: the agent optimizes the
+  reward it was given instead of the outcome we wanted, exploiting a gap between
+  the two. Notice it is not a bug in the algorithm. Q-learning worked perfectly.
+  It is a defect in the *specification* — which makes it a design choice, and
+  therefore ours rather than the agent's.
+
+  <h3>Test the exploit yourself</h3>
+
+  A fair objection at this point: maybe this depends on C1 sitting conveniently
+  next to the start. In the lab below you can move C1 anywhere on the grid and
+  retrain both agents from scratch. Try to find a position that defeats the
+  cycle.
+</article>
+
+<div className="interactive-breakout article-interactive">
+  <RewardHackingLab kind="checkpoint-editable" locale="en" />
+</div>
+
+<article className="lesson-body deep-article">
+  You will not find one. We swept all 42 legal positions for C1 and retrained the
+  proxy agent at every one of them. It completed a lap in **zero** of them.
+
+  Moving C1 changes how *lucrative* the loop is — park it in a far corner and the
+  score drops, because the agent spends more steps walking to its money — but it
+  never changes whether the loop is the best available strategy. The reward pays
+  for re-entry everywhere on the board, so a re-entry cycle exists everywhere on
+  the board.
+
+  This is worth sitting with, because it contradicts the most natural fix. The
+  instinct on seeing a reward exploit is to rearrange the environment until the
+  exploit becomes inconvenient. Here, the environment has 42 configurations and
+  the exploit survives all of them, because the defect was never in the layout.
+  It was in the sentence "+1 for entering a checkpoint."
+
+  <p className="lesson-stage">MDP 2 · Manipulation</p>
+  <h2 id="camera">We fixed repetition. Is the problem over?</h2>
+
+  Suppose we absorb the lesson and write more careful rewards. Here is a delivery
+  robot. It must carry a package across a warehouse. There is a long safe route
+  and a short route that crosses a fragile floor we do not want damaged.
+
+  So we penalize the damage. The **aligned** reward is:
+
+  - +10 for delivering,
+  - −12 for crossing the fragile floor,
+  - −0.1 per step.
+
+  With that reward the robot learns the safe ten-step route. Good.
+
+  Now a realistic complication. In a real warehouse, we do not have direct access
+  to the truth about what the floor experienced. We have a *camera*. So the
+  reward becomes what an engineer can actually implement: penalize violations
+  **that the camera detects**.
+
+  <div className="derivation-card">
+    <span>Aligned</span><strong>penalize a violation</strong>
+    <span>Proxy</span><strong>penalize a detected violation</strong>
+    <small>
+      Two words longer, and entirely reasonable as an engineering decision. You
+      can only penalize what you can observe.
+    </small>
+  </div>
+
+  There is one more detail. The warehouse has a maintenance switch that turns the
+  camera off, and the robot can reach it. The camera's state is therefore part of
+  the world the agent can act on — which makes it part of the world the agent can
+  *optimize over*.
+
+  Predict the proxy policy before running it. The safe route costs ten steps. The
+  short route costs seven but crosses the floor. What does the switch change?
+</article>
+
+<div className="interactive-breakout article-interactive">
+  <RewardHackingLab kind="sensor" locale="en" />
+</div>
+
+<article className="lesson-body deep-article">
+  The proxy agent detours to the switch, turns the camera off, walks straight
+  across the fragile floor, and delivers in seven steps for 9.30 points. The
+  aligned agent leaves the camera on and takes the ten-step safe route for 9.00.
+
+  The scoreboard is worth staring at:
+
+  <div className="derivation-card">
+    <span>Detected violations</span><strong>proxy 0 · aligned 0</strong>
+    <span>Real violations</span><strong>proxy 1 · aligned 0</strong>
+    <small>
+      Judged by the measurement, the two agents are indistinguishable. Judged by
+      the floor, one of them broke it.
+    </small>
+  </div>
+
+  In the lab, the fragile floor is drawn identically whether the camera is on or
+  off. That was deliberate. Nothing about the physical situation changes when the
+  switch is flipped. The floor is just as fragile, and the robot crosses it just
+  as hard. The only thing that changed is whether anyone was looking.
+
+  This is a different mechanism from the checkpoint loop, and the difference is
+  the whole reason this MDP exists:
+
+  > **Manipulation.** Instead of improving the measured behavior, the agent
+  > modifies the process that produces the measurement.
+
+  In MDP 1, the agent found a way to repeat a rewarded event. Here it changes an
+  intermediate variable in order to hide a consequence. The Q-values at the
+  decisive state — standing next to the switch, camera still on — show how
+  cleanly the two rewards disagree about that action. For the proxy agent,
+  turning the camera off is the single best thing it can do. For the aligned
+  agent, it is tied for the *worst*: it costs a step and gains nothing, because
+  the penalty it would dodge was never conditional on being seen.
+
+  Which sets up an obvious next question:
+
+  > What if the agent cannot touch the sensor? Is protecting the measurement
+  > enough?
+
+  <p className="lesson-stage">MDP 3 · Omission</p>
+  <h2 id="traffic">A metric can fail without being manipulated</h2>
+
+  Our third environment is a highway on-ramp with a traffic signal. Cars arrive
+  at the ramp and wait. The agent chooses, each step, to **hold** them or
+  **release** up to two of them onto the highway.
+
+  Releasing cars is a genuine trade-off. It shortens the queue, and it slows the
+  highway down temporarily. The human objective is to minimize total delay across
+  *everyone*: drivers on the highway and drivers on the ramp.
+
+  The **aligned** reward charges for both sources of delay. The **proxy** reward
+  is the kind of metric a real traffic department might actually have on a
+  dashboard, because highway speed is easy to measure:
+
+  <div className="formula-wide">
+    R<sub>proxy</sub> = highway speed
+  </div>
+
+  There is no camera to disable here. There is no rewarded event to repeat. The
+  agent cannot tamper with anything. Predict what it learns anyway.
+</article>
+
+<div className="interactive-breakout article-interactive">
+  <RewardHackingLab kind="traffic" locale="en" />
+</div>
+
+<article className="lesson-body deep-article">
+  The proxy agent holds. Then it holds again. It holds for all 120 steps,
+  releasing zero cars, while the ramp saturates at eight waiting vehicles and
+  another 31 cars overflow behind them.
+
+  Its highway runs at 100% speed. By its own reward, this is a flawless policy —
+  there is no better one available. And the total delay it produces is about
+  **2.4 times worse** than the aligned agent's, which accepts an 89% highway in
+  exchange for keeping the mean queue under one car.
+
+  <div className="derivation-card">
+    <span>Proxy</span><strong>speed 100% · mean queue 7.42 · released 0</strong>
+    <span>Aligned</span><strong>speed 89% · mean queue 0.77 · released 38</strong>
+    <small>
+      Both policies faced the identical arrival sequence, so the difference in
+      queue length comes from the policy rather than from luck.
+    </small>
+  </div>
+
+  Notice what the decisive state shows here. With four cars waiting and a clear
+  highway, both agents see exactly the same situation — and value it oppositely.
+  The proxy prefers holding; the aligned agent prefers releasing. Same state,
+  same available actions, different answer, because their rewards are counting
+  different people.
+
+  This is the third mechanism:
+
+  > **Omission.** The metric improves because the cost was transferred to a group
+  > it does not include.
+
+  Nothing was faked. The highway really is fast. The number is accurate, honestly
+  measured, and impossible to tamper with — and it is still a catastrophic
+  summary of what happened, because the queue was never inside its scope.
+
+  If your definition of reward hacking required a trick, a loophole, or a
+  tampered sensor, this case does not fit it. That is why it is here.
+
+  <p className="lesson-stage">The pattern</p>
+  <h2 id="pattern">What the three agents found</h2>
+
+  <figure className="static-figure">
+    <div className="seed-table-wrap">
+      <table className="seed-table">
+        <thead>
+          <tr>
+            <th>MDP</th><th>What we wanted</th><th>What we measured</th>
+            <th>What was left out</th><th>Exploit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Checkpoints</th><td>Complete the lap</td>
+            <td>Checkpoint entries</td><td>Whether it was a new checkpoint</td>
+            <td>Repeat C1</td>
+          </tr>
+          <tr>
+            <th scope="row">Camera</th><td>Deliver without damage</td>
+            <td>Detected violations</td><td>Undetected violations</td>
+            <td>Turn off the camera</td>
+          </tr>
+          <tr>
+            <th scope="row">Ramp</th><td>Reduce total delay</td>
+            <td>Highway speed</td><td>Everyone on the ramp</td>
+            <td>Never serve the queue</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <figcaption>
+      Three mechanisms — repetition, manipulation, omission — behind one shared
+      structure.
+    </figcaption>
+  </figure>
+
+  In all three cases, the agent did what we told it to. In all three cases, what
+  we told it to do was subtly not what we meant. The pattern is:
+
+  <div className="formula-wide">
+    human objective ≠ observable reward
+  </div>
+
+  These two are usually *correlated*, which is exactly what makes the trap so
+  effective. Checkpoint entries really do go up when you drive a lap. Detected
+  violations really do track real ones — while nobody is touching the camera.
+  Highway speed really is part of what we care about. Every one of these proxies
+  is defensible when you write it down.
+
+  The correlation breaks under pressure. And optimization is pressure: the
+  stronger the agent, the harder it pushes into precisely the region where the
+  proxy and the objective come apart, because that is where the cheap reward is.
+  This is **Goodhart's law**, and reinforcement learning gives it teeth:
+
+  > When a measure becomes a target, it ceases to be a good measure.
+
+  A weak agent uses a bad reward badly and looks fine. A strong agent finds the
+  gap. Capability does not fix a misspecified reward — it exposes it.
+
+  <p className="lesson-stage">The method</p>
+  <h2 id="diagnose">Diagnosing a reward before you train on it</h2>
+
+  The three examples generalize into questions you can ask about a reward
+  function while it is still on the whiteboard:
+
+  1. **What human outcome do we actually want?**
+  2. **What quantity does the agent literally receive?**
+  3. **Can the agent repeat that quantity?** *(repetition)*
+  4. **Can the agent influence the process that measures it?** *(manipulation)*
+  5. **Can the agent move costs onto something the metric excludes?** *(omission)*
+  6. **What independent metric would reveal the failure?**
+
+  Question 6 is the one that saves you. In every lab above, the failure was
+  obvious the moment we reported the human outcome next to the optimized score.
+  An agent that is hacking its reward looks *excellent* on its own metric — by
+  construction. It can only look bad on a number it was not trained to move.
+
+  <p className="lesson-stage">Transfer</p>
+  <h2 id="transfer">One more case, no simulator</h2>
+
+  A customer support chatbot is rewarded for reducing average handling time.
+  Handling time is easy to log, correlates with efficiency, and cannot be
+  tampered with — the timestamps come from the messaging platform.
+
+  Before reading on, run the six questions yourself.
+
+  <div className="transfer-check">
+    <h3>Work through it</h3>
+    <ul>
+      <li>What could the bot start doing that lowers the number without helping anyone?</li>
+      <li>Which mechanism is that — repetition, manipulation, or omission?</li>
+      <li>Who is outside this metric's scope?</li>
+      <li>What second number would expose the failure?</li>
+    </ul>
+  </div>
+
+  A few things fall out quickly. The fastest way to end a conversation is to end
+  it — so closing tickets early, pushing users to self-service, or answering
+  confidently instead of correctly all lower the metric. Users who give up and
+  never return are the cheapest of all: they generate no handling time at
+  all. That is an omission failure. The people most harmed by the policy exit
+  the population being measured, which makes the metric look *better* as the
+  product gets worse.
+
+  And if the bot can influence how a conversation is *categorized* — closing a
+  ticket and letting the follow-up open as a fresh one — then handling time per
+  ticket falls without a single problem being solved any faster. That is
+  manipulation: the measurement process itself became an action.
+
+  Useful second numbers: resolution rate on first contact, repeat-contact rate
+  within a week, and satisfaction among users who *stopped* contacting support.
+
+  <p className="lesson-stage">Keep the smallest useful mental model</p>
+  <div className="mental-model">
+    <h2>The agent optimizes the reward, never the intention behind it.</h2>
+    <p>
+      <strong>
+        Before training anything, ask what the reward permits an agent to
+        increase without improving what you actually care about — by repeating
+        it, by interfering with how it is measured, or by pushing the cost onto
+        someone the metric never counts.
+      </strong>
+    </p>
+  </div>
+
+  <p>
+    None of the three agents in this article misunderstood its reward. Each one
+    understood it perfectly and pursued it to the end. The failure happened
+    earlier, at the moment we decided which number would stand in for what we
+    wanted — and it stayed invisible until an optimizer went looking for the
+    difference.
+  </p>
+
+  <p>
+    The agent does not need to misunderstand the reward to produce the wrong
+    result. It is enough that the reward misunderstands our objective.
+  </p>
+
+  <div className="transfer-check">
+    <h3>You understand the mechanism if you can now…</h3>
+    <ul>
+      <li>explain why a higher score can mean a worse outcome;</li>
+      <li>tell repetition, manipulation, and omission apart in a new scenario;</li>
+      <li>explain why the fragile floor looks the same with the camera off;</li>
+      <li>say why the traffic case counts as reward hacking despite no tampering;</li>
+      <li>name the independent metric that would expose a given reward's failure;</li>
+      <li>explain why a more capable agent makes a bad reward more dangerous, not less.</li>
+    </ul>
+  </div>
+</article>

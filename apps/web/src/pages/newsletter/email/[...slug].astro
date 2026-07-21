@@ -1,0 +1,20 @@
+---
+import { render } from "astro:content";
+import { getNewsletterIssueEntry, getNewsletterIssues, type NewsletterIssue } from "../../../content/issues";
+import NewsletterEmailLayout from "../../../layouts/NewsletterEmailLayout.astro";
+
+export function getStaticPaths() {
+  return getNewsletterIssues("en").map((issue) => ({
+    params: { slug: issue.routeSlug },
+    props: { issue },
+  }));
+}
+
+const { issue } = Astro.props as { issue: NewsletterIssue };
+const entry = getNewsletterIssueEntry(issue);
+const { Content } = await render(entry);
+---
+
+<NewsletterEmailLayout issue={issue}>
+  <Content />
+</NewsletterEmailLayout>

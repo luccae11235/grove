@@ -4,12 +4,25 @@
   "private": true,
   "packageManager": "pnpm@11.7.0",
   "scripts": {
-    "dev": "pnpm --filter @grove/web dev",
-    "build": "pnpm --filter @grove/web build",
+    "generate:lessons": "python3 scripts/build_lesson_data.py",
+    "dev": "pnpm generate:lessons && pnpm --filter @grove/web dev",
+    "build": "pnpm generate:lessons && pnpm --filter @grove/web build",
     "preview": "pnpm --filter @grove/web preview",
-    "test": "pnpm -r --if-present test",
+    "dev:newsletter-api": "pnpm --filter @grove/newsletter-api dev",
+    "newsletter:new-issue": "node scripts/publication/new-issue.mjs",
+    "newsletter:preview": "SHOW_DRAFTS=true pnpm build",
+    "newsletter:validate": "node scripts/publication/validate-newsletter.mjs",
+    "newsletter:prepare": "pnpm newsletter:preview && pnpm newsletter:validate",
+    "newsletter:migrate": "pnpm --filter @grove/newsletter-api migrate",
+    "newsletter:broadcast": "pnpm --filter @grove/newsletter-api broadcast",
+    "newsletter:report": "pnpm --filter @grove/newsletter-api report",
+    "newsletter:retention": "pnpm --filter @grove/newsletter-api retention",
+    "projects:validate": "node scripts/projects/validate-projects.mjs",
+    "projects:export": "node scripts/projects/export-project.mjs",
+    "projects:publish": "node scripts/projects/publish-project.mjs",
+    "test:python": "PYTHONPATH=packages/tree-core python3 -m unittest discover -s packages/tree-core/tests -v",
+    "test": "pnpm test:python && pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
-    "check": "pnpm typecheck && pnpm test && pnpm build"
+    "check": "pnpm typecheck && pnpm test && pnpm projects:validate && pnpm build && pnpm newsletter:prepare"
   }
 }
-

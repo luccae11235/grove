@@ -1,57 +1,141 @@
 ---
 import Brand from "../components/Brand.astro";
-import ChapterNav from "../components/ChapterNav.astro";
-import { siteCopy } from "../i18n/en";
+import ArticleChapters from "../components/ArticleChapters.astro";
+import LanguageSwitcher from "../components/LanguageSwitcher.astro";
+import { getSiteCopy, type Locale } from "../i18n";
 import "../styles/global.css";
 
 interface Props {
   title: string;
   description: string;
   wide?: boolean;
+  locale?: Locale;
+  translations?: Partial<Record<Locale, string>>;
+  canonicalPath?: string;
+  image?: string;
+  pageType?: "website" | "article";
+  publishedAt?: Date;
+  updatedAt?: Date;
+  noindex?: boolean;
 }
 
-const { title, description, wide = false } = Astro.props;
+const {
+  title,
+  description,
+  wide = false,
+  locale = "en",
+  translations = {},
+  canonicalPath,
+  image = "/og/grove-card.png",
+  pageType = "website",
+  publishedAt,
+  updatedAt,
+  noindex = false,
+} = Astro.props;
+const siteCopy = getSiteCopy(locale);
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const pathname = Astro.url.pathname;
 const activePath = base && pathname.startsWith(base)
   ? pathname.slice(base.length) || "/"
   : pathname;
 const homeHref = `${base}/` || "/";
+const articlesHref = pageType === "website" && activePath === "/" ? "#articles" : `${homeHref}#articles`;
+const availableTranslations = { [locale]: activePath, ...translations };
+const documentTitle = title === siteCopy.brand ? title : `${title} · ${siteCopy.brand}`;
+const site = Astro.site ?? Astro.url;
+const withBase = (path: string) => `${base}${path.startsWith("/") ? path : `/${path}`}`;
+const canonicalUrl = new URL(withBase(canonicalPath ?? activePath), site);
+const socialImageUrl = new URL(withBase(image), site);
+const rssPath = locale === "pt-BR" ? "/pt-br/rss.xml" : "/rss.xml";
+const ogLocale = locale === "pt-BR" ? "pt_BR" : "en_US";
+const alternateOgLocales = Object.keys(availableTranslations)
+  .filter((language) => language !== locale)
+  .map((language) => language === "pt-BR" ? "pt_BR" : "en_US");
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={locale}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#f5f3ec" />
-    <title>{title === siteCopy.brand ? title : `${title} · ${siteCopy.brand}`}</title>
+    <meta name="theme-color" content="#ffffff" />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="alternate" type="application/rss+xml" title={`${siteCopy.brand} RSS`} href={withBase(rssPath)} />
+    {Object.entries(availableTranslations).map(([language, path]) => (
+      <link rel="alternate" hreflang={language} href={new URL(withBase(path), site)} />
+    ))}
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href={new URL(withBase(availableTranslations.en ?? activePath), site)}
+    />
+    <meta property="og:site_name" content={siteCopy.brand} />
+    <meta property="og:type" content={pageType} />
+    <meta property="og:title" content={documentTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:locale" content={ogLocale} />
+    {alternateOgLocales.map((alternateLocale) => (
+      <meta property="og:locale:alternate" content={alternateLocale} />
+    ))}
+    <meta property="og:image" content={socialImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Grove — Ideas, made interactive." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={documentTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImageUrl} />
+    {pageType === "article" && publishedAt && (
+      <meta property="article:published_time" content={publishedAt.toISOString()} />
+    )}
+    {pageType === "article" && updatedAt && (
+      <meta property="article:modified_time" content={updatedAt.toISOString()} />
+    )}
+    <title>{documentTitle}</title>
+    <script is:inline define:vars={{ locale, translations: availableTranslations, base }}>
+      try {
+        const preferred = window.localStorage.getItem("grove-language");
+        const preferredPath = translations[preferred];
+        if (preferred && preferred !== locale && preferredPath) {
+          window.location.replace(`${base}${preferredPath}`);
+        }
+      } catch {}
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">{siteCopy.skipToContent}</a>
 
-    <aside class="sidebar">
-      <div class="sidebar-inner">
-        <Brand href={homeHref} />
-        <ChapterNav activePath={activePath} base={base} />
-        <p class="sidebar-note">Open source. Built from first principles.</p>
-      </div>
-    </aside>
-
-    <header class="mobile-header">
-      <Brand href={homeHref} />
-      <details class="mobile-menu">
-        <summary>{siteCopy.browseChapters}</summary>
-        <div class="mobile-menu-panel">
-          <ChapterNav activePath={activePath} base={base} />
+    <header class="site-header">
+      <div class="site-header-inner">
+        <Brand href={homeHref} locale={locale} />
+        <nav class="header-nav" aria-label={siteCopy.navigation.primary}>
+          <a href={articlesHref}>{locale === "pt-BR" ? "Artigos" : "Articles"}</a>
+          <a href={`${base}/newsletter`}>{siteCopy.navigation.newsletter}</a>
+          <a href={`${base}/about`}>{siteCopy.navigation.about}</a>
+        </nav>
+        <div class="header-actions">
+          <LanguageSwitcher locale={locale} translations={availableTranslations} base={base} />
+          <details class="header-menu">
+            <summary aria-label={siteCopy.browseArticles}>
+              <span></span><span></span><span></span>
+            </summary>
+            <nav class="header-menu-panel" aria-label={siteCopy.navigation.primary}>
+              <a href={articlesHref}>{locale === "pt-BR" ? "Artigos" : "Articles"}</a>
+              <a href={`${base}/newsletter`}>{siteCopy.navigation.newsletter}</a>
+              <a href={`${base}/about`}>{siteCopy.navigation.about}</a>
+              <LanguageSwitcher locale={locale} translations={availableTranslations} base={base} />
+            </nav>
+          </details>
         </div>
-      </details>
+      </div>
     </header>
 
     <main id="main-content" class:list={["main-content", { wide }]}>
       <slot />
     </main>
+    {pageType === "article" && <ArticleChapters locale={locale} />}
   </body>
 </html>
-

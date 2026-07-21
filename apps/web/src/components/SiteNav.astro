@@ -1,0 +1,84 @@
+---
+import { getArticleAreas, getDifficultyLevel } from "../content/articles";
+import { getSiteCopy, type Locale } from "../i18n";
+
+interface Props {
+  activePath: string;
+  base: string;
+  locale?: Locale;
+}
+
+const { activePath, base, locale = "en" } = Astro.props;
+const copy = getSiteCopy(locale);
+const withBase = (path: string) => `${base}${path}` || "/";
+const articleAreas = getArticleAreas(locale);
+
+const utilitySections = [
+  {
+    label: copy.navigation.explore,
+    items: [
+      { label: copy.navigation.home, href: "/" },
+      { label: copy.navigation.newsletter, href: "/newsletter" },
+    ],
+  },
+  {
+    label: copy.navigation.grove,
+    items: [
+      { label: copy.navigation.about, href: "/about" },
+      {
+        label: copy.navigation.privacy,
+        href: locale === "pt-BR" ? "/pt-br/privacy" : "/privacy",
+      },
+    ],
+  },
+];
+---
+
+<nav class="site-nav" aria-label={copy.navigation.primary}>
+  <section class="nav-section">
+    <h2>{utilitySections[0].label}</h2>
+    <ul>
+      {utilitySections[0].items.map((item) => (
+        <li>
+          <a href={withBase(item.href)} aria-current={activePath === item.href ? "page" : undefined}>
+            <span>{item.label}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  {articleAreas.map((area) => (
+    <section class="nav-section">
+      <h2>{area.label}</h2>
+      <ul>
+        {area.articles.map((article) => (
+          <li>
+            <a
+              href={withBase(article.href)}
+              aria-current={activePath === article.href ? "page" : undefined}
+            >
+              <span class="nav-article">
+                <span>{article.navTitle}</span>
+                <small>{article.topic} · {getDifficultyLevel(article.difficulty, locale).label}</small>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+
+  <section class="nav-section nav-section-utility">
+    <h2>{utilitySections[1].label}</h2>
+    <ul>
+      {utilitySections[1].items.map((item) => (
+        <li>
+          <a href={withBase(item.href)} aria-current={activePath === item.href ? "page" : undefined}>
+            <span>{item.label}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</nav>

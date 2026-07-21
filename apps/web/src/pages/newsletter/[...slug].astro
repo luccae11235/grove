@@ -1,0 +1,35 @@
+---
+import { render } from "astro:content";
+import { getNewsletterIssueEntry, getNewsletterIssues, type NewsletterIssue } from "../../content/issues";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+export function getStaticPaths() {
+  return getNewsletterIssues("en").map((issue) => ({
+    params: { slug: issue.href.replace(/^\/newsletter\//, "") },
+    props: { issue },
+  }));
+}
+
+const { issue } = Astro.props as { issue: NewsletterIssue };
+const entry = getNewsletterIssueEntry(issue);
+const { Content } = await render(entry);
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<BaseLayout
+  title={issue.subject}
+  description={issue.summary}
+  pageType="article"
+  publishedAt={issue.publishedAt}
+  noindex={issue.status !== "published"}
+>
+  <header class="page-header newsletter-issue-header">
+    <p class="eyebrow">Grove · Issue {String(issue.issueNumber).padStart(3, "0")}</p>
+    <h1>{issue.subject}</h1>
+    <p class="lede">{issue.preheader}</p>
+  </header>
+  <article class="lesson-body newsletter-issue-body">
+    <Content />
+    <p class="newsletter-issue-cta"><a class="button-link" href={`${base}${issue.cta.href}`}>{issue.cta.label} →</a></p>
+  </article>
+</BaseLayout>

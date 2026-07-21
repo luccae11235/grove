@@ -1,0 +1,99 @@
+name: Controlled newsletter delivery
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: Issue id, for example 2026-001
+        required: true
+        type: string
+      action:
+        description: Validate, create a Resend draft, send now, or schedule
+        required: true
+        default: validate
+        type: choice
+        options: [validate, draft, send, schedule]
+      schedule_at:
+        description: ISO timestamp; required only for schedule
+        required: false
+        type: string
+      confirmation:
+        description: Enter SEND:<issue-id> for send or schedule
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  delivery:
+    environment: newsletter-production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build delivery artifacts
+        env:
+          SHOW_DRAFTS: "true"
+          SITE_URL: ${{ vars.WEB_URL }}
+          PUBLIC_PRIVACY_CONTACT_EMAIL: ${{ vars.PUBLIC_PRIVACY_CONTACT_EMAIL }}
+          NEWSLETTER_POSTAL_ADDRESS: ${{ secrets.NEWSLETTER_POSTAL_ADDRESS }}
+        run: pnpm build
+
+      - name: Validate delivery artifacts
+        run: pnpm newsletter:validate
+
+      - name: Build newsletter service
+        if: inputs.action != 'validate'
+        run: pnpm --filter @grove/newsletter-api build
+
+      - name: Apply database migrations
+        if: inputs.action != 'validate'
+        env: &newsletter-runtime
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_WEBHOOK_SECRET: ${{ secrets.RESEND_WEBHOOK_SECRET }}
+          RESEND_SEGMENT_ID: ${{ secrets.RESEND_SEGMENT_ID }}
+          RESEND_TOPIC_ID: ${{ secrets.RESEND_TOPIC_ID }}
+          NEWSLETTER_FROM: ${{ vars.NEWSLETTER_FROM }}
+          NEWSLETTER_REPLY_TO: ${{ vars.NEWSLETTER_REPLY_TO }}
+          WEB_URL: ${{ vars.WEB_URL }}
+          API_PUBLIC_URL: ${{ vars.API_PUBLIC_URL }}
+          ALLOWED_ORIGINS: ${{ vars.WEB_URL }}
+          EVENT_HASH_SALT: ${{ secrets.EVENT_HASH_SALT }}
+        run: pnpm newsletter:migrate
+
+      - name: Create provider draft
+        if: inputs.action == 'draft'
+        env: *newsletter-runtime
+        run: pnpm newsletter:broadcast --issue "${{ inputs.issue }}"
+
+      - name: Send issue now
+        if: inputs.action == 'send'
+        env: *newsletter-runtime
+        run: pnpm newsletter:broadcast --issue "${{ inputs.issue }}" --send --confirm "${{ inputs.confirmation }}"
+
+      - name: Schedule issue
+        if: inputs.action == 'schedule'
+        env: *newsletter-runtime
+        run: pnpm newsletter:broadcast --issue "${{ inputs.issue }}" --schedule "${{ inputs.schedule_at }}" --confirm "${{ inputs.confirmation }}"

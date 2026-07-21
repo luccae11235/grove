@@ -1,210 +1,107 @@
 # Arquitetura
 
-## Decisão principal
+## Princípio central
 
-O projeto será uma aplicação estática. No MVP, o chamado “back-end” é um **motor de domínio independente da interface**, executado localmente no navegador.
+Grove possui uma única implementação de machine learning: Python. A mesma
+execução produz o modelo, as métricas, o rastro e o trecho de código apresentado
+ao aluno. TypeScript existe somente na camada de interface e visualização.
 
-GitHub Pages hospeda arquivos estáticos e não mantém um processo de servidor. Um back-end remoto aumentaria custo, operação e risco de privacidade sem ser necessário para datasets pequenos. A decisão completa está no [ADR 0001](adr/0001-static-first-browser-engine.md).
+O deploy permanece estático. Em vez de duplicar o algoritmo no navegador, o
+build executa cenários didáticos determinísticos e publica os resultados como
+JSON. Isso mantém o carregamento pequeno e torna impossível a visualização
+divergir silenciosamente do exemplo Python.
 
-## Stack proposta
+## Camada de publicação
 
-- **Astro + TypeScript:** páginas estáticas, conteúdo em Markdown/MDX e carregamento seletivo das experiências interativas.
-- **React:** ilhas interativas e composição dos controles/estados do laboratório.
-- **SVG:** primeira base de renderização por ser inspecionável, responsiva e acessível.
-- **D3 apenas onde útil:** escalas, geometria e layouts; nunca para implementar o algoritmo de ML.
-- **pnpm workspaces:** separação entre site, motor e visualizações sem múltiplos repositórios.
-- **Vitest:** testes unitários e de contratos.
-- **Playwright:** fluxo crítico e verificação visual/responsiva.
-- **GitHub Actions:** qualidade em pull requests e deploy do artefato estático da `main`.
+Os metadados editoriais vivem na coleção tipada em
+`apps/web/src/content/articles/`. Ela é a fonte de identidade, locale, estado de
+publicação, SEO, relações de aprendizagem e contrato pedagógico. O módulo
+`apps/web/src/content/articles.ts` consulta e valida essa coleção.
 
-Astro possui suporte oficial a deploy estático no GitHub Pages por GitHub Actions. O `base` do projeto deverá ser configurado para funcionar tanto em `<usuario>.github.io/<repositorio>` quanto, no futuro, em domínio próprio.
+Artigo, edição da newsletter, interação, projeto reproduzível e série são
+entidades separadas. A decisão e as consequências estão no
+[ADR 0003](adr/0003-publication-content-boundaries.md), e o fluxo completo está em
+[publication-platform.md](publication-platform.md).
 
-## Regra de dependências
+A primeira lição permanece em suas rotas Astro durante a migração protegida. As
+novas lições usarão MDX; o campo `implementation` torna explícita essa fronteira.
+
+As edições semanais vivem em `apps/web/src/content/issues/`. Um único MDX produz
+arquivo web, HTML de e-mail, texto puro e manifesto de entrega. A API em
+`apps/newsletter-api/` mantém consentimento no PostgreSQL, confirma contatos no
+Resend e ingere webhooks assinados sem armazenar o e-mail na tabela analítica.
+Publicar o site nunca dispara uma campanha.
+
+## Fluxo de dados
 
 ```mermaid
 flowchart LR
-    Content["Lições MDX"] --> Web["Aplicação web"]
-    Web --> Visuals["Componentes visuais"]
-    Web --> Runtime["Adaptador de execução"]
-    Visuals --> Contracts["Contratos públicos"]
-    Runtime --> Core["Motor de árvores"]
-    Core --> Contracts
-    Core -. emite .-> Trace["Rastro versionado"]
-    Trace --> Visuals
+    Dataset["Dataset da lição"] --> Generator["build_lesson_data.py"]
+    Core["grove/decision_tree.py"] --> Generator
+    Criteria["grove/criteria.py"] --> Core
+    Generator --> Artifact["Modelo + rastro + fonte em JSON"]
+    Artifact --> Visuals["React / SVG"]
+    Artifact --> Code["Trecho Python da lição"]
+    Visuals --> Lesson["Página Astro"]
+    Code --> Lesson
 ```
 
-Regras:
-
-- `tree-core` não conhece React, SVG, Astro, DOM ou D3;
-- `tree-visuals` não recalcula impureza nem decide splits;
-- `web` orquestra parâmetros, execução e reprodução;
-- lições selecionam datasets, parâmetros e componentes, mas não contêm lógica de ML;
-- nenhuma camada importa código da camada acima.
-
-## Estrutura planejada do repositório
+## Estrutura
 
 ```text
 tree-based-ml-lab/
-├── apps/
-│   └── web/
-│       ├── public/                 # fontes, imagens sociais e assets estáticos
-│       └── src/
-│           ├── components/         # navegação e UI exclusiva do site
-│           ├── content/lessons/    # conteúdo MDX e metadados pedagógicos
-│           ├── layouts/
-│           ├── pages/
-│           └── styles/
+├── apps/web/                         # shell, páginas e conteúdo Astro
 ├── packages/
 │   ├── tree-core/
-│   │   └── src/
-│   │       ├── classification/     # treino e predição
-│   │       ├── criteria/           # Gini, entropia e ganhos
-│   │       ├── contracts/          # dataset, árvore, opções e rastros
-│   │       ├── observers/          # captura configurável de eventos
-│   │       └── testing/            # fixtures e geradores determinísticos
+│   │   ├── grove/
+│   │   │   ├── criteria.py          # Gini, entropia e despacho
+│   │   │   └── decision_tree.py     # treino, modelo e rastro
+│   │   └── tests/                   # testes unitários do domínio
 │   └── tree-visuals/
 │       └── src/
-│           ├── primitives/         # plano, pontos, nós, arestas e destaques
-│           ├── scenes/             # composições pedagógicas reutilizáveis
-│           ├── playback/           # etapa atual, avançar, voltar e reproduzir
-│           └── themes/             # tokens visuais e acessibilidade
-├── examples/                       # execuções mínimas do motor sem o site
-├── docs/
-│   ├── adr/                        # decisões arquiteturais
-│   ├── architecture.md
-│   ├── product-scope.md
-│   └── roadmap.md
-├── .github/workflows/              # CI e deploy
-├── CONTRIBUTING.md
-├── package.json
-├── pnpm-workspace.yaml
-└── README.md
+│           ├── generated/            # saída determinística do Python
+│           ├── FirstSplitExplorer.*  # protótipo preservado da primeira divisão
+│           └── DecisionTreeWorkshop.*# quatro playgrounds do artigo completo
+├── scripts/build_lesson_data.py      # adaptador Python → web
+└── docs/adr/                         # decisões e revisões arquiteturais
 ```
 
-`tree-visuals` começa pequeno. Só um padrão usado por duas cenas deve virar primitiva pública; isso evita criar uma “biblioteca universal” antes de conhecer as necessidades reais.
+## Regras de dependência
 
-## Modelo do domínio
+- `tree-core` não conhece Astro, React, SVG, DOM ou TypeScript;
+- `tree-visuals` não calcula impureza, ganho ou thresholds;
+- o gerador é o único adaptador entre o domínio Python e os artefatos web;
+- o código exibido é extraído diretamente de `decision_tree.py` entre marcadores
+  de lição, nunca copiado manualmente;
+- datasets e cenários de uma lição vivem no gerador até existir repetição real
+  que justifique um catálogo próprio;
+- nenhuma biblioteca de ML entra no núcleo; NumPy é o limite máximo permitido.
 
-### Dataset
+## Contrato do artefato
 
-O núcleo recebe apenas números e metadados, nunca objetos de interface:
+Cada cenário contém uma árvore serializável, o melhor split raiz, importâncias e
+um rastro ordenado de eventos por nó. Os nomes JSON permanecem estáveis para a
+interface (`featureIndex`, `sampleCount`, `missingDirection`, `bestSplit`), enquanto
+a API Python usa nomes idiomáticos.
 
-```ts
-interface Dataset {
-  features: number[][];
-  targets: Array<string | number>;
-  featureNames: string[];
-}
-```
+O artefato também inclui o dataset, uma entrada por critério, o trecho exato de
+código Python e o caminho da fonte para orientar a navegação no repositório.
 
-No MVP serão aceitas features numéricas e classificação binária. O contrato pode representar mais classes, mas suporte multiclasse só será anunciado depois de testado.
+## Correção e build
 
-### Árvore serializável
+`pnpm test` executa os testes Python antes de qualquer teste de workspace.
+`pnpm dev` e `pnpm build` regeneram os dados de lição antes de iniciar o site.
+A CI configura Python e Node explicitamente, testa o núcleo, valida os tipos da
+apresentação e produz o site estático.
 
-Cada nó terá identificador estável e será discriminado por tipo:
+Os testes do núcleo cobrem impureza, split perfeito, recursão, profundidade,
+valores ausentes, importância, validação de entrada e serialização do rastro.
+Próximas extensões devem acrescentar testes de empate determinístico, features
+constantes e golden fixtures maiores.
 
-```ts
-type TreeNode =
-  | {
-      kind: "split";
-      id: string;
-      featureIndex: number;
-      threshold: number;
-      impurity: number;
-      sampleCount: number;
-      left: TreeNode;
-      right: TreeNode;
-    }
-  | {
-      kind: "leaf";
-      id: string;
-      prediction: string | number;
-      probabilities: number[];
-      impurity: number;
-      sampleCount: number;
-    };
-```
+## Evolução
 
-O desenho da árvore, a coloração do plano e `predict()` usam essa mesma estrutura.
-
-### Rastro de treinamento
-
-O treinamento aceitará um observador opcional. Ele transforma decisões internas em eventos JSON versionados, sem inserir comandos visuais no algoritmo.
-
-Eventos iniciais:
-
-- `training_started`;
-- `node_started`;
-- `candidate_evaluated`;
-- `split_selected`;
-- `leaf_created`;
-- `training_completed`.
-
-Cada evento contém `step`, `nodeId`, amostras relevantes e valores calculados suficientes para explicar a decisão. O rastro terá níveis:
-
-- `none`: produção sem explicação detalhada;
-- `summary`: somente decisões selecionadas;
-- `detailed`: candidatos avaliados, limitado a datasets educacionais.
-
-Isso evita que ensembles grandes mantenham milhões de eventos apenas para produzir uma previsão.
-
-## Fronteira entre motor e interface
-
-A interface não chamará diretamente a implementação concreta. Ela usará um contrato assíncrono:
-
-```ts
-interface TrainingService {
-  fit(request: TrainingRequest): Promise<TrainingResult>;
-}
-```
-
-No MVP, `BrowserTrainingService` chama o núcleo na mesma thread. Quando o custo crescer, um `WorkerTrainingService` manterá o mesmo contrato e moverá a execução para Web Worker sem reescrever as cenas.
-
-## Base visual reutilizável
-
-A primeira biblioteca não tentará reproduzir Manim. Ela terá três níveis:
-
-1. **Primitivas:** `Point`, `Axis`, `SplitLine`, `TreeNode`, `TreeEdge`, `Label`.
-2. **Cenas:** `DatasetScene`, `TreeScene`, `ImpurityScene`, `DecisionBoundaryScene`.
-3. **Playback:** transforma eventos do rastro em frames navegáveis e anima transições.
-
-Futuras miniaturas de Gradient Boosting serão uma variante compacta de `TreeScene`. A cena de resíduos será nova, mas consumirá o mesmo modelo de árvore e eventos de composição do ensemble.
-
-## Correção e testes
-
-O núcleo deve ser comprovado independentemente da interface:
-
-- testes de Gini, entropia e ganho com exemplos calculados manualmente;
-- invariantes: filhos particionam as amostras do pai, profundidade respeita o limite e folhas preservam contagens;
-- casos extremos: classe única, features constantes, empates e dataset mínimo;
-- seeds fixas e regra explícita de desempate;
-- testes de regressão com árvores JSON pequenas (“golden fixtures”);
-- teste de integração garantindo que cada `nodeId` referenciado no rastro existe na árvore;
-- comparação contra uma biblioteca conhecida apenas nos testes de validação científica, nunca na implementação de produção;
-- teste de navegador cobrindo troca de critério, reprodução e reset.
-
-## Evolução prevista
-
-- **Regressão:** reutiliza construção, nós e busca de split; adiciona variância/MSE e outra folha.
-- **Bagging/Random Forest:** compõe árvores, amostragem e agregador; mantém cada árvore inspecionável.
-- **Gradient Boosting:** adiciona função de perda, pseudo-resíduos, learning rate e eventos do ensemble.
-- **XGBoost educacional:** entra somente após uma especificação própria de gradientes, Hessianas e regularização.
-- **Aprendizado por reforço:** estudos de caso consomem as APIs públicas; não devem contaminar o núcleo com regras específicas do ambiente.
-- **Datasets do usuário:** parsing e validação locais, limites estritos e Web Worker; nenhuma transmissão por padrão.
-
-## Critérios para um back-end remoto futuro
-
-Um serviço remoto só será considerado quando pelo menos uma necessidade real não puder ser atendida localmente, por exemplo:
-
-- datasets que não cabem com segurança no navegador;
-- colaboração ou persistência entre dispositivos;
-- filas para experimentos longos;
-- execução reproduzível que exija ambiente controlado.
-
-Nesse momento, `TrainingService` vira a fronteira de API. O site continua sem conhecer a implementação e pode trocar o adaptador local por HTTP.
-
-## Referências operacionais
-
-- [GitHub Pages é uma hospedagem de sites estáticos](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
-- [Deploy do Astro no GitHub Pages](https://docs.astro.build/en/guides/deploy/github/)
-- [Workflows customizados do GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)
+Florestas e boosting comporão as árvores Python existentes sem contaminar os
+modelos com comandos de renderização. Se uma experiência futura aceitar datasets arbitrários, um
+executor Python (Worker ou API) consumirá o mesmo pacote `grove`; não será criada
+uma segunda implementação em TypeScript.

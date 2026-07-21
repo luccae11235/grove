@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "projects": [
+    {
+      "id": "grove-tree-core",
+      "name": "Grove Tree Core",
+      "sourceDirectory": "packages/tree-core",
+      "repository": null,
+      "defaultBranch": "main",
+      "articleId": "decision-trees-from-scratch",
+      "canonicalArticlePath": "/learn/decision-trees",
+      "status": "ready-local",
+      "requiredFiles": [
+        "README.md",
+        "LICENSE",
+        "MANIFEST.in",
+        "pyproject.toml",
+        ".gitignore",
+        "grove/__init__.py",
+        "tests/test_decision_tree.py"
+      ],
+      "excludedPaths": [
+        "src",
+        "tests/test_lesson_scenario.py"
+      ],
+      "validationCommand": [
+        "python3",
+        "-m",
+        "unittest",
+        "tests/test_criteria.py",
+        "tests/test_decision_tree.py",
+        "-v"
+      ]
+    },
+    {
+      "id": "reward-hacking-q-learning",
+      "name": "Reward Hacking Lab",
+      "sourceDirectory": "packages/reward-hacking-lab",
+      "repository": null,
+      "defaultBranch": "main",
+      "articleId": "reward-hacking-with-q-learning",
+      "canonicalArticlePath": "/learn/reward-hacking-q-learning",
+      "status": "ready-local",
+      "requiredFiles": [
+        "README.md",
+        "LICENSE",
+        ".gitignore",
+        "package.json",
+        "index.html",
+        "src/experiment.js",
+        "src/browser.js",
+        "src/tabular-q-learning.js",
+        "src/sensor-mdp.js",
+        "src/sensor-browser.js",
+        "src/traffic-mdp.js",
+        "src/traffic-browser.js",
+        "src/styles.css",
+        "tests/experiment.test.js",
+        "tests/sensor-mdp.test.js",
+        "tests/traffic-mdp.test.js",
+        "docs/experiment-notes.md"
+      ],
+      "excludedPaths": [],
+      "validationCommand": [
+        "node",
+        "--test"
+      ]
+    }
+  ]
+}

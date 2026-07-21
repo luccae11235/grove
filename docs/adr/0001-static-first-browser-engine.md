@@ -1,6 +1,6 @@
 # ADR 0001 — aplicação estática com motor no navegador
 
-- Status: aceito para o MVP
+- Status: substituído pelo [ADR 0002](0002-python-canonical-engine.md)
 - Data: 2026-07-13
 
 ## Contexto

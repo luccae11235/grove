@@ -1,17 +1,16 @@
 # Grove
 
-**Tree-based machine learning, made visible.**
+**Ideas, made interactive.**
 
-Grove is an open learning project that connects plain-English explanations, from-scratch algorithms, and interactive visualizations. The same trained model and versioned trace drive the calculations, predictions, and diagrams shown in each lesson.
+Grove is a personal collection of interactive articles built while learning. Each piece can combine plain-English explanations, from-scratch implementations, and visual experiments to make difficult ideas inspectable.
 
-The first release focuses on one question: **how does a classification tree choose its first split?**
+The library currently contains one article: **how can you reconstruct a classification decision tree from first principles?**
 
 ## What is available
 
-- a simple, responsive learning interface with chapter navigation;
-- an introduction and curriculum roadmap;
+- a responsive article library whose navigation is derived from published content;
 - the first interactive decision-tree lesson;
-- Gini and entropy implemented from first principles;
+- Gini and entropy implemented from first principles in Python;
 - a real decision-stump trainer with a serializable training trace;
 - a reusable visualization package connected directly to the model;
 - focused unit tests for impurity and split selection.
@@ -19,15 +18,21 @@ The first release focuses on one question: **how does a classification tree choo
 ## Project structure
 
 ```text
-apps/web                 Astro site and English lesson content
-packages/tree-core       Framework-independent tree algorithms and contracts
-packages/tree-visuals    React/SVG teaching components driven by tree-core
-docs                     Product, architecture, roadmap, and decisions
+apps/web                         Astro site and localized lesson content
+apps/web/src/content/articles    Typed publication metadata and MDX entries
+apps/web/src/content/issues      Typed weekly issue content and delivery metadata
+apps/newsletter-api              Double opt-in, Resend adapter, webhooks, reports
+packages/tree-core/grove         Canonical, from-scratch Python algorithms
+packages/tree-core/tests         Python correctness tests
+packages/tree-visuals            React/SVG views of Python-generated results
+scripts/build_lesson_data.py     Bridge from Python execution to lesson artifacts
+projects/manifest.json           Registry for standalone GitHub project mirrors
+docs                             Product, architecture, roadmap, and decisions
 ```
 
 ## Run locally
 
-Requirements: Node.js 22 or later and pnpm.
+Requirements: Python 3.9+, Node.js 22+, and pnpm.
 
 ```bash
 pnpm install
@@ -44,26 +49,50 @@ pnpm run check
 
 This runs type checks, algorithm tests, and the production build.
 
+## Newsletter workflow
+
+Draft issues render to a web archive, an email-safe HTML document, and a plain
+text alternative from the same MDX source. Subscription delivery is disabled
+until `PUBLIC_NEWSLETTER_API_URL` is configured.
+
+```bash
+pnpm newsletter:prepare
+pnpm --filter @grove/newsletter-api test
+```
+
+See the [newsletter operating manual](docs/newsletter-operations.md) for Railway,
+Resend, weekly publishing, delivery safeguards, and performance reporting.
+
 ## Design principles
 
-- **One source of truth:** visuals use the tree and trace produced by the real algorithm.
-- **From scratch where it matters:** the machine-learning core has no ML dependency.
+- **One source of truth:** the build runs the Python model; visuals consume its tree and trace, and lessons display an exact excerpt from the same file.
+- **From scratch where it matters:** the Python machine-learning core uses only the standard library today and may use at most NumPy later.
 - **Visual before ornamental:** an interaction must reveal a decision made by the model.
-- **Progressive depth:** simple trees become reusable parts of later ensembles.
-- **Static-first:** lessons run locally in the browser and remain compatible with GitHub Pages.
+- **Published-only navigation:** the public library reflects what exists, not a speculative roadmap.
+- **Learning graph:** stable article IDs connect prerequisites, automatic backlinks, and related paths without coupling references to URLs.
+- **Static-first:** Python produces deterministic lesson artifacts at build time, keeping the published site compatible with GitHub Pages.
 - **English-first, translation-ready:** the first interface is English, with shared navigation and shell copy kept behind a locale boundary.
 
 ## Planning
 
+- [Curriculum plan](docs/curriculum-plan.md)
+- [Article organization, references, and difficulty](docs/article-system.md)
+- [Publication platform and newsletter boundaries](docs/publication-platform.md)
+- [Newsletter setup, weekly operations, and performance](docs/newsletter-operations.md)
+- [Editorial release checklist](docs/editorial-release-checklist.md)
+- [English and Brazilian Portuguese translation workflow](docs/content-translation-workflow.md)
+- [Domain, DNS, and email-sending setup](docs/domain-dns-email-setup.md)
 - [Product scope](docs/product-scope.md)
 - [Architecture](docs/architecture.md)
 - [Roadmap](docs/roadmap.md)
 - [Contribution workflow](CONTRIBUTING.md)
-- [ADR 0001 — static application with a browser-based engine](docs/adr/0001-static-first-browser-engine.md)
+- [ADR 0001 — original browser-engine decision, superseded](docs/adr/0001-static-first-browser-engine.md)
+- [ADR 0002 — Python as the canonical learning engine](docs/adr/0002-python-canonical-engine.md)
+- [ADR 0003 — publication entities and typed content](docs/adr/0003-publication-content-boundaries.md)
+- [ADR 0004 — consent, delivery, and telemetry](docs/adr/0004-consent-delivery-and-telemetry.md)
 
-## Proposed licensing
+## Licensing
 
-- code: MIT;
-- original writing and illustrations: CC BY 4.0.
-
-The licenses will be formalized before the first public release.
+The standalone `grove-tree-core` project is licensed under MIT. Licensing for the
+publication's original writing, illustrations, and remaining workspace code must
+be finalized before the first public release.

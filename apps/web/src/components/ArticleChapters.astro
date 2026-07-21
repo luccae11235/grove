@@ -1,0 +1,151 @@
+---
+import type { Locale } from "../i18n";
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = "en" } = Astro.props;
+const copy = locale === "pt-BR"
+  ? {
+      title: "Neste artigo",
+      open: "Abrir capítulos",
+      close: "Fechar capítulos",
+      empty: "Os capítulos aparecerão aqui.",
+    }
+  : {
+      title: "In this article",
+      open: "Open chapters",
+      close: "Close chapters",
+      empty: "Chapters will appear here.",
+    };
+---
+
+<div class="article-chapters" data-article-chapters data-open="true">
+  <button
+    class="article-chapters-toggle"
+    type="button"
+    aria-expanded="true"
+    aria-controls="article-chapters-panel"
+    aria-label={copy.close}
+    title={copy.close}
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 6h10M7 12h10M7 18h10" />
+      <path class="article-chapters-chevron" d="m15 9-3 3 3 3" />
+    </svg>
+  </button>
+
+  <aside class="article-chapters-panel" id="article-chapters-panel" aria-label={copy.title}>
+    <div class="article-chapters-heading">
+      <span>{copy.title}</span>
+      <button type="button" data-chapters-close aria-label={copy.close} title={copy.close}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+      </button>
+    </div>
+    <nav aria-label={copy.title}>
+      <ol data-chapters-list></ol>
+      <p class="article-chapters-empty" data-chapters-empty>{copy.empty}</p>
+    </nav>
+  </aside>
+</div>
+
+<script is:inline define:vars={{ copy }}>
+  (() => {
+    const root = document.querySelector("[data-article-chapters]");
+    if (!(root instanceof HTMLElement)) return;
+
+    const toggle = root.querySelector(".article-chapters-toggle");
+    const close = root.querySelector("[data-chapters-close]");
+    const panel = root.querySelector(".article-chapters-panel");
+    const list = root.querySelector("[data-chapters-list]");
+    const empty = root.querySelector("[data-chapters-empty]");
+    const headings = [...document.querySelectorAll("article.lesson-body > h2")];
+    if (!(toggle instanceof HTMLButtonElement) || !(list instanceof HTMLOListElement)) return;
+
+    const usedIds = new Set([...document.querySelectorAll("[id]")].map((node) => node.id));
+    const slugify = (value) => value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "chapter";
+
+    headings.forEach((heading, index) => {
+      if (!(heading instanceof HTMLHeadingElement)) return;
+      if (!heading.id) {
+        const baseId = slugify(heading.textContent || `chapter-${index + 1}`);
+        let id = baseId;
+        let suffix = 2;
+        while (usedIds.has(id)) id = `${baseId}-${suffix++}`;
+        heading.id = id;
+        usedIds.add(id);
+      }
+
+      const item = document.createElement("li");
+      const link = document.createElement("a");
+      const number = document.createElement("span");
+      number.textContent = String(index + 1).padStart(2, "0");
+      link.href = `#${heading.id}`;
+      link.dataset.chapterId = heading.id;
+      link.append(number, document.createTextNode(heading.textContent?.trim() || `Chapter ${index + 1}`));
+      item.append(link);
+      list.append(item);
+    });
+
+    if (headings.length) empty?.remove();
+    else root.hidden = true;
+
+    const setOpen = (open, persist = true) => {
+      root.dataset.open = String(open);
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? copy.close : copy.open);
+      toggle.title = open ? copy.close : copy.open;
+      document.body.classList.toggle("article-chapters-open", open);
+      panel?.setAttribute("aria-hidden", String(!open));
+      if (panel instanceof HTMLElement) panel.inert = !open;
+      if (persist) {
+        try { localStorage.setItem("grove-article-chapters", open ? "open" : "closed"); } catch {}
+      }
+    };
+
+    let initialOpen = window.matchMedia("(min-width: 1240px)").matches;
+    try {
+      const saved = localStorage.getItem("grove-article-chapters");
+      if (saved) initialOpen = saved === "open";
+    } catch {}
+    setOpen(initialOpen, false);
+
+    toggle.addEventListener("click", () => setOpen(root.dataset.open !== "true"));
+    close?.addEventListener("click", () => setOpen(false));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && root.dataset.open === "true") {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+    list.addEventListener("click", (event) => {
+      if (event.target instanceof HTMLAnchorElement && window.innerWidth < 1240) setOpen(false);
+    });
+
+    const links = [...list.querySelectorAll("a")];
+    const setActive = (id) => links.forEach((link) => {
+      if (!(link instanceof HTMLAnchorElement)) return;
+      const active = link.dataset.chapterId === id;
+      link.classList.toggle("active", active);
+      if (active) link.setAttribute("aria-current", "location");
+      else link.removeAttribute("aria-current");
+    });
+
+    const updateActive = () => {
+      let current = headings[0]?.id;
+      for (const heading of headings) {
+        if (heading.getBoundingClientRect().top <= 140) current = heading.id;
+        else break;
+      }
+      if (current) setActive(current);
+    };
+    updateActive();
+    document.addEventListener("scroll", updateActive, { passive: true });
+  })();
+</script>

@@ -4,45 +4,113 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 <BaseLayout
   title="Learning path"
-  description="The planned Grove curriculum for tree-based machine learning."
+  description="The Grove curriculum from decision-tree foundations through bagging, boosting, implementations, and applications."
 >
   <header class="page-header">
-    <p class="eyebrow">Project roadmap</p>
-    <h1>Learn from one split to a forest.</h1>
+    <p class="eyebrow">Your learning path</p>
+    <h1>From one useful question to a system of trees.</h1>
     <p class="lede">
-      Each chapter adds one reusable idea. The sequence will grow with the code,
-      so later lessons can reveal how ensembles are composed from simple trees.
+      This is a path, not a glossary. Each part begins with a problem the previous
+      model cannot solve well, so the next idea earns its place.
     </p>
   </header>
 
-  <section class="roadmap-grid">
-    <article>
-      <h2>1 · Foundations</h2>
-      <ul>
-        <li>How trees learn</li>
-        <li>Gini and entropy</li>
-        <li>Regression trees</li>
-        <li>Depth, leaves, and overfitting</li>
-      </ul>
-    </article>
-    <article>
-      <h2>2 · Ensembles</h2>
-      <ul>
-        <li>Bagging and bootstrap samples</li>
-        <li>Random forests</li>
-        <li>Gradient boosting</li>
-        <li>Modern boosting systems</li>
-      </ul>
-    </article>
-    <article>
-      <h2>3 · Applications</h2>
-      <ul>
-        <li>Failure investigations</li>
-        <li>Interpretability</li>
-        <li>Paper reproductions</li>
-        <li>Reinforcement learning</li>
-      </ul>
-    </article>
-  </section>
-</BaseLayout>
+  <div class="route-principle">
+    <strong>The recurring question</strong>
+    <p>
+      What changed in the data, the model, or the error—and why does the next
+      algorithmic choice help?
+    </p>
+  </div>
 
+  <div class="curriculum-roadmap">
+    <section class="curriculum-phase current">
+      <div class="phase-marker"><span>01</span><small>Start here</small></div>
+      <div>
+        <p class="eyebrow">Foundations</p>
+        <h2>Understand one decision tree deeply</h2>
+        <p class="phase-outcome">
+          Outcome: trace a prediction, explain how a split is chosen, recognize
+          overfitting, and know what a single tree can and cannot tell you.
+        </p>
+        <ol class="lesson-list">
+          <li><strong>Invent the first split</strong><span>Turn labeled examples into one useful yes/no question.</span><em>Available</em></li>
+          <li><strong>Gini and entropy</strong><span>Measure how mixed a group is and derive information gain.</span><em>Available</em></li>
+          <li><strong>Grow a full tree</strong><span>Repeat the same split rule recursively from root to leaves.</span></li>
+          <li><strong>Control overfitting</strong><span>Use depth, leaf size, and pruning to trade fit for generalization.</span></li>
+          <li><strong>Regression trees</strong><span>Replace class votes with numeric averages and squared error.</span></li>
+          <li><strong>Feature importance</strong><span>Read split-based importance while learning its limitations.</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="curriculum-phase">
+      <div class="phase-marker"><span>02</span><small>Practice</small></div>
+      <div>
+        <p class="eyebrow">Implementation labs</p>
+        <h2>Build the mechanism from scratch</h2>
+        <p class="phase-outcome">
+          Theory and implementation use separate lessons so code can deepen the
+          idea without interrupting the conceptual path.
+        </p>
+        <ol class="lesson-list">
+          <li><strong>Search for a split</strong><span>Generate thresholds, partition rows, score candidates, and break ties.</span></li>
+          <li><strong>Build recursively</strong><span>Turn the one-level stump into a complete classifier and regressor.</span></li>
+          <li><strong>Test and visualize</strong><span>Check invariants and connect training traces to interactive views.</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="curriculum-phase">
+      <div class="phase-marker"><span>03</span><small>Parallel trees</small></div>
+      <div>
+        <p class="eyebrow">Bagging</p>
+        <h2>Make unstable trees cooperate</h2>
+        <p class="phase-outcome">
+          Outcome: explain how resampling and averaging reduce variance, then
+          reconstruct the central idea behind a random forest.
+        </p>
+        <ol class="lesson-list">
+          <li><strong>Why use many trees?</strong><span>Expose how a small data change can reshape one tree.</span></li>
+          <li><strong>Bootstrap and bagging</strong><span>Train varied trees in parallel and aggregate their votes.</span></li>
+          <li><strong>Random forests</strong><span>Add feature sampling to make the trees less alike.</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="curriculum-phase">
+      <div class="phase-marker"><span>04</span><small>Sequential trees</small></div>
+      <div>
+        <p class="eyebrow">Boosting</p>
+        <h2>Let each tree repair the current model</h2>
+        <p class="phase-outcome">
+          Outcome: explain boosting as additive error correction and predict how
+          learning rate, tree size, and ensemble length change the fit.
+        </p>
+        <ol class="lesson-list">
+          <li><strong>Learn from mistakes</strong><span>Turn residual errors into the next tree's learning problem.</span></li>
+          <li><strong>Gradient boosting</strong><span>Connect repeated correction to optimization.</span></li>
+          <li><strong>Tune the ensemble</strong><span>Balance learning rate, depth, and number of trees.</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="curriculum-phase">
+      <div class="phase-marker"><span>05</span><small>Transfer</small></div>
+      <div>
+        <p class="eyebrow">Applications</p>
+        <h2>Choose, diagnose, and explain a model</h2>
+        <p class="phase-outcome">
+          Outcome: carry the same mechanisms into unfamiliar datasets, notice
+          important failure modes, and defend the choice of model.
+        </p>
+        <ol class="lesson-list">
+          <li><strong>Diagnose a model</strong><span>Investigate leakage, imbalance, instability, and extrapolation.</span></li>
+          <li><strong>Explain predictions</strong><span>Compare a readable path with global and local explanation tools.</span></li>
+          <li><strong>Case studies</strong><span>Run a small tabular problem from data definition to error analysis.</span></li>
+          <li><strong>Trees in reinforcement learning</strong><span>Study value approximation and policy failure without hiding the domain mapping.</span></li>
+        </ol>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

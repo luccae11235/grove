@@ -1,0 +1,942 @@
+---
+import {
+  DatasetComplexityPlayground,
+  ManualTreePlayground,
+  MultiFeatureSplitPlayground,
+  SplitSearchPlayground,
+  ThresholdIntuitionPlayground,
+  TreeGrowthPlayground,
+} from "@grove/tree-visuals";
+import ArticleConnections from "../../../components/ArticleConnections.astro";
+import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import NewsletterSignup from "../../../components/NewsletterSignup.astro";
+import { getLocalizedArticle } from "../../../content/articles";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+
+const article = getLocalizedArticle("decision-trees-from-scratch", "pt-BR");
+const translations = {
+  en: "/learn/decision-trees",
+  "pt-BR": "/pt-br/learn/decision-trees",
+};
+
+const seedlings = [
+  { id: "A", sunlight: 1.0, water: 1.4, outcome: "Thriving" },
+  { id: "B", sunlight: 1.4, water: 2.7, outcome: "Thriving" },
+  { id: "C", sunlight: 2.0, water: 1.9, outcome: "Thriving" },
+  { id: "D", sunlight: 2.5, water: 3.5, outcome: "Struggling" },
+  { id: "E", sunlight: 3.2, water: 2.4, outcome: "Thriving" },
+  { id: "F", sunlight: 3.8, water: 4.2, outcome: "Struggling" },
+  { id: "G", sunlight: 4.3, water: 1.5, outcome: "Struggling" },
+  { id: "H", sunlight: 4.9, water: 3.1, outcome: "Struggling" },
+  { id: "I", sunlight: 5.5, water: 2.0, outcome: "Struggling" },
+  { id: "J", sunlight: 6.1, water: 3.9, outcome: "Struggling" },
+];
+const outcomePt = (outcome: string) => outcome === "Thriving" ? "Saudável" : "Com dificuldade";
+
+const plot = { left: 62, right: 528, top: 25, bottom: 292 };
+const plotX = (value: number) => plot.left + ((value - 0.5) / 6) * (plot.right - plot.left);
+const plotY = (value: number) => plot.bottom - ((value - 1) / 3.6) * (plot.bottom - plot.top);
+const giniPoints = Array.from({ length: 41 }, (_, index) => {
+  const p = index / 40;
+  const x = 54 + p * 472;
+  const y = 254 - 2 * p * (1 - p) * 400;
+  return `${x.toFixed(1)},${y.toFixed(1)}`;
+}).join(" ");
+---
+
+<BaseLayout
+  title={article.title}
+  description={article.description}
+  locale="pt-BR"
+  translations={translations}
+  pageType="article"
+  publishedAt={article.publishedAt}
+  updatedAt={article.updatedAt}
+  wide
+>
+  <header class="page-header lesson-header article-hero">
+    <p class="eyebrow">{article.eyebrow}</p>
+    <h1>{article.title}</h1>
+    <p class="lede">
+      Esta lição tem duas metades. Na primeira, você vai construir uma árvore de decisão
+      funcional com os olhos e as mãos — sem fórmulas. Na segunda, vai descobrir que o
+      algoritmo de treino de verdade não passa daquilo que você acabou de fazer, repetido
+      por um laço paciente que pontua as próprias escolhas com um único número pequeno.
+    </p>
+    <div class="article-meta" aria-label="Informações sobre o artigo">
+      <DifficultyBadge difficulty={article.difficulty} showDescription locale="pt-BR" />
+      <span><strong>{article.staticVisualCount}</strong> exemplos visuais estáticos</span>
+      <span><strong>{article.interactiveCount}</strong> experimentos interativos</span>
+    </div>
+    <div class="lesson-goal">
+      <strong>Ao final</strong>
+      <span>
+        Você saberá explicar como um computador aprende uma árvore de decisão repetindo
+        uma operação útil: fazer uma pergunta de sim ou não que deixa os resultados
+        conhecidos menos misturados. Também saberá levar um novo exemplo até a previsão.
+      </span>
+    </div>
+    <p class="lesson-starting-point">
+      <strong>Ponto de partida:</strong> você só precisa comparar números e acompanhar
+      uma pergunta de sim ou não. Vamos apresentar cada termo de aprendizado de máquina
+      e explicar a notação matemática quando ela se tornar útil.
+    </p>
+  </header>
+
+  <article class="lesson-body deep-article">
+    <p class="lesson-stage">Parte um · construa à mão</p>
+    <h2 id="tables">Aprendizado de máquina não é um único método</h2>
+    <p>
+      Quando alguém diz <strong>aprendizado de máquina</strong>, pode parecer o nome de
+      uma única tecnologia. É mais parecido com uma caixa de ferramentas. A área está
+      cheia de algoritmos diferentes, e cada um aprende padrões a partir de exemplos do
+      seu próprio jeito, para depois fazer previsões sobre exemplos que nunca viu.
+    </p>
+    <p>
+      As redes neurais são a família famosa. Elas estão por trás de resultados
+      impressionantes em texto, imagem, áudio e vídeo. Mas fama não é o mesmo que
+      adequação. Uma enorme parte dos dados do cotidiano vive em tabelas — clientes,
+      casas, plantas, empréstimos, medições médicas — e, em tabelas, os
+      <strong>métodos baseados em árvores</strong> costumam ser a escolha forte e
+      prática. Para entender o motivo, comece pelo que torna uma tabela diferente dos
+      outros formatos de dados.
+    </p>
+
+    <h3>Cada linha descreve uma coisa</h3>
+    <p>
+      Uma frase é uma sequência de palavras: a ordem importa. Uma imagem é uma grade de
+      pixels: a posição importa. Na nossa tabela, cada linha descreve uma semente e as
+      colunas registram propriedades dela. Embaralhar essas linhas não mudaria seu
+      significado porque nenhuma semente depende da linha anterior.
+    </p>
+
+    <figure class="static-figure data-shape-figure">
+      <div class="data-shape-grid" aria-label="Três formatos de dados">
+        <div class="shape-card">
+          <span class="shape-label">Sequência</span>
+          <div class="sequence-shape" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+          <strong>A ordem importa</strong>
+          <small>palavras, eventos, som</small>
+        </div>
+        <div class="shape-card">
+          <span class="shape-label">Grade</span>
+          <div class="grid-shape" aria-hidden="true">{Array.from({ length: 16 }, (_, i) => <i class:list={{ active: [2, 5, 6, 9, 10, 13].includes(i) }}></i>)}</div>
+          <strong>A posição importa</strong>
+          <small>imagens, mapas espaciais</small>
+        </div>
+        <div class="shape-card shape-card-accent">
+          <span class="shape-label">Tabela</span>
+          <div class="entity-shape" aria-hidden="true">
+            <span><i class="dot-round"></i><i class="dot-tall"></i><i class="dot-square"></i></span>
+            <span><i class="dot-square"></i><i class="dot-round"></i><i class="dot-tall"></i></span>
+            <span><i class="dot-tall"></i><i class="dot-square"></i><i class="dot-round"></i></span>
+          </div>
+          <strong>As propriedades importam</strong>
+          <small>pessoas, plantas, produtos</small>
+        </div>
+      </div>
+      <figcaption>
+        Neste tipo de tabela, cada linha existe por conta própria, então podemos fazer
+        a mesma pergunta simples para todas elas.
+      </figcaption>
+    </figure>
+
+    <p>
+      Pense nas pessoas em uma festa. Uma pessoa é alta, loira e usa óculos. Outra é
+      baixa, morena e não usa óculos. Esse tipo de dado convida a perguntas de sim ou
+      não — <em>a pessoa é alta? usa óculos?</em> — e cada resposta divide o grupo em
+      dois. Uma tabela funciona da mesma forma: uma pergunta sobre uma coluna envia
+      algumas linhas para um lado e o restante para o outro.
+    </p>
+    <p>
+      Guarde essa observação. Perguntas simples são uma maneira natural de organizar
+      dados tabulares e — como veremos em seguida — talvez bastem para prever algo que
+      ainda não sabemos.
+    </p>
+
+    <p class="lesson-stage">Nosso exemplo recorrente</p>
+    <h2>Dez sementes e uma previsão</h2>
+    <p>
+      Imagine que plantamos dez sementes. Cada uma recebeu um certo número de horas de
+      luz solar por dia e uma certa quantidade de litros de água por semana. No final do
+      experimento, cada semente estava saudável ou com dificuldade.
+    </p>
+
+    <figure class="static-figure seed-table-figure">
+      <div class="seed-table-wrap">
+        <table class="seed-table">
+          <thead>
+            <tr><th>Semente</th><th>Luz solar / dia</th><th>Água / semana</th><th>Resultado</th></tr>
+          </thead>
+          <tbody>
+            {seedlings.map((seed) => (
+              <tr>
+                <th scope="row">{seed.id}</th>
+                <td>{seed.sunlight.toFixed(1)} h</td>
+                <td>{seed.water.toFixed(1)} L</td>
+                <td><span class:list={["outcome-mark", seed.outcome.toLowerCase()]} aria-hidden="true"></span>{outcomePt(seed.outcome)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="mobile-scroll-cue">Deslize horizontalmente para ver todas as colunas.</p>
+      <figcaption>Cada linha representa uma semente. Luz solar e água são características. O resultado é o rótulo.</figcaption>
+    </figure>
+
+    <dl class="example-mapping">
+      <div><dt>Entidade</dt><dd>uma semente</dd></div>
+      <div><dt>Características</dt><dd>luz solar e água</dd></div>
+      <div><dt>Rótulo</dt><dd>saudável ou com dificuldade</dd></div>
+    </dl>
+
+    <p>
+      Agora, uma pessoa amiga nos traz a semente K. Ela receberá <strong>3 horas de luz
+      solar por dia</strong> e <strong>2 litros de água por semana</strong>. As dez
+      sementes antigas podem nos ajudar a prever o que acontecerá com a nova?
+    </p>
+    <p>
+      Essa tarefa se chama <strong>classificação</strong>: não estamos prevendo uma
+      altura exata, estamos escolhendo entre dois rótulos — saudável ou com dificuldade.
+    </p>
+
+    <p class="lesson-stage">A primeira invenção</p>
+    <h2 id="by-hand">Uma divisão é uma pergunta</h2>
+    <p>
+      Encarar a tabela linha por linha é difícil, então vamos distribuí-la em dois
+      eixos. A luz solar corre da esquerda para a direita; a água, de baixo para cima.
+      Os círculos são sementes saudáveis; os quadrados, sementes com dificuldade.
+    </p>
+
+    <figure class="static-figure split-figure">
+      <svg class="seed-plot" viewBox="0 0 570 340" role="img" aria-labelledby="seed-plot-title seed-plot-desc">
+        <title id="seed-plot-title">As dez sementes antes da escolha de uma pergunta divisória</title>
+        <desc id="seed-plot-desc">Um gráfico de dispersão de luz solar e água. Quatro sementes saudáveis são círculos e seis sementes com dificuldade são quadrados. Nenhuma linha divisória foi escolhida ainda.</desc>
+        {[1, 2, 3, 4, 5, 6].map((tick) => (
+          <g>
+            <line class="plot-gridline" x1={plotX(tick)} x2={plotX(tick)} y1={plot.top} y2={plot.bottom}></line>
+            <text class="plot-tick" x={plotX(tick)} y="312" text-anchor="middle">{tick}</text>
+          </g>
+        ))}
+        {[1, 2, 3, 4].map((tick) => (
+          <g>
+            <line class="plot-gridline" x1={plot.left} x2={plot.right} y1={plotY(tick)} y2={plotY(tick)}></line>
+            <text class="plot-tick" x="47" y={plotY(tick) + 4} text-anchor="end">{tick}</text>
+          </g>
+        ))}
+        <line class="plot-axis" x1={plot.left} x2={plot.right} y1={plot.bottom} y2={plot.bottom}></line>
+        <line class="plot-axis" x1={plot.left} x2={plot.left} y1={plot.top} y2={plot.bottom}></line>
+        {seedlings.map((seed) => (
+          <g class:list={["seed-point", seed.outcome.toLowerCase()]}>
+            {seed.outcome === "Thriving"
+              ? <circle cx={plotX(seed.sunlight)} cy={plotY(seed.water)} r="8"></circle>
+              : <rect x={plotX(seed.sunlight) - 7} y={plotY(seed.water) - 7} width="14" height="14" rx="1"></rect>}
+            <text x={plotX(seed.sunlight) + 11} y={plotY(seed.water) - 10}>{seed.id}</text>
+          </g>
+        ))}
+        <text class="plot-axis-label" x={(plot.left + plot.right) / 2} y="334" text-anchor="middle">horas de luz solar por dia</text>
+        <text class="plot-axis-label" x="14" y={(plot.top + plot.bottom) / 2} text-anchor="middle" transform={`rotate(-90 14 ${(plot.top + plot.bottom) / 2})`}>água por semana (L)</text>
+      </svg>
+      <figcaption>
+        As mesmas dez linhas agora são pontos. A forma representa o resultado, portanto
+        a cor não é necessária. Nenhuma resposta foi desenhada para você.
+      </figcaption>
+    </figure>
+
+    <p>
+      Uma linha neste gráfico pode funcionar como uma pergunta de sim ou não. Uma linha
+      vertical pergunta se a luz solar é menor ou igual a algum corte. Uma linha
+      horizontal faz o mesmo tipo de pergunta sobre a água. Ainda não escolhemos a
+      característica nem o valor de corte.
+    </p>
+    <p>
+      Sua primeira tarefa é apenas visual: encontre uma linha que deixe círculos e
+      quadrados menos misturados nos dois lados. Pode haver várias tentativas razoáveis.
+      Escolha uma antes de pedir ao experimento a resposta mais clara.
+    </p>
+
+    <div class="prediction-prompt">
+      <p class="lesson-stage">Experimente</p>
+      <h3>Onde você colocaria a primeira linha?</h3>
+      <p>
+        Escolha luz solar ou água e arraste a linha diretamente pelo gráfico. Nada de
+        fórmulas ainda — apenas tente deixar os resultados de cada lado o mais uniformes
+        possível. A linha inicial é apenas um primeiro palpite, não a resposta.
+      </p>
+    </div>
+  </article>
+
+  <div class="interactive-breakout article-interactive">
+    <ThresholdIntuitionPlayground client:load locale="pt-BR" />
+  </div>
+
+  <article class="lesson-body deep-article">
+    <p>
+      A revelação verifica todas as posições disponíveis e retorna
+      <strong>luz solar ≤ 3,5 horas</strong>. As sementes de A a E respondem sim: quatro
+      estão saudáveis e D está com dificuldade. As outras cinco respondem não, e todas
+      estão com dificuldade.
+    </p>
+    <p>
+      Essa pergunta transformou um grupo misto em dois grupos menos misturados. O grupo
+      da direita está pronto porque todas as sementes nele estão com dificuldade. O da
+      esquerda ainda contém os dois resultados. Um corte como 3,5 é um
+      <strong>limiar</strong>. Uma pergunta formada por característica e limiar que
+      divide um grupo é uma <strong>divisão</strong>.
+    </p>
+    <p class="lesson-stage section-kicker">Transforme uma pergunta em estrutura</p>
+    <h3>Uma região mista pode responder a outra pergunta</h3>
+    <p>
+      Uma linha é apenas o começo. Depois que uma pergunta divide o gráfico, cada região
+      guarda uma versão menor do problema original. Uma região em que todas as sementes
+      têm o mesmo resultado pode parar. Uma região mista pode fazer outra pergunta —
+      usando apenas as sementes que estão dentro dela.
+    </p>
+    <p>
+      É aqui que as linhas se tornam uma árvore. No experimento abaixo, selecione uma
+      região, escolha uma característica e corte somente essa região. O painel à direita
+      registra exatamente a mesma sequência de perguntas como uma estrutura ramificada:
+      o primeiro corte é a raiz, e cada corte seguinte fica pendurado na resposta que
+      levou até ele.
+    </p>
+    <div class="prediction-prompt">
+      <p class="lesson-stage">Construa manualmente</p>
+      <h3>Você consegue fazer cada região final conter um único resultado?</h3>
+      <p>
+        Comece com o gráfico inteiro. Depois de cada corte, escolha uma região mista e
+        continue. Existe mais de uma árvore válida, então siga o padrão que você enxerga.
+      </p>
+    </div>
+  </article>
+
+  <div class="interactive-breakout article-interactive">
+    <ManualTreePlayground client:load locale="pt-BR" />
+  </div>
+
+  <article class="lesson-body deep-article">
+    <div class="reasoning-check">
+      <p class="lesson-stage">Mantenha a semente K em vista</p>
+      <h3>A árvore já consegue prever o resultado de K?</h3>
+      <p>
+        Se você abriu a solução guiada, responda às duas perguntas para K: 3 horas de
+        luz solar e 2 L de água. Se construiu outra árvore, siga as suas perguntas.
+      </p>
+      <details>
+        <summary>Revelar o caminho guiado</summary>
+        <p>
+          K responde sim para luz solar ≤ 3,5 e sim para água ≤ 3,1, então chega à folha
+          saudável. Já conseguimos <em>usar</em> a árvore; a próxima parte explica como
+          o computador escolhe as perguntas sem depender dos nossos olhos.
+        </p>
+      </details>
+    </div>
+    <p class="lesson-stage">O ponto de virada desta lição</p>
+    <h2>Pare e observe o que você acabou de fazer</h2>
+    <p>
+      Quer você tenha concluído a árvore por conta própria, quer tenha aberto a solução
+      guiada, a construção não usou fórmulas. Um nó é uma pergunta, suas duas respostas
+      são ramos e cada região final é uma folha que faz uma previsão. A construção usou
+      exatamente três habilidades:
+    </p>
+
+    <ol class="mechanism-steps">
+      <li><strong>Propor.</strong> Você deslizou uma linha pela região e ela se encaixou entre sementes vizinhas.</li>
+      <li><strong>Julgar.</strong> Você olhou para os dois lados e decidiu se os resultados ficaram mais parecidos.</li>
+      <li><strong>Repetir.</strong> Dentro de qualquer região que continuou mista, você fez tudo de novo.</li>
+    </ol>
+
+    <p>
+      Duas dessas habilidades são mecânicas. Propor linhas é um laço sobre posições.
+      Repetir é o mesmo procedimento aplicado a um grupo menor. Um computador faz as
+      duas coisas sem nenhuma criatividade.
+    </p>
+    <p>
+      A terceira habilidade é o obstáculo. “Este lado parece mais limpo” é um julgamento,
+      não uma instrução. Para automatizar o processo inteiro, precisamos substituir os
+      seus olhos por um número — uma pontuação que responda: <em>quão bem esta pergunta
+      separou os resultados?</em> Essa única substituição é toda a segunda metade desta
+      lição. Todo o resto você já inventou.
+    </p>
+
+    <p class="lesson-stage">Parte dois · automatize</p>
+    <h2 id="score">Só algumas perguntas valem a pena</h2>
+    <p>
+      Antes de pontuar perguntas, vale contá-las. Um limiar como 2,25 pode parecer
+      arbitrário — por que não 2,3, ou 2,31? Olhe para a coluna de luz solar: 2,0 e 2,5
+      são valores vizinhos. <em>Toda</em> linha traçada entre eles envia as mesmas
+      linhas da tabela para os mesmos lados. Todos esses limiares são a mesma pergunta
+      com números diferentes, então testamos apenas um deles: o ponto médio.
+    </p>
+
+    <div class="formula formula-wide">(2,0 + 2,5) / 2 = 2,25</div>
+
+    <p>
+      Isso torna a busca finita. Ordene os valores distintos de uma coluna e tome o
+      ponto médio de cada par vizinho: dez valores distintos geram nove limiares
+      candidatos. Duas características, nove limiares cada — na raiz existem exatamente
+      <strong>18 perguntas que valem a pena testar</strong>, e não infinitas. Os
+      experimentos acima já estavam encaixando a sua linha nesses pontos médios.
+    </p>
+    <p>
+      Portanto, o computador consegue gerar todas as perguntas que valem a pena. O que
+      ele ainda não consegue é escolher a melhor. “Esta parece mais limpa” precisa virar
+      um número.
+    </p>
+
+    <h3>Primeiro passo: medir a mistura de um único grupo</h3>
+    <p>
+      Esqueça as divisões por um instante e olhe para um grupo de sementes. O que os
+      seus olhos realmente verificaram, lado a lado, foi <em>o quão misto</em> cada
+      grupo estava. Uma pontuação de mistura útil deve seguir três regras:
+    </p>
+
+    <ol class="mechanism-steps compact-steps">
+      <li><strong>Um grupo puro vale 0.</strong> Se toda semente tem o mesmo resultado, não há mistura.</li>
+      <li><strong>Uma mistura igualitária vale o máximo.</strong> Um grupo 50/50 é o mais misto que duas classes permitem.</li>
+      <li><strong>Só as contagens de rótulos importam.</strong> A pontuação não deve se importar com a posição nem com a ordem das sementes.</li>
+    </ol>
+
+    <p>
+      A escolha padrão para árvores de classificação é a <strong>impureza de Gini</strong>,
+      e ela tem um significado concreto. Imagine sortear o rótulo de uma semente,
+      devolvê-lo à tigela e sortear novamente. A devolução mantém as mesmas chances nos
+      dois sorteios. O Gini é a chance de os dois rótulos <em>discordarem</em>.
+    </p>
+    <p>
+      Nosso grupo completo tem quatro sementes saudáveis e seis com dificuldade. A
+      discordância pode acontecer em duas ordens: saudável e depois com dificuldade,
+      ou com dificuldade e depois saudável:
+    </p>
+
+    <div class="derivation-card derivation-steps">
+      <span>saudável, depois com dificuldade</span><strong>4/10 × 6/10 = 0,24</strong>
+      <span>com dificuldade, depois saudável</span><strong>6/10 × 4/10 = 0,24</strong>
+      <span>qualquer discordância</span><strong>Gini = 0,24 + 0,24 = 0,48</strong>
+    </div>
+
+    <p>
+      Em um grupo puro, a discordância é impossível, então o Gini é 0. Em um grupo com
+      duas classes divididas igualmente, ela é a maior possível, então o Gini chega a 0,5.
+    </p>
+
+    <details class="notation-depth">
+      <summary>Notação opcional: comprimir o mesmo cálculo</summary>
+      <p>
+        Use <em>p</em> para representar “a proporção do grupo”. Aqui,
+        <em>p(saudável)</em> é 0,4 e <em>p(dificuldade)</em> é 0,6. Elevar uma proporção
+        ao quadrado é multiplicá-la por ela mesma: a chance de sortear o mesmo rótulo
+        duas vezes. Assim, podemos subtrair de 1 todas as formas de concordância:
+      </p>
+      <div class="formula formula-wide">Gini = 1 − p(saudável)² − p(dificuldade)² = 1 − 0,4² − 0,6² = 0,48</div>
+      <p>
+        Com mais de dois rótulos, a forma curta é <strong>Gini = 1 − Σ pₖ²</strong>.
+        O símbolo Σ quer dizer “some um termo para cada classe”, e o pequeno
+        <em>k</em> identifica a classe daquele termo. Essa forma compacta não é
+        necessária no restante da lição.
+      </p>
+    </details>
+
+    <p>
+      Esse valor está perto do máximo possível de 0,5 para duas classes. Não significa
+      que um modelo erra 48% das vezes — ainda nem existe um modelo. Significa apenas
+      que o grupo ainda contém uma mistura forte dos dois rótulos.
+    </p>
+
+    <figure class="static-figure gini-figure">
+      <svg class="gini-curve" viewBox="0 0 580 310" role="img" aria-labelledby="gini-title gini-desc">
+        <title id="gini-title">Impureza de Gini para duas classes</title>
+        <desc id="gini-desc">A impureza de Gini é zero quando um grupo contém apenas uma classe. Ela sobe até 0,5 quando as duas classes têm proporções iguais.</desc>
+        {[0, 0.25, 0.5].map((tick) => {
+          const y = 254 - tick * 400;
+          return <g><line class="plot-gridline" x1="54" x2="526" y1={y} y2={y}></line><text class="plot-tick" x="43" y={y + 4} text-anchor="end">{tick}</text></g>;
+        })}
+        <line class="plot-axis" x1="54" x2="526" y1="254" y2="254"></line>
+        <line class="plot-axis" x1="54" x2="54" y1="54" y2="254"></line>
+        <polyline class="gini-line" points={giniPoints}></polyline>
+        <circle class="gini-dot" cx="54" cy="254" r="5"></circle>
+        <circle class="gini-dot" cx="290" cy="54" r="5"></circle>
+        <circle class="gini-dot" cx="526" cy="254" r="5"></circle>
+        <text class="gini-note" x="62" y="240">puro</text>
+        <text class="gini-note" x="290" y="42" text-anchor="middle">mistura máxima</text>
+        <text class="gini-note" x="518" y="240" text-anchor="end">puro</text>
+        <text class="plot-tick" x="54" y="276" text-anchor="middle">0%</text>
+        <text class="plot-tick" x="290" y="276" text-anchor="middle">50%</text>
+        <text class="plot-tick" x="526" y="276" text-anchor="middle">100%</text>
+        <text class="plot-axis-label" x="290" y="301" text-anchor="middle">proporção de sementes saudáveis no grupo</text>
+        <text class="plot-axis-label" x="15" y="154" text-anchor="middle" transform="rotate(-90 15 154)">impureza de Gini</text>
+      </svg>
+      <figcaption>
+        Para duas classes, o Gini atinge o máximo em uma mistura 50/50 e cai a zero à
+        medida que uma classe toma conta do grupo — exatamente o comportamento que pedimos.
+      </figcaption>
+    </figure>
+
+    <h3>Segundo passo: pontuar uma pergunta, não apenas um grupo</h3>
+    <p>
+      Uma pergunta cria <em>dois</em> grupos, então precisamos combinar dois valores de
+      Gini em uma única pontuação. Tome a primeira pergunta mais clara, luz solar ≤ 3,5.
+      O lado sim tem quatro sementes saudáveis e uma com dificuldade. O lado não tem
+      cinco sementes com dificuldade — puro, Gini 0:
+    </p>
+
+    <div class="formula formula-wide">Gini(lado sim) = 1 − (4/5)² − (1/5)² = 0,32</div>
+
+    <p>
+      Cada lado é ponderado pela fração de linhas que recebeu. Aqui, por acaso, a divisão
+      envia cinco linhas para cada lado, então os pesos são iguais; a mesma regra também
+      funciona quando divisões posteriores criam grupos de tamanhos diferentes:
+    </p>
+
+    <div class="formula formula-wide">pontuação após a divisão = 5/10 × 0,32 + 5/10 × 0 = 0,16</div>
+
+    <p>
+      Antes da pergunta, o Gini do grupo era 0,48. Depois dela, a mistura ponderada é
+      0,16. A melhora é chamada de <strong>ganho de Gini</strong>:
+    </p>
+
+    <div class="formula formula-wide">ganho = 0,48 − 0,16 = 0,32</div>
+
+    <p>
+      Este é o número que substitui os seus olhos. Um ganho maior significa que a
+      pergunta removeu mais mistura. Ele usa apenas contagens de rótulos, então um
+      computador consegue avaliá-lo para qualquer pergunta candidata com poucas
+      multiplicações.
+    </p>
+
+    <div class="reasoning-check">
+      <p class="lesson-stage">Confira a ideia</p>
+      <h3>Por que ponderamos os dois lados pelo número de linhas?</h3>
+      <p>Tente responder antes de abrir a explicação.</p>
+      <details>
+        <summary>Revelar o raciocínio</summary>
+        <p>
+          Sem os pesos, um grupo puro minúsculo poderia esconder um grupo grande e
+          desorganizado. Uma divisão que isola uma única semente pareceria tão boa
+          quanto uma que organiza metade da tabela. Os pesos fazem cada lado importar
+          na proporção das linhas que contém.
+        </p>
+      </details>
+    </div>
+
+    <h3>A pontuação compara quaisquer duas candidatas</h3>
+    <p>
+      Para sentir a pontuação funcionando, mantenha a característica fixa e mova apenas
+      o limiar. Antes de ler os números abaixo, olhe para as duas imagens e preveja qual
+      pergunta deixa menos mistura para trás.
+    </p>
+
+    <figure class="static-figure gini-comparison-figure">
+      <div class="gini-split-grid">
+        <section class="gini-candidate" aria-labelledby="candidate-a-title">
+          <div class="gini-candidate-heading">
+            <span>Candidata A</span>
+            <strong id="candidate-a-title">Luz solar ≤ 3,5?</strong>
+          </div>
+          <svg class="threshold-comparison-plot" viewBox="0 0 570 112" role="img" aria-labelledby="candidate-a-plot-title candidate-a-plot-desc">
+            <title id="candidate-a-plot-title">Divisão da luz solar em 3,5 horas</title>
+            <desc id="candidate-a-plot-desc">O limiar envia quatro sementes saudáveis e uma com dificuldade para a folha esquerda. A folha direita contém cinco sementes com dificuldade.</desc>
+            <rect class="plot-region plot-region-yes" x={plot.left} y="24" width={plotX(3.5) - plot.left} height="48"></rect>
+            <rect class="plot-region plot-region-no" x={plotX(3.5)} y="24" width={plot.right - plotX(3.5)} height="48"></rect>
+            <line class="plot-axis" x1={plot.left} x2={plot.right} y1="60" y2="60"></line>
+            {[1, 2, 3, 4, 5, 6].map((tick) => (
+              <g>
+                <line class="plot-gridline" x1={plotX(tick)} x2={plotX(tick)} y1="60" y2="66"></line>
+                <text class="plot-tick" x={plotX(tick)} y="82" text-anchor="middle">{tick}</text>
+              </g>
+            ))}
+            <line class="plot-threshold" x1={plotX(3.5)} x2={plotX(3.5)} y1="18" y2="72"></line>
+            <text class="plot-threshold-label" x={plotX(3.5) + 6} y="18">3,5</text>
+            {seedlings.map((seed) => (
+              <g class:list={["seed-point", seed.outcome.toLowerCase()]}>
+                {seed.outcome === "Thriving"
+                  ? <circle cx={plotX(seed.sunlight)} cy="48" r="7"></circle>
+                  : <rect x={plotX(seed.sunlight) - 6} y="42" width="12" height="12" rx="1"></rect>}
+              </g>
+            ))}
+            <text class="plot-axis-label" x={(plot.left + plot.right) / 2} y="104" text-anchor="middle">horas de luz solar por dia</text>
+          </svg>
+          <details class="candidate-score-reveal">
+            <summary>Revelar a pontuação da candidata A</summary>
+            <div class="candidate-leaves">
+              <div><span>Folha esquerda · 5 linhas</span><strong>4 saudáveis · 1 com dificuldade</strong><small>Gini = 0,320</small></div>
+              <div><span>Folha direita · 5 linhas</span><strong>0 saudáveis · 5 com dificuldade</strong><small>Gini = 0</small></div>
+            </div>
+            <div class="candidate-total">
+              <span>Pontuação ponderada · ganho</span>
+              <strong>0,160 · ganho 0,320</strong>
+            </div>
+          </details>
+        </section>
+
+        <section class="gini-candidate" aria-labelledby="candidate-b-title">
+          <div class="gini-candidate-heading">
+            <span>Candidata B</span>
+            <strong id="candidate-b-title">Luz solar ≤ 4,6?</strong>
+          </div>
+          <svg class="threshold-comparison-plot" viewBox="0 0 570 112" role="img" aria-labelledby="candidate-b-plot-title candidate-b-plot-desc">
+            <title id="candidate-b-plot-title">Divisão da luz solar em 4,6 horas</title>
+            <desc id="candidate-b-plot-desc">O limiar envia quatro sementes saudáveis e três com dificuldade para a folha esquerda. A folha direita contém três sementes com dificuldade.</desc>
+            <rect class="plot-region plot-region-yes" x={plot.left} y="24" width={plotX(4.6) - plot.left} height="48"></rect>
+            <rect class="plot-region plot-region-no" x={plotX(4.6)} y="24" width={plot.right - plotX(4.6)} height="48"></rect>
+            <line class="plot-axis" x1={plot.left} x2={plot.right} y1="60" y2="60"></line>
+            {[1, 2, 3, 4, 5, 6].map((tick) => (
+              <g>
+                <line class="plot-gridline" x1={plotX(tick)} x2={plotX(tick)} y1="60" y2="66"></line>
+                <text class="plot-tick" x={plotX(tick)} y="82" text-anchor="middle">{tick}</text>
+              </g>
+            ))}
+            <line class="plot-threshold" x1={plotX(4.6)} x2={plotX(4.6)} y1="18" y2="72"></line>
+            <text class="plot-threshold-label" x={plotX(4.6) + 6} y="18">4,6</text>
+            {seedlings.map((seed) => (
+              <g class:list={["seed-point", seed.outcome.toLowerCase()]}>
+                {seed.outcome === "Thriving"
+                  ? <circle cx={plotX(seed.sunlight)} cy="48" r="7"></circle>
+                  : <rect x={plotX(seed.sunlight) - 6} y="42" width="12" height="12" rx="1"></rect>}
+              </g>
+            ))}
+            <text class="plot-axis-label" x={(plot.left + plot.right) / 2} y="104" text-anchor="middle">horas de luz solar por dia</text>
+          </svg>
+          <details class="candidate-score-reveal">
+            <summary>Revelar a pontuação da candidata B</summary>
+            <div class="candidate-leaves">
+              <div><span>Folha esquerda · 7 linhas</span><strong>4 saudáveis · 3 com dificuldade</strong><small>Gini ≈ 0,490</small></div>
+              <div><span>Folha direita · 3 linhas</span><strong>0 saudáveis · 3 com dificuldade</strong><small>Gini = 0</small></div>
+            </div>
+            <div class="candidate-total">
+              <span>Pontuação ponderada · ganho</span>
+              <strong>0,343 · ganho 0,137</strong>
+            </div>
+          </details>
+        </section>
+      </div>
+      <figcaption>
+        Mesmos dados, mesma característica, limiares diferentes. Faça primeiro uma
+        previsão visual e depois abra as duas pontuações. A candidata com maior ganho é
+        a que deixa menos mistura ponderada.
+      </figcaption>
+    </figure>
+
+    <p class="lesson-stage">O algoritmo inteiro</p>
+    <h2 id="automate">Dois laços e uma memória</h2>
+    <p>
+      Agora todos os ingredientes estão na mesa, e o algoritmo quase se escreve sozinho.
+      No grupo atual de linhas:
+    </p>
+
+    <ol class="mechanism-steps">
+      <li><strong>Para cada característica</strong> — luz solar e depois água —</li>
+      <li><strong>para cada limiar de ponto médio</strong> dessa característica,</li>
+      <li><strong>calcule o ganho de Gini</strong> da pergunta que eles formam</li>
+      <li><strong>e lembre a melhor vista até agora.</strong></li>
+    </ol>
+
+    <p>
+      Essa é a busca inteira: dois laços aninhados e uma vencedora na memória. Não há
+      nenhuma esperteza lá dentro — o computador faz exatamente o que você fez no
+      primeiro experimento, exceto que ele testa todas as 18 perguntas e se recusa a
+      ter gosto próprio. Veja a busca rodar.
+    </p>
+  </article>
+
+  <div class="interactive-breakout article-interactive">
+    <SplitSearchPlayground client:load locale="pt-BR" />
+  </div>
+
+  <article class="lesson-body deep-article">
+    <p>
+      Se você rodou a busca até o fim, a vencedora numérica confirmou o padrão que os
+      seus olhos podiam ver: <strong>luz solar ≤ 3,5</strong> mantém juntas as cinco
+      sementes com muita luz em um grupo puro com dificuldade e obtém ganho 0,320.
+      O laço não inventou uma ideia nova; ele mediu todas as linhas possíveis e confirmou
+      a mais clara.
+    </p>
+
+    <h3>A terceira habilidade: repetir em cada folha mista</h3>
+    <p>
+      Uma busca produz uma pergunta, e uma pergunta ainda não é uma árvore. A divisão
+      vencedora deixa F, G, H, I e J em uma folha pura com dificuldade — esse lado está
+      pronto. O outro lado ainda contém os dois rótulos, então rodamos <em>exatamente a
+      mesma busca</em> apenas em A, B, C, D e E. Água ≤ 3,1 separa D das quatro sementes
+      saudáveis, e todas as folhas ficam puras.
+    </p>
+    <p>
+      Esse padrão — um procedimento que se aplica aos problemas menores que ele mesmo
+      cria — é chamado de <strong>recursão</strong>. A regra nunca muda; apenas o
+      conjunto de linhas ativas diminui. Avance passo a passo abaixo e tente prever
+      qual grupo será dividido em seguida.
+    </p>
+    <div class="metric-direction-bridge">
+      <strong>Uma vencedora, duas formas equivalentes de ver a pontuação</strong>
+      <p>
+        O experimento anterior manteve o <em>maior ganho</em>. Os dois gráficos abaixo
+        mantêm o <em>menor Gini ponderado depois da divisão</em>, um gráfico por atributo.
+        As duas regras
+        escolhem a mesma vencedora porque o Gini inicial é fixo:
+        <strong>ganho = Gini inicial − Gini depois da divisão</strong>.
+      </p>
+    </div>
+  </article>
+
+  <div class="interactive-breakout article-interactive">
+    <TreeGrowthPlayground client:load locale="pt-BR" />
+  </div>
+
+  <article class="lesson-body deep-article">
+    <p>
+      A estrutura final merece um olhar completo:
+    </p>
+
+    <figure class="static-figure tree-figure">
+      <p class="mobile-scroll-cue">Deslize horizontalmente para acompanhar a árvore completa.</p>
+      <svg class="tree-snapshot" viewBox="0 0 760 340" role="img" aria-labelledby="tree-title tree-desc">
+        <title id="tree-title">A estrutura ramificada completa, com duas perguntas</title>
+        <desc id="tree-desc">A raiz pergunta se a luz solar é no máximo 3,5. Seu filho esquerdo pergunta se a água é no máximo 3,1. Três folhas preveem saudável ou com dificuldade.</desc>
+        <g class="tree-connectors">
+          <path d="M380 82 L245 142"></path><path d="M380 82 L570 142"></path>
+          <path d="M245 204 L130 264"></path><path d="M245 204 L355 264"></path>
+        </g>
+        <g class="tree-edge-labels">
+          <text x="302" y="111">sim</text><text x="483" y="111">não</text>
+          <text x="176" y="235">sim</text><text x="308" y="235">não</text>
+        </g>
+        <g class="tree-node tree-question" transform="translate(290 22)"><rect width="180" height="60" rx="10"></rect><text x="90" y="25" text-anchor="middle">Luz solar ≤ 3,5?</text><text class="tree-rows" x="90" y="44" text-anchor="middle">A B C D E F G H I J</text></g>
+        <g class="tree-node tree-question" transform="translate(155 142)"><rect width="180" height="62" rx="10"></rect><text x="90" y="25" text-anchor="middle">Água ≤ 3,1?</text><text class="tree-rows" x="90" y="46" text-anchor="middle">A B C D E</text></g>
+        <g class="tree-node tree-leaf struggling" transform="translate(485 142)"><rect width="170" height="62" rx="10"></rect><text x="85" y="25" text-anchor="middle">Com dificuldade</text><text class="tree-rows" x="85" y="46" text-anchor="middle">F G H I J</text></g>
+        <g class="tree-node tree-leaf thriving" transform="translate(45 264)"><rect width="170" height="52" rx="10"></rect><text x="85" y="22" text-anchor="middle">Saudável</text><text class="tree-rows" x="85" y="40" text-anchor="middle">A B C E</text></g>
+        <g class="tree-node tree-leaf struggling" transform="translate(270 264)"><rect width="170" height="52" rx="10"></rect><text x="85" y="22" text-anchor="middle">Com dificuldade</text><text class="tree-rows" x="85" y="40" text-anchor="middle">D</text></g>
+      </svg>
+      <figcaption>
+        Duas buscas, duas perguntas, três folhas. As regiões que você cortou no
+        gráfico e as folhas desta árvore são duas visões da mesma partição.
+      </figcaption>
+    </figure>
+
+    <p>
+      Compare com a árvore que você construiu à mão. O computador pode não ter feito os
+      seus cortes exatos, mas seguiu exatamente o seu método — e agora os dois
+      vocabulários se alinham:
+    </p>
+
+    <div class="anatomy-grid">
+      <div><strong>Nó</strong><span>um grupo de linhas e uma pergunta</span></div>
+      <div><strong>Ramo</strong><span>uma resposta à pergunta</span></div>
+      <div><strong>Folha</strong><span>um grupo final e sua previsão</span></div>
+    </div>
+
+    <p class="lesson-stage">Teste o mecanismo</p>
+    <h2 id="geometry">As mesmas perguntas pequenas podem criar fronteiras complexas</h2>
+    <p>
+      O conjunto das sementes terminou depois de duas perguntas porque o padrão era
+      incomumente cooperativo. O algoritmo não está limitado a dois cortes. Cada nova
+      pergunta atua apenas dentro de uma região existente, então linhas verticais e
+      horizontais podem se combinar em faixas, escadas, caixas e muitos retângulos menores.
+    </p>
+    <p>
+      Escolha abaixo um padrão de pontos e tente prever do que a árvore precisará antes
+      de executá-la. Depois, percorra a mesma busca por Gini que você acabou de aprender:
+      percorra <em>x</em> e <em>y</em>, teste cada limiar de ponto médio, mantenha o maior
+      ganho e repita dentro das regiões que ainda estão misturadas.
+    </p>
+  </article>
+
+  <div class="interactive-breakout article-interactive">
+    <DatasetComplexityPlayground client:load locale="pt-BR" />
+  </div>
+
+  <article class="lesson-body deep-article">
+    <p>
+      Agora o invariante fica mais nítido. Uma fronteira mais elaborada não exige um
+      tipo mais elaborado de pergunta; exige mais rodadas da mesma busca. A diagonal
+      vira uma escada porque esta árvore só faz perguntas alinhadas aos eixos e sobre
+      uma característica por vez. A ilha central exige cortes aninhados porque nenhuma
+      pergunta vertical ou horizontal consegue isolar sozinha o grupo do meio.
+    </p>
+    <p>
+      Mais divisões também significam mais oportunidades de ajustar acidentes nos pontos
+      de treino. É por isso que a complexidade da árvore não pode crescer sem uma regra
+      de parada.
+    </p>
+
+    <h3>Quando a árvore deve parar?</h3>
+    <p>
+      Nossos dados de brinquedo ficam puros depois de duas perguntas. Dados reais são
+      mais ruidosos, e uma árvore que continua dividindo pode acabar memorizando
+      pequenos acidentes do conjunto de treino. Por isso, árvores práticas param de
+      crescer um ramo quando qualquer uma destas condições vale:
+    </p>
+
+    <ol class="mechanism-steps compact-steps">
+      <li><strong>O nó é puro.</strong> Todas as linhas ativas têm o mesmo rótulo.</li>
+      <li><strong>Nenhuma divisão tem ganho positivo.</strong> As perguntas disponíveis não melhoram o grupo.</li>
+      <li><strong>O limite de profundidade foi atingido.</strong> Recusamo-nos a fazer mais perguntas aninhadas.</li>
+      <li><strong>Restam poucas linhas.</strong> Evitamos criar uma regra a partir de um grupo frágil.</li>
+    </ol>
+
+    <p>
+      Quando um ramo para, sua folha prevê o rótulo mais comum entre as linhas dela. A
+      folha também pode guardar as contagens de classe: uma folha com oito sementes
+      saudáveis e duas com dificuldade é menos confiante do que uma com dez saudáveis,
+      ainda que as duas prevejam saudável.
+    </p>
+
+    <h3>A árvore é gulosa</h3>
+    <p>
+      Em cada nó, a busca mantém a melhor divisão que consegue ver <em>naquele
+      momento</em>. Ela nunca pergunta se uma primeira divisão um pouco pior permitiria
+      divisões muito melhores depois — testar todas as árvores completas possíveis
+      seria astronomicamente caro. Esse atalho torna o treino rápido, e seu custo é a
+      honestidade sobre a palavra “melhor”: a divisão vencedora é apenas a melhor
+      escolha <em>local</em>, segundo a pontuação atual, para as linhas atuais.
+    </p>
+
+    <h3>A previsão percorre as perguntas concluídas</h3>
+    <p>
+      O treino pesquisou muitas perguntas; a previsão responde apenas às que
+      sobreviveram. Uma nova linha começa na raiz e segue um ramo de cada vez até
+      chegar a uma folha.
+    </p>
+
+    <div class="reasoning-check">
+      <p class="lesson-stage">Volte à semente K</p>
+      <h3>A semente K recebe 3 horas de luz solar e 2 L de água. Onde ela chega?</h3>
+      <p>Diga cada resposta antes de abrir o caminho.</p>
+      <details>
+        <summary>Revelar o caminho</summary>
+        <p>
+          A luz solar é no máximo 3,5, então K vai para a esquerda. A água é no máximo
+          3,1, então K vai novamente para a esquerda — direto para a folha “saudável”.
+          Essa é uma previsão do nosso pequeno conjunto de dados, não a afirmação de que
+          esse plano de luz e irrigação faz uma semente ficar saudável.
+        </p>
+      </details>
+    </div>
+
+    <h3>Um resultado perfeito no treino pode ser um alerta</h3>
+    <p>
+      Esta árvore classifica corretamente as dez sementes de treino. Isso é conveniente
+      para ensinar, porque todas as etapas ficam visíveis. Em dados reais, a perfeição
+      costuma ser um sintoma: a árvore pode ter memorizado as linhas de treino em vez
+      de aprender um padrão. Essa falha se chama <strong>sobreajuste</strong>, e nós a
+      detectamos testando com dados rotulados que a árvore nunca usou ao escolher seus
+      limiares. Limites de profundidade, tamanhos mínimos de grupo, ganho mínimo e poda
+      expressam o mesmo princípio: um novo ramo precisa merecer sua complexidade.
+    </p>
+
+    <div class="concept-ledger">
+      <div><strong>Ideia humana</strong><span>encontrar uma pergunta simples que revele um padrão</span></div>
+      <div><strong>Regra matemática</strong><span>maximizar a redução da mistura ponderada</span></div>
+      <div><strong>Estrutura aprendida</strong><span>perguntas conectadas por ramos sim e não</span></div>
+      <div><strong>Previsão</strong><span>responder a perguntas até chegar a uma folha</span></div>
+    </div>
+
+    <p class="lesson-stage">Além do plano</p>
+    <h2 id="more-features">Mais características, os mesmos dois laços</h2>
+    <p>
+      Todos os experimentos até aqui usaram duas características, e essa foi uma escolha
+      de cenário, não de método. Duas características cabem em uma tela, então cada
+      pergunta podia ser desenhada como uma linha. Mas repare no que a busca de fato
+      consumiu: ela ordenou uma coluna, tomou pontos médios, contou rótulos e calculou
+      um ganho. Em nenhum momento o algoritmo olhou para o desenho. Ele leu colunas.
+    </p>
+    <p>
+      Então deixe que ele leia mais colunas. A tabela abaixo descreve doze mudas de
+      estufa com <strong>três</strong> medições cada — luz solar, água e temperatura.
+      Uma terceira característica já exigiria um gráfico tridimensional, e uma quarta
+      inviabilizaria o desenho por completo. A tabela não tem esse limite, então desta
+      vez a própria tabela é o espaço dos dados.
+    </p>
+    <p>
+      Nada na receita muda. <strong>Para cada característica</strong> — agora três — e
+      <strong>para cada limiar de ponto médio</strong> dessa característica, calcule o
+      ganho de Gini da pergunta que elas formam e lembre a melhor vista até agora. Doze
+      valores distintos por coluna geram onze pontos médios, então a busca na raiz testa
+      exatamente 3 × 11 = 33 candidatas. Depois, a pergunta vencedora divide as linhas em
+      dois grupos, e a mesma busca roda de novo dentro de qualquer grupo que continue
+      misturado.
+    </p>
+
+    <div class="prediction-prompt">
+      <p class="lesson-stage">Veja a generalização</p>
+      <h3>Sobre qual coluna você perguntaria primeiro?</h3>
+      <p>
+        Examine a tabela antes de executar a busca. Enquanto uma pergunta é testada, as
+        linhas que respondem sim se destacam, e os gráficos sob a tabela registram o
+        Gini ponderado de cada limiar testado — o mesmo registro que você já conhece,
+        com uma pista a mais.
+      </p>
+    </div>
+  </article>
+
+  <div class="interactive-breakout article-interactive">
+    <MultiFeatureSplitPlayground client:load locale="pt-BR" />
+  </div>
+
+  <article class="lesson-body deep-article">
+    <p>
+      A pergunta vencedora da raiz veio da coluna de temperatura — uma característica
+      que nenhum gráfico bidimensional de luz solar e água conseguiria sequer mostrar.
+      O laço não precisou saber disso de antemão; a temperatura simplesmente produziu o
+      maior ganho, e a memória a manteve. A recursão então rodou mais duas vezes: dentro
+      do grupo quente, a água separou as três mudas com pouca água, e dentro do grupo
+      quente e irrigado, a luz solar isolou a única muda sombreada. Três buscas, três
+      características, quatro folhas puras — cada coluna conquistou seu nó vencendo uma
+      busca local.
+    </p>
+    <p>
+      Essa é toda a generalização. O laço nunca pergunta quantas colunas a tabela tem;
+      ele só pede a próxima. Dez características significariam dez pistas no registro e
+      um laço mais longo — não uma ideia nova. Os gráficos de duas características desta
+      lição foram um andaime para os seus olhos. O algoritmo esteve lendo a tabela o
+      tempo todo.
+    </p>
+
+    <div class="boundary-note">
+      <strong>Este ainda é um problema de brinquedo</strong>
+      <p>
+        Todos os experimentos desta introdução usam no máximo três características
+        numéricas, para que cada etapa de cada busca permaneça visível. Tabelas reais
+        podem ter muito mais colunas, valores ausentes, mais de duas classes e colunas
+        categóricas ou ordinais. Esses casos exigem decisões
+        sobre perguntas válidas, roteamento, codificação, parada e avaliação que este
+        artigo não cobre. Nosso objetivo aqui foi mais estreito: expor com fidelidade o
+        princípio central — percorrer características e limiares, pontuar cada candidata
+        com Gini, manter a melhor divisão local e aplicar recursão.
+      </p>
+    </div>
+
+    <p class="lesson-stage">Guarde o menor modelo mental que ainda seja útil</p>
+    <div class="mental-model">
+      <h2>Uma árvore de decisão é uma busca repetida por perguntas úteis.</h2>
+      <p>
+        <strong>
+          Em cada nó, teste todas as divisões candidatas. Mantenha a que mais reduz a
+          mistura dos rótulos conhecidos. Depois, repita apenas onde os rótulos ainda
+          estiverem misturados.
+        </strong>
+      </p>
+    </div>
+
+    <p>
+      Você construiu a árvore primeiro e conheceu o algoritmo depois — e essa ordem era
+      o ponto central. A fórmula não trouxe nenhuma ideia nova; o ganho de Gini apenas
+      transformou o julgamento que os seus olhos já faziam em um número que um laço
+      consegue maximizar. O diagrama nunca foi o ponto de partida. Ele foi o resultado.
+    </p>
+
+    <div class="transfer-check">
+      <h3>Você entendeu o mecanismo se agora consegue…</h3>
+      <ul>
+        <li>olhar para uma pequena tabela e propor um limiar útil;</li>
+        <li>explicar por que apenas os limiares de ponto médio precisam ser testados;</li>
+        <li>calcular a impureza de Gini e o ganho de Gini ponderado;</li>
+        <li>enunciar o algoritmo de treino como dois laços mais recursão;</li>
+        <li>prever por que geometrias diferentes exigem formatos diferentes de árvore;</li>
+        <li>explicar por que a divisão vencedora é apenas uma vencedora local;</li>
+        <li>acompanhar uma nova linha desde a raiz até uma previsão.</li>
+      </ul>
+    </div>
+  </article>
+
+  <ArticleConnections articleId={article.id} locale="pt-BR" />
+  <NewsletterSignup locale="pt-BR" source="decision-trees-article-pt" compact />
+</BaseLayout>

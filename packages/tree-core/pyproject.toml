@@ -1,0 +1,20 @@
+[project]
+name = "grove-tree-core"
+version = "0.1.0"
+description = "Readable, from-scratch decision trees for Grove lessons"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.9"
+dependencies = []
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["grove*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

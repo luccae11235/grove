@@ -1,0 +1,29 @@
+---
+import {
+  getDifficultyLevel,
+  type ArticleDifficulty,
+} from "../content/articles";
+import type { Locale } from "../i18n";
+
+interface Props {
+  difficulty: ArticleDifficulty;
+  showDescription?: boolean;
+  locale?: Locale;
+}
+
+const { difficulty, showDescription = false, locale = "en" } = Astro.props;
+const level = getDifficultyLevel(difficulty, locale);
+---
+
+<span
+  class:list={["difficulty-badge", `difficulty-${difficulty}`]}
+  title={level.description}
+>
+  <span class="difficulty-dots" aria-hidden="true">
+    {Array.from({ length: 3 }, (_, index) => (
+      <i class:list={{ filled: index < level.order }}></i>
+    ))}
+  </span>
+  <span>{level.label}</span>
+  {showDescription && <small>{level.shortDescription}</small>}
+</span>

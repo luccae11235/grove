@@ -1,0 +1,79 @@
+---
+import { getCollection, render } from "astro:content";
+import ArticleConnections from "../../components/ArticleConnections.astro";
+import NewsletterSignup from "../../components/NewsletterSignup.astro";
+import { articles } from "../../content/articles";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const entries = await getCollection(
+  "articles",
+  ({ data }) => data.articleId === "regression-trees-from-scratch" && data.locale === "en",
+);
+const entry = entries[0];
+if (!entry) throw new Error("Missing regression-trees-from-scratch article entry.");
+const { Content } = await render(entry);
+
+// Connections resolve only for articles in the visible catalog (published, or
+// any article during local dev). A draft is absent from the production build,
+// so we skip the block there rather than let it throw.
+const inCatalog = articles.some((article) => article.id === entry.data.articleId);
+---
+
+<BaseLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  canonicalPath={entry.data.href}
+  pageType="article"
+  noindex={entry.data.status === "draft"}
+  wide
+>
+  <Content />
+  {inCatalog && <ArticleConnections articleId={entry.data.articleId} />}
+  <NewsletterSignup source="regression-trees-article" compact />
+</BaseLayout>
+
+<style is:global>
+  .regression-table-figure {
+    width: min(720px, calc(100vw - var(--sidebar-width) - 96px));
+  }
+
+  .regression-derivation {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .regression-derivation small {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    color: var(--text-muted);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.7rem;
+    line-height: 1.55;
+  }
+
+  .regression-formula {
+    overflow-x: auto;
+    font-size: clamp(1.2rem, 2.4vw, 1.5rem);
+    white-space: nowrap;
+  }
+
+  .regression-closing {
+    padding-bottom: 28px;
+  }
+
+  @media (max-width: 900px) {
+    .regression-table-figure {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .regression-derivation {
+      grid-template-columns: 1fr;
+    }
+
+    .regression-derivation strong {
+      margin-bottom: 8px;
+    }
+  }
+</style>

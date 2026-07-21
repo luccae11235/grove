@@ -1,0 +1,430 @@
+---
+interface Props {
+  kind: "split-groups" | "stump-means";
+}
+
+const { kind } = Astro.props;
+
+const rows = [
+  { id: "A", fertilizer: 0, yield: 1.5 },
+  { id: "B", fertilizer: 20, yield: 2.4 },
+  { id: "C", fertilizer: 40, yield: 3.8 },
+  { id: "D", fertilizer: 60, yield: 5.1 },
+  { id: "E", fertilizer: 80, yield: 5.7 },
+  { id: "F", fertilizer: 100, yield: 5.4 },
+  { id: "G", fertilizer: 120, yield: 4.8 },
+  { id: "H", fertilizer: 140, yield: 4.2 },
+  { id: "I", fertilizer: 160, yield: 3.7 },
+];
+
+const leftAt30 = rows.filter((row) => row.fertilizer <= 30);
+const rightAt30 = rows.filter((row) => row.fertilizer > 30);
+---
+
+{kind === "split-groups" ? (
+  <figure class="regression-static split-groups-visual">
+    <div class="split-groups-grid">
+      <div class="split-table-wrap">
+        <table class="split-table">
+          <caption class="sr-only">
+            The fertilizer dataset divided at 50 kilograms per hectare
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Row</th>
+              <th scope="col">Fertilizer</th>
+              <th scope="col">Yield</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr class:list={[row.fertilizer <= 50 ? "split-left" : "split-right", { "split-boundary": row.id === "C" }]}>
+                <th scope="row">{row.id}</th>
+                <td>{row.fertilizer} kg/ha</td>
+                <td>{row.yield} tons/ha</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="variance-comparison" role="group" aria-label="Variance before and after the split">
+        <strong class="variance-title">Variance</strong>
+        <div class="variance-before">
+          <span>Before · all rows</span>
+          <div class="variance-row">
+            <i class="variance-bar variance-all" aria-hidden="true"></i>
+            <strong>1.738</strong>
+          </div>
+        </div>
+        <div class="variance-after">
+          <span>After · split at 50 kg/ha</span>
+          <div class="variance-group">
+            <small>Rows A–C</small>
+            <div class="variance-row">
+              <i class="variance-bar variance-left" aria-hidden="true"></i>
+              <strong>0.896</strong>
+            </div>
+          </div>
+          <div class="variance-group">
+            <small>Rows D–I</small>
+            <div class="variance-row">
+              <i class="variance-bar variance-right" aria-hidden="true"></i>
+              <strong>0.471</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <figcaption>
+      Both new groups vary less around their own mean than all nine rows varied
+      around Bob's single mean.
+    </figcaption>
+  </figure>
+) : (
+  <figure class="regression-static stump-means-visual">
+    <div class="stump-question">
+      <span>one learned question</span>
+      <strong>fertilizer ≤ 30 kg/ha?</strong>
+    </div>
+    <div class="stump-branches">
+      <section aria-label="Left leaf">
+        <span class="branch-label">yes · left leaf</span>
+        <div class="target-values">
+          {leftAt30.map((row) => <span><b>{row.id}</b>{row.yield}</span>)}
+        </div>
+        <p>(1.5 + 2.4) ÷ 2</p>
+        <strong>predict 1.95 tons/ha</strong>
+      </section>
+      <section aria-label="Right leaf">
+        <span class="branch-label">no · right leaf</span>
+        <div class="target-values">
+          {rightAt30.map((row) => <span><b>{row.id}</b>{row.yield}</span>)}
+        </div>
+        <p>(3.8 + 5.1 + 5.7 + 5.4 + 4.8 + 4.2 + 3.7) ÷ 7</p>
+        <strong>predict 4.67 tons/ha</strong>
+      </section>
+    </div>
+    <figcaption>
+      A regression leaf stores one prediction: the average target value of the
+      training rows that reach it.
+    </figcaption>
+  </figure>
+)}
+
+<style>
+  .regression-static {
+    width: min(860px, calc(100vw - var(--sidebar-width) - 84px));
+    margin: 34px 50% 38px;
+    transform: translateX(-50%);
+  }
+
+  .split-groups-grid {
+    display: grid;
+    grid-template-columns: minmax(330px, 1.15fr) minmax(220px, 0.85fr);
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  .split-table-wrap {
+    min-width: 0;
+  }
+
+  .split-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .split-table th,
+  .split-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 7px 9px;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .split-table th:first-child {
+    text-align: left;
+  }
+
+  .split-table thead th {
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .split-table .split-left > * {
+    background: color-mix(in srgb, #157451 8%, var(--surface-raised));
+  }
+
+  .split-table .split-right > * {
+    background: color-mix(in srgb, #b26935 7%, var(--surface-raised));
+  }
+
+  .split-table .split-boundary > * {
+    border-bottom: 3px solid var(--text);
+  }
+
+  .variance-comparison {
+    display: grid;
+    align-content: start;
+    gap: 18px;
+    border-left: 1px solid var(--border-strong);
+    padding-left: 20px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .variance-before,
+  .variance-after,
+  .variance-group {
+    display: grid;
+    gap: 7px;
+  }
+
+  .variance-title {
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .variance-before {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 18px;
+  }
+
+  .variance-before > span,
+  .variance-after > span,
+  .variance-group small,
+  .branch-label {
+    color: var(--text-muted);
+    font-size: 0.68rem;
+  }
+
+  .variance-after {
+    gap: 13px;
+  }
+
+  .variance-after > span {
+    font-weight: 760;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .variance-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 52px;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .variance-row strong {
+    font-size: 0.78rem;
+    text-align: right;
+  }
+
+  .variance-bar {
+    display: block;
+    height: 12px;
+    background: var(--text-muted);
+  }
+
+  .variance-all {
+    width: 100%;
+  }
+
+  .variance-left {
+    width: 51.6%;
+    background: #157451;
+  }
+
+  .variance-right {
+    width: 27.1%;
+    background: #b26935;
+  }
+
+  .regression-static figcaption {
+    margin: 13px auto 0;
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    line-height: 1.55;
+    text-align: center;
+  }
+
+  .stump-means-visual {
+    width: min(760px, calc(100vw - var(--sidebar-width) - 84px));
+  }
+
+  .stump-question {
+    display: grid;
+    width: fit-content;
+    min-width: 220px;
+    margin: 0 auto;
+    border: 1px solid #157451;
+    border-radius: 10px;
+    background: var(--surface-raised);
+    padding: 10px 16px;
+    text-align: center;
+  }
+
+  .stump-question span {
+    color: var(--text-muted);
+    font-size: 0.64rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .stump-question strong {
+    font-size: 0.82rem;
+  }
+
+  .stump-branches {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(180px, 0.7fr) minmax(360px, 1.3fr);
+    gap: 22px;
+    margin-top: 30px;
+  }
+
+  .stump-branches::before {
+    position: absolute;
+    top: -30px;
+    right: 25%;
+    left: 25%;
+    height: 29px;
+    border-top: 1px solid var(--border-strong);
+    border-right: 1px solid var(--border-strong);
+    border-left: 1px solid var(--border-strong);
+    content: "";
+  }
+
+  .stump-branches section {
+    display: grid;
+    align-content: start;
+    gap: 9px;
+    border-top: 3px solid #157451;
+    background: var(--surface-subtle);
+    padding: 13px 14px 14px;
+  }
+
+  .stump-branches section:last-child {
+    border-top-color: #b26935;
+  }
+
+  .target-values {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .target-values span {
+    display: flex;
+    gap: 5px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface-raised);
+    padding: 4px 8px;
+    font-size: 0.72rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .target-values b {
+    color: var(--text-muted);
+  }
+
+  .stump-branches p {
+    margin: 0;
+    color: var(--text-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.68rem;
+    line-height: 1.5;
+  }
+
+  .stump-branches section > strong {
+    font-size: 0.84rem;
+  }
+
+  @media (min-width: 1240px) {
+    :global(body.article-chapters-open) .regression-static {
+      width: min(860px, calc(100vw - var(--sidebar-width) - 292px - 96px));
+    }
+  }
+
+  @media (max-width: 900px) {
+    .regression-static,
+    .stump-means-visual {
+      width: 100%;
+      margin-right: 0;
+      margin-left: 0;
+      transform: none;
+    }
+
+    .split-groups-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .variance-comparison {
+      grid-template-columns: minmax(150px, 0.7fr) minmax(0, 1.3fr);
+      border-top: 1px solid var(--border-strong);
+      border-left: 0;
+      padding-top: 16px;
+      padding-left: 0;
+    }
+
+    .variance-title {
+      grid-column: 1 / -1;
+    }
+
+    .variance-before {
+      border-right: 1px solid var(--border);
+      border-bottom: 0;
+      padding-right: 16px;
+      padding-bottom: 0;
+    }
+
+  }
+
+  @media (max-width: 560px) {
+    .split-table-wrap {
+      overflow-x: auto;
+    }
+
+    .split-table {
+      min-width: 340px;
+    }
+
+    .variance-comparison {
+      grid-template-columns: 1fr;
+    }
+
+    .variance-title {
+      grid-column: auto;
+    }
+
+    .variance-before {
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+      padding-right: 0;
+      padding-bottom: 18px;
+    }
+
+    .stump-branches {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 14px;
+      padding-left: 18px;
+    }
+
+    .stump-branches::before {
+      top: 0;
+      bottom: 0;
+      left: 6px;
+      width: 1px;
+      height: auto;
+      border: 0;
+      background: var(--border-strong);
+    }
+  }
+</style>
