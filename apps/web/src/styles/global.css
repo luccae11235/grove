@@ -75,18 +75,48 @@ summary {
   text-decoration: none;
 }
 
-.brand svg {
+.brand-mark {
+  position: relative;
   width: 31px;
   height: 31px;
   flex: 0 0 auto;
-  fill: none;
-  stroke: var(--accent);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
 }
 
-.brand span {
+.brand-mark::before {
+  position: absolute;
+  bottom: 2px;
+  left: 14px;
+  width: 2px;
+  height: 21px;
+  border-radius: 999px;
+  background: var(--accent);
+  content: "";
+  transform: rotate(-1deg);
+  transform-origin: bottom;
+}
+
+.brand-leaf {
+  position: absolute;
+  width: 13px;
+  height: 8px;
+  background: var(--accent);
+}
+
+.brand-leaf-left {
+  top: 10px;
+  left: 3px;
+  border-radius: 100% 8% 100% 8%;
+  transform: rotate(28deg);
+}
+
+.brand-leaf-right {
+  top: 4px;
+  right: 2px;
+  border-radius: 8% 100% 8% 100%;
+  transform: rotate(-25deg);
+}
+
+.brand-copy {
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -95,8 +125,10 @@ summary {
 
 .brand strong {
   color: var(--text);
-  font-size: 1.05rem;
-  letter-spacing: -0.01em;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.2rem;
+  letter-spacing: -0.035em;
+  line-height: 1;
 }
 
 .brand small {

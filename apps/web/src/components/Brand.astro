@@ -11,13 +11,11 @@ const siteCopy = getSiteCopy(locale);
 ---
 
 <a class="brand" href={href} aria-label={siteCopy.brandHome}>
-  <svg viewBox="0 0 32 32" aria-hidden="true">
-    <path d="M16 26V7m0 7-6-5m6 10 7-6m-7 2 6-9" />
-    <circle cx="10" cy="9" r="2.5" />
-    <circle cx="22" cy="6" r="2.5" />
-    <circle cx="23" cy="13" r="2.5" />
-  </svg>
-  <span>
+  <span class="brand-mark" aria-hidden="true">
+    <span class="brand-leaf brand-leaf-left"></span>
+    <span class="brand-leaf brand-leaf-right"></span>
+  </span>
+  <span class="brand-copy">
     <strong>{siteCopy.brand}</strong>
     <small>{siteCopy.tagline}</small>
   </span>
