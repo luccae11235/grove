@@ -18,6 +18,10 @@ O GitHub Pages será publicado pelo build da `main` via GitHub Actions. Não hav
 
 Para a `v0.1.0`, uma `release/*` só será criada quando a experiência estiver completa. Se o projeto ainda tiver uma única branch de feature curta, `develop` pode ser promovida diretamente por pull request para `main`.
 
+O caminho operacional completo — incluindo staging, promoção, hotfix,
+verificação de produção e a separação entre deploy e envio de newsletter — está
+em [`docs/production-and-release-runbook.md`](docs/production-and-release-runbook.md).
+
 ## Ciclo de uma mudança
 
 1. definir a pergunta pedagógica ou comportamento observável;

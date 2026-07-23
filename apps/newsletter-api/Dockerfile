@@ -11,4 +11,4 @@ COPY apps/newsletter-api apps/newsletter-api
 RUN pnpm --filter @grove/newsletter-api build
 
 ENV NODE_ENV=production
-CMD ["pnpm", "--filter", "@grove/newsletter-api", "start"]
+CMD ["sh", "-c", "pnpm --filter @grove/newsletter-api migrate && exec pnpm --filter @grove/newsletter-api start"]

@@ -1,0 +1,44 @@
+name: Platform smoke test
+
+on:
+  workflow_dispatch:
+    inputs:
+      web_url:
+        description: Deployed website origin
+        required: true
+        type: string
+      api_url:
+        description: Deployed newsletter API origin
+        required: true
+        type: string
+      signup:
+        description: Expected public state of the signup form
+        required: true
+        default: disabled
+        type: choice
+        options: [disabled, enabled, either]
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Public platform
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Probe public website and API
+        run: >-
+          pnpm operations:smoke
+          --web-url "${{ inputs.web_url }}"
+          --api-url "${{ inputs.api_url }}"
+          --expect-signup "${{ inputs.signup }}"

@@ -25,6 +25,7 @@ export interface NewsletterProvider {
     timestamp: string;
     signature: string;
   }): WebhookEventPayload;
+  assertSegmentRecipientsAllowed(allowlist: string[]): Promise<void>;
   createBroadcast(message: BroadcastMessage): Promise<string>;
   updateBroadcast(providerBroadcastId: string, message: BroadcastMessage): Promise<void>;
   sendBroadcast(providerBroadcastId: string, scheduledAt?: string): Promise<void>;
@@ -120,6 +121,30 @@ export class ResendNewsletterProvider implements NewsletterProvider {
       headers,
       webhookSecret: this.options.webhookSecret,
     });
+  }
+
+  async assertSegmentRecipientsAllowed(allowlist: string[]) {
+    const allowed = new Set(allowlist.map((email) => email.toLowerCase()));
+    let after: string | undefined;
+    do {
+      const response = await this.resend.contacts.list({
+        segmentId: this.options.segmentId,
+        limit: 100,
+        ...(after ? { after } : {}),
+      });
+      assertResendResponse(response, "inspect newsletter segment recipients");
+      const unexpected = response.data.data.filter(
+        (contact) => !allowed.has(contact.email.toLowerCase()),
+      );
+      if (unexpected.length > 0) {
+        throw new Error(
+          `Newsletter segment contains ${unexpected.length} recipient(s) outside the configured allowlist.`,
+        );
+      }
+      if (!response.data.has_more) return;
+      after = response.data.data.at(-1)?.id;
+      if (!after) throw new Error("Resend returned an incomplete recipient page.");
+    } while (after);
   }
 
   async createBroadcast(message: BroadcastMessage) {

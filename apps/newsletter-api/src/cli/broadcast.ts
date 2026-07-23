@@ -59,6 +59,9 @@ try {
     from: config.newsletterFrom,
     replyTo: config.newsletterReplyTo,
   });
+  if (config.recipientAllowlist) {
+    await provider.assertSegmentRecipientsAllowed(config.recipientAllowlist);
+  }
   const send = args.send || Boolean(args.scheduledAt);
   const message = {
     name: `Grove ${String(issue.issueNumber).padStart(3, "0")} · ${issue.id}`,

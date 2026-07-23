@@ -1,0 +1,151 @@
+# Production and release runbook
+
+This is the executable launch path for Grove's platform. Article selection,
+writing, and lesson construction are intentionally outside this runbook.
+
+## Current state
+
+As of 2026-07-22, Railway staging and production both pass the repository's
+platform smoke test. Production has isolated PostgreSQL, web, and newsletter API
+services connected to `main`; `https://aflora.page` is healthy, canonical, and
+keeps public newsletter signup disabled. The API is healthy at
+`https://api.aflora.page` with production-only database and Resend credentials, the isolated
+`aflora-production` segment, explicit CORS, a pre-launch recipient allowlist,
+and a unique event salt. Its enabled Resend webhook also uses the custom API
+domain. The API temporarily uses Resend's restricted onboarding sender so
+health and deployment can be proved without public delivery.
+
+`news.aflora.page` exists in Resend but awaits its generated DNS records. After
+it verifies, replace the temporary sender with the final authenticated sender.
+No staging database, credential, segment, or subscriber was copied.
+
+## Architecture and safety boundary
+
+```mermaid
+flowchart LR
+  Feature["feature/* or fix/*"] --> Develop["develop"]
+  Develop --> Staging["Railway staging"]
+  Develop --> Release["release/* or release PR"]
+  Release --> Main["main"]
+  Main --> Production["Railway production"]
+  Production --> Smoke["read-only smoke test"]
+  Main -. explicit protected workflow .-> Resend["Resend broadcast"]
+```
+
+Merging or deploying never sends email. Broadcast creation, sending, and
+scheduling are separate manual actions in the protected `newsletter-production`
+GitHub environment.
+
+## 1. Provision production
+
+Create production from scratch; do not duplicate staging, because subscriber
+data, PostgreSQL credentials, Resend segments, webhook secrets, and event salts
+must not be shared.
+
+1. Add a production PostgreSQL service with a persistent volume and backups.
+2. Add `grove-newsletter-api`, connect it to `luccae11235/grove` on `main`, and
+   select `/apps/newsletter-api/railway.json`.
+3. Add `grove-web`, connect it to the same repository and branch, and select
+   `/apps/web/railway.json`.
+4. Generate Railway domains for both application services.
+5. Configure the API variables and the web variables listed in `.env.example`.
+   Before public launch, omit `PUBLIC_NEWSLETTER_API_URL` from the production web
+   build so the form stays disabled; use a production-only API recipient
+   allowlist and keep `NEWSLETTER_PUBLIC_SIGNUP=false`.
+6. Use a production-only Resend segment and webhook. Never point production at
+   the staging segment.
+7. Deploy and verify the web service with `SHOW_DRAFTS=false`. Keep the API
+   unavailable until every production-only provider variable is present; then
+   deploy it and verify `/health` before exposing signup.
+
+Provisioning is done only when service status is successful, `/health` reaches
+production PostgreSQL, production URLs contain no staging data, and a failed web
+deployment can be rolled back to its immediately previous successful deployment.
+
+Run the public proof without creating a subscriber or sending mail:
+
+```bash
+pnpm operations:smoke \
+  --web-url https://<production-web>.up.railway.app \
+  --api-url https://<production-api>.up.railway.app \
+  --expect-signup disabled
+```
+
+The same proof is available as the manual `Platform smoke test` GitHub workflow.
+
+## 2. Use the lightweight GitFlow
+
+Normal changes follow this path:
+
+1. branch `feature/<name>` or `fix/<name>` from `develop`;
+2. open a pull request into `develop` and require all quality checks;
+3. review the result in Railway staging;
+4. open `release/<version>` when a stabilization branch is useful, otherwise
+   open a `develop` → `main` release pull request;
+5. allow only release fixes on `release/*`, then merge into `main`;
+6. wait for production deployment and run the public smoke test;
+7. tag the verified commit; and
+8. merge any release-only fixes back into `develop`.
+
+After staging review, the manual `Prepare weekly release` GitHub workflow opens
+the `develop` → `main` pull request with the release checklist. It refuses an
+empty release or a duplicate open release pull request. This removes routine PR
+setup without weakening the review boundary.
+
+Urgent production fixes use `hotfix/<name>` from `main`, merge into `main`, pass
+the production proof, and then merge back into `develop`.
+
+The `Release policy` workflow rejects pull requests into `main` from unrelated
+branch names. It is evidence, not enforcement against direct pushes. Until the
+private repository has GitHub branch-protection capability, direct pushes must
+remain a procedural prohibition. The Phase 1 gate is not done until GitHub can
+enforce it.
+
+## 3. Prove the newsletter before opening it
+
+Use staging and only controlled test addresses to prove signup, confirmation,
+invalid and repeated tokens, unsubscribe, bounce, complaint, signed webhook
+handling, and issue reporting. Do not use the production audience for these
+tests.
+
+For production delivery on the current private GitHub Free repository,
+configure these as repository-level Actions variables and secrets:
+
+- variables: `WEB_URL`, `API_PUBLIC_URL`, `PUBLIC_PRIVACY_CONTACT_EMAIL`,
+  `NEWSLETTER_FROM`, `NEWSLETTER_REPLY_TO`, and `NEWSLETTER_PUBLIC_SIGNUP`;
+- secrets: `DATABASE_URL`, `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`,
+  `RESEND_SEGMENT_ID`, optional `RESEND_TOPIC_ID`, `EVENT_HASH_SALT`, postal
+  address, and the pre-launch `NEWSLETTER_RECIPIENT_ALLOWLIST`.
+
+Then use `Controlled newsletter delivery` in this order:
+
+1. `validate` builds and validates artifacts without calling Resend;
+2. `draft` creates one provider draft for review;
+3. `send` or `schedule` requires `SEND:<issue-id>` and an owner-only manual
+   dispatch; and
+4. `newsletter:report` confirms delivery events afterward.
+
+Opening the newsletter means removing the API allowlist, setting
+`NEWSLETTER_PUBLIC_SIGNUP=true`, adding `PUBLIC_NEWSLETTER_API_URL` to the web
+build, rebuilding with signup enabled, and
+performing the internal send checks in `newsletter-operations.md`. This is a
+launch event, not part of ordinary deployment.
+
+## 4. Definition of launch-ready
+
+Grove is ready for everyone only when all of these are evidenced:
+
+- production web, API, and PostgreSQL are isolated, healthy, backed up, and
+  recoverable;
+- a reviewed change has traveled from feature branch through staging and `main`
+  to a successful production smoke test;
+- the custom domain, HTTPS, SPF, DKIM, and DMARC are verified;
+- staging has proven consent, suppression, webhooks, and reporting end to end;
+- a production internal send renders correctly in Gmail, a second provider,
+  mobile, and plain text;
+- the postal, privacy, reply-to, abuse, recovery, and incident contacts are real
+  and monitored; and
+- alerts, cost limits, ownership, and a tested PostgreSQL restore exist before
+  public subscriber data is collected.
+
+Until every item passes, keep the public launch switch closed.

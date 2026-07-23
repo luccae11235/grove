@@ -25,6 +25,7 @@ export interface AppOptions {
   webUrl: string;
   apiPublicUrl: string;
   allowedOrigins: string[];
+  recipientAllowlist?: string[];
   eventHashSalt: string;
   confirmationTtlHours?: number;
   rateLimitMax?: number;
@@ -41,6 +42,9 @@ export function createApp(options: AppOptions) {
     () => now().getTime(),
   );
   const origins = new Set(options.allowedOrigins.map((origin) => origin.replace(/\/$/, "")));
+  const recipientAllowlist = options.recipientAllowlist
+    ? new Set(options.recipientAllowlist.map((email) => email.toLowerCase()))
+    : undefined;
 
   app.use("*", secureHeaders());
   app.use("/v1/*", cors({
@@ -98,6 +102,9 @@ export function createApp(options: AppOptions) {
     if (parsed.data.website) {
       return accepted(context);
     }
+    if (recipientAllowlist && !recipientAllowlist.has(parsed.data.email)) {
+      return accepted(context);
+    }
 
     const token = randomBytes(32).toString("base64url");
     const requestedAt = now();
@@ -134,6 +141,9 @@ export function createApp(options: AppOptions) {
     }
     const subscriber = await options.repository.findPendingByTokenHash(hashToken(token), now());
     if (!subscriber) {
+      return context.redirect(`${options.webUrl}/newsletter/confirmed?status=invalid`, 303);
+    }
+    if (recipientAllowlist && !recipientAllowlist.has(subscriber.email.toLowerCase())) {
       return context.redirect(`${options.webUrl}/newsletter/confirmed?status=invalid`, 303);
     }
     const providerContactId = await options.provider.upsertContact(subscriber.email);
