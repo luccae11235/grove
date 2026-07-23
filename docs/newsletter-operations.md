@@ -42,6 +42,7 @@ Set these web build variables:
 
 - `SITE_URL`: final public website origin;
 - `BASE_PATH=/`;
+- `SHOW_DRAFTS=true` in staging and `false` in production;
 - `PUBLIC_NEWSLETTER_API_URL`: public API origin; and
 - `PUBLIC_PRIVACY_CONTACT_EMAIL`: monitored address shown in the privacy notice;
 - `NEWSLETTER_POSTAL_ADDRESS`: the real mailing address displayed in every issue.
@@ -50,6 +51,14 @@ Set the API variables documented in `.env.example`. Generate `EVENT_HASH_SALT`
 as a long random secret. `ALLOWED_ORIGINS` must contain exact comma-separated web
 origins; wildcard CORS is rejected at startup. Point `DATABASE_URL` to the
 Railway PostgreSQL service using Railway's variable reference UI.
+
+Staging must set `NEWSLETTER_RECIPIENT_ALLOWLIST` to explicit comma-separated
+test addresses. Requests for other addresses receive the same accepted response
+but create no subscriber and send no email. Contact activation is checked again,
+and the broadcast command refuses a Resend segment containing any address outside
+the allowlist. Keep `NEWSLETTER_PUBLIC_SIGNUP=false`. Opening signups later
+requires removing the allowlist and explicitly setting
+`NEWSLETTER_PUBLIC_SIGNUP=true`; startup rejects missing or contradictory policy.
 
 In Resend:
 
@@ -61,15 +70,34 @@ In Resend:
    clicked, bounced, complained, suppressed, and contact-updated events; and
 5. copy its signing secret into `RESEND_WEBHOOK_SECRET`.
 
-Protect the GitHub `newsletter-production` environment with a required reviewer,
-then add the variables and secrets used by `newsletter-delivery.yml`. A normal
-push, pull request, or Railway deploy cannot send an issue.
+On the current private GitHub Free repository, add the variables and secrets
+used by `newsletter-delivery.yml` at repository level. The workflow accepts
+manual dispatches only from `luccae11235`, serializes delivery runs, and still
+requires the issue-scoped send confirmation. A normal push, pull request, or
+Railway deploy cannot send an issue. If the repository later becomes public or
+moves to a plan that supports protected private environments, move the same
+configuration into a protected `newsletter-production` environment.
 
 Before opening signups, review `/privacy` for the operator's jurisdiction and run
 the retention dry run. The form remains disabled unless both the API URL and a
 public privacy contact are present.
 
 ## Proving the system works before launch
+
+The repeatable provider-edge proof is staging-only, requires the fail-closed
+recipient allowlist, and refuses non-staging Railway URLs. It sends only to
+Resend's designated test recipients, waits for signed webhooks, verifies
+PostgreSQL state, and removes its synthetic subscribers and contacts:
+
+```bash
+railway run --environment staging --service grove-newsletter-api -- sh -c \
+  'DATABASE_URL="$(railway variable list --environment staging --service Postgres --json | jq -r .DATABASE_PUBLIC_URL)" \
+  pnpm newsletter:prove:staging --confirm PROVE:staging-newsletter'
+```
+
+This proves delivered, bounced, complained, suppressed, unsubscribe, invalid
+token, unsigned-webhook rejection, and database health paths. It does not replace
+the internal issue send and report check below.
 
 Use an address you control and complete this sequence:
 

@@ -17,6 +17,8 @@
     "newsletter:broadcast": "pnpm --filter @grove/newsletter-api broadcast",
     "newsletter:report": "pnpm --filter @grove/newsletter-api report",
     "newsletter:retention": "pnpm --filter @grove/newsletter-api retention",
+    "newsletter:prove:staging": "pnpm --filter @grove/newsletter-api prove:staging",
+    "operations:smoke": "node scripts/operations/smoke-platform.mjs",
     "projects:validate": "node scripts/projects/validate-projects.mjs",
     "projects:export": "node scripts/projects/export-project.mjs",
     "projects:publish": "node scripts/projects/publish-project.mjs",

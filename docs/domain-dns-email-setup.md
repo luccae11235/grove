@@ -80,10 +80,12 @@ verified.
 
 ## GitHub delivery environment
 
-Protect the `newsletter-production` GitHub environment with a required reviewer.
-Configure the variables and secrets consumed by
-`.github/workflows/newsletter-delivery.yml`; use the same final web and API
-origins as Railway. A normal push or deploy must never send an issue.
+For the current private GitHub Free repository, configure the repository-level
+variables and secrets consumed by `.github/workflows/newsletter-delivery.yml`;
+use the same final web and API origins as Railway. The workflow is restricted to
+the repository owner and requires an issue-scoped confirmation. A normal push
+or deploy must never send an issue. Move this configuration to a protected
+environment if the repository or plan later supports one.
 
 ## Launch verification
 

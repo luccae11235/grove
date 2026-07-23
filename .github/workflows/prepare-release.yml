@@ -1,0 +1,75 @@
+name: Prepare weekly release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_name:
+        description: Optional release label, for example Week 31
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  release-pr:
+    name: Open develop to main pull request
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require unreleased commits and no existing release PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          ahead=$(gh api "repos/$REPOSITORY/compare/main...develop" --jq '.ahead_by')
+          if [ "$ahead" -eq 0 ]; then
+            echo "develop has no commits to release."
+            exit 1
+          fi
+
+          existing=$(gh pr list \
+            --repo "$REPOSITORY" \
+            --base main \
+            --head develop \
+            --state open \
+            --json url \
+            --jq '.[0].url // ""')
+          if [ -n "$existing" ]; then
+            echo "A develop to main release pull request already exists: $existing"
+            exit 1
+          fi
+
+      - name: Open release pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RELEASE_NAME: ${{ inputs.release_name }}
+        shell: bash
+        run: |
+          if [ -n "$RELEASE_NAME" ]; then
+            title="release: $RELEASE_NAME"
+          else
+            title="release: $(date -u +%Y-%m-%d)"
+          fi
+
+          body=$(cat <<'EOF'
+          ## Release gate
+
+          - [ ] All required quality checks pass.
+          - [ ] The complete change was reviewed in Railway staging.
+          - [ ] Draft content is absent from the production build.
+          - [ ] Legal/contact placeholders required by this release are resolved.
+          - [ ] The post-deploy platform smoke test is ready to run.
+
+          Merging this pull request deploys the website but does not send a newsletter.
+          EOF
+          )
+
+          gh pr create \
+            --repo "$REPOSITORY" \
+            --base main \
+            --head develop \
+            --title "$title" \
+            --body "$body"

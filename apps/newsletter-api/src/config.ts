@@ -11,6 +11,11 @@ const runtimeSchema = z.object({
     (value) => value === "" ? undefined : value,
     z.string().min(1).optional(),
   ),
+  NEWSLETTER_RECIPIENT_ALLOWLIST: z.preprocess(
+    (value) => typeof value === "string" && value.trim() === "" ? undefined : value,
+    z.string().optional(),
+  ),
+  NEWSLETTER_PUBLIC_SIGNUP: z.enum(["true", "false"]).default("false"),
   NEWSLETTER_FROM: z.string().min(3),
   NEWSLETTER_REPLY_TO: z.preprocess(
     (value) => value === "" ? undefined : value,
@@ -35,6 +40,18 @@ export function loadConfig(environment: NodeJS.ProcessEnv = process.env) {
   if (allowedOrigins.some((origin) => origin === "*")) {
     throw new Error("ALLOWED_ORIGINS must list explicit origins; wildcard CORS is not allowed.");
   }
+  const recipientAllowlist = parseRecipientAllowlist(parsed.NEWSLETTER_RECIPIENT_ALLOWLIST);
+  const publicSignup = parsed.NEWSLETTER_PUBLIC_SIGNUP === "true";
+  if (!publicSignup && !recipientAllowlist) {
+    throw new Error(
+      "NEWSLETTER_RECIPIENT_ALLOWLIST is required unless NEWSLETTER_PUBLIC_SIGNUP=true.",
+    );
+  }
+  if (publicSignup && recipientAllowlist) {
+    throw new Error(
+      "NEWSLETTER_PUBLIC_SIGNUP and NEWSLETTER_RECIPIENT_ALLOWLIST are mutually exclusive.",
+    );
+  }
   assertPublicOrigin(parsed.WEB_URL, "WEB_URL");
   assertPublicOrigin(parsed.API_PUBLIC_URL, "API_PUBLIC_URL");
   for (const origin of allowedOrigins) assertPublicOrigin(origin, "ALLOWED_ORIGINS");
@@ -46,6 +63,8 @@ export function loadConfig(environment: NodeJS.ProcessEnv = process.env) {
     resendWebhookSecret: parsed.RESEND_WEBHOOK_SECRET,
     resendSegmentId: parsed.RESEND_SEGMENT_ID,
     resendTopicId: parsed.RESEND_TOPIC_ID,
+    recipientAllowlist,
+    publicSignup,
     newsletterFrom: parsed.NEWSLETTER_FROM,
     newsletterReplyTo: parsed.NEWSLETTER_REPLY_TO,
     webUrl: parsed.WEB_URL.replace(/\/$/, ""),
@@ -56,6 +75,15 @@ export function loadConfig(environment: NodeJS.ProcessEnv = process.env) {
     rateLimitMax: parsed.RATE_LIMIT_MAX,
     rateLimitWindowSeconds: parsed.RATE_LIMIT_WINDOW_SECONDS,
   };
+}
+
+function parseRecipientAllowlist(value?: string) {
+  if (!value) return undefined;
+  const emailSchema = z.string().email();
+  const addresses = value.split(",").map((address) => address.trim().toLowerCase()).filter(Boolean);
+  if (addresses.length === 0) return undefined;
+  for (const address of addresses) emailSchema.parse(address);
+  return [...new Set(addresses)];
 }
 
 function assertPublicOrigin(value: string, name: string) {

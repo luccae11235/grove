@@ -25,10 +25,18 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: newsletter-production
+  cancel-in-progress: false
+
 jobs:
   delivery:
-    environment: newsletter-production
+    if: github.actor == 'luccae11235'
     runs-on: ubuntu-latest
+    env:
+      ISSUE_ID: ${{ inputs.issue }}
+      SCHEDULE_AT: ${{ inputs.schedule_at }}
+      SEND_CONFIRMATION: ${{ inputs.confirmation }}
     steps:
       - name: Check out the main branch
         uses: actions/checkout@v4
@@ -75,6 +83,8 @@ jobs:
           RESEND_WEBHOOK_SECRET: ${{ secrets.RESEND_WEBHOOK_SECRET }}
           RESEND_SEGMENT_ID: ${{ secrets.RESEND_SEGMENT_ID }}
           RESEND_TOPIC_ID: ${{ secrets.RESEND_TOPIC_ID }}
+          NEWSLETTER_RECIPIENT_ALLOWLIST: ${{ secrets.NEWSLETTER_RECIPIENT_ALLOWLIST }}
+          NEWSLETTER_PUBLIC_SIGNUP: ${{ vars.NEWSLETTER_PUBLIC_SIGNUP }}
           NEWSLETTER_FROM: ${{ vars.NEWSLETTER_FROM }}
           NEWSLETTER_REPLY_TO: ${{ vars.NEWSLETTER_REPLY_TO }}
           WEB_URL: ${{ vars.WEB_URL }}
@@ -86,14 +96,14 @@ jobs:
       - name: Create provider draft
         if: inputs.action == 'draft'
         env: *newsletter-runtime
-        run: pnpm newsletter:broadcast --issue "${{ inputs.issue }}"
+        run: pnpm newsletter:broadcast --issue "$ISSUE_ID"
 
       - name: Send issue now
         if: inputs.action == 'send'
         env: *newsletter-runtime
-        run: pnpm newsletter:broadcast --issue "${{ inputs.issue }}" --send --confirm "${{ inputs.confirmation }}"
+        run: pnpm newsletter:broadcast --issue "$ISSUE_ID" --send --confirm "$SEND_CONFIRMATION"
 
       - name: Schedule issue
         if: inputs.action == 'schedule'
         env: *newsletter-runtime
-        run: pnpm newsletter:broadcast --issue "${{ inputs.issue }}" --schedule "${{ inputs.schedule_at }}" --confirm "${{ inputs.confirmation }}"
+        run: pnpm newsletter:broadcast --issue "$ISSUE_ID" --schedule "$SCHEDULE_AT" --confirm "$SEND_CONFIRMATION"

@@ -9,6 +9,8 @@ const environment = {
   RESEND_WEBHOOK_SECRET: "whsec_test",
   RESEND_SEGMENT_ID: "segment_test",
   RESEND_TOPIC_ID: "",
+  NEWSLETTER_RECIPIENT_ALLOWLIST: "",
+  NEWSLETTER_PUBLIC_SIGNUP: "true",
   NEWSLETTER_FROM: "Grove <letters@grove.example>",
   NEWSLETTER_REPLY_TO: "",
   WEB_URL: "https://grove.example",
@@ -22,6 +24,40 @@ test("runtime config accepts explicit HTTPS origins and empty optional values", 
   assert.deepEqual(config.allowedOrigins, ["https://grove.example"]);
   assert.equal(config.resendTopicId, undefined);
   assert.equal(config.newsletterReplyTo, undefined);
+  assert.equal(config.recipientAllowlist, undefined);
+  assert.equal(config.publicSignup, true);
+});
+
+test("runtime config normalizes and validates the recipient allowlist", () => {
+  const config = loadConfig({
+    ...environment,
+    NEWSLETTER_RECIPIENT_ALLOWLIST: " Reader@Example.com,reader@example.com, second@example.com ",
+    NEWSLETTER_PUBLIC_SIGNUP: "false",
+  });
+  assert.deepEqual(config.recipientAllowlist, ["reader@example.com", "second@example.com"]);
+  assert.throws(
+    () => loadConfig({ ...environment, NEWSLETTER_RECIPIENT_ALLOWLIST: "not-an-email" }),
+    /email/i,
+  );
+});
+
+test("runtime config requires an explicit choice between allowlisted and public signup", () => {
+  assert.throws(
+    () => loadConfig({
+      ...environment,
+      NEWSLETTER_PUBLIC_SIGNUP: "false",
+      NEWSLETTER_RECIPIENT_ALLOWLIST: "",
+    }),
+    /ALLOWLIST is required/,
+  );
+  assert.throws(
+    () => loadConfig({
+      ...environment,
+      NEWSLETTER_PUBLIC_SIGNUP: "true",
+      NEWSLETTER_RECIPIENT_ALLOWLIST: "reader@example.com",
+    }),
+    /mutually exclusive/,
+  );
 });
 
 test("runtime config rejects wildcard, path-bearing, and insecure public origins", () => {

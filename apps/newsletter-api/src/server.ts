@@ -20,6 +20,7 @@ const app = createApp({
   webUrl: config.webUrl,
   apiPublicUrl: config.apiPublicUrl,
   allowedOrigins: config.allowedOrigins,
+  recipientAllowlist: config.recipientAllowlist,
   eventHashSalt: config.eventHashSalt,
   confirmationTtlHours: config.confirmationTtlHours,
   rateLimitMax: config.rateLimitMax,
