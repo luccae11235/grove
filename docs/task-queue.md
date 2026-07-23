@@ -44,22 +44,6 @@ references for longer-term editorial direction.
   - Completion check: `main` rejects direct, unreviewed changes and records a
     successful pull-request merge.
 
-## In progress
-
-### Product design
-
-- [ ] **Issue #6 — Rebrand Grove as Aflora**
-  - Preserve the current palette, editorial hierarchy, navigation, and
-    professional visual density while updating the public identity.
-  - Replace the branching Grove mark with a compact sprout symbol and an
-    editorial Aflora wordmark; update public copy, metadata, newsletter
-    surfaces, and social sharing.
-  - Keep the change on `feature/issue-6-aflora-rebrand` until review, then merge
-    through `develop` and verify staging without promoting to `main`.
-  - Completion check: the public interface has no stale Grove branding,
-    responsive and accessibility checks pass, and the exact `develop` commit is
-    healthy in staging.
-
 ## Ready
 
 ### Publishing and content
@@ -163,6 +147,21 @@ references for longer-term editorial direction.
     verify consent and retention behavior against the privacy policy.
 
 ## Done
+
+### Product design
+
+- [x] **Rebrand Grove as Aflora — issue #6** — 2026-07-23
+  - Preserved the existing green palette, editorial hierarchy, navigation, and
+    professional visual density.
+  - Replaced the branching mark with a compact sprout symbol and an editorial
+    Aflora wordmark across the public interface, newsletter, RSS, metadata, and
+    social sharing.
+  - PR #7 passed the policy and quality checks before its squash merge into
+    `develop`.
+  - Completion check: Railway deployed the exact `develop` commit
+    `26a27da8a5d30f00977421f4dbb9c98e3f375494` to staging; the platform smoke
+    test, Aflora lockup, tagline, and social card checks passed without
+    promoting to `main`.
 
 ### Release and platform readiness
 
