@@ -70,7 +70,9 @@ Resend, weekly publishing, delivery safeguards, and performance reporting.
 - **Visual before ornamental:** an interaction must reveal a decision made by the model.
 - **Published-only navigation:** the public library reflects what exists, not a speculative roadmap.
 - **Learning graph:** stable article IDs connect prerequisites, automatic backlinks, and related paths without coupling references to URLs.
-- **Static-first:** Python produces deterministic lesson artifacts at build time, keeping the published site compatible with GitHub Pages.
+- **Static-first:** Python produces deterministic lesson artifacts at build time,
+  keeping the published site portable while Railway serves the official
+  staging and production environments.
 - **English-first, translation-ready:** the first interface is English, with shared navigation and shell copy kept behind a locale boundary.
 
 ## Planning

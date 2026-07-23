@@ -5,19 +5,17 @@ writing, and lesson construction are intentionally outside this runbook.
 
 ## Current state
 
-As of 2026-07-22, Railway staging and production both pass the repository's
+As of 2026-07-23, Railway staging and production both pass the repository's
 platform smoke test. Production has isolated PostgreSQL, web, and newsletter API
 services connected to `main`; `https://aflora.page` is healthy, canonical, and
 keeps public newsletter signup disabled. The API is healthy at
 `https://api.aflora.page` with production-only database and Resend credentials, the isolated
 `aflora-production` segment, explicit CORS, a pre-launch recipient allowlist,
 and a unique event salt. Its enabled Resend webhook also uses the custom API
-domain. The API temporarily uses Resend's restricted onboarding sender so
-health and deployment can be proved without public delivery.
-
-`news.aflora.page` exists in Resend but awaits its generated DNS records. After
-it verifies, replace the temporary sender with the final authenticated sender.
-No staging database, credential, segment, or subscriber was copied.
+domain. `news.aflora.page` is verified in Resend and production uses the
+authenticated sender. Both application services in staging and production
+consume their committed `railway.json` files. No staging database, credential,
+segment, or subscriber was copied.
 
 ## Architecture and safety boundary
 
@@ -29,12 +27,12 @@ flowchart LR
   Release --> Main["main"]
   Main --> Production["Railway production"]
   Production --> Smoke["read-only smoke test"]
-  Main -. explicit protected workflow .-> Resend["Resend broadcast"]
+  Main -. explicit owner-only workflow .-> Resend["Resend broadcast"]
 ```
 
 Merging or deploying never sends email. Broadcast creation, sending, and
-scheduling are separate manual actions in the protected `newsletter-production`
-GitHub environment.
+scheduling are separate owner-only manual actions with issue-state, allowlist,
+and exact-confirmation gates.
 
 ## 1. Provision production
 
@@ -82,7 +80,8 @@ Normal changes follow this path:
 3. review the result in Railway staging;
 4. open `release/<version>` when a stabilization branch is useful, otherwise
    open a `develop` → `main` release pull request;
-5. allow only release fixes on `release/*`, then merge into `main`;
+5. allow only release fixes on `release/*`, record explicit production approval
+   with the `production-approved` label, then merge into `main`;
 6. wait for production deployment and run the public smoke test;
 7. tag the verified commit; and
 8. merge any release-only fixes back into `develop`.
@@ -95,11 +94,12 @@ setup without weakening the review boundary.
 Urgent production fixes use `hotfix/<name>` from `main`, merge into `main`, pass
 the production proof, and then merge back into `develop`.
 
-The `Release policy` workflow rejects pull requests into `main` from unrelated
-branch names. It is evidence, not enforcement against direct pushes. Until the
-private repository has GitHub branch-protection capability, direct pushes must
-remain a procedural prohibition. The Phase 1 gate is not done until GitHub can
-enforce it.
+The `Pull request policy` workflow requires normal PRs into `develop` to use an
+approved branch prefix and close an open issue. For `main`, it accepts only
+`develop`, `release/*`, or `hotfix/*` and requires the owner-applied
+`production-approved` label. These checks are evidence, not enforcement against
+direct pushes. Until the private repository has GitHub branch-protection
+capability, direct pushes to `develop` and `main` remain procedurally prohibited.
 
 ## 3. Prove the newsletter before opening it
 

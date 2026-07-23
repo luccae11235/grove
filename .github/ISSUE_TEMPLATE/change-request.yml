@@ -1,0 +1,53 @@
+name: Mudança planejada
+description: Proponha uma alteração de produto, conteúdo, infraestrutura ou documentação.
+title: ""
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Toda mudança começa aqui. Defina o resultado antes de criar a branch.
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto
+      description: Qual problema, necessidade ou oportunidade motivou esta issue?
+    validations:
+      required: true
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objetivo
+      description: Qual resultado observável deve existir quando esta issue terminar?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Escopo
+      description: O que está incluído e, quando útil, o que fica explicitamente de fora?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Critérios de aceite
+      description: Liste verificações objetivas em formato de checklist.
+      placeholder: |
+        - [ ] Critério verificável
+        - [ ] Checks e revisão aplicáveis concluídos
+    validations:
+      required: true
+  - type: dropdown
+    id: change_type
+    attributes:
+      label: Tipo de branch
+      options:
+        - feature/*
+        - fix/*
+        - docs/*
+        - chore/*
+        - release/*
+        - hotfix/*
+    validations:
+      required: true

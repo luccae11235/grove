@@ -1,18 +1,24 @@
 # Contribuição e fluxo Git
 
-O projeto adotará um GitFlow leve. A intenção é manter produção estável e trabalho em andamento visível, sem criar cerimônias desnecessárias para uma equipe inicialmente pequena.
+O projeto usa um GitFlow leve, obrigatório e rastreável. Nenhuma mudança começa
+diretamente em código: primeiro existe uma issue com objetivo e critérios de
+aceite. Railway hospeda staging e produção; o GitHub coordena issues, branches,
+pull requests, checks e aprovações.
 
 ## Branches permanentes
 
 - `main`: estado publicado. Somente merges revisados; cada marco recebe uma tag semântica.
 - `develop`: integração do próximo marco. Deve permanecer executável e passar pelos checks.
 
-O GitHub Pages será publicado pelo build da `main` via GitHub Actions. Não haverá branch `gh-pages` mantida manualmente.
+Railway acompanha `develop` em staging e `main` em produção. Deploy não cria nem
+envia newsletter.
 
 ## Branches temporárias
 
 - `feature/<tema>` nasce de `develop` e volta por pull request;
 - `fix/<tema>` corrige defeitos ainda não publicados e nasce de `develop`;
+- `docs/<tema>` documenta uma mudança sem alterar comportamento de produção;
+- `chore/<tema>` mantém ferramentas, CI ou operação;
 - `release/<versao>` congela escopo e aceita apenas correções de lançamento;
 - `hotfix/<tema>` nasce de `main` para defeito urgente publicado e volta para `main` e `develop`.
 
@@ -22,15 +28,37 @@ O caminho operacional completo — incluindo staging, promoção, hotfix,
 verificação de produção e a separação entre deploy e envio de newsletter — está
 em [`docs/production-and-release-runbook.md`](docs/production-and-release-runbook.md).
 
-## Ciclo de uma mudança
+## Ciclo obrigatório de uma mudança
 
-1. definir a pergunta pedagógica ou comportamento observável;
-2. criar uma issue curta com critério de aceite;
-3. abrir branch a partir de `develop`;
-4. implementar em commits pequenos e intencionais;
-5. abrir pull request e verificar preview/checks;
-6. fazer squash merge quando os commits intermediários não tiverem valor histórico;
-7. remover a branch temporária.
+1. Criar uma issue com contexto, objetivo, escopo e critérios de aceite.
+2. Atualizar `develop` localmente e criar a branch a partir de
+   `origin/develop`.
+3. Usar o número da issue no contexto da branch e nos commits quando útil.
+4. Implementar em commits pequenos e intencionais.
+5. Abrir PR para `develop` com `Closes #<issue>`.
+6. Passar por política de PR, typecheck, testes, build e preview da newsletter.
+7. Revisar a mudança implantada em staging.
+8. Fazer merge em `develop` e remover a branch temporária.
+
+Um PR normal não aponta diretamente para `main`.
+
+## Promoção para produção
+
+1. Abrir PR de `develop` para `main`, ou usar `release/*` quando houver uma fase
+   de estabilização.
+2. Confirmar checks e revisão em staging.
+3. Registrar a aprovação explícita do proprietário adicionando o label
+   `production-approved`.
+4. Fazer merge em `main`.
+5. Aguardar Railway produção e executar o smoke test público.
+
+O label é uma evidência operacional de aprovação. No GitHub Free privado ele
+não substitui branch protection; por isso push direto em `main` continua
+proibido por procedimento.
+
+Hotfix é a única exceção ao caminho por `develop`: nasce de `main`, referencia
+uma issue urgente, entra em `main` por PR aprovado e volta imediatamente para
+`develop`.
 
 ## Convenções
 
@@ -45,6 +73,8 @@ Commits seguem Conventional Commits:
 
 ## Checklist de pull request
 
+- [ ] Existe uma issue e o PR contém `Closes #<issue>`.
+- [ ] A branch nasceu do `develop` atual e o PR aponta para `develop`.
 - [ ] A mudança tem objetivo e critério de aceite claros.
 - [ ] O núcleo continua independente da interface.
 - [ ] Cálculos novos ou alterados têm testes.
@@ -52,6 +82,7 @@ Commits seguem Conventional Commits:
 - [ ] Estados vazio, carregando, erro e reset foram considerados quando aplicável.
 - [ ] Teclado, contraste, texto alternativo e redução de movimento foram considerados.
 - [ ] Tipagem, lint, testes e build passam.
+- [ ] O resultado foi revisto em staging antes do merge.
 - [ ] A documentação e as limitações foram atualizadas.
 
 ## Versionamento
