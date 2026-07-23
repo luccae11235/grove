@@ -6,19 +6,19 @@ const privacyContact = import.meta.env.PUBLIC_PRIVACY_CONTACT_EMAIL?.trim();
 
 <BaseLayout
   title="Privacidade"
-  description="Como o Grove trata consentimento e dados de entrega da newsletter."
+  description="Como a Aflora trata consentimento e dados de entrega da newsletter."
   locale="pt-BR"
   translations={{ en: "/privacy", "pt-BR": "/pt-br/privacy" }}
 >
   <header class="page-header">
     <p class="eyebrow">Última atualização · 18 de julho de 2026</p>
-    <h1>Privacidade no Grove</h1>
+    <h1>Privacidade na Aflora</h1>
     <p class="lede">A newsletter coleta apenas o necessário para confirmar o consentimento, entregar cada edição e verificar a saúde dos envios.</p>
   </header>
 
   <article class="lesson-body policy-page">
     <h2>O que a newsletter armazena</h2>
-    <p>Ao solicitar a inscrição, o Grove armazena seu e-mail, idioma, origem da inscrição, parâmetros opcionais de campanha e datas de consentimento no PostgreSQL. A inscrição permanece pendente até o uso do link de confirmação com prazo limitado.</p>
+    <p>Ao solicitar a inscrição, a Aflora armazena seu e-mail, idioma, origem da inscrição, parâmetros opcionais de campanha e datas de consentimento no PostgreSQL. A inscrição permanece pendente até o uso do link de confirmação com prazo limitado.</p>
     <p>O serviço usa seu endereço de rede temporariamente para limitar tentativas em memória. Ele não é gravado nas tabelas de assinantes ou métricas.</p>
 
     <h2>Entrega e medição</h2>
@@ -27,7 +27,7 @@ const privacyContact = import.meta.env.PUBLIC_PRIVACY_CONTACT_EMAIL?.trim();
 
     <h2>Retenção e controle</h2>
     <p>Solicitações não confirmadas com mais de 30 dias e eventos de entrega com mais de 400 dias podem ser excluídos. Registros de consentimento e supressão são mantidos para documentar a permissão e evitar envios indesejados. Toda edição inclui um link de cancelamento.</p>
-    <p>Você pode solicitar acesso ou exclusão. Após a verificação, pode ser mantido o registro mínimo de supressão necessário para que o Grove não envie mensagens novamente.</p>
+    <p>Você pode solicitar acesso ou exclusão. Após a verificação, pode ser mantido o registro mínimo de supressão necessário para que a Aflora não envie mensagens novamente.</p>
 
     <h2>Contato</h2>
     {privacyContact ? (

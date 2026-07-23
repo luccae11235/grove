@@ -1,4 +1,4 @@
-# Grove task queue
+# Aflora task queue
 
 This is the source of truth for unfinished operational, product, content, and
 release work. The ordered release gates are explained in
@@ -43,6 +43,22 @@ references for longer-term editorial direction.
     repository requires GitHub Pro or making the repository public.
   - Completion check: `main` rejects direct, unreviewed changes and records a
     successful pull-request merge.
+
+## In progress
+
+### Product design
+
+- [ ] **Issue #6 — Rebrand Grove as Aflora**
+  - Preserve the current palette, editorial hierarchy, navigation, and
+    professional visual density while updating the public identity.
+  - Replace the branching Grove mark with a compact sprout symbol and an
+    editorial Aflora wordmark; update public copy, metadata, newsletter
+    surfaces, and social sharing.
+  - Keep the change on `feature/issue-6-aflora-rebrand` until review, then merge
+    through `develop` and verify staging without promoting to `main`.
+  - Completion check: the public interface has no stale Grove branding,
+    responsive and accessibility checks pass, and the exact `develop` commit is
+    healthy in staging.
 
 ## Ready
 

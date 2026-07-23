@@ -1,8 +1,8 @@
-# Grove
+# Aflora
 
-**Ideas, made interactive.**
+**Ideas, brought to life.**
 
-Grove is a personal collection of interactive articles built while learning. Each piece can combine plain-English explanations, from-scratch implementations, and visual experiments to make difficult ideas inspectable.
+Aflora is a personal collection of interactive articles built while learning. Each piece can combine plain-English explanations, from-scratch implementations, and visual experiments to make difficult ideas inspectable.
 
 The library currently contains one article: **how can you reconstruct a classification decision tree from first principles?**
 

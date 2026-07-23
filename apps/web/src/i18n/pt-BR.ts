@@ -1,7 +1,7 @@
 export const siteCopy = {
-  brand: "Grove",
+  brand: "Aflora",
   tagline: "Ideias que ganham vida.",
-  brandHome: "Página inicial do Grove",
+  brandHome: "Página inicial da Aflora",
   skipToContent: "Pular para o conteúdo",
   browseArticles: "Explorar artigos",
   language: "Idioma",
@@ -10,7 +10,7 @@ export const siteCopy = {
     explore: "Explorar",
     home: "Início",
     newsletter: "Newsletter",
-    grove: "Grove",
+    aflora: "Aflora",
     about: "Sobre",
     privacy: "Privacidade",
   },

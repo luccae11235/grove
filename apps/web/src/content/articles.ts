@@ -113,7 +113,7 @@ const articlesById = new Map<ArticleId, Article>(
 
 function assertValidCatalog(): void {
   if (articlesById.size !== articles.length) {
-    throw new Error("Every Grove article must have a unique id.");
+    throw new Error("Every Aflora article must have a unique id.");
   }
 
   const hrefs = new Set<string>();
@@ -121,7 +121,7 @@ function assertValidCatalog(): void {
   for (const entry of allEntries.filter(isVisible)) {
     const { href, articleId: id } = entry.data;
     if (hrefs.has(href)) {
-      throw new Error(`More than one Grove article uses the href "${href}".`);
+      throw new Error(`More than one Aflora article uses the href "${href}".`);
     }
     hrefs.add(href);
 
@@ -148,7 +148,7 @@ assertValidCatalog();
 export function getArticle(articleId: ArticleId): Article {
   const article = articlesById.get(articleId);
   if (!article) {
-    throw new Error(`Unknown or unpublished Grove article "${articleId}".`);
+    throw new Error(`Unknown or unpublished Aflora article "${articleId}".`);
   }
   return article;
 }
