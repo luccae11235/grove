@@ -8,6 +8,28 @@ release tasks. Update the relevant card's status and completion check when work
 changes its state; do not implement a queued task unless it is explicitly in
 scope for the current request.
 
+## Required GitFlow
+
+Every repository change must follow this sequence:
+
+1. Create or identify a GitHub issue with the objective and acceptance criteria
+   before editing project files.
+2. Create a temporary branch from the latest `origin/develop`. Use
+   `feature/*`, `fix/*`, `docs/*`, or `chore/*` for normal work.
+3. Reference the issue in the branch context, commits, and pull request. A
+   normal pull request must use a closing reference such as `Closes #123`.
+4. Open the pull request against `develop`, pass all checks, and review the
+   deployed result in staging before merging.
+5. Promote `develop` to `main` only through a release pull request. Do not merge
+   or push to `main` without the repository owner's explicit production
+   approval, recorded with the `production-approved` label.
+6. Treat deploy and newsletter delivery as separate operations. A merge or
+   Railway deploy must never imply authorization to create or send a broadcast.
+
+Use `release/*` only when stabilization needs a separate branch. Use
+`hotfix/*` from `main` only for an urgent production defect, then merge the
+result back into `develop`.
+
 ## Educational visualizations: simplicity first
 
 Apply these rules to every article and learning experience in this repository:

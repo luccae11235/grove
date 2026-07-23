@@ -162,7 +162,9 @@ the command for the same issue is refused, which prevents accidental duplicates.
 Run the workflow again with action `send` or `schedule` and enter
 `SEND:<issue-id>` in the confirmation field. The issue must be published, the
 postal address must be present, artifacts must contain an unsubscribe link, and
-the protected environment reviewer must approve the job.
+the repository owner must initiate the manual workflow. On the current private
+GitHub Free repository, the owner-only actor check, recipient allowlist, issue
+state, and exact confirmation form the delivery gate.
 
 When a provider draft already exists, the final command refreshes it from the
 current validated artifacts and then sends that same broadcast. A sent or

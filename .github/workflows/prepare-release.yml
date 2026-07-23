@@ -62,6 +62,8 @@ jobs:
           - [ ] Draft content is absent from the production build.
           - [ ] Legal/contact placeholders required by this release are resolved.
           - [ ] The post-deploy platform smoke test is ready to run.
+          - [ ] The repository owner explicitly approved production by applying
+                the `production-approved` label.
 
           Merging this pull request deploys the website but does not send a newsletter.
           EOF
@@ -71,5 +73,6 @@ jobs:
             --repo "$REPOSITORY" \
             --base main \
             --head develop \
+            --draft \
             --title "$title" \
             --body "$body"

@@ -25,7 +25,7 @@ references for longer-term editorial direction.
 | 4 | Create production on Railway | Backlog | Phase 3 |
 | 5 | Formalize publication | Backlog | Phases 2–4 |
 | 6 | Prove the newsletter in staging | Backlog | Phase 3 |
-| 7 | Configure the `.com.br` domain | Backlog | Stable Railway services |
+| 7 | Configure the `aflora.page` domain | Backlog | Stable Railway services |
 | 8 | Open the newsletter | Backlog | Phases 6 and 7 |
 | 9 | Protect operations | Backlog | Production services; before public data |
 | 10 | Prepare future visualizations | Backlog | Current performance baseline |
@@ -106,7 +106,7 @@ references for longer-term editorial direction.
   - Completion check: consent, suppression, events, and reporting work end to end
     without a public audience.
 
-- [ ] **Phase 7 — Configure the `.com.br` domain**
+- [ ] **Phase 7 — Configure the `aflora.page` domain**
   - Register the selected domain; point web and API; create the sending subdomain;
     configure SPF, DKIM, and DMARC; verify the domain in Resend.
   - Completion check: the site has its own address and authenticated sending.
@@ -149,6 +149,17 @@ references for longer-term editorial direction.
 ## Done
 
 ### Release and platform readiness
+
+- [x] **Formalize and prove the required GitFlow — issue #4** — 2026-07-23
+  - Opened the issue with the workflow and acceptance criteria before editing.
+  - Created `chore/issue-4-formalize-gitflow` from the latest `develop`.
+  - Added issue and PR templates plus automated branch, issue-link, and
+    production-approval checks.
+  - Removed the legacy GitHub Pages deployment and aligned operational docs
+    with Railway and private GitHub Free.
+  - PR #5 passed the policy and quality checks before merging into `develop`.
+  - Completion check: the governance change itself completed the documented
+    issue → branch → PR → CI → `develop` sequence.
 
 - [x] **Phase 2 — Validate CI** — 2026-07-21
   - Tests, type checking, standalone-project validation, the production build,

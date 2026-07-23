@@ -85,7 +85,7 @@ O upload de datasets só entra quando houver limites explícitos de tamanho, val
 
 ## Requisitos não funcionais
 
-- site estático compatível com GitHub Pages;
+- site static-first implantável na Railway e portátil entre hosts estáticos;
 - experiência principal utilizável em desktop e celular;
 - controles acessíveis por teclado e sem dependência exclusiva de cor;
 - funcionamento sem enviar datasets ou resultados a servidores;
@@ -100,7 +100,7 @@ O upload de datasets só entra quando houver limites explícitos de tamanho, val
 
 O primeiro lançamento estará pronto quando:
 
-- existir uma URL pública no GitHub Pages;
+- existir uma URL pública estável na Railway;
 - uma pessoa conseguir completar a narrativa sem instrução externa;
 - Gini e ganho produzirem cálculos verificáveis e cobertos por testes;
 - treino, predição, árvore desenhada e regiões de decisão vierem da mesma estrutura de dados;

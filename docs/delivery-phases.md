@@ -67,7 +67,7 @@ restricted to test addresses.
 The gate is complete when consent, suppression, delivery events, and reporting
 have been demonstrated without a public audience.
 
-## Phase 7 — Configure the `.com.br` domain
+## Phase 7 — Configure the `aflora.page` domain
 
 Register the selected domain, point web and API records, create a sending
 subdomain, publish SPF, DKIM, and DMARC, and verify the domain in Resend.

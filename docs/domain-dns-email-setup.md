@@ -71,7 +71,7 @@ routing can be managed independently.
    monitored mailbox.
 5. Create the production segment (and optional topic), configure the signed
    webhook at `https://<api-host>/v1/webhooks/resend`, and store its signing
-   secret only in Railway and the protected GitHub environment.
+   secret only in Railway and the repository-level GitHub Actions secrets.
 
 DNS changes can take time according to the record TTL. Keep existing records in
 place during a migration, lower TTL before a planned cutover when supported, and
