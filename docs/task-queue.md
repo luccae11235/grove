@@ -44,22 +44,6 @@ references for longer-term editorial direction.
   - Completion check: `main` rejects direct, unreviewed changes and records a
     successful pull-request merge.
 
-## In progress
-
-### Release and platform readiness
-
-- [ ] **Formalize and prove the required GitFlow — issue #4**
-  - [x] Open an issue with the workflow and acceptance criteria before editing.
-  - [x] Create `chore/issue-4-formalize-gitflow` from the latest `develop`.
-  - [x] Add issue and PR templates plus automated branch, issue-link, and
-    production-approval checks.
-  - [x] Remove the legacy GitHub Pages deployment and align operational docs
-    with Railway and private GitHub Free.
-  - [ ] Pass CI, review the result, and merge the issue-linked PR into
-    `develop`.
-  - Completion check: the governance change itself completes the documented
-    issue → branch → PR → CI → `develop` sequence.
-
 ## Ready
 
 ### Publishing and content
@@ -165,6 +149,17 @@ references for longer-term editorial direction.
 ## Done
 
 ### Release and platform readiness
+
+- [x] **Formalize and prove the required GitFlow — issue #4** — 2026-07-23
+  - Opened the issue with the workflow and acceptance criteria before editing.
+  - Created `chore/issue-4-formalize-gitflow` from the latest `develop`.
+  - Added issue and PR templates plus automated branch, issue-link, and
+    production-approval checks.
+  - Removed the legacy GitHub Pages deployment and aligned operational docs
+    with Railway and private GitHub Free.
+  - PR #5 passed the policy and quality checks before merging into `develop`.
+  - Completion check: the governance change itself completed the documented
+    issue → branch → PR → CI → `develop` sequence.
 
 - [x] **Phase 2 — Validate CI** — 2026-07-21
   - Tests, type checking, standalone-project validation, the production build,
