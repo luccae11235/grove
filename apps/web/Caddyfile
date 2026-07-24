@@ -12,6 +12,9 @@
     X-Frame-Options DENY
   }
 
+  @www host www.aflora.page
+  redir @www https://aflora.page{uri} permanent
+
   try_files {path} {path}/index.html
   file_server
 
