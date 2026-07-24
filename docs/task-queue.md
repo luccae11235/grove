@@ -172,6 +172,16 @@ references for longer-term editorial direction.
 
 ## Done
 
+### Learning experience
+
+- [x] **Fix article navigation and split-preview discoverability** — 2026-07-24
+  - Moved the fixed chapter panel below the site header so its close and reopen
+    controls remain visible, clickable, and keyboard accessible.
+  - Made the first split playground preview the nearest valid threshold as the
+    pointer moves, while preserving drag behavior for touch and arrow controls.
+  - Completion check: focused interaction checks, the full repository gate, and
+    exact-SHA staging and production smoke tests pass.
+
 ### Product design
 
 - [x] **Rebrand Grove as Aflora — issue #6** — 2026-07-23
