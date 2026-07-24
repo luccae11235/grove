@@ -54,6 +54,8 @@ references for longer-term editorial direction.
     platform smoke checks.
   - [x] Add retry-aware staging and production verification for Railway
     deployment events and require one commit SHA across both services.
+  - [x] Keep draft release PRs from blocking staging CI while activating the
+    production-approval gate as soon as a release is marked ready.
   - [x] Document the automation/owner boundary and a coordinated rollback drill.
   - [ ] Merge the implementation into `develop` and attach a successful
     exact-SHA staging verification to the release PR; this is the one-time

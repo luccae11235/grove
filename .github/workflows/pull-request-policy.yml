@@ -3,7 +3,7 @@ name: Pull request policy
 on:
   pull_request:
     branches: [develop, main]
-    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled, ready_for_review, converted_to_draft]
 
 permissions:
   contents: read
@@ -57,7 +57,7 @@ jobs:
           fi
 
   release-policy:
-    if: github.base_ref == 'main'
+    if: github.base_ref == 'main' && github.event.pull_request.draft == false
     name: Explicit production approval
     runs-on: ubuntu-latest
     steps:
