@@ -71,70 +71,39 @@ summary {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 11px;
+  gap: 13px;
   text-decoration: none;
 }
 
 .brand-mark {
-  position: relative;
-  width: 31px;
-  height: 31px;
+  display: block;
+  width: 37px;
+  height: 49px;
   flex: 0 0 auto;
-}
-
-.brand-mark::before {
-  position: absolute;
-  bottom: 2px;
-  left: 14px;
-  width: 2px;
-  height: 21px;
-  border-radius: 999px;
-  background: var(--accent);
-  content: "";
-  transform: rotate(-1deg);
-  transform-origin: bottom;
-}
-
-.brand-leaf {
-  position: absolute;
-  width: 13px;
-  height: 8px;
-  background: var(--accent);
-}
-
-.brand-leaf-left {
-  top: 10px;
-  left: 3px;
-  border-radius: 100% 8% 100% 8%;
-  transform: rotate(28deg);
-}
-
-.brand-leaf-right {
-  top: 4px;
-  right: 2px;
-  border-radius: 8% 100% 8% 100%;
-  transform: rotate(-25deg);
 }
 
 .brand-copy {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  line-height: 1.22;
+  line-height: 1;
 }
 
 .brand strong {
   color: var(--text);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 1.2rem;
-  letter-spacing: -0.035em;
-  line-height: 1;
+  font-family: "Bodoni 72", Didot, "Iowan Old Style", "Times New Roman", serif;
+  font-size: 1.8rem;
+  font-weight: 400;
+  letter-spacing: -0.045em;
+  line-height: 0.88;
 }
 
 .brand small {
-  margin-top: 3px;
+  margin-top: 7px;
   color: var(--text-muted);
-  font-size: 0.68rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.005em;
   white-space: nowrap;
 }
 
