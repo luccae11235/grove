@@ -4,6 +4,7 @@ import { loadConfig } from "../config.js";
 import { assertBroadcastPolicy, assertEmailArtifacts } from "../broadcastPolicy.js";
 import { PostgresNewsletterRepository } from "../postgresRepository.js";
 import { ResendNewsletterProvider } from "../provider.js";
+import { resolveNewsletterManifestPath } from "./manifestPath.js";
 
 interface ManifestIssue {
   id: string;
@@ -25,7 +26,7 @@ if (!args.issueId) {
   throw new Error("Usage: pnpm newsletter:broadcast --issue <issue-id> [--send --confirm SEND:<issue-id>] [--schedule <ISO date>]");
 }
 const config = loadConfig();
-const manifestPath = resolve(args.manifestPath ?? "apps/web/dist/newsletter/manifest.json");
+const manifestPath = resolveNewsletterManifestPath(args.manifestPath);
 const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as NewsletterManifest;
 const issue = manifest.issues.find((candidate) => candidate.id === args.issueId);
 if (!issue) throw new Error(`Issue "${args.issueId}" is not present in ${manifestPath}.`);
