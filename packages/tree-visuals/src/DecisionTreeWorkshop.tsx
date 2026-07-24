@@ -307,6 +307,13 @@ function sourceY(value: number): number {
   return SOURCE_PLOT.bottom - ((value - 1) / 3.6) * (SOURCE_PLOT.bottom - SOURCE_PLOT.top);
 }
 
+export function previewsCandidateFromPointer(
+  pointerType: string,
+  hasPointerCapture: boolean,
+): boolean {
+  return pointerType !== "touch" || hasPointerCapture;
+}
+
 function CandidatePlot({
   dataset,
   candidate,
@@ -380,7 +387,12 @@ function CandidatePlot({
           moveFromPointer(event);
         }}
         onPointerMove={(event) => {
-          if (event.currentTarget.hasPointerCapture(event.pointerId)) moveFromPointer(event);
+          if (previewsCandidateFromPointer(
+            event.pointerType,
+            event.currentTarget.hasPointerCapture(event.pointerId),
+          )) {
+            moveFromPointer(event);
+          }
         }}
         onPointerUp={(event) => {
           if (!interactive) return;
@@ -626,7 +638,7 @@ export function ThresholdIntuitionPlayground({ locale = "en" }: { locale?: Works
           </div>
         </div>
         <div>
-          <span className={styles.controlLabel}>{isPortuguese(locale) ? "2 · Arraste ou clique no gráfico" : "2 · Drag or click in the graph"}</span>
+          <span className={styles.controlLabel}>{isPortuguese(locale) ? "2 · Mova o ponteiro pelo gráfico" : "2 · Move across the graph"}</span>
           <div className={styles.lineNudges}>
             <button
               type="button"
