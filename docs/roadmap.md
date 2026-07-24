@@ -41,7 +41,7 @@ O roadmap separa uma entrega demonstrável nesta semana da construção gradual 
 
 - corrigir apenas bloqueadores encontrados na revisão;
 - fazer merge da release na `main` e criar tag `v0.1.0`;
-- ativar GitHub Pages por GitHub Actions;
+- validar o deploy público da `main` na Railway;
 - validar a URL pública em desktop e celular;
 - publicar no LinkedIn com uma gravação curta ou carrossel e links para demo/código;
 - registrar perguntas recebidas como candidatas ao próximo conteúdo.

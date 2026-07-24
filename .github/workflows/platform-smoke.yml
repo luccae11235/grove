@@ -1,0 +1,96 @@
+name: Deployment verification
+
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Railway environment to verify
+        required: true
+        type: choice
+        options: [staging, production]
+      expected_sha:
+        description: Full Git commit SHA expected on both services
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deployment-verification-${{ github.event.deployment.environment || inputs.environment }}-${{ github.event.deployment.sha || inputs.expected_sha }}
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    name: Verified deployment
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+      (github.event.deployment.environment == 'aflora / staging' ||
+      github.event.deployment.environment == 'aflora / production'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Resolve the trusted deployment target
+        env:
+          EVENT_ENVIRONMENT: ${{ github.event.deployment.environment }}
+          EVENT_SHA: ${{ github.event.deployment.sha }}
+          INPUT_ENVIRONMENT: ${{ inputs.environment }}
+          INPUT_SHA: ${{ inputs.expected_sha }}
+        shell: bash
+        run: |
+          target_environment="${EVENT_ENVIRONMENT:-$INPUT_ENVIRONMENT}"
+          expected_sha="${EVENT_SHA:-$INPUT_SHA}"
+
+          case "$target_environment" in
+            staging|"aflora / staging")
+              echo "WEB_URL=https://grove-web-staging.up.railway.app" >> "$GITHUB_ENV"
+              echo "API_URL=https://grove-newsletter-api-staging.up.railway.app" >> "$GITHUB_ENV"
+              echo "EXPECTED_FORM=enabled" >> "$GITHUB_ENV"
+              echo "EXPECTED_AUDIENCE=restricted" >> "$GITHUB_ENV"
+              ;;
+            production|"aflora / production")
+              echo "WEB_URL=https://aflora.page" >> "$GITHUB_ENV"
+              echo "API_URL=https://api.aflora.page" >> "$GITHUB_ENV"
+              echo "EXPECTED_FORM=disabled" >> "$GITHUB_ENV"
+              echo "EXPECTED_AUDIENCE=restricted" >> "$GITHUB_ENV"
+              ;;
+            *)
+              echo "Ignoring deployment environment: $target_environment"
+              exit 1
+              ;;
+          esac
+
+          if ! printf '%s' "$expected_sha" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "Expected a full 40-character Git SHA, received: $expected_sha"
+            exit 1
+          fi
+          echo "EXPECTED_SHA=$expected_sha" >> "$GITHUB_ENV"
+
+      - name: Check out the deployed revision
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.deployment.sha || inputs.expected_sha }}
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify both services and their release identity
+        run: >-
+          pnpm operations:smoke
+          --web-url "$WEB_URL"
+          --api-url "$API_URL"
+          --expect-signup-form "$EXPECTED_FORM"
+          --expect-audience "$EXPECTED_AUDIENCE"
+          --expect-release-sha "$EXPECTED_SHA"
+          --wait-seconds 600

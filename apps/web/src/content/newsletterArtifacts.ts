@@ -25,8 +25,8 @@ export function renderIssueText(options: {
   const postalAddress = options.postalAddress || POSTAL_ADDRESS_PLACEHOLDER;
 
   return [
-    `GROVE · ISSUE ${String(issue.issueNumber).padStart(3, "0")}`,
-    "Ideas, made interactive.",
+    `AFLORA · ISSUE ${String(issue.issueNumber).padStart(3, "0")}`,
+    "Ideas, brought to life.",
     "",
     markdownToPlainText(markdown),
     "",

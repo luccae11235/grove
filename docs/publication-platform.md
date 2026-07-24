@@ -50,7 +50,8 @@ Website deployment and email delivery remain deliberately separate. The full
 setup and operating flow is in [newsletter-operations.md](newsletter-operations.md).
 
 `SITE_URL` is required in production so canonical, sitemap, feed, and social URLs
-use the public domain. `BASE_PATH` remains supported for GitHub Pages previews.
+use the public domain. `BASE_PATH` remains supported for portable subpath
+previews and standalone exports.
 
 ## Authoring flow
 

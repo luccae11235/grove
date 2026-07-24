@@ -6,7 +6,7 @@ export function GET(context: { site?: URL }) {
   const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
   return rss({
-    title: "Grove — Ideias, de forma interativa.",
+    title: "Aflora — Ideias que ganham vida.",
     description:
       "Explicações visuais, experimentos interativos e ideias difíceis desmontadas por dentro.",
     site: new URL(`${base}/pt-br/`, site),

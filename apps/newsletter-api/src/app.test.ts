@@ -38,6 +38,8 @@ class FakeProvider implements NewsletterProvider {
     return this.webhookEvent;
   }
 
+  async assertSegmentRecipientsAllowed(_allowlist: string[]) {}
+
   async createBroadcast(_message: BroadcastMessage) {
     return "broadcast_1";
   }
@@ -46,7 +48,7 @@ class FakeProvider implements NewsletterProvider {
   async sendBroadcast(_providerBroadcastId: string, _scheduledAt?: string) {}
 }
 
-function testSystem(overrides: { rateLimitMax?: number } = {}) {
+function testSystem(overrides: { rateLimitMax?: number; recipientAllowlist?: string[] } = {}) {
   const repository = new MemoryNewsletterRepository();
   const provider = new FakeProvider();
   const app = createApp({
@@ -55,12 +57,46 @@ function testSystem(overrides: { rateLimitMax?: number } = {}) {
     webUrl: "https://grove.example",
     apiPublicUrl: "https://letters.grove.example",
     allowedOrigins: ["https://grove.example"],
+    recipientAllowlist: overrides.recipientAllowlist,
     eventHashSalt: "a-secret-test-salt-longer-than-sixteen",
     rateLimitMax: overrides.rateLimitMax ?? 5,
     now: () => new Date("2026-07-18T12:00:00.000Z"),
   });
   return { app, repository, provider };
 }
+
+test("recipient allowlist accepts configured addresses and silently ignores all others", async () => {
+  const { app, repository, provider } = testSystem({
+    recipientAllowlist: ["allowed@example.com"],
+  });
+  const blocked = await subscribe(app, { email: "other@example.com" });
+  assert.equal(blocked.status, 202);
+  assert.equal(repository.subscribers.size, 0);
+  assert.equal(provider.confirmations.length, 0);
+
+  const allowed = await subscribe(app, { email: "Allowed@Example.com" }, "198.51.100.2");
+  assert.equal(allowed.status, 202);
+  assert.equal(repository.subscribers.get("allowed@example.com")?.status, "pending");
+  assert.equal(provider.confirmations.length, 1);
+});
+
+test("health exposes non-sensitive release and audience evidence", async () => {
+  const restricted = testSystem({ recipientAllowlist: ["allowed@example.com"] });
+  const restrictedResponse = await restricted.app.request("/health");
+  assert.deepEqual(await restrictedResponse.json(), {
+    status: "ok",
+    releaseSha: "development",
+    audienceMode: "restricted",
+  });
+
+  const publicSystem = testSystem();
+  const publicResponse = await publicSystem.app.request("/health");
+  assert.deepEqual(await publicResponse.json(), {
+    status: "ok",
+    releaseSha: "development",
+    audienceMode: "public",
+  });
+});
 
 test("double opt-in activates a pending subscriber and avoids duplicate confirmation", async () => {
   const { app, repository, provider } = testSystem();

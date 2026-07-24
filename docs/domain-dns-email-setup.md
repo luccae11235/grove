@@ -71,7 +71,7 @@ routing can be managed independently.
    monitored mailbox.
 5. Create the production segment (and optional topic), configure the signed
    webhook at `https://<api-host>/v1/webhooks/resend`, and store its signing
-   secret only in Railway and the protected GitHub environment.
+   secret only in Railway and the repository-level GitHub Actions secrets.
 
 DNS changes can take time according to the record TTL. Keep existing records in
 place during a migration, lower TTL before a planned cutover when supported, and
@@ -80,10 +80,12 @@ verified.
 
 ## GitHub delivery environment
 
-Protect the `newsletter-production` GitHub environment with a required reviewer.
-Configure the variables and secrets consumed by
-`.github/workflows/newsletter-delivery.yml`; use the same final web and API
-origins as Railway. A normal push or deploy must never send an issue.
+For the current private GitHub Free repository, configure the repository-level
+variables and secrets consumed by `.github/workflows/newsletter-delivery.yml`;
+use the same final web and API origins as Railway. The workflow is restricted to
+the repository owner and requires an issue-scoped confirmation. A normal push
+or deploy must never send an issue. Move this configuration to a protected
+environment if the repository or plan later supports one.
 
 ## Launch verification
 

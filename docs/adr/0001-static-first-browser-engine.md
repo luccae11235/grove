@@ -1,5 +1,9 @@
 # ADR 0001 — aplicação estática com motor no navegador
 
+> Nota de evolução (2026-07-23): a decisão static-first permanece, mas a
+> hospedagem oficial migrou de GitHub Pages para Railway para suportar a API e
+> os serviços persistentes da plataforma.
+
 - Status: substituído pelo [ADR 0002](0002-python-canonical-engine.md)
 - Data: 2026-07-13
 

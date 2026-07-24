@@ -1,5 +1,9 @@
 # ADR 0002 — Python como motor canônico de aprendizagem
 
+> Nota de evolução (2026-07-23): a implementação Python continua canônica. A
+> referência a GitHub Pages abaixo descreve a restrição de hospedagem original;
+> staging e produção agora são servidos pela Railway.
+
 - Status: aceito
 - Data: 2026-07-13
 

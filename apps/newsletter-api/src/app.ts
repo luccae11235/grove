@@ -22,9 +22,11 @@ const subscriptionSchema = z.object({
 export interface AppOptions {
   repository: NewsletterRepository;
   provider: NewsletterProvider;
+  releaseSha?: string;
   webUrl: string;
   apiPublicUrl: string;
   allowedOrigins: string[];
+  recipientAllowlist?: string[];
   eventHashSalt: string;
   confirmationTtlHours?: number;
   rateLimitMax?: number;
@@ -41,6 +43,9 @@ export function createApp(options: AppOptions) {
     () => now().getTime(),
   );
   const origins = new Set(options.allowedOrigins.map((origin) => origin.replace(/\/$/, "")));
+  const recipientAllowlist = options.recipientAllowlist
+    ? new Set(options.recipientAllowlist.map((email) => email.toLowerCase()))
+    : undefined;
 
   app.use("*", secureHeaders());
   app.use("/v1/*", cors({
@@ -68,7 +73,11 @@ export function createApp(options: AppOptions) {
   app.get("/health", async (context) => {
     try {
       await options.repository.health();
-      return context.json({ status: "ok" });
+      return context.json({
+        status: "ok",
+        releaseSha: options.releaseSha ?? "development",
+        audienceMode: recipientAllowlist ? "restricted" : "public",
+      });
     } catch (error) {
       log("health_failed", { error: errorName(error) });
       return context.json({ status: "unavailable" }, 503);
@@ -96,6 +105,9 @@ export function createApp(options: AppOptions) {
 
     // A filled honeypot receives the same response without creating a record.
     if (parsed.data.website) {
+      return accepted(context);
+    }
+    if (recipientAllowlist && !recipientAllowlist.has(parsed.data.email)) {
       return accepted(context);
     }
 
@@ -134,6 +146,9 @@ export function createApp(options: AppOptions) {
     }
     const subscriber = await options.repository.findPendingByTokenHash(hashToken(token), now());
     if (!subscriber) {
+      return context.redirect(`${options.webUrl}/newsletter/confirmed?status=invalid`, 303);
+    }
+    if (recipientAllowlist && !recipientAllowlist.has(subscriber.email.toLowerCase())) {
       return context.redirect(`${options.webUrl}/newsletter/confirmed?status=invalid`, 303);
     }
     const providerContactId = await options.provider.upsertContact(subscriber.email);

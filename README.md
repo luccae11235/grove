@@ -1,8 +1,8 @@
-# Grove
+# Aflora
 
-**Ideas, made interactive.**
+**Ideas, brought to life.**
 
-Grove is a personal collection of interactive articles built while learning. Each piece can combine plain-English explanations, from-scratch implementations, and visual experiments to make difficult ideas inspectable.
+Aflora is a personal collection of interactive articles built while learning. Each piece can combine plain-English explanations, from-scratch implementations, and visual experiments to make difficult ideas inspectable.
 
 The library currently contains one article: **how can you reconstruct a classification decision tree from first principles?**
 
@@ -70,11 +70,15 @@ Resend, weekly publishing, delivery safeguards, and performance reporting.
 - **Visual before ornamental:** an interaction must reveal a decision made by the model.
 - **Published-only navigation:** the public library reflects what exists, not a speculative roadmap.
 - **Learning graph:** stable article IDs connect prerequisites, automatic backlinks, and related paths without coupling references to URLs.
-- **Static-first:** Python produces deterministic lesson artifacts at build time, keeping the published site compatible with GitHub Pages.
+- **Static-first:** Python produces deterministic lesson artifacts at build time,
+  keeping the published site portable while Railway serves the official
+  staging and production environments.
 - **English-first, translation-ready:** the first interface is English, with shared navigation and shell copy kept behind a locale boundary.
 
 ## Planning
 
+- [Delivery phases and gates](docs/delivery-phases.md)
+- [Operational task queue](docs/task-queue.md)
 - [Curriculum plan](docs/curriculum-plan.md)
 - [Article organization, references, and difficulty](docs/article-system.md)
 - [Publication platform and newsletter boundaries](docs/publication-platform.md)

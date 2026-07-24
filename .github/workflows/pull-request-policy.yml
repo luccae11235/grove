@@ -1,0 +1,85 @@
+name: Pull request policy
+
+on:
+  pull_request:
+    branches: [develop, main]
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled, ready_for_review, converted_to_draft]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  change-policy:
+    if: github.base_ref == 'develop'
+    name: Linked issue and branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require a normal change branch
+        env:
+          HEAD_BRANCH: ${{ github.head_ref }}
+        shell: bash
+        run: |
+          case "$HEAD_BRANCH" in
+            feature/*|fix/*|docs/*|chore/*) ;;
+            *)
+              echo "PRs into develop must use feature/*, fix/*, docs/*, or chore/*."
+              exit 1
+              ;;
+          esac
+
+      - name: Require an open linked issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          issue_number=$(printf '%s' "$PR_BODY" |
+            grep -Eio '(close[sd]?|fix(e[sd])?|resolve[sd]?)[[:space:]]+#[0-9]+' |
+            head -1 |
+            grep -Eo '[0-9]+' || true)
+
+          if [ -z "$issue_number" ]; then
+            echo "The PR body must contain a closing reference such as: Closes #123"
+            exit 1
+          fi
+
+          issue=$(gh api "repos/$REPOSITORY/issues/$issue_number")
+          if [ "$(printf '%s' "$issue" | jq -r 'has("pull_request")')" = "true" ]; then
+            echo "#$issue_number is a pull request, not an issue."
+            exit 1
+          fi
+          if [ "$(printf '%s' "$issue" | jq -r '.state')" != "open" ]; then
+            echo "Linked issue #$issue_number must be open."
+            exit 1
+          fi
+
+  release-policy:
+    if: github.base_ref == 'main' && github.event.pull_request.draft == false
+    name: Explicit production approval
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require a release source
+        env:
+          HEAD_BRANCH: ${{ github.head_ref }}
+        shell: bash
+        run: |
+          case "$HEAD_BRANCH" in
+            develop|release/*|hotfix/*) ;;
+            *)
+              echo "PRs into main must come from develop, release/*, or hotfix/*."
+              exit 1
+              ;;
+          esac
+
+      - name: Require the production approval label
+        env:
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        shell: bash
+        run: |
+          if ! printf ',%s,' "$LABELS" | grep -q ',production-approved,'; then
+            echo "Production promotion requires the owner-applied production-approved label."
+            exit 1
+          fi
