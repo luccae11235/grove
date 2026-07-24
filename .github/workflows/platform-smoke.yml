@@ -61,8 +61,8 @@ jobs:
             production|"aflora / production")
               echo "WEB_URL=https://aflora.page" >> "$GITHUB_ENV"
               echo "API_URL=https://api.aflora.page" >> "$GITHUB_ENV"
-              echo "EXPECTED_FORM=disabled" >> "$GITHUB_ENV"
-              echo "EXPECTED_AUDIENCE=restricted" >> "$GITHUB_ENV"
+              echo "EXPECTED_FORM=enabled" >> "$GITHUB_ENV"
+              echo "EXPECTED_AUDIENCE=public" >> "$GITHUB_ENV"
               ;;
             *)
               echo "Ignoring deployment environment: $target_environment"
@@ -125,8 +125,9 @@ jobs:
             --jq '.[0].number // ""')
           body="The scheduled production smoke test failed: $RUN_URL
 
-          Keep public signup and newsletter delivery closed until the web, API,
-          PostgreSQL, release identity, CORS, and audience checks pass again."
+          Pause newsletter delivery while investigating. Disable public signup
+          if API health, PostgreSQL, CORS, consent persistence, or the public
+          audience policy is unsafe. Keep the website readable whenever possible."
           if [ -n "$existing" ]; then
             gh issue comment "$existing" --repo "$REPOSITORY" --body "$body"
           else

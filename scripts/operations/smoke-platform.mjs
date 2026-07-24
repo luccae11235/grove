@@ -66,6 +66,19 @@ export async function runSmoke(arguments_, dependencies = {}) {
     assertHtml(response);
     const body = await response.text();
     if (!body.toLowerCase().includes("<html")) throw new Error("response is not an HTML document");
+    if (!body.includes('rel="icon"') || !body.includes("/brand/aflora-mark.svg")) {
+      throw new Error("Aflora favicon metadata is missing");
+    }
+  });
+
+  await check(checks, "Aflora brand mark is available", async () => {
+    const response = await request(`${webUrl}/brand/aflora-mark.svg`);
+    assertStatus(response, 200);
+    if (!response.headers.get("content-type")?.includes("image/svg+xml")) {
+      throw new Error(
+        `expected image/svg+xml, received ${response.headers.get("content-type") ?? "none"}`,
+      );
+    }
   });
 
   await check(checks, "robots points to the production sitemap", async () => {
