@@ -50,16 +50,16 @@ export class ResendNewsletterProvider implements NewsletterProvider {
   async sendConfirmation(message: ConfirmationMessage) {
     const copy = message.locale === "pt-BR"
       ? {
-          subject: "Confirme sua inscrição na Grove",
+          subject: "Confirme sua inscrição na Aflora",
           heading: "Só falta confirmar",
-          body: "Clique no botão abaixo para receber a newsletter semanal da Grove.",
+          body: "Clique no botão abaixo para receber a newsletter semanal da Aflora.",
           button: "Confirmar inscrição",
           note: "Se você não pediu esta inscrição, ignore esta mensagem.",
         }
       : {
-          subject: "Confirm your Grove subscription",
+          subject: "Confirm your Aflora subscription",
           heading: "One last step",
-          body: "Use the button below to join Grove's weekly newsletter.",
+          body: "Use the button below to join Aflora's weekly newsletter.",
           button: "Confirm subscription",
           note: "If you did not request this, you can ignore this email.",
         };

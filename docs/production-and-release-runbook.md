@@ -123,8 +123,10 @@ The `Pull request policy` workflow requires normal PRs into `develop` to use an
 approved branch prefix and close an open issue. For `main`, it accepts only
 `develop`, `release/*`, or `hotfix/*` and requires the owner-applied
 `production-approved` label. These checks are evidence, not enforcement against
-direct pushes. Until the private repository has GitHub branch-protection
-capability, direct pushes to `develop` and `main` remain procedurally prohibited.
+direct pushes. The owner has accepted this limitation for the private,
+owner-managed project rather than paying for technical branch protection.
+Direct pushes to `develop` and `main` remain prohibited by the documented
+release process.
 
 ## 3. Ownership and automation map
 

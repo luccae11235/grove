@@ -19,30 +19,31 @@ references for longer-term editorial direction.
 
 | Phase | Gate | Status | Depends on |
 | --- | --- | --- | --- |
-| 1 | Organize GitHub | Blocked | GitHub branch-protection capability |
+| 1 | Organize GitHub | Done | Accepted owner-managed controls |
 | 2 | Validate CI | Done | A repository and published branch |
 | 3 | Create staging on Railway | Done | Phase 2 |
 | 4 | Create production on Railway | Done | Phase 3 |
-| 5 | Formalize publication | In progress | Phases 2–4 |
+| 5 | Formalize publication | Done | Phases 2–4 |
 | 6 | Prove the newsletter in staging | Done | Phase 3 |
 | 7 | Configure the `aflora.page` domain | Done | Stable Railway services |
 | 8 | Open the newsletter | In progress | Phases 6 and 7 |
-| 9 | Protect operations | Blocked | Railway native-backup capability |
+| 9 | Protect operations | In progress | First encrypted local backup |
 | 10 | Prepare future visualizations | Backlog | Current performance baseline |
 
-## Blocked
+## In progress
 
 ### Release and platform readiness
 
-- [ ] **Phase 1 — Organize GitHub**
-  - [x] Create the official private repository at `luccae11235/grove`.
-  - [x] Version and publish the current work and permanent branches.
-  - [x] Complete the first pull-request merge through Phase 2 validation PR #1.
-  - [ ] Protect `main` and require reviewed, up-to-date checks.
-  - Blocker: GitHub returns HTTP 403 because branch protection for this private
-    repository requires GitHub Pro or making the repository public.
-  - Completion check: `main` rejects direct, unreviewed changes and records a
-    successful pull-request merge.
+- [ ] **Phase 8 — Open the newsletter**
+  - [x] Configure postal/contact details and the production segment.
+  - [x] Publish Issue 001, perform an internal send, and verify its report.
+  - [x] Review Gmail, mobile rendering, and plain text.
+  - [x] Enable public double-opt-in signup; the platform smoke verifies an
+    enabled form and public API audience.
+  - [ ] Make signup and confirmation feedback immediate on a real iPhone.
+  - [ ] Review a received issue in one non-Gmail mailbox provider.
+  - Completion check: real readers can subscribe, confirm, receive, and
+    unsubscribe safely.
 
 - [ ] **Phase 9 — Protect operations**
   - [x] Run an exact-SHA production smoke after releases and every six hours.
@@ -52,56 +53,12 @@ references for longer-term editorial direction.
     record the procedure in `database-recovery.md`.
   - [x] Verify the existing Railway $5 usage alert and $10 hard usage limit.
   - [x] Record operational ownership and the incident path.
-  - [ ] Enable daily and weekly native PostgreSQL backups and create a manual
-    snapshot.
-  - Blocker: authenticated Railway backup creation and scheduling return
-    `Not Authorized` on the current Hobby workspace. Unblock by enabling a
-    Railway plan/capability with native backups or approving an encrypted
-    off-platform backup design.
+  - [x] Approve encrypted local PostgreSQL backups as the current small-audience
+    recovery policy.
+  - [ ] Create and checksum the first encrypted local backup with
+    `pnpm newsletter:backup`.
   - Completion check: failures are detected and data can be restored through a
     tested procedure.
-
-## In progress
-
-### Release and platform readiness
-
-- [ ] **Harden exact-release CI/CD evidence** — [GitHub #9](https://github.com/luccae11235/grove/issues/9)
-  - [x] Give web and API deployments non-sensitive release identity endpoints.
-  - [x] Separate newsletter form visibility from the API audience policy in
-    platform smoke checks.
-  - [x] Add retry-aware staging and production verification for Railway
-    deployment events and require one commit SHA across both services.
-  - [x] Keep draft release PRs from blocking staging CI while activating the
-    production-approval gate as soon as a release is marked ready.
-  - [x] Document the automation/owner boundary and a coordinated rollback drill.
-  - [x] Merge the implementation into `develop` and attach a successful
-    exact-SHA staging verification to the release PR; bootstrap passed on
-    2026-07-24 for `9fd3ee238b1dc88d7ff6a0231888bba57aad4921`.
-  - [ ] Owner: enable Railway **Wait for CI** for web and API in staging and
-    production.
-  - [x] Promote through an approved release PR and observe the exact production
-    SHA `21b735f5dd81e3a383f48072243e5639df45ecf6`.
-  - Completion check: a reviewed commit waits for CI, deploys both services,
-    proves its identity and safety checks in staging and production, and retains
-    explicit owner approval before production.
-
-- [ ] **Phase 5 — Formalize publication**
-  - [x] Add a weekly article issue template and a one-page writer-facing flow.
-  - [x] Keep preview, staging review, production approval, deployment
-    verification, provider draft, and explicit send as separate gates.
-  - [ ] Merge and exercise the documented path with the next article.
-  - Completion check: an article follows the path without being tested directly
-    in production.
-
-- [ ] **Phase 8 — Open the newsletter**
-  - [x] Configure postal/contact details and the production segment.
-  - [x] Publish Issue 001, perform an internal send, and verify its report.
-  - [x] Review Gmail, mobile rendering, and plain text.
-  - [x] Enable public double-opt-in signup; the platform smoke verifies an
-    enabled form and public API audience.
-  - [ ] Review a received issue in one non-Gmail mailbox provider.
-  - Completion check: real readers can subscribe, confirm, receive, and
-    unsubscribe safely.
 
 ## Ready
 
@@ -187,6 +144,39 @@ references for longer-term editorial direction.
     promoting to `main`.
 
 ### Release and platform readiness
+
+- [x] **Phase 1 — Organize GitHub** — 2026-07-24
+  - The repository, permanent branches, issue and pull-request policy checks,
+    required quality checks, staging gate, production approval, and release
+    back-merge path are operational.
+  - Owner decision: paid private branch protection is unnecessary for this
+    owner-managed project. Direct pushes remain procedurally prohibited but are
+    an explicitly accepted risk.
+  - Completion check: every shipped infrastructure change used the documented
+    issue → branch → PR → CI → staging → production path.
+
+- [x] **Phase 5 — Formalize publication** — 2026-07-24
+  - Added a weekly article issue template, `weekly:new` and `weekly:check`
+    shortcuts, and a one-page writer-facing guide.
+  - Exercised CI, exact-SHA staging review, the automated release PR, explicit
+    production approval, and exact-SHA production verification in PR #33.
+  - Website publication remains separate from provider draft creation and the
+    issue-scoped send or schedule confirmation.
+  - Completion check: the documented path reached production without testing
+    changes directly there and without sending a newsletter automatically.
+
+- [x] **Harden exact-release CI/CD evidence** — 2026-07-24
+  - Web and API expose non-sensitive release identity and deployment
+    verification requires one SHA plus safe form, audience, CORS, and consent
+    behavior.
+  - Railway Wait for CI held staging and production deployments until the exact
+    commit's GitHub quality checks passed.
+  - Production release `876905a1aa7cc9b0830cccc0f0096f23709175b4`
+    passed the automated exact-SHA verification in run `30125467901`.
+  - Scheduled checks discover the matching deployed SHA, so documentation-only
+    commits cannot create false incidents.
+  - Completion check: reviewed commits wait for CI, deploy both services, retain
+    explicit production approval, and produce exact-release evidence.
 
 - [x] **Phase 7 — Configure the `aflora.page` domain** — 2026-07-24
   - Apex web, API, and sending domains use HTTPS; SPF, DKIM, and DMARC are

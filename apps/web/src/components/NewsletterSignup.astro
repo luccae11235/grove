@@ -38,6 +38,7 @@ const copy = locale === "pt-BR"
       unavailable: "As inscrições serão abertas assim que o serviço de newsletter estiver conectado.",
       submitting: "Enviando…",
       success: "Confira sua caixa de entrada e confirme a inscrição.",
+      successButton: "E-mail enviado",
       error: "Não foi possível iniciar sua inscrição. Tente novamente em instantes.",
       consent: "Ao continuar, você solicita os e-mails semanais da Aflora. A inscrição só fica ativa depois da confirmação.",
       privacy: "Privacidade e uso de dados",
@@ -53,6 +54,7 @@ const copy = locale === "pt-BR"
       unavailable: "Subscriptions will open as soon as the newsletter service is connected.",
       submitting: "Sending…",
       success: "Check your inbox and confirm your subscription.",
+      successButton: "Email sent",
       error: "We could not start your subscription. Please try again in a moment.",
       consent: "By continuing, you request Aflora's weekly emails. Your subscription becomes active only after confirmation.",
       privacy: "Privacy and data use",
@@ -84,8 +86,12 @@ const copy = locale === "pt-BR"
     </label>
     <input type="hidden" name="locale" value={locale} />
     <input type="hidden" name="source" value={source} />
-    <button type="submit" disabled={!endpoint}>{copy.submit}</button>
-    <p class="newsletter-consent">{copy.consent} <a href={privacyHref}>{copy.privacy}</a>.</p>
+    <button
+      type="submit"
+      disabled={!endpoint}
+      data-default-label={copy.submit}
+      data-success-label={copy.successButton}
+    >{copy.submit}</button>
     <p
       class="newsletter-form-status"
       data-status
@@ -93,8 +99,10 @@ const copy = locale === "pt-BR"
       data-submitting={copy.submitting}
       data-success={copy.success}
       data-error={copy.error}
+      role="status"
       aria-live="polite"
     >{!endpoint && copy.unavailable}</p>
+    <p class="newsletter-consent">{copy.consent} <a href={privacyHref}>{copy.privacy}</a>.</p>
   </form>
 </section>
 
@@ -121,6 +129,10 @@ const copy = locale === "pt-BR"
         if (value) payload[field] = value;
       }
       button.disabled = true;
+      button.textContent = status.dataset.submitting ?? "";
+      button.dataset.state = "loading";
+      button.setAttribute("aria-busy", "true");
+      form.setAttribute("aria-busy", "true");
       status.textContent = status.dataset.submitting ?? "";
       status.dataset.state = "loading";
 
@@ -134,11 +146,19 @@ const copy = locale === "pt-BR"
         form.reset();
         status.textContent = status.dataset.success ?? "";
         status.dataset.state = "success";
+        button.textContent = button.dataset.successLabel ?? "";
+        button.dataset.state = "success";
+        const email = form.querySelector<HTMLInputElement>("input[type='email']");
+        if (email) email.disabled = true;
       } catch {
         status.textContent = status.dataset.error ?? "";
         status.dataset.state = "error";
-      } finally {
+        button.textContent = button.dataset.defaultLabel ?? "";
+        delete button.dataset.state;
         button.disabled = false;
+      } finally {
+        button.removeAttribute("aria-busy");
+        form.removeAttribute("aria-busy");
       }
     });
   });

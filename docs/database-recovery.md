@@ -21,9 +21,36 @@ The temporary database was dropped after verification, and a follow-up query
 confirmed that no restore-test database remained.
 
 Railway native volume backup and schedule mutations returned `Not Authorized`
-for the current Hobby workspace. Daily and weekly native backups therefore
-remain blocked until the owner enables a plan/capability that exposes them or
-approves a separately encrypted off-platform backup design.
+for the current Hobby workspace. The owner has accepted encrypted off-platform
+logical backups as the current policy for the small subscriber list; native
+scheduled backups can be reconsidered if the audience or operational needs grow.
+
+## Manual encrypted backup
+
+For the current small subscriber list, create an encrypted logical backup after
+each publication and after any subscriber import:
+
+```bash
+pnpm newsletter:backup -- "/absolute/path/to/Aflora Backups"
+```
+
+The command reads the production public database URL from Railway without
+printing it, streams a compressed custom-format `pg_dump` through AES-256
+encryption, writes the result outside the repository with owner-only
+permissions, and creates a SHA-256 checksum. Store the passphrase in a password
+manager; neither the repository nor Railway can recover it.
+
+Verify the encrypted archive before treating it as a backup:
+
+```bash
+openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
+  -in "/absolute/path/to/backup.dump.enc" |
+  pg_restore --list >/dev/null
+```
+
+Keep at least two recent files on different physical or cloud-encrypted storage.
+Do not export subscriber CSV as the primary backup: it omits consent tokens,
+suppression state, broadcasts, events, and migrations.
 
 ## Restore procedure
 
