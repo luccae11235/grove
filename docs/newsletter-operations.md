@@ -82,6 +82,12 @@ Before opening signups, review `/privacy` for the operator's jurisdiction and ru
 the retention dry run. The form remains disabled unless both the API URL and a
 public privacy contact are present.
 
+Form visibility and API audience policy are separate controls. Staging embeds
+the API endpoint so allowlisted test addresses can use the form while the API
+reports `audienceMode: restricted`. Pre-launch production keeps the form
+disabled and the API restricted. Public launch requires both an enabled form and
+`audienceMode: public`; the deployment smoke test verifies these independently.
+
 ## Proving the system works before launch
 
 The repeatable provider-edge proof is staging-only, requires the fail-closed

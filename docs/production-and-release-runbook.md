@@ -22,11 +22,15 @@ segment, or subscriber was copied.
 ```mermaid
 flowchart LR
   Feature["feature/* or fix/*"] --> Develop["develop"]
-  Develop --> Staging["Railway staging"]
+  Develop --> CI["Required CI"]
+  CI --> Staging["Railway staging"]
+  Staging --> StagingProof["Exact-SHA verification"]
   Develop --> Release["release/* or release PR"]
-  Release --> Main["main"]
+  StagingProof --> Release
+  Release --> Approval["Owner production approval"]
+  Approval --> Main["main"]
   Main --> Production["Railway production"]
-  Production --> Smoke["read-only smoke test"]
+  Production --> Smoke["Exact-SHA verification"]
   Main -. explicit owner-only workflow .-> Resend["Resend broadcast"]
 ```
 
@@ -66,10 +70,30 @@ Run the public proof without creating a subscriber or sending mail:
 pnpm operations:smoke \
   --web-url https://<production-web>.up.railway.app \
   --api-url https://<production-api>.up.railway.app \
-  --expect-signup disabled
+  --expect-signup-form disabled \
+  --expect-audience restricted \
+  --expect-release-sha <full-main-commit-sha>
 ```
 
-The same proof is available as the manual `Platform smoke test` GitHub workflow.
+`Deployment verification` runs the same proof after successful Railway staging
+and production deployment events. It waits for both services to report the
+event's exact commit through the web `/version.json` endpoint and API `/health`
+response before checking the site, sitemap, CORS, form visibility, and API
+audience policy. It can also be dispatched manually with an environment and
+full expected commit SHA.
+
+In Railway, the repository owner must enable **Wait for CI** for both application
+services in both environments. This provider-side setting cannot be expressed in
+`railway.json`. Without it, Railway may begin deploying a branch commit before
+GitHub quality checks finish. Both committed Railway configurations intentionally
+deploy on every selected-branch commit so web and API share one release SHA.
+
+Bootstrap note: GitHub only activates a new `deployment_status` workflow after
+the workflow exists on the default branch. For the first staging deployment of
+this hardening change, run the documented smoke command locally against staging
+with the full `develop` SHA and attach its JSON output to the release PR. After
+the workflow reaches `main`, later staging and production deployments are
+verified automatically.
 
 ## 2. Use the lightweight GitFlow
 
@@ -82,7 +106,7 @@ Normal changes follow this path:
    open a `develop` → `main` release pull request;
 5. allow only release fixes on `release/*`, record explicit production approval
    with the `production-approved` label, then merge into `main`;
-6. wait for production deployment and run the public smoke test;
+6. wait for `Deployment verification` to prove the exact production commit;
 7. tag the verified commit; and
 8. merge any release-only fixes back into `develop`.
 
@@ -101,7 +125,49 @@ approved branch prefix and close an open issue. For `main`, it accepts only
 direct pushes. Until the private repository has GitHub branch-protection
 capability, direct pushes to `develop` and `main` remain procedurally prohibited.
 
-## 3. Prove the newsletter before opening it
+## 3. Ownership and automation map
+
+Repository automation prepares evidence; it never grants its own production
+approval and never sends a newsletter.
+
+| Action | Repository automation or maintainer can do | Repository owner must do |
+| --- | --- | --- |
+| Create issue, branch, implementation PR, tests, and preview artifact | Yes | Review the proposed scope |
+| Run typecheck, tests, production build, and newsletter preview | Yes | Resolve or explicitly reject failures |
+| Deploy selected branches after CI | Railway can automate it | Enable **Wait for CI** on all four application service/environment combinations |
+| Verify staging and production endpoints against an exact SHA | `Deployment verification` | Review the staging result before production approval |
+| Approve a release PR | No | Apply `production-approved` only after the release checklist is complete |
+| Merge to `main` | No | Merge in a deliberate release window |
+| Prove rollback | Automation can verify the result | Authorize and execute the coordinated Railway rollback drill |
+| Validate newsletter artifacts on `main` | Workflow can build and validate | Manually dispatch the owner-only workflow |
+| Create a provider draft, send, or schedule | No automatic trigger exists | Dispatch deliberately; real send/schedule requires `SEND:<issue-id>` |
+| Change DNS, GitHub plan, backups, alerts, cost limits, or provider settings | Documentation can specify and verify observable results | Change the provider/account configuration |
+| Enable public signup | No | Complete every launch gate, remove the allowlist, change both launch variables, and approve the deployment |
+
+## 4. Prove rollback before launch
+
+Rollback is a coordinated production operation because web and API must continue
+to report one release SHA.
+
+1. Record the current production commit, both successful Railway deployment IDs,
+   the database migration level, and a passing deployment verification run.
+2. Confirm that the target revision is compatible with the current database.
+   If it is not, stop and prepare a forward fix; never reverse an incompatible
+   production migration casually.
+3. In a release window, roll both application services back to deployments from
+   the same previous commit. Do not change PostgreSQL data or newsletter
+   delivery settings.
+4. Wait for both health checks and run `Deployment verification` manually with
+   the previous full commit SHA.
+5. Redeploy the approved current commit to both services and require the
+   exact-SHA verification to pass again.
+6. Record deployment IDs, timestamps, verification-run links, operator, and any
+   unexpected behavior in the release PR.
+
+The first drill must keep public signup disabled and must not create a subscriber,
+provider draft, or broadcast.
+
+## 5. Prove the newsletter before opening it
 
 Use staging and only controlled test addresses to prove signup, confirmation,
 invalid and repeated tokens, unsubscribe, bounce, complaint, signed webhook
@@ -131,7 +197,7 @@ build, rebuilding with signup enabled, and
 performing the internal send checks in `newsletter-operations.md`. This is a
 launch event, not part of ordinary deployment.
 
-## 4. Definition of launch-ready
+## 6. Definition of launch-ready
 
 Grove is ready for everyone only when all of these are evidenced:
 

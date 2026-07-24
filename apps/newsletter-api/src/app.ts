@@ -22,6 +22,7 @@ const subscriptionSchema = z.object({
 export interface AppOptions {
   repository: NewsletterRepository;
   provider: NewsletterProvider;
+  releaseSha?: string;
   webUrl: string;
   apiPublicUrl: string;
   allowedOrigins: string[];
@@ -72,7 +73,11 @@ export function createApp(options: AppOptions) {
   app.get("/health", async (context) => {
     try {
       await options.repository.health();
-      return context.json({ status: "ok" });
+      return context.json({
+        status: "ok",
+        releaseSha: options.releaseSha ?? "development",
+        audienceMode: recipientAllowlist ? "restricted" : "public",
+      });
     } catch (error) {
       log("health_failed", { error: errorName(error) });
       return context.json({ status: "unavailable" }, 503);

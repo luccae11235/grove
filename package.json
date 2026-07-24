@@ -23,7 +23,8 @@
     "projects:export": "node scripts/projects/export-project.mjs",
     "projects:publish": "node scripts/projects/publish-project.mjs",
     "test:python": "PYTHONPATH=packages/tree-core python3 -m unittest discover -s packages/tree-core/tests -v",
-    "test": "pnpm test:python && pnpm -r --if-present test",
+    "test:operations": "node --test 'scripts/operations/*.test.mjs'",
+    "test": "pnpm test:python && pnpm test:operations && pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
     "check": "pnpm typecheck && pnpm test && pnpm projects:validate && pnpm build && pnpm newsletter:prepare"
   }
