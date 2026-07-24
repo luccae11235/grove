@@ -3044,6 +3044,28 @@ h1 {
   font-weight: 800;
 }
 
+.newsletter-signup button[data-state="loading"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+
+.newsletter-signup button[data-state="loading"]::after {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgb(255 255 255 / 45%);
+  border-top-color: #fff;
+  border-radius: 50%;
+  content: "";
+  animation: newsletter-submit-spin 0.8s linear infinite;
+}
+
+.newsletter-signup button[data-state="success"] {
+  background: var(--accent-hover);
+  opacity: 1;
+}
+
 .newsletter-signup button:hover:not(:disabled) {
   background: var(--accent-hover);
 }
@@ -3056,6 +3078,7 @@ h1 {
 
 .newsletter-consent,
 .newsletter-form-status {
+  min-height: 1.5rem;
   margin: 10px 2px 0;
   color: var(--text-muted);
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
@@ -3063,8 +3086,18 @@ h1 {
   line-height: 1.5;
 }
 
+.newsletter-form-status[data-state="loading"] {
+  color: var(--text);
+  font-weight: 700;
+}
+
 .newsletter-form-status[data-state="success"] {
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-raised));
   color: var(--accent-hover);
+  font-size: 0.82rem;
   font-weight: 700;
 }
 
@@ -3080,6 +3113,19 @@ h1 {
   overflow: hidden !important;
   clip: rect(0 0 0 0) !important;
   white-space: nowrap !important;
+}
+
+@keyframes newsletter-submit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .newsletter-signup button[data-state="loading"]::after,
+  .confirmation-progress-indicator {
+    animation: none;
+  }
 }
 
 .newsletter-header {
@@ -3144,6 +3190,30 @@ h1 {
   width: min(760px, 100%);
   margin-right: auto;
   margin-left: auto;
+}
+
+.newsletter-confirmation-progress {
+  position: relative;
+}
+
+.confirmation-progress-indicator {
+  display: block;
+  width: 30px;
+  height: 30px;
+  margin-top: 24px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: newsletter-submit-spin 0.9s linear infinite;
+}
+
+.newsletter-confirmation-progress .quiet-link {
+  display: inline-block;
+  margin-top: 22px;
+}
+
+.newsletter-confirmation-progress .quiet-link[hidden] {
+  display: none;
 }
 
 .newsletter-issue-body {

@@ -1,0 +1,66 @@
+---
+import type { Locale } from "../i18n";
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = "en" } = Astro.props;
+const apiBase = import.meta.env.PUBLIC_NEWSLETTER_API_URL?.replace(/\/$/, "") ?? "";
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const invalidHref = locale === "pt-BR"
+  ? `${base}/pt-br/newsletter/confirmed?status=invalid`
+  : `${base}/newsletter/confirmed?status=invalid`;
+const copy = locale === "pt-BR"
+  ? {
+      eyebrow: "Confirmação da newsletter",
+      title: "Confirmando sua inscrição…",
+      message: "Isso normalmente leva só alguns segundos. Você será encaminhado automaticamente.",
+      manual: "Continuar confirmação",
+    }
+  : {
+      eyebrow: "Newsletter confirmation",
+      title: "Confirming your subscription…",
+      message: "This normally takes only a few seconds. You will continue automatically.",
+      manual: "Continue confirmation",
+    };
+---
+
+<header
+  class="newsletter-confirmation newsletter-confirmation-progress"
+  data-confirmation-progress
+  data-api-base={apiBase}
+  data-invalid-href={invalidHref}
+>
+  <p class="eyebrow">{copy.eyebrow}</p>
+  <h1>{copy.title}</h1>
+  <p class="lede">{copy.message}</p>
+  <span class="confirmation-progress-indicator" aria-hidden="true"></span>
+  <a class="quiet-link" data-confirmation-link hidden>{copy.manual}</a>
+</header>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-confirmation-progress]").forEach((panel) => {
+    const apiBase = panel.dataset.apiBase;
+    const invalidHref = panel.dataset.invalidHref ?? "/newsletter/confirmed?status=invalid";
+    const token = new URLSearchParams(window.location.search).get("token");
+    const link = panel.querySelector<HTMLAnchorElement>("[data-confirmation-link]");
+
+    if (!apiBase || !token || token.length > 200) {
+      window.location.replace(invalidHref);
+      return;
+    }
+
+    const confirmationUrl =
+      `${apiBase}/v1/subscriptions/confirm?token=${encodeURIComponent(token)}`;
+    if (link) link.href = confirmationUrl;
+
+    window.setTimeout(() => {
+      window.location.replace(confirmationUrl);
+    }, 120);
+
+    window.setTimeout(() => {
+      if (link) link.hidden = false;
+    }, 4_000);
+  });
+</script>

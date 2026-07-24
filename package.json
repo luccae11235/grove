@@ -18,6 +18,7 @@
     "newsletter:report": "pnpm --filter @grove/newsletter-api report",
     "newsletter:retention": "pnpm --filter @grove/newsletter-api retention",
     "newsletter:prove:staging": "pnpm --filter @grove/newsletter-api prove:staging",
+    "newsletter:backup": "bash scripts/operations/backup-newsletter-database.sh",
     "weekly:new": "pnpm newsletter:new-issue",
     "weekly:check": "pnpm newsletter:prepare",
     "operations:smoke": "node scripts/operations/smoke-platform.mjs",

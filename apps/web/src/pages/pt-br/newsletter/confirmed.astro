@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout
+  title="Inscrição confirmada"
+  description="Sua inscrição na newsletter da Aflora foi confirmada."
+  locale="pt-BR"
+  noindex
+>
+  <header class="page-header newsletter-confirmation" data-confirmation>
+    <p class="eyebrow">Newsletter</p>
+    <h1 data-confirmation-title>Você está na lista.</h1>
+    <p class="lede" data-confirmation-message>
+      Sua inscrição foi confirmada. A próxima edição da Aflora chegará no seu e-mail.
+    </p>
+    <p><a class="button-link" href={`${base}pt-br/`}>Explorar a Aflora →</a></p>
+  </header>
+</BaseLayout>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("status") === "invalid") {
+    const title = document.querySelector<HTMLElement>("[data-confirmation-title]");
+    const message = document.querySelector<HTMLElement>("[data-confirmation-message]");
+    if (title) title.textContent = "Esse link de confirmação não é mais válido.";
+    if (message) {
+      message.textContent = "Solicite um novo e-mail pelo formulário da newsletter.";
+    }
+  }
+</script>
