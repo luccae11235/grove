@@ -11,10 +11,13 @@ const siteCopy = getSiteCopy(locale);
 ---
 
 <a class="brand" href={href} aria-label={siteCopy.brandHome}>
-  <span class="brand-mark" aria-hidden="true">
-    <span class="brand-leaf brand-leaf-left"></span>
-    <span class="brand-leaf brand-leaf-right"></span>
-  </span>
+  <img
+    class="brand-mark"
+    src={`${import.meta.env.BASE_URL}brand/aflora-mark.svg`}
+    alt=""
+    width="42"
+    height="56"
+  />
   <span class="brand-copy">
     <strong>{siteCopy.brand}</strong>
     <small>{siteCopy.tagline}</small>

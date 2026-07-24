@@ -54,6 +54,7 @@ test("smoke proves release identity, restricted audience, and visible staging fo
     "API health reaches PostgreSQL",
     "website serves the expected release",
     "website home is public",
+    "Aflora brand mark is available",
     "robots points to the production sitemap",
     "sitemap is available",
     "newsletter CORS accepts only the website origin",
@@ -88,8 +89,16 @@ function fixtureRequest({ releaseSha }) {
       return Response.json({ status: "ok", releaseSha });
     }
     if (parsed.hostname === "web.example" && parsed.pathname === "/") {
-      return new Response("<html><body>Aflora</body></html>", {
-        headers: { "Content-Type": "text/html" },
+      return new Response(
+        '<html><head><link rel="icon" href="/brand/aflora-mark.svg"></head><body>Aflora</body></html>',
+        {
+          headers: { "Content-Type": "text/html" },
+        },
+      );
+    }
+    if (parsed.hostname === "web.example" && parsed.pathname === "/brand/aflora-mark.svg") {
+      return new Response("<svg></svg>", {
+        headers: { "Content-Type": "image/svg+xml" },
       });
     }
     if (parsed.hostname === "web.example" && parsed.pathname === "/robots.txt") {
