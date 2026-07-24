@@ -106,13 +106,29 @@ test("double opt-in activates a pending subscriber and avoids duplicate confirma
   assert.equal(repository.subscribers.get("reader@example.com")?.status, "pending");
 
   const confirmationUrl = new URL(provider.confirmations[0].confirmationUrl);
-  const confirmation = await app.request(`${confirmationUrl.pathname}${confirmationUrl.search}`);
+  assert.equal(confirmationUrl.origin, "https://grove.example");
+  assert.equal(confirmationUrl.pathname, "/newsletter/confirm");
+  const confirmation = await app.request(confirmationApiPath(confirmationUrl));
   assert.equal(confirmation.status, 303);
   assert.equal(confirmation.headers.get("location"), "https://grove.example/newsletter/confirmed");
   assert.equal(repository.subscribers.get("reader@example.com")?.status, "active");
 
   await subscribe(app, { email: "reader@example.com" }, "198.51.100.2");
   assert.equal(provider.confirmations.length, 1);
+});
+
+test("Portuguese subscriptions use localized confirmation pages", async () => {
+  const { app, provider } = testSystem();
+  await subscribe(app, { email: "reader@example.com", locale: "pt-BR" });
+
+  const confirmationUrl = new URL(provider.confirmations[0].confirmationUrl);
+  assert.equal(confirmationUrl.pathname, "/pt-br/newsletter/confirm");
+  const confirmation = await app.request(confirmationApiPath(confirmationUrl));
+  assert.equal(confirmation.status, 303);
+  assert.equal(
+    confirmation.headers.get("location"),
+    "https://grove.example/pt-br/newsletter/confirmed",
+  );
 });
 
 test("honeypot submissions are accepted without storing an address", async () => {
@@ -155,7 +171,7 @@ test("verified webhooks are idempotent and update suppression state", async () =
   const { app, repository, provider } = testSystem();
   await subscribe(app, { email: "reader@example.com" });
   const confirmationUrl = new URL(provider.confirmations[0].confirmationUrl);
-  await app.request(`${confirmationUrl.pathname}${confirmationUrl.search}`);
+  await app.request(confirmationApiPath(confirmationUrl));
 
   provider.webhookEvent = {
     type: "email.bounced",
@@ -206,4 +222,8 @@ async function webhook(app: ReturnType<typeof createApp>, id: string) {
     },
     body: "{}",
   });
+}
+
+function confirmationApiPath(url: URL) {
+  return `/v1/subscriptions/confirm${url.search}`;
 }

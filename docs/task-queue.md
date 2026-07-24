@@ -19,7 +19,7 @@ references for longer-term editorial direction.
 
 | Phase | Gate | Status | Depends on |
 | --- | --- | --- | --- |
-| 1 | Organize GitHub | Blocked | GitHub branch-protection capability |
+| 1 | Organize GitHub | Done | Accepted owner-managed controls |
 | 2 | Validate CI | Done | A repository and published branch |
 | 3 | Create staging on Railway | Done | Phase 2 |
 | 4 | Create production on Railway | Done | Phase 3 |
@@ -27,39 +27,8 @@ references for longer-term editorial direction.
 | 6 | Prove the newsletter in staging | Done | Phase 3 |
 | 7 | Configure the `aflora.page` domain | Done | Stable Railway services |
 | 8 | Open the newsletter | In progress | Phases 6 and 7 |
-| 9 | Protect operations | Blocked | Railway native-backup capability |
+| 9 | Protect operations | In progress | First encrypted local backup |
 | 10 | Prepare future visualizations | Backlog | Current performance baseline |
-
-## Blocked
-
-### Release and platform readiness
-
-- [ ] **Phase 1 — Organize GitHub**
-  - [x] Create the official private repository at `luccae11235/grove`.
-  - [x] Version and publish the current work and permanent branches.
-  - [x] Complete the first pull-request merge through Phase 2 validation PR #1.
-  - [ ] Protect `main` and require reviewed, up-to-date checks.
-  - Blocker: GitHub returns HTTP 403 because branch protection for this private
-    repository requires GitHub Pro or making the repository public.
-  - Completion check: `main` rejects direct, unreviewed changes and records a
-    successful pull-request merge.
-
-- [ ] **Phase 9 — Protect operations**
-  - [x] Run an exact-SHA production smoke after releases and every six hours.
-  - [x] Open or update one actionable GitHub incident on failure and close it
-    after recovery.
-  - [x] Prove PostgreSQL restoration in an isolated non-production database and
-    record the procedure in `database-recovery.md`.
-  - [x] Verify the existing Railway $5 usage alert and $10 hard usage limit.
-  - [x] Record operational ownership and the incident path.
-  - [ ] Enable daily and weekly native PostgreSQL backups and create a manual
-    snapshot.
-  - Blocker: authenticated Railway backup creation and scheduling return
-    `Not Authorized` on the current Hobby workspace. Unblock by enabling a
-    Railway plan/capability with native backups or approving an encrypted
-    off-platform backup design.
-  - Completion check: failures are detected and data can be restored through a
-    tested procedure.
 
 ## In progress
 
@@ -71,9 +40,25 @@ references for longer-term editorial direction.
   - [x] Review Gmail, mobile rendering, and plain text.
   - [x] Enable public double-opt-in signup; the platform smoke verifies an
     enabled form and public API audience.
+  - [ ] Make signup and confirmation feedback immediate on a real iPhone.
   - [ ] Review a received issue in one non-Gmail mailbox provider.
   - Completion check: real readers can subscribe, confirm, receive, and
     unsubscribe safely.
+
+- [ ] **Phase 9 — Protect operations**
+  - [x] Run an exact-SHA production smoke after releases and every six hours.
+  - [x] Open or update one actionable GitHub incident on failure and close it
+    after recovery.
+  - [x] Prove PostgreSQL restoration in an isolated non-production database and
+    record the procedure in `database-recovery.md`.
+  - [x] Verify the existing Railway $5 usage alert and $10 hard usage limit.
+  - [x] Record operational ownership and the incident path.
+  - [x] Approve encrypted local PostgreSQL backups as the current small-audience
+    recovery policy.
+  - [ ] Create and checksum the first encrypted local backup with
+    `pnpm newsletter:backup`.
+  - Completion check: failures are detected and data can be restored through a
+    tested procedure.
 
 ## Ready
 
@@ -159,6 +144,16 @@ references for longer-term editorial direction.
     promoting to `main`.
 
 ### Release and platform readiness
+
+- [x] **Phase 1 — Organize GitHub** — 2026-07-24
+  - The repository, permanent branches, issue and pull-request policy checks,
+    required quality checks, staging gate, production approval, and release
+    back-merge path are operational.
+  - Owner decision: paid private branch protection is unnecessary for this
+    owner-managed project. Direct pushes remain procedurally prohibited but are
+    an explicitly accepted risk.
+  - Completion check: every shipped infrastructure change used the documented
+    issue → branch → PR → CI → staging → production path.
 
 - [x] **Phase 5 — Formalize publication** — 2026-07-24
   - Added a weekly article issue template, `weekly:new` and `weekly:check`

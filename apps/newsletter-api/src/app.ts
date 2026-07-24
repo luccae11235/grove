@@ -130,10 +130,13 @@ export function createApp(options: AppOptions) {
     });
 
     if (result.shouldSendConfirmation) {
+      const confirmationPath = parsed.data.locale === "pt-BR"
+        ? "/pt-br/newsletter/confirm"
+        : "/newsletter/confirm";
       await options.provider.sendConfirmation({
         email: parsed.data.email,
         locale: parsed.data.locale,
-        confirmationUrl: `${options.apiPublicUrl}/v1/subscriptions/confirm?token=${encodeURIComponent(token)}`,
+        confirmationUrl: `${options.webUrl}${confirmationPath}?token=${encodeURIComponent(token)}`,
       });
     }
     return accepted(context);
@@ -157,8 +160,11 @@ export function createApp(options: AppOptions) {
       providerContactId,
       now(),
     );
+    const confirmedPath = subscriber.locale === "pt-BR"
+      ? "/pt-br/newsletter/confirmed"
+      : "/newsletter/confirmed";
     return context.redirect(
-      `${options.webUrl}/newsletter/confirmed${activated ? "" : "?status=invalid"}`,
+      `${options.webUrl}${confirmedPath}${activated ? "" : "?status=invalid"}`,
       303,
     );
   });
