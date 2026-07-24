@@ -46,6 +46,16 @@ references for longer-term editorial direction.
 
 ## In progress
 
+### Learning experience
+
+- [ ] **Fix article navigation and split-preview discoverability**
+  - Make the desktop chapter sidebar explicitly collapsible and restorable
+    without reducing keyboard or small-screen access to article navigation.
+  - Make the first split playground in “How to Invent a Decision Tree” preview
+    its threshold continuously on pointer hover, matching the later playground.
+  - Completion check: focused interaction checks, the full repository checks, a
+    staging smoke test, and the promoted production smoke test pass.
+
 ### Release and platform readiness
 
 - [ ] **Harden exact-release CI/CD evidence** — [GitHub #9](https://github.com/luccae11235/grove/issues/9)
