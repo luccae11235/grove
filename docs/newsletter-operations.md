@@ -1,8 +1,9 @@
 # Newsletter operations
 
-This is the operating manual for publishing Grove every week. The website and
-the newsletter share content, but they are different systems with different
-failure modes.
+This is the detailed operating manual for publishing Aflora. For the normal
+writer-facing loop, use
+[`weekly-publishing.md`](weekly-publishing.md). The website and newsletter share
+content, but they are different systems with different failure modes.
 
 ## The mental model
 
@@ -63,8 +64,8 @@ requires removing the allowlist and explicitly setting
 In Resend:
 
 1. verify the sending domain and choose `NEWSLETTER_FROM`;
-2. create a `Grove weekly` segment and copy its id;
-3. optionally create a topic when Grove has multiple preference streams;
+2. create an `Aflora weekly` segment and copy its id;
+3. optionally create a topic when Aflora has multiple preference streams;
 4. create a webhook at
    `https://<api-domain>/v1/webhooks/resend` for sent, delivered, opened,
    clicked, bounced, complained, suppressed, and contact-updated events; and
@@ -122,8 +123,9 @@ Use an address you control and complete this sequence:
    `pnpm newsletter:report --issue 2026-001`.
 
 Also test an expired or altered confirmation link, an unsubscribe, and a test
-bounce address before opening public signups. Database backups should be enabled
-before collecting real subscribers.
+bounce address before opening public signups. The current backup capability and
+tested restore path are recorded in
+[`database-recovery.md`](database-recovery.md).
 
 ## The weekly publishing rhythm
 
@@ -206,7 +208,7 @@ suppressed consent records.
 
 Treat opens as directional: image blocking, privacy proxies, and bot activity can
 distort them. Clicks, replies, article engagement, and week-over-week retention
-are stronger editorial signals. Begin with Grove's own four-issue baseline rather
+are stronger editorial signals. Begin with Aflora's own four-issue baseline rather
 than generic industry targets. Investigate any complaint immediately and pause
 sending if the sender domain, webhook ingestion, or suppression sync is unhealthy.
 
