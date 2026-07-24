@@ -1,16 +1,16 @@
 # Production and release runbook
 
-This is the executable launch path for Grove's platform. Article selection,
+This is the executable launch path for Aflora's platform. Article selection,
 writing, and lesson construction are intentionally outside this runbook.
 
 ## Current state
 
-As of 2026-07-23, Railway staging and production both pass the repository's
+As of 2026-07-24, Railway staging and production both pass the repository's
 platform smoke test. Production has isolated PostgreSQL, web, and newsletter API
-services connected to `main`; `https://aflora.page` is healthy, canonical, and
-keeps public newsletter signup disabled. The API is healthy at
-`https://api.aflora.page` with production-only database and Resend credentials, the isolated
-`aflora-production` segment, explicit CORS, a pre-launch recipient allowlist,
+services connected to `main`; `https://aflora.page` is healthy and canonical,
+and public double-opt-in signup is enabled. The API is healthy at
+`https://api.aflora.page` with production-only database and Resend credentials,
+the isolated `aflora-production` segment, explicit CORS, public audience policy,
 and a unique event salt. Its enabled Resend webhook also uses the custom API
 domain. `news.aflora.page` is verified in Resend and production uses the
 authenticated sender. Both application services in staging and production
@@ -44,7 +44,8 @@ Create production from scratch; do not duplicate staging, because subscriber
 data, PostgreSQL credentials, Resend segments, webhook secrets, and event salts
 must not be shared.
 
-1. Add a production PostgreSQL service with a persistent volume and backups.
+1. Add a production PostgreSQL service with a persistent volume. Configure
+   backups according to [`database-recovery.md`](database-recovery.md).
 2. Add `grove-newsletter-api`, connect it to `luccae11235/grove` on `main`, and
    select `/apps/newsletter-api/railway.json`.
 3. Add `grove-web`, connect it to the same repository and branch, and select
@@ -191,15 +192,16 @@ Then use `Controlled newsletter delivery` in this order:
    dispatch; and
 4. `newsletter:report` confirms delivery events afterward.
 
-Opening the newsletter means removing the API allowlist, setting
+Opening the newsletter meant removing the API allowlist, setting
 `NEWSLETTER_PUBLIC_SIGNUP=true`, adding `PUBLIC_NEWSLETTER_API_URL` to the web
 build, rebuilding with signup enabled, and
-performing the internal send checks in `newsletter-operations.md`. This is a
-launch event, not part of ordinary deployment.
+performing the internal send checks in `newsletter-operations.md`. This launch
+completed on 2026-07-24. Ordinary deployments must preserve the public form and
+public audience policy unless an incident requires signup to be paused.
 
 ## 6. Definition of launch-ready
 
-Grove is ready for everyone only when all of these are evidenced:
+Aflora is ready for everyone only when all of these are evidenced:
 
 - production web, API, and PostgreSQL are isolated, healthy, backed up, and
   recoverable;

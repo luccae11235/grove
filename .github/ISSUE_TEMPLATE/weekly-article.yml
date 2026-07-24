@@ -1,0 +1,48 @@
+name: Weekly Aflora article
+description: Start one article and its newsletter issue with the weekly release checklist.
+title: "article: "
+labels: []
+body:
+  - type: input
+    id: learner_question
+    attributes:
+      label: Learner question
+      description: What single question should the article help the reader answer?
+    validations:
+      required: true
+  - type: input
+    id: issue_id
+    attributes:
+      label: Newsletter issue ID
+      description: Use the year and sequence, for example 2026-002.
+      placeholder: 2026-002
+    validations:
+      required: true
+  - type: input
+    id: target_date
+    attributes:
+      label: Target publication date
+      placeholder: YYYY-MM-DD
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Editorial scope
+      description: Define the article, its central example or interaction, and what is intentionally out of scope.
+    validations:
+      required: true
+  - type: checkboxes
+    id: release
+    attributes:
+      label: Weekly release path
+      options:
+        - label: Create a `feature/*` branch from `develop`.
+        - label: Scaffold the issue with `pnpm weekly:new`.
+        - label: Run `pnpm weekly:check` and review the local web and email previews.
+        - label: Open a pull request to `develop` that closes this issue.
+        - label: Review the exact commit in Railway staging.
+        - label: Prepare and approve the `develop` to `main` release.
+        - label: Verify the production article before creating a provider draft.
+        - label: Review the provider draft, then explicitly send or schedule it.
+        - label: Review the delivery report and any bounce or complaint.
