@@ -2,6 +2,8 @@ name: Deployment verification
 
 on:
   deployment_status:
+  schedule:
+    - cron: "17 */6 * * *"
   workflow_dispatch:
     inputs:
       environment:
@@ -16,9 +18,10 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
-  group: deployment-verification-${{ github.event.deployment.environment || inputs.environment }}-${{ github.event.deployment.sha || inputs.expected_sha }}
+  group: deployment-verification-${{ github.event.deployment.environment || inputs.environment || 'production' }}-${{ github.event.deployment.sha || inputs.expected_sha || github.sha }}
   cancel-in-progress: false
 
 jobs:
@@ -26,6 +29,7 @@ jobs:
     name: Verified deployment
     if: >-
       github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'schedule' ||
       (github.event.deployment_status.state == 'success' &&
       (github.event.deployment.environment == 'aflora / staging' ||
       github.event.deployment.environment == 'aflora / production'))
@@ -36,12 +40,16 @@ jobs:
         env:
           EVENT_ENVIRONMENT: ${{ github.event.deployment.environment }}
           EVENT_SHA: ${{ github.event.deployment.sha }}
+          EVENT_NAME: ${{ github.event_name }}
           INPUT_ENVIRONMENT: ${{ inputs.environment }}
           INPUT_SHA: ${{ inputs.expected_sha }}
         shell: bash
         run: |
           target_environment="${EVENT_ENVIRONMENT:-$INPUT_ENVIRONMENT}"
-          expected_sha="${EVENT_SHA:-$INPUT_SHA}"
+          expected_sha="${EVENT_SHA:-${INPUT_SHA:-$GITHUB_SHA}}"
+          if [ "$EVENT_NAME" = "schedule" ]; then
+            target_environment="production"
+          fi
 
           case "$target_environment" in
             staging|"aflora / staging")
@@ -94,3 +102,59 @@ jobs:
           --expect-audience "$EXPECTED_AUDIENCE"
           --expect-release-sha "$EXPECTED_SHA"
           --wait-seconds 600
+
+  alert:
+    name: Open production incident
+    needs: smoke
+    if: ${{ always() && github.event_name == 'schedule' && needs.smoke.result == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create or update the production incident
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          title="Production platform smoke failed"
+          existing=$(gh issue list \
+            --repo "$REPOSITORY" \
+            --state open \
+            --search "\"$title\" in:title" \
+            --json number \
+            --jq '.[0].number // ""')
+          body="The scheduled production smoke test failed: $RUN_URL
+
+          Keep public signup and newsletter delivery closed until the web, API,
+          PostgreSQL, release identity, CORS, and audience checks pass again."
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$REPOSITORY" --title "$title" --body "$body"
+          fi
+
+  recover:
+    name: Close resolved production incident
+    needs: smoke
+    if: ${{ always() && github.event_name == 'schedule' && needs.smoke.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close any open production incident
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          title="Production platform smoke failed"
+          existing=$(gh issue list \
+            --repo "$REPOSITORY" \
+            --state open \
+            --search "\"$title\" in:title" \
+            --json number \
+            --jq '.[0].number // ""')
+          if [ -n "$existing" ]; then
+            gh issue close "$existing" \
+              --repo "$REPOSITORY" \
+              --comment "Production recovered and the scheduled smoke test passed: $RUN_URL"
+          fi
