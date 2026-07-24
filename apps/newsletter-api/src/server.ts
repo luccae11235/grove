@@ -17,6 +17,7 @@ const provider = new ResendNewsletterProvider({
 const app = createApp({
   repository,
   provider,
+  releaseSha: process.env.RELEASE_SHA ?? process.env.RAILWAY_GIT_COMMIT_SHA ?? "development",
   webUrl: config.webUrl,
   apiPublicUrl: config.apiPublicUrl,
   allowedOrigins: config.allowedOrigins,

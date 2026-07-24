@@ -2,16 +2,7 @@
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
     "builder": "DOCKERFILE",
-    "dockerfilePath": "/apps/web/Dockerfile",
-    "watchPatterns": [
-      "/apps/web/**",
-      "/packages/tree-core/**",
-      "/packages/tree-visuals/**",
-      "/scripts/build_lesson_data.py",
-      "/package.json",
-      "/pnpm-lock.yaml",
-      "/pnpm-workspace.yaml"
-    ]
+    "dockerfilePath": "/apps/web/Dockerfile"
   },
   "deploy": {
     "healthcheckPath": "/",

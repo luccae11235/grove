@@ -3,6 +3,9 @@ FROM node:22-alpine
 RUN corepack enable
 WORKDIR /app
 
+ARG RAILWAY_GIT_COMMIT_SHA=development
+ENV RELEASE_SHA=$RAILWAY_GIT_COMMIT_SHA
+
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY apps/newsletter-api/package.json apps/newsletter-api/package.json
 RUN pnpm install --frozen-lockfile --filter @grove/newsletter-api...

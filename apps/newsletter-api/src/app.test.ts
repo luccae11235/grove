@@ -80,6 +80,24 @@ test("recipient allowlist accepts configured addresses and silently ignores all 
   assert.equal(provider.confirmations.length, 1);
 });
 
+test("health exposes non-sensitive release and audience evidence", async () => {
+  const restricted = testSystem({ recipientAllowlist: ["allowed@example.com"] });
+  const restrictedResponse = await restricted.app.request("/health");
+  assert.deepEqual(await restrictedResponse.json(), {
+    status: "ok",
+    releaseSha: "development",
+    audienceMode: "restricted",
+  });
+
+  const publicSystem = testSystem();
+  const publicResponse = await publicSystem.app.request("/health");
+  assert.deepEqual(await publicResponse.json(), {
+    status: "ok",
+    releaseSha: "development",
+    audienceMode: "public",
+  });
+});
+
 test("double opt-in activates a pending subscriber and avoids duplicate confirmation", async () => {
   const { app, repository, provider } = testSystem();
   const response = await subscribe(app, { email: " Reader@Example.com " });

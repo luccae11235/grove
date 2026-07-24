@@ -44,6 +44,28 @@ references for longer-term editorial direction.
   - Completion check: `main` rejects direct, unreviewed changes and records a
     successful pull-request merge.
 
+## In progress
+
+### Release and platform readiness
+
+- [ ] **Harden exact-release CI/CD evidence** — [GitHub #9](https://github.com/luccae11235/grove/issues/9)
+  - [x] Give web and API deployments non-sensitive release identity endpoints.
+  - [x] Separate newsletter form visibility from the API audience policy in
+    platform smoke checks.
+  - [x] Add retry-aware staging and production verification for Railway
+    deployment events and require one commit SHA across both services.
+  - [x] Document the automation/owner boundary and a coordinated rollback drill.
+  - [ ] Merge the implementation into `develop` and attach a successful
+    exact-SHA staging verification to the release PR; this is the one-time
+    bootstrap before the deployment-status workflow exists on `main`.
+  - [ ] Owner: enable Railway **Wait for CI** for web and API in staging and
+    production.
+  - [ ] Promote through an approved release PR and observe a successful
+    exact-SHA production verification.
+  - Completion check: a reviewed commit waits for CI, deploys both services,
+    proves its identity and safety checks in staging and production, and retains
+    explicit owner approval before production.
+
 ## Ready
 
 ### Publishing and content
