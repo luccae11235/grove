@@ -60,7 +60,8 @@ pnpm newsletter:prepare
 pnpm --filter @grove/newsletter-api test
 ```
 
-See the [newsletter operating manual](docs/newsletter-operations.md) for Railway,
+Start with the [weekly publishing guide](docs/weekly-publishing.md). See the
+[newsletter operating manual](docs/newsletter-operations.md) for Railway,
 Resend, weekly publishing, delivery safeguards, and performance reporting.
 
 ## Design principles
@@ -83,6 +84,9 @@ Resend, weekly publishing, delivery safeguards, and performance reporting.
 - [Article organization, references, and difficulty](docs/article-system.md)
 - [Publication platform and newsletter boundaries](docs/publication-platform.md)
 - [Newsletter setup, weekly operations, and performance](docs/newsletter-operations.md)
+- [One-page weekly publishing guide](docs/weekly-publishing.md)
+- [Database backup and recovery](docs/database-recovery.md)
+- [Operations ownership and incident path](docs/operations-ownership.md)
 - [Editorial release checklist](docs/editorial-release-checklist.md)
 - [English and Brazilian Portuguese translation workflow](docs/content-translation-workflow.md)
 - [Domain, DNS, and email-sending setup](docs/domain-dns-email-setup.md)

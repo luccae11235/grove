@@ -21,13 +21,13 @@ references for longer-term editorial direction.
 | --- | --- | --- | --- |
 | 1 | Organize GitHub | Blocked | GitHub branch-protection capability |
 | 2 | Validate CI | Done | A repository and published branch |
-| 3 | Create staging on Railway | Backlog | Phase 2 |
-| 4 | Create production on Railway | Backlog | Phase 3 |
-| 5 | Formalize publication | Backlog | Phases 2–4 |
-| 6 | Prove the newsletter in staging | Backlog | Phase 3 |
-| 7 | Configure the `aflora.page` domain | Backlog | Stable Railway services |
-| 8 | Open the newsletter | Backlog | Phases 6 and 7 |
-| 9 | Protect operations | Backlog | Production services; before public data |
+| 3 | Create staging on Railway | Done | Phase 2 |
+| 4 | Create production on Railway | Done | Phase 3 |
+| 5 | Formalize publication | In progress | Phases 2–4 |
+| 6 | Prove the newsletter in staging | Done | Phase 3 |
+| 7 | Configure the `aflora.page` domain | Done | Stable Railway services |
+| 8 | Open the newsletter | In progress | Phases 6 and 7 |
+| 9 | Protect operations | Blocked | Railway native-backup capability |
 | 10 | Prepare future visualizations | Backlog | Current performance baseline |
 
 ## Blocked
@@ -43,6 +43,23 @@ references for longer-term editorial direction.
     repository requires GitHub Pro or making the repository public.
   - Completion check: `main` rejects direct, unreviewed changes and records a
     successful pull-request merge.
+
+- [ ] **Phase 9 — Protect operations**
+  - [x] Run an exact-SHA production smoke after releases and every six hours.
+  - [x] Open or update one actionable GitHub incident on failure and close it
+    after recovery.
+  - [x] Prove PostgreSQL restoration in an isolated non-production database and
+    record the procedure in `database-recovery.md`.
+  - [x] Verify the existing Railway $5 usage alert and $10 hard usage limit.
+  - [x] Record operational ownership and the incident path.
+  - [ ] Enable daily and weekly native PostgreSQL backups and create a manual
+    snapshot.
+  - Blocker: authenticated Railway backup creation and scheduling return
+    `Not Authorized` on the current Hobby workspace. Unblock by enabling a
+    Railway plan/capability with native backups or approving an encrypted
+    off-platform backup design.
+  - Completion check: failures are detected and data can be restored through a
+    tested procedure.
 
 ## In progress
 
@@ -62,11 +79,29 @@ references for longer-term editorial direction.
     2026-07-24 for `9fd3ee238b1dc88d7ff6a0231888bba57aad4921`.
   - [ ] Owner: enable Railway **Wait for CI** for web and API in staging and
     production.
-  - [ ] Promote through an approved release PR and observe a successful
-    exact-SHA production verification.
+  - [x] Promote through an approved release PR and observe the exact production
+    SHA `21b735f5dd81e3a383f48072243e5639df45ecf6`.
   - Completion check: a reviewed commit waits for CI, deploys both services,
     proves its identity and safety checks in staging and production, and retains
     explicit owner approval before production.
+
+- [ ] **Phase 5 — Formalize publication**
+  - [x] Add a weekly article issue template and a one-page writer-facing flow.
+  - [x] Keep preview, staging review, production approval, deployment
+    verification, provider draft, and explicit send as separate gates.
+  - [ ] Merge and exercise the documented path with the next article.
+  - Completion check: an article follows the path without being tested directly
+    in production.
+
+- [ ] **Phase 8 — Open the newsletter**
+  - [x] Configure postal/contact details and the production segment.
+  - [x] Publish Issue 001, perform an internal send, and verify its report.
+  - [x] Review Gmail, mobile rendering, and plain text.
+  - [x] Enable public double-opt-in signup; the platform smoke verifies an
+    enabled form and public API audience.
+  - [ ] Review a received issue in one non-Gmail mailbox provider.
+  - Completion check: real readers can subscribe, confirm, receive, and
+    unsubscribe safely.
 
 ## Ready
 
@@ -101,52 +136,6 @@ references for longer-term editorial direction.
 ## Backlog
 
 ### Delivery phases
-
-- [ ] **Phase 3 — Create staging on Railway**
-  - Create isolated web, newsletter API, and PostgreSQL services using
-    Railway-generated URLs; configure variables and run migrations.
-  - Show draft articles and restrict all newsletter delivery to an explicit test
-    allowlist.
-  - Completion check: the complete platform is safely reviewable with staging
-    data and recipients only.
-
-- [ ] **Phase 4 — Create production on Railway**
-  - Create production web, newsletter API, and PostgreSQL services connected to
-    `main`, with secrets and data isolated from staging.
-  - Keep drafts hidden and verify public health checks and rollback.
-  - Completion check: the public platform works on Railway URLs and can recover
-    from a failed deployment.
-
-- [ ] **Phase 5 — Formalize publication**
-  - Use a branch per article, PR artifact review, staging review, approval before
-    `main`, and a post-publication smoke test.
-  - Completion check: an article follows a repeatable documented path without
-    being tested directly in production.
-
-- [ ] **Phase 6 — Prove the newsletter in staging**
-  - Test signup, confirmation, invalid and duplicate tokens, bounce, complaint,
-    unsubscribe, signed webhooks, and reports.
-  - Keep recipients limited to test addresses.
-  - Completion check: consent, suppression, events, and reporting work end to end
-    without a public audience.
-
-- [ ] **Phase 7 — Configure the `aflora.page` domain**
-  - Register the selected domain; point web and API; create the sending subdomain;
-    configure SPF, DKIM, and DMARC; verify the domain in Resend.
-  - Completion check: the site has its own address and authenticated sending.
-
-- [ ] **Phase 8 — Open the newsletter**
-  - Configure postal/contact details and the production segment; perform an
-    internal send; review Gmail, another provider, mobile, and plain text.
-  - Enable the public form only after those checks pass.
-  - Completion check: real readers can subscribe, confirm, receive, and
-    unsubscribe safely.
-
-- [ ] **Phase 9 — Protect operations**
-  - Enable backups and prove PostgreSQL restoration; configure monitoring,
-    alerts, cost limits, ownership, and incident response.
-  - Completion check: failures are detected and data can be restored through a
-    tested procedure.
 
 - [ ] **Phase 10 — Prepare future visualizations**
   - Define bundle and performance budgets, lazy loading, Web Worker boundaries,
@@ -198,6 +187,32 @@ references for longer-term editorial direction.
     promoting to `main`.
 
 ### Release and platform readiness
+
+- [x] **Phase 7 — Configure the `aflora.page` domain** — 2026-07-24
+  - Apex web, API, and sending domains use HTTPS; SPF, DKIM, and DMARC are
+    configured, and Resend uses the authenticated sending domain.
+  - Completion check: the site has its own address and authenticated sending.
+
+- [x] **Phase 6 — Prove the newsletter in staging** — 2026-07-24
+  - The allowlisted staging proof covered signup, confirmation, invalid and
+    duplicate tokens, unsubscribe, bounce, complaint, suppression, signed
+    webhooks, reports, and cleanup without a public audience.
+  - Completion check: consent, suppression, events, and reporting work end to
+    end with recipients restricted to controlled test addresses.
+
+- [x] **Phase 4 — Create production on Railway** — 2026-07-24
+  - Production web, API, PostgreSQL, Resend credentials, segment, webhook, and
+    event salt are isolated from staging. Exact-SHA health and rollback were
+    proven before public signup opened.
+  - Completion check: the public platform works on Railway URLs and can recover
+    from a failed application deployment.
+
+- [x] **Phase 3 — Create staging on Railway** — 2026-07-22
+  - Isolated web, API, and PostgreSQL services deploy from `develop`, show
+    drafts, run migrations, and restrict newsletter recipients to an explicit
+    allowlist.
+  - Completion check: the complete platform is safely reviewable with staging
+    data and recipients only.
 
 - [x] **Formalize and prove the required GitFlow — issue #4** — 2026-07-23
   - Opened the issue with the workflow and acceptance criteria before editing.
