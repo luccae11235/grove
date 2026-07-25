@@ -54,22 +54,28 @@ jobs:
 
           case "$target_environment" in
             staging|"aflora / staging")
-              echo "WEB_URL=https://grove-web-staging.up.railway.app" >> "$GITHUB_ENV"
-              echo "API_URL=https://grove-newsletter-api-staging.up.railway.app" >> "$GITHUB_ENV"
-              echo "EXPECTED_FORM=enabled" >> "$GITHUB_ENV"
-              echo "EXPECTED_AUDIENCE=restricted" >> "$GITHUB_ENV"
+              WEB_URL="https://grove-web-staging.up.railway.app"
+              API_URL="https://grove-newsletter-api-staging.up.railway.app"
+              EXPECTED_FORM="enabled"
+              EXPECTED_AUDIENCE="restricted"
               ;;
             production|"aflora / production")
-              echo "WEB_URL=https://aflora.page" >> "$GITHUB_ENV"
-              echo "API_URL=https://api.aflora.page" >> "$GITHUB_ENV"
-              echo "EXPECTED_FORM=enabled" >> "$GITHUB_ENV"
-              echo "EXPECTED_AUDIENCE=public" >> "$GITHUB_ENV"
+              WEB_URL="https://aflora.page"
+              API_URL="https://api.aflora.page"
+              EXPECTED_FORM="enabled"
+              EXPECTED_AUDIENCE="public"
               ;;
             *)
               echo "Ignoring deployment environment: $target_environment"
               exit 1
               ;;
           esac
+          {
+            echo "WEB_URL=$WEB_URL"
+            echo "API_URL=$API_URL"
+            echo "EXPECTED_FORM=$EXPECTED_FORM"
+            echo "EXPECTED_AUDIENCE=$EXPECTED_AUDIENCE"
+          } >> "$GITHUB_ENV"
 
           if [ "$EVENT_NAME" = "schedule" ]; then
             web_sha=$(curl --fail --silent --show-error "$WEB_URL/version.json" | jq -er '.releaseSha')
