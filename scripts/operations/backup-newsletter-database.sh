@@ -3,6 +3,10 @@
 set -euo pipefail
 umask 077
 
+if [ "${1:-}" = "--" ]; then
+  shift
+fi
+
 if [ "$#" -ne 1 ]; then
   echo "Usage: pnpm newsletter:backup -- /absolute/path/to/backup-directory" >&2
   exit 2
@@ -76,7 +80,8 @@ if [ -z "$backup_passphrase" ] || [ "$backup_passphrase" != "$repeated_passphras
 fi
 unset repeated_passphrase
 
-PGDATABASE="$database_url" "$pg_dump_command" \
+"$pg_dump_command" \
+  --dbname="$database_url" \
   --format=custom \
   --compress=9 \
   --no-owner \
