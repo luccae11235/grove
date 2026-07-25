@@ -55,8 +55,8 @@ references for longer-term editorial direction.
   - [x] Record operational ownership and the incident path.
   - [x] Approve encrypted local PostgreSQL backups as the current small-audience
     recovery policy.
-  - [ ] Create and checksum the first encrypted local backup with
-    `pnpm newsletter:backup`.
+  - [x] Create, checksum, and decrypt-verify the first encrypted local backup
+    with `pnpm newsletter:backup`; the passphrase is stored in macOS Keychain.
   - Completion check: failures are detected and data can be restored through a
     tested procedure.
 
