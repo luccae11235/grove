@@ -1,0 +1,107 @@
+---
+import type { Locale } from "../i18n";
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = "en" } = Astro.props;
+const apiBase = import.meta.env.PUBLIC_NEWSLETTER_API_URL?.replace(/\/$/, "") ?? "";
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const manageHref = locale === "pt-BR"
+  ? `${base}/pt-br/newsletter/manage`
+  : `${base}/newsletter/manage`;
+const homeHref = locale === "pt-BR" ? `${base}/pt-br/` : `${base}/`;
+const copy = locale === "pt-BR"
+  ? {
+      eyebrow: "Preferências da newsletter",
+      title: "Cancelar sua inscrição?",
+      message: "Você deixará de receber as próximas edições da Aflora.",
+      submit: "Sim, cancelar inscrição",
+      working: "Cancelando…",
+      doneTitle: "Inscrição cancelada.",
+      doneMessage: "Você não receberá novas edições. Se mudar de ideia, poderá se inscrever novamente.",
+      invalidTitle: "Este link não é válido.",
+      invalidMessage: "Ele pode ter expirado ou já ter sido usado. Solicite um novo link seguro.",
+      manage: "Solicitar novo link",
+      home: "Voltar para a Aflora",
+    }
+  : {
+      eyebrow: "Newsletter preferences",
+      title: "Unsubscribe?",
+      message: "You will stop receiving future Aflora issues.",
+      submit: "Yes, unsubscribe",
+      working: "Unsubscribing…",
+      doneTitle: "You are unsubscribed.",
+      doneMessage: "You will not receive new issues. You can subscribe again whenever you want.",
+      invalidTitle: "This link is not valid.",
+      invalidMessage: "It may have expired or already been used. Request a new secure link.",
+      manage: "Request a new link",
+      home: "Return to Aflora",
+    };
+---
+
+<section
+  class="newsletter-confirmation newsletter-unsubscribe"
+  data-newsletter-unsubscribe
+  data-api-base={apiBase}
+  data-manage-href={manageHref}
+>
+  <p class="eyebrow">{copy.eyebrow}</p>
+  <h1 data-title>{copy.title}</h1>
+  <p class="lede" data-message>{copy.message}</p>
+  <p class="newsletter-unsubscribe-actions">
+    <button class="button-link" type="button" data-submit>{copy.submit}</button>
+    <a class="quiet-link" href={homeHref} data-secondary>{copy.home}</a>
+  </p>
+  <p class="newsletter-form-status" data-status role="status" aria-live="polite"></p>
+</section>
+
+<script is:inline define:vars={{ copy }}>
+  const panel = document.querySelector("[data-newsletter-unsubscribe]");
+  const button = panel?.querySelector("[data-submit]");
+  const secondary = panel?.querySelector("[data-secondary]");
+  const title = panel?.querySelector("[data-title]");
+  const message = panel?.querySelector("[data-message]");
+  const status = panel?.querySelector("[data-status]");
+  const token = new URLSearchParams(window.location.search).get("token");
+  const apiBase = panel?.dataset.apiBase;
+
+  if (!panel || !button || !secondary || !title || !message || !status || !token || !apiBase) {
+    showInvalid();
+  } else {
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      button.textContent = copy.working;
+      status.textContent = copy.working;
+      try {
+        const response = await fetch(`${apiBase}/v1/subscriptions/unsubscribe`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+        const result = await response.json();
+        if (!response.ok || result.status !== "unsubscribed") {
+          showInvalid();
+          return;
+        }
+        title.textContent = copy.doneTitle;
+        message.textContent = copy.doneMessage;
+        status.textContent = "";
+        button.hidden = true;
+      } catch {
+        showInvalid();
+      }
+    });
+  }
+
+  function showInvalid() {
+    if (!panel || !button || !secondary || !title || !message || !status) return;
+    title.textContent = copy.invalidTitle;
+    message.textContent = copy.invalidMessage;
+    status.textContent = "";
+    button.hidden = true;
+    secondary.textContent = copy.manage;
+    secondary.href = panel.dataset.manageHref ?? "/";
+  }
+</script>

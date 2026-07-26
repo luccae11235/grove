@@ -26,6 +26,9 @@ if (apiBase) {
 const endpoint = apiBase && privacyContact ? `${apiBase}/v1/subscriptions` : "";
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const privacyHref = locale === "pt-BR" ? `${base}/pt-br/privacy` : `${base}/privacy`;
+const manageHref = locale === "pt-BR"
+  ? `${base}/pt-br/newsletter/manage`
+  : `${base}/newsletter/manage`;
 const copy = locale === "pt-BR"
   ? {
       eyebrow: "Uma ideia difícil por semana",
@@ -37,11 +40,13 @@ const copy = locale === "pt-BR"
       submit: "Quero receber",
       unavailable: "As inscrições serão abertas assim que o serviço de newsletter estiver conectado.",
       submitting: "Enviando…",
-      success: "Confira sua caixa de entrada e confirme a inscrição.",
-      successButton: "E-mail enviado",
+      success: "Confira sua caixa de entrada. Enviamos a confirmação ou o status atual da inscrição. Se nada chegar, tente novamente em um minuto.",
+      successButton: "Enviar novamente",
+      retrying: "Enviar novamente em",
       error: "Não foi possível iniciar sua inscrição. Tente novamente em instantes.",
       consent: "Ao continuar, você solicita os e-mails semanais da Aflora. A inscrição só fica ativa depois da confirmação.",
       privacy: "Privacidade e uso de dados",
+      manage: "Já está na lista? Gerencie ou cancele sua inscrição",
     }
   : {
       eyebrow: "One difficult idea each week",
@@ -53,11 +58,13 @@ const copy = locale === "pt-BR"
       submit: "Subscribe",
       unavailable: "Subscriptions will open as soon as the newsletter service is connected.",
       submitting: "Sending…",
-      success: "Check your inbox and confirm your subscription.",
-      successButton: "Email sent",
+      success: "Check your inbox. We sent either a confirmation or your current subscription status. If nothing arrives, try again in one minute.",
+      successButton: "Send again",
+      retrying: "Send again in",
       error: "We could not start your subscription. Please try again in a moment.",
       consent: "By continuing, you request Aflora's weekly emails. Your subscription becomes active only after confirmation.",
       privacy: "Privacy and data use",
+      manage: "Already on the list? Manage or unsubscribe",
     };
 ---
 
@@ -91,6 +98,7 @@ const copy = locale === "pt-BR"
       disabled={!endpoint}
       data-default-label={copy.submit}
       data-success-label={copy.successButton}
+      data-retrying-label={copy.retrying}
     >{copy.submit}</button>
     <p
       class="newsletter-form-status"
@@ -103,6 +111,7 @@ const copy = locale === "pt-BR"
       aria-live="polite"
     >{!endpoint && copy.unavailable}</p>
     <p class="newsletter-consent">{copy.consent} <a href={privacyHref}>{copy.privacy}</a>.</p>
+    <p class="newsletter-manage-link"><a href={manageHref}>{copy.manage} →</a></p>
   </form>
 </section>
 
@@ -146,10 +155,20 @@ const copy = locale === "pt-BR"
         form.reset();
         status.textContent = status.dataset.success ?? "";
         status.dataset.state = "success";
-        button.textContent = button.dataset.successLabel ?? "";
+        const retryingLabel = button.dataset.retryingLabel ?? "";
         button.dataset.state = "success";
-        const email = form.querySelector<HTMLInputElement>("input[type='email']");
-        if (email) email.disabled = true;
+        let remaining = 60;
+        button.textContent = `${retryingLabel} ${remaining}s`;
+        const countdown = window.setInterval(() => {
+          remaining -= 1;
+          if (remaining > 0) {
+            button.textContent = `${retryingLabel} ${remaining}s`;
+            return;
+          }
+          window.clearInterval(countdown);
+          button.textContent = button.dataset.successLabel ?? "";
+          button.disabled = false;
+        }, 1_000);
       } catch {
         status.textContent = status.dataset.error ?? "";
         status.dataset.state = "error";

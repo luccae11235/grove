@@ -59,6 +59,7 @@ test("smoke proves release identity, restricted audience, and visible staging fo
     "sitemap is available",
     "newsletter CORS accepts only the website origin",
     "newsletter form visibility matches the web configuration",
+    "subscription recovery pages and safe API boundaries are available",
     "newsletter audience policy matches the API configuration",
   ]);
 });
@@ -121,6 +122,34 @@ function fixtureRequest({ releaseSha }) {
     }
     if (parsed.hostname === "web.example" && parsed.pathname === "/newsletter/") {
       return new Response("https://api.example/v1/subscriptions");
+    }
+    if (
+      parsed.hostname === "web.example" &&
+      [
+        "/newsletter/manage/",
+        "/newsletter/unsubscribe/",
+        "/pt-br/newsletter/",
+        "/pt-br/newsletter/manage/",
+        "/pt-br/newsletter/unsubscribe/",
+      ].includes(parsed.pathname)
+    ) {
+      return new Response("https://api.example/v1/subscriptions/manage", {
+        headers: { "Content-Type": "text/html" },
+      });
+    }
+    if (
+      parsed.hostname === "api.example" &&
+      ["/v1/subscriptions", "/v1/subscriptions/manage"].includes(parsed.pathname) &&
+      init.method === "POST"
+    ) {
+      return Response.json({ ok: true }, { status: 202 });
+    }
+    if (
+      parsed.hostname === "api.example" &&
+      parsed.pathname === "/v1/subscriptions/unsubscribe" &&
+      init.method === "POST"
+    ) {
+      return Response.json({ ok: false, status: "invalid" }, { status: 400 });
     }
     return new Response("not found", { status: 404 });
   };

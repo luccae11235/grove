@@ -1,0 +1,13 @@
+---
+import NewsletterManage from "../../components/NewsletterManage.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Manage newsletter subscription"
+  description="Check or unsubscribe from Aflora's newsletter securely."
+  translations={{ "pt-BR": "/pt-br/newsletter/manage/" }}
+  noindex
+>
+  <NewsletterManage />
+</BaseLayout>

@@ -3086,6 +3086,16 @@ h1 {
   line-height: 1.5;
 }
 
+.newsletter-manage-link {
+  margin: 8px 2px 0;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.76rem;
+}
+
+.newsletter-manage-link a {
+  font-weight: 750;
+}
+
 .newsletter-form-status[data-state="loading"] {
   color: var(--text);
   font-weight: 700;
@@ -3213,6 +3223,105 @@ h1 {
 }
 
 .newsletter-confirmation-progress .quiet-link[hidden] {
+  display: none;
+}
+
+.newsletter-management {
+  width: min(760px, 100%);
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.newsletter-management h1 {
+  max-width: 700px;
+}
+
+.newsletter-management form {
+  max-width: 540px;
+  margin-top: 30px;
+}
+
+.newsletter-management form > label:first-child {
+  display: grid;
+  gap: 8px;
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.newsletter-management input[type="email"] {
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface-raised);
+  color: var(--text);
+  padding: 0 14px;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.newsletter-management input[type="email"]:focus-visible {
+  border-color: var(--accent);
+  outline: 3px solid var(--accent-soft);
+  outline-offset: 2px;
+}
+
+.newsletter-management button {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.newsletter-management button:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.newsletter-management button:disabled,
+.newsletter-management input:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.newsletter-management-privacy {
+  max-width: 600px;
+  margin-top: 28px;
+  border-left: 3px solid var(--border-strong);
+  color: var(--text-muted);
+  padding-left: 16px;
+  font-size: 0.82rem;
+}
+
+.newsletter-unsubscribe-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+  margin-top: 28px;
+}
+
+.newsletter-unsubscribe .button-link {
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.newsletter-unsubscribe .button-link:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.newsletter-unsubscribe [hidden] {
   display: none;
 }
 

@@ -24,6 +24,8 @@ const app = createApp({
   recipientAllowlist: config.recipientAllowlist,
   eventHashSalt: config.eventHashSalt,
   confirmationTtlHours: config.confirmationTtlHours,
+  actionTtlHours: config.actionTtlHours,
+  resendCooldownSeconds: config.resendCooldownSeconds,
   rateLimitMax: config.rateLimitMax,
   rateLimitWindowSeconds: config.rateLimitWindowSeconds,
 });

@@ -1,0 +1,31 @@
+---
+import NewsletterSignup from "../../../components/NewsletterSignup.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Newsletter"
+  description="A newsletter semanal da Aflora para tornar ideias difíceis visuais e interativas."
+  locale="pt-BR"
+  translations={{ en: "/newsletter/" }}
+>
+  <header class="page-header newsletter-header">
+    <p class="eyebrow">A edição semanal</p>
+    <h1>Uma ideia difícil.<br />Feita para explorar.</h1>
+    <p class="lede">
+      Cada edição começa com uma pergunta, leva a uma explicação interativa
+      e termina com um modelo mental que você pode usar em outros contextos.
+    </p>
+  </header>
+
+  <NewsletterSignup locale="pt-BR" source="newsletter-archive-pt" />
+
+  <section class="newsletter-archive" aria-labelledby="newsletter-archive-title">
+    <p class="eyebrow">Arquivo</p>
+    <h2 id="newsletter-archive-title">Edições anteriores</h2>
+    <div class="newsletter-empty">
+      <strong>As edições em português estão em preparação.</strong>
+      <p>Enquanto isso, você já pode receber as próximas publicações e explorar as lições da Aflora.</p>
+    </div>
+  </section>
+</BaseLayout>

@@ -14,16 +14,28 @@ const base = import.meta.env.BASE_URL;
     <p class="lede" data-confirmation-message>
       Your subscription is confirmed. The next Aflora issue will arrive in your inbox.
     </p>
-    <p><a class="button-link" href={base}>Explore Aflora →</a></p>
+    <p><a class="button-link" href={base} data-confirmation-action>Explore Aflora →</a></p>
   </header>
 </BaseLayout>
 
 <script>
   const params = new URLSearchParams(window.location.search);
-  if (params.get("status") === "invalid") {
+  const status = params.get("status");
+  if (status === "invalid" || status === "expired") {
     const title = document.querySelector<HTMLElement>("[data-confirmation-title]");
     const message = document.querySelector<HTMLElement>("[data-confirmation-message]");
-    if (title) title.textContent = "That confirmation link is no longer valid.";
-    if (message) message.textContent = "Request a new confirmation email from the newsletter signup form.";
+    const action = document.querySelector<HTMLAnchorElement>("[data-confirmation-action]");
+    if (title) {
+      title.textContent = status === "expired"
+        ? "That confirmation link has expired."
+        : "That confirmation link is no longer valid.";
+    }
+    if (message) {
+      message.textContent = "Request a fresh email now. Previously delivered links remain usable until they expire.";
+    }
+    if (action) {
+      action.href = `${import.meta.env.BASE_URL}newsletter/#newsletter-signup-newsletter-archive`;
+      action.textContent = "Request a new confirmation →";
+    }
   }
 </script>

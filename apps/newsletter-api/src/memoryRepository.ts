@@ -1,66 +1,186 @@
 import type {
   BroadcastRecord,
-  PendingSubscriber,
+  SubscriptionActionLookup,
+  SubscriptionActionRequest,
   SubscriberStatus,
   SubscriptionRequest,
   WebhookRecord,
 } from "./domain.js";
 import { emptyIssueMetrics, type NewsletterRepository } from "./repository.js";
 
-interface StoredSubscriber extends PendingSubscriber {
+interface StoredSubscriber {
+  subscriberId: string;
+  email: string;
+  locale: "en" | "pt-BR";
+  source: string;
   status: SubscriberStatus;
-  tokenHash: string | null;
   requestedAt: Date;
   providerContactId?: string;
 }
 
+interface StoredAction {
+  actionId: string;
+  subscriberId: string;
+  actionType: "confirm" | "unsubscribe";
+  tokenHash: string;
+  expiresAt: Date;
+  requestedAt: Date;
+  usedAt?: Date;
+}
+
 export class MemoryNewsletterRepository implements NewsletterRepository {
   readonly subscribers = new Map<string, StoredSubscriber>();
+  readonly actions = new Map<string, StoredAction>();
   readonly events = new Map<string, WebhookRecord>();
   readonly broadcasts = new Map<string, BroadcastRecord>();
 
   async requestSubscription(input: SubscriptionRequest) {
     const email = input.email.toLowerCase();
     const current = this.subscribers.get(email);
-    if (current?.status === "active") {
-      return { shouldSendConfirmation: false };
-    }
+    if (current?.status === "active") return "send-management" as const;
+    if (
+      current &&
+      ["bounced", "complained", "suppressed"].includes(current.status)
+    ) return "blocked" as const;
     if (
       current?.status === "pending" &&
-      input.requestedAt.getTime() - current.requestedAt.getTime() < 10 * 60 * 1000
+      [...this.actions.values()].some(
+        (action) =>
+          action.subscriberId === current.subscriberId &&
+          action.actionType === "confirm" &&
+          !action.usedAt &&
+          action.requestedAt > input.cooldownBefore,
+      )
     ) {
-      return { shouldSendConfirmation: false };
+      return "cooldown" as const;
     }
+    const subscriberId = current?.subscriberId ?? input.subscriberId;
     this.subscribers.set(email, {
-      subscriberId: current?.subscriberId ?? input.subscriberId,
+      subscriberId,
       email,
       locale: input.locale,
       source: input.source,
-      expiresAt: input.expiresAt,
       status: "pending",
+      requestedAt: input.requestedAt,
+      providerContactId: current?.providerContactId,
+    });
+    this.actions.set(input.tokenHash, {
+      actionId: input.actionId,
+      subscriberId,
+      actionType: "confirm",
       tokenHash: input.tokenHash,
+      expiresAt: input.expiresAt,
       requestedAt: input.requestedAt,
     });
-    return { shouldSendConfirmation: true };
+    return "send-confirmation" as const;
   }
 
-  async findPendingByTokenHash(tokenHash: string, now: Date) {
-    return [...this.subscribers.values()].find(
-      (subscriber) =>
-        subscriber.status === "pending" &&
-        subscriber.tokenHash === tokenHash &&
-        subscriber.expiresAt.getTime() > now.getTime(),
-    ) ?? null;
+  async requestUnsubscribe(input: SubscriptionActionRequest) {
+    const subscriber = this.subscribers.get(input.email.toLowerCase());
+    if (!subscriber || subscriber.status !== "active") return null;
+    const recent = [...this.actions.values()].some(
+      (action) =>
+        action.subscriberId === subscriber.subscriberId &&
+        action.actionType === "unsubscribe" &&
+        !action.usedAt &&
+        action.requestedAt > input.cooldownBefore,
+    );
+    if (recent) return null;
+    this.actions.set(input.tokenHash, {
+      actionId: input.actionId,
+      subscriberId: subscriber.subscriberId,
+      actionType: "unsubscribe",
+      tokenHash: input.tokenHash,
+      expiresAt: input.expiresAt,
+      requestedAt: input.requestedAt,
+    });
+    return subscriber.locale;
   }
 
-  async activateSubscriber(subscriberId: string, providerContactId: string, _now: Date) {
+  async discardUnsentAction(tokenHash: string) {
+    const action = this.actions.get(tokenHash);
+    if (action && !action.usedAt) this.actions.delete(tokenHash);
+  }
+
+  async findConfirmationByTokenHash(tokenHash: string, now: Date) {
+    return this.findAction(tokenHash, "confirm", "pending", now);
+  }
+
+  async findUnsubscribeByTokenHash(tokenHash: string, now: Date) {
+    return this.findAction(tokenHash, "unsubscribe", "active", now);
+  }
+
+  private findAction(
+    tokenHash: string,
+    actionType: "confirm" | "unsubscribe",
+    status: "pending" | "active",
+    now: Date,
+  ): SubscriptionActionLookup | null {
+    const action = this.actions.get(tokenHash);
+    if (!action || action.actionType !== actionType || action.usedAt) return null;
+    const subscriber = [...this.subscribers.values()].find(
+      (candidate) => candidate.subscriberId === action.subscriberId,
+    );
+    if (!subscriber || subscriber.status !== status) return null;
+    return {
+      subscriber: {
+        actionId: action.actionId,
+        subscriberId: subscriber.subscriberId,
+        email: subscriber.email,
+        locale: subscriber.locale,
+        expiresAt: action.expiresAt,
+      },
+      expired: action.expiresAt.getTime() <= now.getTime(),
+    };
+  }
+
+  async activateSubscriber(
+    subscriberId: string,
+    actionId: string,
+    providerContactId: string,
+    now: Date,
+  ) {
     const subscriber = [...this.subscribers.values()].find(
       (candidate) => candidate.subscriberId === subscriberId,
     );
-    if (!subscriber || subscriber.status !== "pending") return false;
+    const action = [...this.actions.values()].find(
+      (candidate) =>
+        candidate.actionId === actionId &&
+        candidate.subscriberId === subscriberId &&
+        candidate.actionType === "confirm",
+    );
+    if (
+      !subscriber ||
+      subscriber.status !== "pending" ||
+      !action ||
+      action.usedAt ||
+      action.expiresAt <= now
+    ) return false;
     subscriber.status = "active";
-    subscriber.tokenHash = null;
     subscriber.providerContactId = providerContactId;
+    action.usedAt = now;
+    return true;
+  }
+
+  async unsubscribeSubscriber(subscriberId: string, actionId: string, now: Date) {
+    const subscriber = [...this.subscribers.values()].find(
+      (candidate) => candidate.subscriberId === subscriberId,
+    );
+    const action = [...this.actions.values()].find(
+      (candidate) =>
+        candidate.actionId === actionId &&
+        candidate.subscriberId === subscriberId &&
+        candidate.actionType === "unsubscribe",
+    );
+    if (
+      !subscriber ||
+      subscriber.status !== "active" ||
+      !action ||
+      action.usedAt ||
+      action.expiresAt <= now
+    ) return false;
+    subscriber.status = "unsubscribed";
+    action.usedAt = now;
     return true;
   }
 
@@ -70,7 +190,7 @@ export class MemoryNewsletterRepository implements NewsletterRepository {
     return true;
   }
 
-  async markSubscriberStatusByEmail(email: string, status: SubscriberStatus) {
+  async markSubscriberStatusByEmail(email: string, status: SubscriberStatus, _now: Date) {
     const subscriber = this.subscribers.get(email.toLowerCase());
     if (subscriber) subscriber.status = status;
   }
@@ -139,6 +259,12 @@ export class MemoryNewsletterRepository implements NewsletterRepository {
     for (const [email, subscriber] of this.subscribers) {
       if (subscriber.status === "pending" && subscriber.requestedAt < pendingBefore) {
         this.subscribers.delete(email);
+      }
+    }
+    const subscriberIds = new Set([...this.subscribers.values()].map(({ subscriberId }) => subscriberId));
+    for (const [tokenHash, action] of this.actions) {
+      if (!subscriberIds.has(action.subscriberId) || action.expiresAt < pendingBefore) {
+        this.actions.delete(tokenHash);
       }
     }
     for (const [svixId, event] of this.events) {

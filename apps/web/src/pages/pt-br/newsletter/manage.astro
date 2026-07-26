@@ -1,0 +1,14 @@
+---
+import NewsletterManage from "../../../components/NewsletterManage.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Gerenciar inscrição na newsletter"
+  description="Consulte ou cancele sua inscrição na newsletter da Aflora com segurança."
+  locale="pt-BR"
+  translations={{ en: "/newsletter/manage/" }}
+  noindex
+>
+  <NewsletterManage locale="pt-BR" />
+</BaseLayout>

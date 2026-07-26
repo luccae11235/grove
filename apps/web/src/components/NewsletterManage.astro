@@ -1,0 +1,145 @@
+---
+import type { Locale } from "../i18n";
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = "en" } = Astro.props;
+const apiBase = import.meta.env.PUBLIC_NEWSLETTER_API_URL?.replace(/\/$/, "") ?? "";
+const endpoint = apiBase ? `${apiBase}/v1/subscriptions/manage` : "";
+const copy = locale === "pt-BR"
+  ? {
+      eyebrow: "Sua inscrição",
+      title: "Gerencie ou cancele com segurança.",
+      description:
+        "Informe seu e-mail. Se ele estiver inscrito, enviaremos o status atual e um link de cancelamento que expira em 24 horas.",
+      privacy:
+        "Por privacidade, a página não revela se um endereço pertence à lista. Somente a pessoa com acesso à caixa de entrada recebe o status.",
+      email: "Seu e-mail",
+      placeholder: "voce@exemplo.com",
+      submit: "Enviar link seguro",
+      submitting: "Enviando…",
+      success:
+        "Confira sua caixa de entrada. Se este endereço estiver inscrito, o link seguro está a caminho.",
+      retrying: "Enviar novamente em",
+      retry: "Enviar novamente",
+      error: "Não foi possível enviar o link. Tente novamente.",
+      unavailable: "O gerenciamento ficará disponível quando o serviço de newsletter estiver conectado.",
+    }
+  : {
+      eyebrow: "Your subscription",
+      title: "Manage or unsubscribe securely.",
+      description:
+        "Enter your email. If it is subscribed, we will send its current status and a secure unsubscribe link that expires in 24 hours.",
+      privacy:
+        "For privacy, this page does not reveal whether an address is on the list. Only someone with inbox access receives its status.",
+      email: "Your email address",
+      placeholder: "you@example.com",
+      submit: "Send secure link",
+      submitting: "Sending…",
+      success:
+        "Check your inbox. If this address is subscribed, the secure link is on its way.",
+      retrying: "Send again in",
+      retry: "Send again",
+      error: "We could not send the link. Please try again.",
+      unavailable: "Management will be available when the newsletter service is connected.",
+    };
+---
+
+<section class="newsletter-management" aria-labelledby="newsletter-management-title">
+  <p class="eyebrow">{copy.eyebrow}</p>
+  <h1 id="newsletter-management-title">{copy.title}</h1>
+  <p class="lede">{copy.description}</p>
+  <form data-newsletter-management data-endpoint={endpoint} novalidate>
+    <label>
+      <span>{copy.email}</span>
+      <input
+        type="email"
+        name="email"
+        inputmode="email"
+        autocomplete="email"
+        placeholder={copy.placeholder}
+        required
+        disabled={!endpoint}
+      />
+    </label>
+    <label class="newsletter-honeypot" aria-hidden="true">
+      Website
+      <input type="text" name="website" tabindex="-1" autocomplete="off" />
+    </label>
+    <input type="hidden" name="locale" value={locale} />
+    <button
+      type="submit"
+      disabled={!endpoint}
+      data-default-label={copy.submit}
+      data-retry-label={copy.retry}
+      data-retrying-label={copy.retrying}
+    >{copy.submit}</button>
+    <p
+      class="newsletter-form-status"
+      data-status
+      data-unavailable={copy.unavailable}
+      data-submitting={copy.submitting}
+      data-success={copy.success}
+      data-error={copy.error}
+      role="status"
+      aria-live="polite"
+    >{!endpoint && copy.unavailable}</p>
+  </form>
+  <p class="newsletter-management-privacy">{copy.privacy}</p>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>("[data-newsletter-management]").forEach((form) => {
+    if (form.dataset.bound === "true") return;
+    form.dataset.bound = "true";
+    const endpoint = form.dataset.endpoint;
+    const status = form.querySelector<HTMLElement>("[data-status]");
+    const button = form.querySelector<HTMLButtonElement>("button[type='submit']");
+    if (!endpoint || !status || !button) return;
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const payload = Object.fromEntries(new FormData(form).entries());
+      button.disabled = true;
+      button.textContent = status.dataset.submitting ?? "";
+      form.setAttribute("aria-busy", "true");
+      status.textContent = status.dataset.submitting ?? "";
+      status.dataset.state = "loading";
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!response.ok) throw new Error(`Management request failed with ${response.status}`);
+        form.reset();
+        status.textContent = status.dataset.success ?? "";
+        status.dataset.state = "success";
+        let remaining = 60;
+        const retryingLabel = button.dataset.retryingLabel ?? "";
+        button.textContent = `${retryingLabel} ${remaining}s`;
+        const countdown = window.setInterval(() => {
+          remaining -= 1;
+          if (remaining > 0) {
+            button.textContent = `${retryingLabel} ${remaining}s`;
+            return;
+          }
+          window.clearInterval(countdown);
+          button.textContent = button.dataset.retryLabel ?? "";
+          button.disabled = false;
+        }, 1_000);
+      } catch {
+        status.textContent = status.dataset.error ?? "";
+        status.dataset.state = "error";
+        button.textContent = button.dataset.defaultLabel ?? "";
+        button.disabled = false;
+      } finally {
+        form.removeAttribute("aria-busy");
+      }
+    });
+  });
+</script>
