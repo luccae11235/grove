@@ -45,23 +45,27 @@ test("retention removes only stale pending consent and old telemetry", async () 
   const recent = new Date("2026-07-01T00:00:00.000Z");
   await repository.requestSubscription({
     subscriberId: "old-pending",
+    actionId: "old-pending-action",
     email: "pending@example.com",
     locale: "en",
     source: "test",
     tokenHash: "old-token",
     expiresAt: new Date("2024-01-03T00:00:00.000Z"),
     requestedAt: old,
+    cooldownBefore: new Date("2023-12-31T23:59:00.000Z"),
   });
   await repository.requestSubscription({
     subscriberId: "active",
+    actionId: "active-action",
     email: "active@example.com",
     locale: "en",
     source: "test",
     tokenHash: "active-token",
     expiresAt: new Date("2024-01-03T00:00:00.000Z"),
     requestedAt: old,
+    cooldownBefore: new Date("2023-12-31T23:59:00.000Z"),
   });
-  await repository.activateSubscriber("active", "provider-active", old);
+  await repository.activateSubscriber("active", "active-action", "provider-active", old);
   await repository.recordWebhook({
     svixId: "old-event",
     eventType: "email.delivered",

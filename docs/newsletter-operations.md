@@ -109,17 +109,23 @@ the internal issue send and report check below.
 Use an address you control and complete this sequence:
 
 1. confirm `GET /health` returns `{"status":"ok"}`;
-2. submit the website form and verify only one confirmation email arrives;
+2. submit the website form and verify one confirmation email arrives;
 3. click the link and verify the browser reaches `/newsletter/confirmed`;
-4. submit the same address again and verify it does not receive another
-   confirmation;
-5. change Issue 001 to `ready`, configure a real postal address, run
+4. while pending, submit again inside one minute and verify no email burst; then
+   retry after one minute and verify a fresh confirmation arrives while the
+   earlier link remains valid;
+5. after confirming, submit the same address and verify the inbox receives the
+   current subscription status and a secure management link;
+6. request management at `/newsletter/manage`, explicitly confirm unsubscribe
+   on the website, and verify both PostgreSQL and Resend become unsubscribed;
+7. subscribe again and verify reactivation still requires fresh double opt-in;
+8. change Issue 001 to `ready`, configure a real postal address, run
    `pnpm newsletter:prepare`, and create a provider draft—not a send;
-6. inspect desktop, mobile, links, plain text, sender, reply-to, footer, and spam
+9. inspect desktop, mobile, links, plain text, sender, reply-to, footer, and spam
    placement in at least Gmail and one non-Gmail mailbox;
-7. publish the article and issue on the website, then perform an explicit send to
+10. publish the article and issue on the website, then perform an explicit send to
    a tiny internal segment; and
-8. confirm delivery and click events appear in
+11. confirm delivery and click events appear in
    `pnpm newsletter:report --issue 2026-001`.
 
 Also test an expired or altered confirmation link, an unsubscribe, and a test
@@ -218,7 +224,17 @@ sending if the sender domain, webhook ingestion, or suppression sync is unhealth
 - API failed: the static website remains readable, but disable or clearly mark
   signup until `/health` recovers.
 - Confirmation email failed: the address remains pending and may safely request a
-  fresh token.
+  fresh token immediately; the failed token reservation is discarded.
+- Confirmation email missing: wait one minute and submit again. Each delivered
+  link remains usable until it expires, even after a newer link is requested.
+- Confirmation link expired: the localized result page points back to the signup
+  form for a fresh request.
+- Existing subscription uncertain: submitting the address again or using
+  `/newsletter/manage` sends status only to that inbox. Never reveal membership
+  in the public response.
+- Website unsubscribe requested: send an expiring link to the subscribed inbox
+  and require an explicit confirmation page before changing PostgreSQL and
+  Resend. A GET from an email security scanner must not unsubscribe the reader.
 - Webhook signature failed: return an error and inspect the configured signing
   secret; never record an unverified event.
 - Duplicate delivery command: stop and inspect the stored provider broadcast id.

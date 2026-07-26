@@ -26,6 +26,8 @@ const runtimeSchema = z.object({
   ALLOWED_ORIGINS: z.string().min(1),
   EVENT_HASH_SALT: z.string().min(16),
   CONFIRMATION_TTL_HOURS: z.coerce.number().int().min(1).max(168).default(48),
+  SUBSCRIPTION_ACTION_TTL_HOURS: z.coerce.number().int().min(1).max(168).default(24),
+  SUBSCRIPTION_RESEND_COOLDOWN_SECONDS: z.coerce.number().int().min(30).max(3600).default(60),
   RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(100).default(5),
   RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().min(10).max(86400).default(900),
 });
@@ -72,6 +74,8 @@ export function loadConfig(environment: NodeJS.ProcessEnv = process.env) {
     allowedOrigins,
     eventHashSalt: parsed.EVENT_HASH_SALT,
     confirmationTtlHours: parsed.CONFIRMATION_TTL_HOURS,
+    actionTtlHours: parsed.SUBSCRIPTION_ACTION_TTL_HOURS,
+    resendCooldownSeconds: parsed.SUBSCRIPTION_RESEND_COOLDOWN_SECONDS,
     rateLimitMax: parsed.RATE_LIMIT_MAX,
     rateLimitWindowSeconds: parsed.RATE_LIMIT_WINDOW_SECONDS,
   };

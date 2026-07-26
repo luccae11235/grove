@@ -6,6 +6,12 @@ export interface ConfirmationMessage {
   confirmationUrl: string;
 }
 
+export interface SubscriptionManagementMessage {
+  email: string;
+  locale: "en" | "pt-BR";
+  unsubscribeUrl: string;
+}
+
 export interface BroadcastMessage {
   name: string;
   subject: string;
@@ -19,7 +25,9 @@ export interface BroadcastMessage {
 
 export interface NewsletterProvider {
   sendConfirmation(message: ConfirmationMessage): Promise<void>;
+  sendSubscriptionManagement(message: SubscriptionManagementMessage): Promise<void>;
   upsertContact(email: string): Promise<string>;
+  unsubscribeContact(email: string): Promise<void>;
   verifyWebhook(payload: string, headers: {
     id: string;
     timestamp: string;
@@ -76,6 +84,35 @@ export class ResendNewsletterProvider implements NewsletterProvider {
     assertResendResponse(response, "send confirmation email");
   }
 
+  async sendSubscriptionManagement(message: SubscriptionManagementMessage) {
+    const copy = message.locale === "pt-BR"
+      ? {
+          subject: "Gerencie sua inscrição na Aflora",
+          heading: "Você já está na lista",
+          body: "Este endereço já recebe a newsletter da Aflora. Se você queria apenas confirmar o status, não precisa fazer mais nada.",
+          button: "Cancelar inscrição",
+          note: "O link expira em 24 horas. Se você não pediu este e-mail, pode ignorá-lo.",
+        }
+      : {
+          subject: "Manage your Aflora subscription",
+          heading: "You are already on the list",
+          body: "This address already receives Aflora's newsletter. If you only wanted to check, there is nothing else to do.",
+          button: "Unsubscribe",
+          note: "This link expires in 24 hours. If you did not request this email, you can ignore it.",
+        };
+    const url = escapeHtml(message.unsubscribeUrl);
+    const response = await this.resend.emails.send({
+      from: this.options.from,
+      to: message.email,
+      replyTo: this.options.replyTo,
+      subject: copy.subject,
+      html: `<!doctype html><html><body style="font-family:Arial,sans-serif;line-height:1.6;color:#18251c"><h1>${copy.heading}</h1><p>${copy.body}</p><p><a href="${url}" style="background:#245f3d;color:#fff;padding:12px 18px;text-decoration:none;border-radius:6px">${copy.button}</a></p><p style="color:#5d685f;font-size:14px">${copy.note}</p></body></html>`,
+      text: `${copy.heading}\n\n${copy.body}\n\n${copy.button}: ${message.unsubscribeUrl}\n\n${copy.note}\n`,
+      tags: [{ name: "kind", value: "subscription_management" }],
+    });
+    assertResendResponse(response, "send subscription management email");
+  }
+
   async upsertContact(email: string) {
     const existing = await this.resend.contacts.get({ email });
     if (existing.data) {
@@ -113,6 +150,11 @@ export class ResendNewsletterProvider implements NewsletterProvider {
     });
     assertResendResponse(created, "create newsletter contact");
     return created.data.id;
+  }
+
+  async unsubscribeContact(email: string) {
+    const response = await this.resend.contacts.update({ email, unsubscribed: true });
+    assertResendResponse(response, "unsubscribe newsletter contact");
   }
 
   verifyWebhook(payload: string, headers: { id: string; timestamp: string; signature: string }) {

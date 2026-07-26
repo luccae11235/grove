@@ -26,6 +26,8 @@ test("runtime config accepts explicit HTTPS origins and empty optional values", 
   assert.equal(config.newsletterReplyTo, undefined);
   assert.equal(config.recipientAllowlist, undefined);
   assert.equal(config.publicSignup, true);
+  assert.equal(config.actionTtlHours, 24);
+  assert.equal(config.resendCooldownSeconds, 60);
 });
 
 test("runtime config normalizes and validates the recipient allowlist", () => {
@@ -69,5 +71,9 @@ test("runtime config rejects wildcard, path-bearing, and insecure public origins
   assert.throws(
     () => loadConfig({ ...environment, WEB_URL: "http://grove.example" }),
     /HTTPS/,
+  );
+  assert.throws(
+    () => loadConfig({ ...environment, SUBSCRIPTION_RESEND_COOLDOWN_SECONDS: "29" }),
+    />=30/,
   );
 });
