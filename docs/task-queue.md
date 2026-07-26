@@ -40,7 +40,7 @@ references for longer-term editorial direction.
   - [x] Review Gmail, mobile rendering, and plain text.
   - [x] Enable public double-opt-in signup; the platform smoke verifies an
     enabled form and public API audience.
-  - [ ] Close issue #49: make confirmation failures recoverable and add secure
+  - [x] Close issue #49: make confirmation failures recoverable and add secure
     website subscription management.
     - [x] Preserve delivered confirmation links when a reader requests another.
     - [x] Allow provider failures to retry immediately and normal retries after
@@ -49,8 +49,9 @@ references for longer-term editorial direction.
       website unsubscribe in English and Brazilian Portuguese.
     - [x] Cover the API, database migration, UI build, and deployment smoke
       boundaries with automated tests.
-    - [ ] Prove the complete flow in staging and promote the verified release to
-      production.
+    - [x] Prove the complete flow in staging and promote the verified release to
+      production. Staging inbox delivery and the exact-release smoke passed on
+      `f2058f1`; production smoke passed all ten checks on `8d07633`.
   - [ ] Make signup and confirmation feedback immediate on a real iPhone.
   - [ ] Review a received issue in one non-Gmail mailbox provider.
   - Completion check: real readers can subscribe, confirm, receive, and
