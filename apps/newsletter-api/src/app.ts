@@ -19,6 +19,16 @@ const subscriptionSchema = z.object({
   utmCampaign: z.string().trim().max(120).optional(),
 });
 
+const managementSchema = subscriptionSchema.pick({
+  email: true,
+  locale: true,
+  website: true,
+});
+
+const actionTokenSchema = z.object({
+  token: z.string().min(1).max(200),
+});
+
 export interface AppOptions {
   repository: NewsletterRepository;
   provider: NewsletterProvider;
@@ -29,6 +39,8 @@ export interface AppOptions {
   recipientAllowlist?: string[];
   eventHashSalt: string;
   confirmationTtlHours?: number;
+  actionTtlHours?: number;
+  resendCooldownSeconds?: number;
   rateLimitMax?: number;
   rateLimitWindowSeconds?: number;
   now?: () => Date;
@@ -46,6 +58,7 @@ export function createApp(options: AppOptions) {
   const recipientAllowlist = options.recipientAllowlist
     ? new Set(options.recipientAllowlist.map((email) => email.toLowerCase()))
     : undefined;
+  const resendCooldownMilliseconds = (options.resendCooldownSeconds ?? 60) * 1000;
 
   app.use("*", secureHeaders());
   app.use("/v1/*", cors({
@@ -118,6 +131,7 @@ export function createApp(options: AppOptions) {
     );
     const result = await options.repository.requestSubscription({
       subscriberId: randomUUID(),
+      actionId: randomUUID(),
       email: parsed.data.email,
       locale: parsed.data.locale,
       source: parsed.data.source,
@@ -127,19 +141,54 @@ export function createApp(options: AppOptions) {
       tokenHash: hashToken(token),
       expiresAt,
       requestedAt,
+      cooldownBefore: new Date(requestedAt.getTime() - resendCooldownMilliseconds),
     });
 
-    if (result.shouldSendConfirmation) {
+    if (result === "send-confirmation") {
       const confirmationPath = parsed.data.locale === "pt-BR"
         ? "/pt-br/newsletter/confirm"
         : "/newsletter/confirm";
-      await options.provider.sendConfirmation({
-        email: parsed.data.email,
-        locale: parsed.data.locale,
-        confirmationUrl: `${options.webUrl}${confirmationPath}?token=${encodeURIComponent(token)}`,
-      });
+      try {
+        await options.provider.sendConfirmation({
+          email: parsed.data.email,
+          locale: parsed.data.locale,
+          confirmationUrl: `${options.webUrl}${confirmationPath}?token=${encodeURIComponent(token)}`,
+        });
+      } catch (error) {
+        await options.repository.discardUnsentAction(hashToken(token));
+        throw error;
+      }
+    } else if (result === "send-management") {
+      await sendManagementEmail(parsed.data.email, parsed.data.locale);
     }
     return accepted(context);
+  });
+
+  app.post("/v1/subscriptions/manage", async (context) => {
+    const ip = clientIp(context.req.header("x-forwarded-for"), context.req.header("x-real-ip"));
+    const allowance = limiter.consume(ip);
+    if (!allowance.allowed) {
+      context.header("Retry-After", String(allowance.retryAfterSeconds));
+      return context.json({ ok: false, error: "Too many attempts. Please try again later." }, 429);
+    }
+
+    let body: unknown;
+    try {
+      body = await context.req.json();
+    } catch {
+      return context.json({ ok: false, error: "Expected a JSON request body." }, 400);
+    }
+    const parsed = managementSchema.safeParse(body);
+    if (!parsed.success) {
+      return context.json({ ok: false, error: "Please enter a valid email address." }, 400);
+    }
+    if (
+      !parsed.data.website &&
+      (!recipientAllowlist || recipientAllowlist.has(parsed.data.email))
+    ) {
+      await sendManagementEmail(parsed.data.email, parsed.data.locale);
+    }
+    return managementAccepted(context);
   });
 
   app.get("/v1/subscriptions/confirm", async (context) => {
@@ -147,9 +196,16 @@ export function createApp(options: AppOptions) {
     if (!token || token.length > 200) {
       return context.redirect(`${options.webUrl}/newsletter/confirmed?status=invalid`, 303);
     }
-    const subscriber = await options.repository.findPendingByTokenHash(hashToken(token), now());
-    if (!subscriber) {
+    const lookup = await options.repository.findConfirmationByTokenHash(hashToken(token), now());
+    if (!lookup) {
       return context.redirect(`${options.webUrl}/newsletter/confirmed?status=invalid`, 303);
+    }
+    const { subscriber } = lookup;
+    const confirmedPath = subscriber.locale === "pt-BR"
+      ? "/pt-br/newsletter/confirmed"
+      : "/newsletter/confirmed";
+    if (lookup.expired) {
+      return context.redirect(`${options.webUrl}${confirmedPath}?status=expired`, 303);
     }
     if (recipientAllowlist && !recipientAllowlist.has(subscriber.email.toLowerCase())) {
       return context.redirect(`${options.webUrl}/newsletter/confirmed?status=invalid`, 303);
@@ -157,16 +213,46 @@ export function createApp(options: AppOptions) {
     const providerContactId = await options.provider.upsertContact(subscriber.email);
     const activated = await options.repository.activateSubscriber(
       subscriber.subscriberId,
+      subscriber.actionId,
       providerContactId,
       now(),
     );
-    const confirmedPath = subscriber.locale === "pt-BR"
-      ? "/pt-br/newsletter/confirmed"
-      : "/newsletter/confirmed";
     return context.redirect(
       `${options.webUrl}${confirmedPath}${activated ? "" : "?status=invalid"}`,
       303,
     );
+  });
+
+  app.post("/v1/subscriptions/unsubscribe", async (context) => {
+    let body: unknown;
+    try {
+      body = await context.req.json();
+    } catch {
+      return context.json({ ok: false, status: "invalid" }, 400);
+    }
+    const parsed = actionTokenSchema.safeParse(body);
+    if (!parsed.success) {
+      return context.json({ ok: false, status: "invalid" }, 400);
+    }
+    const lookup = await options.repository.findUnsubscribeByTokenHash(
+      hashToken(parsed.data.token),
+      now(),
+    );
+    if (!lookup) return context.json({ ok: false, status: "invalid" }, 400);
+    const { subscriber } = lookup;
+    if (lookup.expired) return context.json({ ok: false, status: "expired" }, 410);
+    if (recipientAllowlist && !recipientAllowlist.has(subscriber.email.toLowerCase())) {
+      return context.json({ ok: false, status: "invalid" }, 400);
+    }
+    await options.provider.unsubscribeContact(subscriber.email);
+    const unsubscribed = await options.repository.unsubscribeSubscriber(
+      subscriber.subscriberId,
+      subscriber.actionId,
+      now(),
+    );
+    return unsubscribed
+      ? context.json({ ok: true, status: "unsubscribed" })
+      : context.json({ ok: false, status: "invalid" }, 409);
   });
 
   app.post("/v1/webhooks/resend", async (context) => {
@@ -220,12 +306,50 @@ export function createApp(options: AppOptions) {
   });
 
   return app;
+
+  async function sendManagementEmail(email: string, locale: "en" | "pt-BR") {
+    const token = randomBytes(32).toString("base64url");
+    const requestedAt = now();
+    const expiresAt = new Date(
+      requestedAt.getTime() + (options.actionTtlHours ?? 24) * 60 * 60 * 1000,
+    );
+    const subscriberLocale = await options.repository.requestUnsubscribe({
+      actionId: randomUUID(),
+      email,
+      locale,
+      tokenHash: hashToken(token),
+      expiresAt,
+      requestedAt,
+      cooldownBefore: new Date(requestedAt.getTime() - resendCooldownMilliseconds),
+    });
+    if (!subscriberLocale) return;
+    const managementPath = subscriberLocale === "pt-BR"
+      ? "/pt-br/newsletter/unsubscribe"
+      : "/newsletter/unsubscribe";
+    try {
+      await options.provider.sendSubscriptionManagement({
+        email,
+        locale: subscriberLocale,
+        unsubscribeUrl: `${options.webUrl}${managementPath}?token=${encodeURIComponent(token)}`,
+      });
+    } catch (error) {
+      await options.repository.discardUnsentAction(hashToken(token));
+      throw error;
+    }
+  }
 }
 
 function accepted(context: Context) {
   return context.json({
     ok: true,
-    message: "If this address can subscribe, a confirmation email is on its way.",
+    message: "If we can email this address, confirmation or subscription status is on its way.",
+  }, 202);
+}
+
+function managementAccepted(context: Context) {
+  return context.json({
+    ok: true,
+    message: "If this address is subscribed, a secure management email is on its way.",
   }, 202);
 }
 

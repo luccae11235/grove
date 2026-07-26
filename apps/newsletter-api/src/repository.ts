@@ -1,17 +1,28 @@
 import type {
   BroadcastRecord,
   IssueMetrics,
-  PendingSubscriber,
   RetentionResult,
+  SubscriptionActionLookup,
+  SubscriptionActionRequest,
+  SubscriptionRequestOutcome,
   SubscriberStatus,
   SubscriptionRequest,
   WebhookRecord,
 } from "./domain.js";
 
 export interface NewsletterRepository {
-  requestSubscription(input: SubscriptionRequest): Promise<{ shouldSendConfirmation: boolean }>;
-  findPendingByTokenHash(tokenHash: string, now: Date): Promise<PendingSubscriber | null>;
-  activateSubscriber(subscriberId: string, providerContactId: string, now: Date): Promise<boolean>;
+  requestSubscription(input: SubscriptionRequest): Promise<SubscriptionRequestOutcome>;
+  requestUnsubscribe(input: SubscriptionActionRequest): Promise<"en" | "pt-BR" | null>;
+  discardUnsentAction(tokenHash: string): Promise<void>;
+  findConfirmationByTokenHash(tokenHash: string, now: Date): Promise<SubscriptionActionLookup | null>;
+  findUnsubscribeByTokenHash(tokenHash: string, now: Date): Promise<SubscriptionActionLookup | null>;
+  activateSubscriber(
+    subscriberId: string,
+    actionId: string,
+    providerContactId: string,
+    now: Date,
+  ): Promise<boolean>;
+  unsubscribeSubscriber(subscriberId: string, actionId: string, now: Date): Promise<boolean>;
   recordWebhook(event: WebhookRecord): Promise<boolean>;
   markSubscriberStatusByEmail(email: string, status: SubscriberStatus, now: Date): Promise<void>;
   recordBroadcast(record: BroadcastRecord): Promise<void>;

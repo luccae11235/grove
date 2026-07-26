@@ -2,19 +2,21 @@ import postgres, { type Sql } from "postgres";
 import type {
   BroadcastRecord,
   IssueMetrics,
-  PendingSubscriber,
+  SubscriptionActionLookup,
+  SubscriptionActionRequest,
+  SubscriptionRequestOutcome,
   SubscriberStatus,
   SubscriptionRequest,
   WebhookRecord,
 } from "./domain.js";
 import { emptyIssueMetrics, type NewsletterRepository } from "./repository.js";
 
-type SubscriberRow = {
+type ActionSubscriberRow = {
+  action_id: string;
   subscriber_id: string;
   email: string;
   locale: "en" | "pt-BR";
-  source: string;
-  confirmation_expires_at: Date;
+  expires_at: Date;
 };
 
 export class PostgresNewsletterRepository implements NewsletterRepository {
@@ -28,27 +30,39 @@ export class PostgresNewsletterRepository implements NewsletterRepository {
     });
   }
 
-  async requestSubscription(input: SubscriptionRequest) {
+  async requestSubscription(input: SubscriptionRequest): Promise<SubscriptionRequestOutcome> {
     return this.sql.begin(async (sql) => {
       await sql`SELECT pg_advisory_xact_lock(hashtext(${input.email}))`;
       const existing = await sql<{
         subscriber_id: string;
         status: SubscriberStatus;
-        consent_requested_at: Date;
       }[]>`
-        SELECT subscriber_id, status, consent_requested_at
+        SELECT subscriber_id, status
         FROM newsletter_subscribers
         WHERE email = ${input.email}
         FOR UPDATE
       `;
       if (existing[0]?.status === "active") {
-        return { shouldSendConfirmation: false };
+        return "send-management";
       }
       if (
-        existing[0]?.status === "pending" &&
-        input.requestedAt.getTime() - existing[0].consent_requested_at.getTime() < 10 * 60 * 1000
+        existing[0] &&
+        ["bounced", "complained", "suppressed"].includes(existing[0].status)
       ) {
-        return { shouldSendConfirmation: false };
+        return "blocked";
+      }
+      if (existing[0]?.status === "pending") {
+        const recent = await sql<{ action_id: string }[]>`
+          SELECT action_id
+          FROM newsletter_subscription_actions
+          WHERE subscriber_id = ${existing[0].subscriber_id}
+            AND action_type = 'confirm'
+            AND used_at IS NULL
+            AND requested_at > ${input.cooldownBefore}
+          ORDER BY requested_at DESC
+          LIMIT 1
+        `;
+        if (recent.length > 0) return "cooldown";
       }
 
       await sql`
@@ -61,8 +75,8 @@ export class PostgresNewsletterRepository implements NewsletterRepository {
           ${existing[0]?.subscriber_id ?? input.subscriberId}, ${input.email}, 'pending',
           ${input.locale}, ${input.source}, ${input.utmSource ?? null},
           ${input.utmMedium ?? null}, ${input.utmCampaign ?? null},
-          ${input.tokenHash}, ${input.expiresAt}, ${input.requestedAt},
-          ${input.requestedAt}, ${input.requestedAt}
+          ${input.tokenHash}, ${input.expiresAt},
+          ${input.requestedAt}, ${input.requestedAt}, ${input.requestedAt}
         )
         ON CONFLICT (email) DO UPDATE SET
           status = 'pending',
@@ -74,45 +88,213 @@ export class PostgresNewsletterRepository implements NewsletterRepository {
           confirmation_token_hash = EXCLUDED.confirmation_token_hash,
           confirmation_expires_at = EXCLUDED.confirmation_expires_at,
           consent_requested_at = EXCLUDED.consent_requested_at,
+          confirmed_at = CASE
+            WHEN newsletter_subscribers.status = 'unsubscribed' THEN NULL
+            ELSE newsletter_subscribers.confirmed_at
+          END,
           updated_at = EXCLUDED.updated_at
       `;
-      return { shouldSendConfirmation: true };
+      await sql`
+        INSERT INTO newsletter_subscription_actions (
+          action_id, subscriber_id, action_type, token_hash,
+          expires_at, requested_at
+        ) VALUES (
+          ${input.actionId}, ${existing[0]?.subscriber_id ?? input.subscriberId},
+          'confirm', ${input.tokenHash}, ${input.expiresAt}, ${input.requestedAt}
+        )
+      `;
+      return "send-confirmation";
     });
   }
 
-  async findPendingByTokenHash(tokenHash: string, now: Date): Promise<PendingSubscriber | null> {
-    const rows = await this.sql<SubscriberRow[]>`
-      SELECT subscriber_id, email, locale, source, confirmation_expires_at
-      FROM newsletter_subscribers
-      WHERE confirmation_token_hash = ${tokenHash}
-        AND status = 'pending'
-        AND confirmation_expires_at > ${now}
+  async requestUnsubscribe(input: SubscriptionActionRequest) {
+    return this.sql.begin(async (sql) => {
+      await sql`SELECT pg_advisory_xact_lock(hashtext(${input.email}))`;
+      const subscribers = await sql<{ subscriber_id: string; locale: "en" | "pt-BR" }[]>`
+        SELECT subscriber_id, locale
+        FROM newsletter_subscribers
+        WHERE email = ${input.email} AND status = 'active'
+        FOR UPDATE
+      `;
+      const subscriber = subscribers[0];
+      if (!subscriber) return null;
+      const recent = await sql<{ action_id: string }[]>`
+        SELECT action_id
+        FROM newsletter_subscription_actions
+        WHERE subscriber_id = ${subscriber.subscriber_id}
+          AND action_type = 'unsubscribe'
+          AND used_at IS NULL
+          AND requested_at > ${input.cooldownBefore}
+        ORDER BY requested_at DESC
+        LIMIT 1
+      `;
+      if (recent.length > 0) return null;
+      await sql`
+        INSERT INTO newsletter_subscription_actions (
+          action_id, subscriber_id, action_type, token_hash,
+          expires_at, requested_at
+        ) VALUES (
+          ${input.actionId}, ${subscriber.subscriber_id}, 'unsubscribe',
+          ${input.tokenHash}, ${input.expiresAt}, ${input.requestedAt}
+        )
+      `;
+      return subscriber.locale;
+    });
+  }
+
+  async discardUnsentAction(tokenHash: string) {
+    await this.sql.begin(async (sql) => {
+      const removed = await sql<{
+        subscriber_id: string;
+        action_type: "confirm" | "unsubscribe";
+      }[]>`
+        DELETE FROM newsletter_subscription_actions
+        WHERE token_hash = ${tokenHash} AND used_at IS NULL
+        RETURNING subscriber_id, action_type
+      `;
+      if (removed[0]?.action_type !== "confirm") return;
+      await sql`
+        UPDATE newsletter_subscribers
+        SET confirmation_token_hash = replacement.token_hash,
+            confirmation_expires_at = replacement.expires_at
+        FROM LATERAL (
+          SELECT token_hash, expires_at
+          FROM newsletter_subscription_actions
+          WHERE subscriber_id = ${removed[0].subscriber_id}
+            AND action_type = 'confirm'
+            AND used_at IS NULL
+          ORDER BY requested_at DESC
+          LIMIT 1
+        ) replacement
+        WHERE newsletter_subscribers.subscriber_id = ${removed[0].subscriber_id}
+      `;
+      const replacement = await sql<{ token_hash: string }[]>`
+        SELECT token_hash
+        FROM newsletter_subscription_actions
+        WHERE subscriber_id = ${removed[0].subscriber_id}
+          AND action_type = 'confirm'
+          AND used_at IS NULL
+        LIMIT 1
+      `;
+      if (replacement.length === 0) {
+        await sql`
+          UPDATE newsletter_subscribers
+          SET confirmation_token_hash = NULL,
+              confirmation_expires_at = NULL
+          WHERE subscriber_id = ${removed[0].subscriber_id}
+        `;
+      }
+    });
+  }
+
+  async findConfirmationByTokenHash(
+    tokenHash: string,
+    now: Date,
+  ): Promise<SubscriptionActionLookup | null> {
+    return this.findActionByTokenHash("confirm", "pending", tokenHash, now);
+  }
+
+  async findUnsubscribeByTokenHash(
+    tokenHash: string,
+    now: Date,
+  ): Promise<SubscriptionActionLookup | null> {
+    return this.findActionByTokenHash("unsubscribe", "active", tokenHash, now);
+  }
+
+  private async findActionByTokenHash(
+    actionType: "confirm" | "unsubscribe",
+    status: "pending" | "active",
+    tokenHash: string,
+    now: Date,
+  ): Promise<SubscriptionActionLookup | null> {
+    const rows = await this.sql<ActionSubscriberRow[]>`
+      SELECT actions.action_id, subscribers.subscriber_id, subscribers.email,
+             subscribers.locale, actions.expires_at
+      FROM newsletter_subscription_actions actions
+      JOIN newsletter_subscribers subscribers
+        ON subscribers.subscriber_id = actions.subscriber_id
+      WHERE actions.token_hash = ${tokenHash}
+        AND actions.action_type = ${actionType}
+        AND actions.used_at IS NULL
+        AND subscribers.status = ${status}
       LIMIT 1
     `;
     const row = rows[0];
     if (!row) return null;
     return {
-      subscriberId: row.subscriber_id,
-      email: row.email,
-      locale: row.locale,
-      source: row.source,
-      expiresAt: row.confirmation_expires_at,
+      subscriber: {
+        actionId: row.action_id,
+        subscriberId: row.subscriber_id,
+        email: row.email,
+        locale: row.locale,
+        expiresAt: row.expires_at,
+      },
+      expired: row.expires_at.getTime() <= now.getTime(),
     };
   }
 
-  async activateSubscriber(subscriberId: string, providerContactId: string, now: Date) {
-    const rows = await this.sql<{ subscriber_id: string }[]>`
-      UPDATE newsletter_subscribers
-      SET status = 'active',
-          confirmation_token_hash = NULL,
-          confirmation_expires_at = NULL,
-          confirmed_at = COALESCE(confirmed_at, ${now}),
-          provider_contact_id = ${providerContactId},
-          updated_at = ${now}
-      WHERE subscriber_id = ${subscriberId} AND status = 'pending'
-      RETURNING subscriber_id
-    `;
-    return rows.length === 1;
+  async activateSubscriber(
+    subscriberId: string,
+    actionId: string,
+    providerContactId: string,
+    now: Date,
+  ) {
+    return this.sql.begin(async (sql) => {
+      const rows = await sql<{ subscriber_id: string }[]>`
+        UPDATE newsletter_subscribers
+        SET status = 'active',
+            confirmation_token_hash = NULL,
+            confirmation_expires_at = NULL,
+            confirmed_at = ${now},
+            provider_contact_id = ${providerContactId},
+            updated_at = ${now}
+        WHERE subscriber_id = ${subscriberId}
+          AND status = 'pending'
+          AND EXISTS (
+            SELECT 1 FROM newsletter_subscription_actions
+            WHERE action_id = ${actionId}
+              AND subscriber_id = ${subscriberId}
+              AND action_type = 'confirm'
+              AND used_at IS NULL
+              AND expires_at > ${now}
+          )
+        RETURNING subscriber_id
+      `;
+      if (rows.length !== 1) return false;
+      await sql`
+        UPDATE newsletter_subscription_actions
+        SET used_at = ${now}
+        WHERE action_id = ${actionId}
+      `;
+      return true;
+    });
+  }
+
+  async unsubscribeSubscriber(subscriberId: string, actionId: string, now: Date) {
+    return this.sql.begin(async (sql) => {
+      const rows = await sql<{ subscriber_id: string }[]>`
+        UPDATE newsletter_subscribers
+        SET status = 'unsubscribed', updated_at = ${now}
+        WHERE subscriber_id = ${subscriberId}
+          AND status = 'active'
+          AND EXISTS (
+            SELECT 1 FROM newsletter_subscription_actions
+            WHERE action_id = ${actionId}
+              AND subscriber_id = ${subscriberId}
+              AND action_type = 'unsubscribe'
+              AND used_at IS NULL
+              AND expires_at > ${now}
+          )
+        RETURNING subscriber_id
+      `;
+      if (rows.length !== 1) return false;
+      await sql`
+        UPDATE newsletter_subscription_actions
+        SET used_at = ${now}
+        WHERE action_id = ${actionId}
+      `;
+      return true;
+    });
   }
 
   async recordWebhook(event: WebhookRecord) {
@@ -268,6 +450,10 @@ export class PostgresNewsletterRepository implements NewsletterRepository {
         DELETE FROM newsletter_subscribers
         WHERE status = 'pending' AND consent_requested_at < ${pendingBefore}
         RETURNING subscriber_id
+      `;
+      await sql`
+        DELETE FROM newsletter_subscription_actions
+        WHERE expires_at < ${pendingBefore}
       `;
       const events = await sql<{ svix_id: string }[]>`
         DELETE FROM newsletter_events

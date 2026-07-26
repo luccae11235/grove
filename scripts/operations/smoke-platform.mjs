@@ -137,6 +137,54 @@ export async function runSmoke(arguments_, dependencies = {}) {
     }
   });
 
+  await check(checks, "subscription recovery pages and safe API boundaries are available", async () => {
+    for (const path of [
+      "/newsletter/manage/",
+      "/newsletter/unsubscribe/",
+      "/pt-br/newsletter/",
+      "/pt-br/newsletter/manage/",
+      "/pt-br/newsletter/unsubscribe/",
+    ]) {
+      const response = await request(`${webUrl}${path}`);
+      assertStatus(response, 200);
+      assertHtml(response);
+    }
+
+    const recoveryPage = await request(`${webUrl}/newsletter/manage/`);
+    const recoveryHtml = await recoveryPage.text();
+    if (!recoveryHtml.includes(`${apiUrl}/v1/subscriptions/manage`)) {
+      throw new Error("management page does not expose the configured recovery endpoint");
+    }
+
+    for (const [path, body] of [
+      ["/v1/subscriptions", {
+        email: "smoke@example.com",
+        locale: "en",
+        source: "platform-smoke",
+        website: "https://honeypot.invalid",
+      }],
+      ["/v1/subscriptions/manage", {
+        email: "smoke@example.com",
+        locale: "en",
+        website: "https://honeypot.invalid",
+      }],
+    ]) {
+      const response = await request(`${apiUrl}${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Origin: webUrl },
+        body: JSON.stringify(body),
+      });
+      assertStatus(response, 202);
+    }
+
+    const invalidUnsubscribe = await request(`${apiUrl}/v1/subscriptions/unsubscribe`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Origin: webUrl },
+      body: JSON.stringify({ token: "platform-smoke-invalid-token" }),
+    });
+    assertStatus(invalidUnsubscribe, 400);
+  });
+
   if (arguments_.expectedAudience !== "either") {
     await check(checks, "newsletter audience policy matches the API configuration", async () => {
       if (health.audienceMode !== arguments_.expectedAudience) {

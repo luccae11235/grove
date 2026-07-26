@@ -8,6 +8,7 @@ export type SubscriberStatus =
 
 export interface SubscriptionRequest {
   subscriberId: string;
+  actionId: string;
   email: string;
   locale: "en" | "pt-BR";
   source: string;
@@ -17,14 +18,36 @@ export interface SubscriptionRequest {
   tokenHash: string;
   expiresAt: Date;
   requestedAt: Date;
+  cooldownBefore: Date;
 }
 
-export interface PendingSubscriber {
+export type SubscriptionRequestOutcome =
+  | "send-confirmation"
+  | "send-management"
+  | "cooldown"
+  | "blocked";
+
+export interface SubscriptionActionRequest {
+  actionId: string;
+  email: string;
+  locale: "en" | "pt-BR";
+  tokenHash: string;
+  expiresAt: Date;
+  requestedAt: Date;
+  cooldownBefore: Date;
+}
+
+export interface SubscriptionActionSubscriber {
+  actionId: string;
   subscriberId: string;
   email: string;
   locale: "en" | "pt-BR";
-  source: string;
   expiresAt: Date;
+}
+
+export interface SubscriptionActionLookup {
+  subscriber: SubscriptionActionSubscriber;
+  expired: boolean;
 }
 
 export interface WebhookRecord {
