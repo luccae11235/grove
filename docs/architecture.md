@@ -32,6 +32,12 @@ arquivo web, HTML de e-mail, texto puro e manifesto de entrega. A API em
 Resend e ingere webhooks assinados sem armazenar o e-mail na tabela analítica.
 Publicar o site nunca dispara uma campanha.
 
+`apps/observability-api/` recebe apenas medição de leitura após opt-in. Ele
+compartilha o PostgreSQL do mesmo ambiente para permitir que um token temporário
+de confirmação ligue o navegador consentido ao id de assinante. Staging e
+produção mantêm bancos, segredos e origens separados, e não existe endpoint
+público de consulta.
+
 ## Fluxo de dados
 
 ```mermaid

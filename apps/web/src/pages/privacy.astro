@@ -10,7 +10,7 @@ const privacyContact = import.meta.env.PUBLIC_PRIVACY_CONTACT_EMAIL?.trim();
   translations={{ en: "/privacy", "pt-BR": "/pt-br/privacy" }}
 >
   <header class="page-header">
-    <p class="eyebrow">Last updated · July 18, 2026</p>
+    <p class="eyebrow">Last updated · July 28, 2026</p>
     <h1>Privacy at Aflora</h1>
     <p class="lede">The newsletter collects only what is needed to confirm consent, deliver each issue, and understand whether delivery is healthy.</p>
   </header>
@@ -24,8 +24,14 @@ const privacyContact = import.meta.env.PUBLIC_PRIVACY_CONTACT_EMAIL?.trim();
     <p>Confirmed addresses are synchronized to Resend, which sends confirmation messages and newsletter issues. Railway hosts the website, API, and PostgreSQL database.</p>
     <p>Signed Resend webhooks report sends, deliveries, opens, clicks, bounces, complaints, suppressions, and subscription changes. The analytics table stores a keyed recipient hash—not the email address—along with the event type, time, broadcast id, and clicked URL when applicable. Opens can be distorted by privacy proxies and image blocking.</p>
 
+    <h2>Optional readership measurement</h2>
+    <p>Aflora does not measure your reading activity unless you accept the measurement prompt. If you accept, Aflora creates a random browser identifier and records page views, active foreground reading time, scroll completion, broad device class, locale, campaign parameters, learning-lab starts, selected calls to action, browser performance, and sanitized error categories.</p>
+    <p>Aflora does not store your network address, full browser signature, typed text, pointer movements, or a replay of the page. External referrals are reduced to the referring hostname; same-site referrals retain only the path.</p>
+    <p>If you confirm a newsletter subscription in a browser that has accepted measurement, a short-lived, single-use token may connect that browser identifier to your subscriber id. The token contains no email address and does not recognize you across other browsers or devices.</p>
+
     <h2>Retention and control</h2>
-    <p>Unconfirmed requests older than 30 days and delivery events older than 400 days are eligible for deletion. Consent and suppression records are retained to document permission and prevent unwanted future delivery. Every issue includes an unsubscribe link.</p>
+    <p>Unconfirmed requests older than 30 days, delivery events older than 400 days, and person-level readership activity older than 400 days are deleted under the retention process. Before old readership records are removed, non-identifying daily article totals may be retained. Consent and suppression records are retained to document permission and prevent unwanted future delivery. Every issue includes an unsubscribe link.</p>
+    <p>Use the “Measurement settings” control on any page to reject or withdraw analytics. Withdrawal stops collection, removes the browser identifier, and requests deletion of its person-level activity. Newsletter subscription and analytics consent are independent.</p>
     <p>You may ask to access or delete your data. Verified deletion requests may retain the minimum suppression record needed to ensure Aflora does not email the address again.</p>
 
     <h2>Contact</h2>

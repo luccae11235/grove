@@ -7,6 +7,7 @@ export async function runSmoke(arguments_, dependencies = {}) {
     throw new Error(
       "Usage: pnpm operations:smoke --web-url <origin> --api-url <origin> " +
       "[--expect-signup-form enabled|disabled|either] " +
+      "[--observability-url <origin>] [--expect-observability enabled|disabled|either] " +
       "[--expect-audience restricted|public|either] " +
       "[--expect-release-sha <sha>] [--wait-seconds <seconds>]",
     );
@@ -17,6 +18,9 @@ export async function runSmoke(arguments_, dependencies = {}) {
   const now = dependencies.now ?? Date.now;
   const webUrl = normalizeOrigin(arguments_.webUrl, "--web-url");
   const apiUrl = normalizeOrigin(arguments_.apiUrl, "--api-url");
+  const observabilityUrl = arguments_.observabilityUrl
+    ? normalizeOrigin(arguments_.observabilityUrl, "--observability-url")
+    : undefined;
   const checks = [];
 
   if (arguments_.expectedReleaseSha) {
@@ -185,6 +189,53 @@ export async function runSmoke(arguments_, dependencies = {}) {
     assertStatus(invalidUnsubscribe, 400);
   });
 
+  if (observabilityUrl) {
+    await check(checks, "observability health reaches PostgreSQL", async () => {
+      const response = await request(`${observabilityUrl}/health`);
+      assertStatus(response, 200);
+      const body = await response.json();
+      if (body.status !== "ok") throw new Error("observability health did not return ok");
+    });
+    await check(checks, "observability CORS accepts only the website origin", async () => {
+      const allowed = await request(`${observabilityUrl}/v1/visitors`, {
+        method: "OPTIONS",
+        headers: {
+          Origin: webUrl,
+          "Access-Control-Request-Method": "POST",
+          "Access-Control-Request-Headers": "content-type",
+        },
+      });
+      if (allowed.headers.get("access-control-allow-origin") !== webUrl) {
+        throw new Error("configured website origin was not allowed by observability");
+      }
+      const rejected = await request(`${observabilityUrl}/v1/visitors`, {
+        method: "OPTIONS",
+        headers: {
+          Origin: "https://untrusted.invalid",
+          "Access-Control-Request-Method": "POST",
+        },
+      });
+      if (rejected.headers.get("access-control-allow-origin")) {
+        throw new Error("an untrusted origin received an observability CORS header");
+      }
+    });
+  }
+
+  if (arguments_.expectedObservability !== "either") {
+    await check(checks, "website observability switch matches configuration", async () => {
+      const response = await request(`${webUrl}/`);
+      assertStatus(response, 200);
+      const body = await response.text();
+      const enabled = body.includes("analytics-consent");
+      if (arguments_.expectedObservability === "enabled" && !enabled) {
+        throw new Error("observability was expected to be enabled but consent UI is absent");
+      }
+      if (arguments_.expectedObservability === "disabled" && enabled) {
+        throw new Error("observability was expected to be disabled but consent UI is present");
+      }
+    });
+  }
+
   if (arguments_.expectedAudience !== "either") {
     await check(checks, "newsletter audience policy matches the API configuration", async () => {
       if (health.audienceMode !== arguments_.expectedAudience) {
@@ -195,19 +246,25 @@ export async function runSmoke(arguments_, dependencies = {}) {
     });
   }
 
-  return { ok: true, webUrl, apiUrl, checks };
+  return { ok: true, webUrl, apiUrl, observabilityUrl, checks };
 }
 
 export function parseArguments(values) {
   const result = {
     expectedAudience: "either",
     expectedSignupForm: "either",
+    expectedObservability: "either",
     waitSeconds: 0,
   };
   for (let index = 0; index < values.length; index += 1) {
     const argument = values[index];
     if (argument === "--web-url") result.webUrl = requiredValue(values, ++index, argument);
     else if (argument === "--api-url") result.apiUrl = requiredValue(values, ++index, argument);
+    else if (argument === "--observability-url") {
+      result.observabilityUrl = requiredValue(values, ++index, argument);
+    } else if (argument === "--expect-observability") {
+      result.expectedObservability = requiredValue(values, ++index, argument);
+    }
     else if (argument === "--expect-signup-form" || argument === "--expect-signup") {
       result.expectedSignupForm = requiredValue(values, ++index, argument);
     } else if (argument === "--expect-audience") {
@@ -220,6 +277,11 @@ export function parseArguments(values) {
       throw new Error(`Unknown argument: ${argument}`);
     }
   }
+  assertChoice(
+    result.expectedObservability,
+    ["enabled", "disabled", "either"],
+    "--expect-observability",
+  );
   assertChoice(
     result.expectedSignupForm,
     ["enabled", "disabled", "either"],

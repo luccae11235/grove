@@ -46,6 +46,20 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: grove
+          POSTGRES_PASSWORD: grove
+          POSTGRES_DB: grove_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U grove -d grove_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
@@ -68,7 +82,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run Python and workspace tests
-        run: pnpm test
+        env:
+          DATABASE_URL: postgresql://grove:grove@127.0.0.1:5432/grove_test
+          TEST_DATABASE_URL: postgresql://grove:grove@127.0.0.1:5432/grove_test
+        run: |
+          pnpm --filter @grove/newsletter-api build
+          pnpm newsletter:migrate
+          pnpm test
 
   build:
     name: Production build
@@ -100,6 +120,59 @@ jobs:
 
       - name: Build the production site
         run: pnpm build
+
+  browser:
+    name: Browser acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: grove
+          POSTGRES_PASSWORD: grove
+          POSTGRES_DB: grove_browser
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U grove -d grove_browser"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @grove/web exec playwright install chromium --with-deps
+      - name: Build services and apply additive migrations
+        env:
+          DATABASE_URL: postgresql://grove:grove@127.0.0.1:5432/grove_browser
+        run: |
+          pnpm --filter @grove/newsletter-api build
+          pnpm newsletter:migrate
+          pnpm --filter @grove/observability-api build
+          pnpm observability:migrate
+      - name: Build the consent-enabled website
+        env:
+          PUBLIC_OBSERVABILITY_ENABLED: "true"
+          PUBLIC_OBSERVABILITY_API_URL: http://127.0.0.1:3001
+          PUBLIC_OBSERVABILITY_CONSENT_VERSION: 2026-07
+        run: pnpm build
+      - name: Run browser acceptance
+        env:
+          DATABASE_URL: postgresql://grove:grove@127.0.0.1:5432/grove_browser
+          DEPLOYMENT_ENV: development
+          ALLOWED_ORIGINS: http://127.0.0.1:4322
+          OBSERVABILITY_LINK_SECRET: observability-test-secret-at-least-32-characters
+          CONSENT_VERSION: 2026-07
+        run: pnpm --filter @grove/web test:browser
 
   newsletter-preview:
     name: Newsletter preview

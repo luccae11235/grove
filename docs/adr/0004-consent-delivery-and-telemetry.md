@@ -24,6 +24,12 @@ delivery telemetry also require a durable, privacy-conscious record.
 - Delivery requires a published issue, a physical address, unsubscribe markers,
   an exact command confirmation, and a separate protected workflow.
 - Metrics store a keyed recipient hash rather than an email address.
+- Readership measurement is a separate first-party service and remains disabled
+  until the reader explicitly accepts it.
+- A random browser profile may be linked to a subscriber only through the
+  short-lived, single-use token issued on the confirmation browser. Raw
+  readership activity is retained for 400 days; non-identifying daily article
+  totals may remain longer.
 
 ## Consequences
 
@@ -34,3 +40,6 @@ auditing, and performance reports are explicit and testable.
 
 In-memory rate limiting assumes one API replica for the initial launch. Scaling
 the service horizontally requires a shared limiter before adding replicas.
+The same one-replica constraint applies to the initial observability service.
+Rejecting or withdrawing measurement never affects article access or newsletter
+subscription.

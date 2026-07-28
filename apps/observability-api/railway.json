@@ -1,0 +1,22 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "/apps/observability-api/Dockerfile",
+    "watchPatterns": [
+      "/apps/observability-api/**",
+      "/package.json",
+      "/pnpm-lock.yaml",
+      "/pnpm-workspace.yaml",
+      "/tsconfig.base.json"
+    ]
+  },
+  "deploy": {
+    "preDeployCommand": ["pnpm --filter @grove/observability-api migrate"],
+    "startCommand": "pnpm --filter @grove/observability-api start",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 120,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 5
+  }
+}

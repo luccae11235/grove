@@ -12,10 +12,12 @@ interface Props {
 const { kind } = Astro.props;
 ---
 
-{kind === "split" ? (
-  <RegressionSplitPlayground client:load />
-) : kind === "features" ? (
-  <MultiFeatureRegressionPlayground client:load />
-) : (
-  <RegressionTreeGrowthPlayground client:load />
-)}
+<div data-analytics-lab={`regression-${kind}`}>
+  {kind === "split" ? (
+    <RegressionSplitPlayground client:load />
+  ) : kind === "features" ? (
+    <MultiFeatureRegressionPlayground client:load />
+  ) : (
+    <RegressionTreeGrowthPlayground client:load />
+  )}
+</div>
