@@ -82,6 +82,7 @@ references for longer-term editorial direction.
   - [x] Integrate the checkpoint grid and its single optimal-trajectory action.
   - [x] Integrate the compact checkpoint proxy-learning playground and reward
     history.
+  - [x] Integrate the matching checkpoint aligned-learning playground.
   - [ ] Review the rewritten article in staging and integrate each deferred
     visualization or playground where its placeholder supports a specific
     learning objective.

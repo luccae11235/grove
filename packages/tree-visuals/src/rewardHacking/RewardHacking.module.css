@@ -386,6 +386,10 @@
   font-variant-numeric: tabular-nums;
 }
 
+.learningChartHeading .learningChartValueAligned {
+  color: var(--aligned);
+}
+
 .learningChart svg {
   display: block;
   width: 100%;
@@ -414,8 +418,16 @@
   stroke-width: 2;
 }
 
+.chartLineAligned {
+  stroke: var(--aligned);
+}
+
 .chartPoint {
   fill: var(--proxy);
+}
+
+.chartPointAligned {
+  fill: var(--aligned);
 }
 
 .chartLabel {

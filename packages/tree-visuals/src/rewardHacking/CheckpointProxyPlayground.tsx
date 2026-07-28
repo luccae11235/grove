@@ -10,6 +10,7 @@ import {
   type CheckpointEvaluation,
   type Position,
 } from "./checkpointMdp";
+import type { RewardMode } from "./engine";
 
 const SNAPSHOT_EPISODES = Array.from({ length: 40 }, (_, index) => (index + 1) * 50);
 const SPEEDS = {
@@ -36,9 +37,11 @@ function compactReward(value: number) {
 function RewardHistory({
   samples,
   visibleCount,
+  rewardMode,
 }: {
   samples: LearningSample[];
   visibleCount: number;
+  rewardMode: RewardMode;
 }) {
   const width = 260;
   const height = 118;
@@ -64,7 +67,13 @@ function RewardHistory({
     <figure className={styles.learningChart}>
       <div className={styles.learningChartHeading}>
         <strong>Reward over training</strong>
-        <span>{latest ? compactReward(latest.evaluation.reward) : "—"}</span>
+        <span
+          className={
+            rewardMode === "aligned" ? styles.learningChartValueAligned : ""
+          }
+        >
+          {latest ? compactReward(latest.evaluation.reward) : "—"}
+        </span>
       </div>
       <svg
         viewBox={`0 0 ${width} ${height}`}
@@ -90,11 +99,18 @@ function RewardHistory({
           y2={y(0)}
         />
         {points ? (
-          <polyline className={styles.chartLine} points={points} />
+          <polyline
+            className={`${styles.chartLine} ${
+              rewardMode === "aligned" ? styles.chartLineAligned : ""
+            }`}
+            points={points}
+          />
         ) : null}
         {latest ? (
           <circle
-            className={styles.chartPoint}
+            className={`${styles.chartPoint} ${
+              rewardMode === "aligned" ? styles.chartPointAligned : ""
+            }`}
             cx={x(latest.episode)}
             cy={y(latest.evaluation.reward)}
             r="3.5"
@@ -133,7 +149,12 @@ function RewardHistory({
   );
 }
 
-export function CheckpointProxyPlayground() {
+function CheckpointLearningPlayground({
+  rewardMode,
+}: {
+  rewardMode: RewardMode;
+}) {
+  const aligned = rewardMode === "aligned";
   const environment = useMemo(
     () => createEnvironment({ ...CHECKPOINT_LAYOUT }),
     [],
@@ -141,18 +162,24 @@ export function CheckpointProxyPlayground() {
   const samples = useMemo<LearningSample[]>(() => {
     const { snapshots } = trainCheckpointSnapshots(
       environment,
-      "proxy",
+      rewardMode,
       SNAPSHOT_EPISODES,
     );
-    return SNAPSHOT_EPISODES.map((episode) => ({
-      episode,
-      evaluation: evaluateCheckpointPolicy(
-        environment,
-        snapshots.get(episode) ?? new Float64Array(),
-        "proxy",
-      ),
-    }));
-  }, [environment]);
+    return SNAPSHOT_EPISODES.map((episode) => {
+      const qValues = snapshots.get(episode);
+      if (!qValues) {
+        throw new Error(`Missing checkpoint snapshot for episode ${episode}.`);
+      }
+      return {
+        episode,
+        evaluation: evaluateCheckpointPolicy(
+          environment,
+          qValues,
+          rewardMode,
+        ),
+      };
+    });
+  }, [environment, rewardMode]);
   const [sampleCount, setSampleCount] = useState(0);
   const [mode, setMode] = useState<PlaybackMode>("idle");
   const [speed, setSpeed] = useState<Speed>("normal");
@@ -248,12 +275,14 @@ export function CheckpointProxyPlayground() {
           ? "Training paused"
           : mode === "replaying"
             ? `Replaying step ${playbackStep} of ${trajectory.length - 1}`
-            : "Optimal proxy policy found";
+            : aligned
+              ? "Ordered-lap policy found"
+              : "Optimal proxy policy found";
 
   return (
     <section
       className={`${styles.lab} ${styles.learningLab}`}
-      aria-label="Checkpoint proxy-reward learning playground"
+      aria-label={`Checkpoint ${aligned ? "aligned" : "proxy"}-reward learning playground`}
     >
       <header className={styles.learningHeader}>
         <div>
@@ -262,7 +291,11 @@ export function CheckpointProxyPlayground() {
         </div>
         <p className={styles.learningReward}>
           Reward seen by the agent
-          <strong>+1 when entering any checkpoint</strong>
+          <strong>
+            {aligned
+              ? "+1 next checkpoint · +10 completed lap"
+              : "+1 when entering any checkpoint"}
+          </strong>
         </p>
       </header>
 
@@ -271,7 +304,7 @@ export function CheckpointProxyPlayground() {
           <div
             className={styles.learningBoard}
             role="grid"
-            aria-label="Seven by seven checkpoint track during proxy-reward learning"
+            aria-label={`Seven by seven checkpoint track during ${aligned ? "aligned" : "proxy"}-reward learning`}
           >
             {Array.from({ length: environment.height }, (_, y) =>
               Array.from({ length: environment.width }, (_, x) => {
@@ -298,6 +331,7 @@ export function CheckpointProxyPlayground() {
                       checkpointIndex >= 0 ? styles.optimalCheckpoint : "",
                       isTrail ? styles.learningTrail : "",
                       checkpointIndex === 0 &&
+                      !aligned &&
                       mode === "complete" &&
                       evaluation?.repeatedEntries
                         ? styles.learningRewarded
@@ -358,7 +392,11 @@ export function CheckpointProxyPlayground() {
             </div>
           </div>
 
-          <RewardHistory samples={samples} visibleCount={sampleCount} />
+          <RewardHistory
+            samples={samples}
+            visibleCount={sampleCount}
+            rewardMode={rewardMode}
+          />
 
           <div className={styles.learningControls}>
             <button
@@ -409,15 +447,33 @@ export function CheckpointProxyPlayground() {
 
       <p className={styles.learningTakeaway}>
         {mode === "complete" && evaluation ? (
-          <>
-            Reward rose to <strong>{compactReward(evaluation.reward)}</strong>,
-            but the policy completed <strong>0 laps</strong>. It learned to
-            leave and re-enter C1 because every return pays again.
-          </>
+          aligned ? (
+            <>
+              Reward reached{" "}
+              <strong>{compactReward(evaluation.reward)}</strong>, and the
+              policy completed the ordered lap in{" "}
+              <strong>{evaluation.steps} steps</strong>. Re-entering old
+              checkpoints no longer pays.
+            </>
+          ) : (
+            <>
+              Reward rose to <strong>{compactReward(evaluation.reward)}</strong>,
+              but the policy completed <strong>0 laps</strong>. It learned to
+              leave and re-enter C1 because every return pays again.
+            </>
+          )
         ) : (
           "Watch whether reward and lap completion improve together as training proceeds."
         )}
       </p>
     </section>
   );
+}
+
+export function CheckpointProxyPlayground() {
+  return <CheckpointLearningPlayground rewardMode="proxy" />;
+}
+
+export function CheckpointAlignedPlayground() {
+  return <CheckpointLearningPlayground rewardMode="aligned" />;
 }

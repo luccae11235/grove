@@ -12,7 +12,7 @@ topic: Reward hacking
 summary: Three small MDPs show how an agent can exploit a missing restriction, manipulate a measurement process, or optimize an incomplete objective.
 status: draft
 readingTime: 20–25 min
-interactiveCount: 2
+interactiveCount: 3
 staticVisualCount: 0
 difficulty: intermediate
 series: reinforcement-learning
@@ -45,7 +45,7 @@ import RewardHackingLab from "../../../components/RewardHackingLab.astro";
   <div className="article-meta" aria-label="Article information">
     <DifficultyBadge difficulty="intermediate" showDescription />
     <span><strong>3</strong> environments</span>
-    <span><strong>2</strong> interactive visualizations</span>
+    <span><strong>3</strong> interactive visualizations</span>
     <span><strong>Draft</strong> · in progress</span>
   </div>
 </header>
@@ -280,10 +280,7 @@ sequence.
 
 Now let us watch the agent learn again.
 
-<aside className="article-visual-placeholder" aria-label="Planned interactive playground placeholder">
-  <strong>Playground placeholder 2</strong>
-  <span>The same checkpoint MDP trained with the aligned reward function.</span>
-</aside>
+<RewardHackingLab kind="checkpoint-aligned" />
 
 Now it is working better.
 

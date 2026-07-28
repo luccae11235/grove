@@ -159,9 +159,9 @@ while omitting another.]
 end on the distinction between what humans meant and what the reward makes
 valuable.]
 
-{The checkpoint optimal-trajectory visualization and proxy playground are
-integrated in staging. The remaining five teaching elements stay as
-placeholders.}
+{The checkpoint optimal-trajectory visualization and both checkpoint learning
+playgrounds are integrated in staging. The remaining four teaching elements
+stay as placeholders.}
 
 ## Visual and Interactive Plan
 
@@ -253,7 +253,8 @@ agent’s loop.
 Takeaway: Repeated entry stops paying when the reward distinguishes the next
 expected checkpoint from arbitrary checkpoint contact.
 
-Visual encoding: Reuse the checkpoint grid and result labels from the proxy
+Visual encoding: Reuse the checkpoint grid, learning readouts,
+reward-over-episodes chart, controls, and result labels from the proxy
 playground so only the reward and learned route change.
 
 Sequence: Present the aligned reward first, then show learning snapshots and the
@@ -265,6 +266,8 @@ Default state: Same grid and starting state as the proxy playground with the
 aligned reward sentence visible.
 
 Controls: Start/pause training, bounded display-speed control, replay, and reset.
+Preserve the proxy playground’s side-by-side desktop layout and stacked
+small-screen layout.
 
 Context: Only the reward function changes from the proxy playground.
 
@@ -416,9 +419,10 @@ components.
 ## Current implementation state
 
 The staging draft contains the complete editor-provided prose and equations.
-The checkpoint optimal-trajectory visualization and checkpoint proxy playground
-are integrated. The reference grid is intentionally compact, and the proxy
-playground places controls, learning readouts, and reward history beside the
-grid on wide screens and below it on narrow screens. The remaining five teaching
-elements are represented by labeled placeholders. The content metadata therefore
-reports zero implemented static visuals and two implemented interactions.
+The checkpoint optimal-trajectory visualization and both checkpoint learning
+playgrounds are integrated. The reference grid is intentionally compact, and
+both playgrounds place controls, learning readouts, and reward history beside
+the grid on wide screens and below it on narrow screens. The remaining four
+teaching elements are represented by labeled placeholders. The content metadata
+therefore reports zero implemented static visuals and three implemented
+interactions.
