@@ -159,8 +159,9 @@ while omitting another.]
 end on the distinction between what humans meant and what the reward makes
 valuable.]
 
-{The checkpoint optimal-trajectory visualization is integrated in staging. The
-remaining six teaching elements stay as placeholders.}
+{The checkpoint optimal-trajectory visualization and proxy playground are
+integrated in staging. The remaining five teaching elements stay as
+placeholders.}
 
 ## Visual and Interactive Plan
 
@@ -212,19 +213,23 @@ C1 loop.
 Takeaway: The agent rationally repeats a rewarded event because the reward does
 not encode order or lap completion.
 
-Visual encoding: The same minimal grid, moving agent, checkpoint labels, concise
-route trace, cumulative reward, and ordered-lap outcome.
+Visual encoding: The same compact grid, moving agent, checkpoint labels, concise
+route trace, cumulative reward, ordered-lap outcome, learning status, and a
+small reward-over-episodes line chart.
 
 Sequence: Begin untrained, show exploration and periodic policy snapshots, then
 replay the final greedy policy.
 
-Focus: Repeated exits from and re-entries into C1 while the lap outcome remains
-incomplete.
+Focus: Repeated exits from and re-entries into C1 while the learned reward rises
+and the lap outcome remains incomplete.
 
 Default state: The proxy reward sentence and full grid are visible before
 training begins.
 
 Controls: Start/pause training, bounded display-speed control, replay, and reset.
+On wide screens the controls and learning readouts sit beside the grid so the
+complete playground fits within a typical laptop viewport. On narrow screens
+the grid and learning panel stack without horizontal scrolling.
 
 Context: The 7 × 7 layout, transitions, tabular Q-learning setup, γ = 0.97, and
 90-step limit remain fixed for the checkpoint comparison.
@@ -411,7 +416,9 @@ components.
 ## Current implementation state
 
 The staging draft contains the complete editor-provided prose and equations.
-The checkpoint optimal-trajectory visualization is integrated with one replayable
-button. The remaining six teaching elements are represented by labeled
-placeholders. The content metadata therefore reports zero implemented static
-visuals and one implemented interaction.
+The checkpoint optimal-trajectory visualization and checkpoint proxy playground
+are integrated. The reference grid is intentionally compact, and the proxy
+playground places controls, learning readouts, and reward history beside the
+grid on wide screens and below it on narrow screens. The remaining five teaching
+elements are represented by labeled placeholders. The content metadata therefore
+reports zero implemented static visuals and two implemented interactions.

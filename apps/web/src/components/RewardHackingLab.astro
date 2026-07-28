@@ -1,6 +1,7 @@
 ---
 import {
   CheckpointLab,
+  CheckpointProxyPlayground,
   OptimalCheckpointTrajectory,
   SensorLab,
   TrafficLab,
@@ -10,6 +11,7 @@ import type { Locale } from "../i18n";
 interface Props {
   kind:
     | "checkpoint-optimal"
+    | "checkpoint-proxy"
     | "checkpoint"
     | "checkpoint-editable"
     | "sensor"
@@ -23,6 +25,8 @@ const { kind, locale = "en" } = Astro.props;
 <div data-analytics-lab={`reward-hacking-${kind}`}>
   {kind === "checkpoint-optimal" ? (
     <OptimalCheckpointTrajectory client:load />
+  ) : kind === "checkpoint-proxy" ? (
+    <CheckpointProxyPlayground client:load />
   ) : kind === "checkpoint" ? (
     <CheckpointLab client:load locale={locale} />
   ) : kind === "checkpoint-editable" ? (
