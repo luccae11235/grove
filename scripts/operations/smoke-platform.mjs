@@ -221,7 +221,7 @@ export async function runSmoke(arguments_, dependencies = {}) {
     });
   }
 
-  if (arguments_.expectedObservability !== "either") {
+  if ((arguments_.expectedObservability ?? "either") !== "either") {
     await check(checks, "website observability switch matches configuration", async () => {
       const response = await request(`${webUrl}/`);
       assertStatus(response, 200);

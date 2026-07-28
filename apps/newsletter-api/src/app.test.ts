@@ -123,7 +123,7 @@ test("successful confirmation includes a short-lived pseudonymous browser link t
   });
   await subscribe(app, { email: "linked@example.com" });
   const confirmationUrl = new URL(provider.confirmations[0].confirmationUrl);
-  const confirmation = await app.request(`${confirmationUrl.pathname}${confirmationUrl.search}`);
+  const confirmation = await app.request(confirmationApiPath(confirmationUrl));
   const location = confirmation.headers.get("location") ?? "";
   assert.match(location, /^https:\/\/aflora\.example\/newsletter\/confirmed#grove-link=/);
   const token = decodeURIComponent(location.split("#grove-link=")[1]);

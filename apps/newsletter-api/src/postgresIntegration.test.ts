@@ -64,7 +64,6 @@ test("PostgreSQL lifecycle backfill is idempotent and state transitions are atom
   const requestedAt = new Date("2026-07-01T12:00:00.000Z");
   await repository.requestSubscription({
     subscriberId,
-    actionId: randomUUID(),
     actionId,
     email: "lifecycle@example.com",
     locale: "pt-BR",
@@ -123,6 +122,7 @@ test("newsletter retention removes stale email data but preserves consent histor
   const old = new Date("2024-01-01T00:00:00.000Z");
   await repository.requestSubscription({
     subscriberId,
+    actionId: randomUUID(),
     email: "stale-pending@example.com",
     locale: "en",
     source: "integration",
