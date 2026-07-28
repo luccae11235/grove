@@ -208,7 +208,8 @@ more profitable than completing the ordered lap.
 Medium: Interactive learning playground.
 
 Reader task: Start training, adjust its display speed, and inspect the learned
-C1 loop.
+C1 loop. Move checkpoints to test whether the same reward-seeking behavior
+emerges in a new layout.
 
 Takeaway: The agent rationally repeats a rewarded event because the reward does
 not encode order or lap completion.
@@ -216,7 +217,9 @@ not encode order or lap completion.
 Visual encoding: The same compact grid, moving agent, checkpoint labels,
 sampled exploratory actions, a toggleable min–max view of the evolving route
 Q-values, concise route trace, cumulative reward, ordered-lap outcome, learning
-status, and a small reward-over-episodes line chart.
+status, and a small reward-over-episodes line chart. Checkpoint labels double as
+minimal drag handles and tap-to-place selectors; no separate layout editor is
+added.
 
 Sequence: Begin untrained, train the Q-table live, sample exploratory actions
 from the current episode while the greedy route and its Q-values evolve, stop
@@ -229,7 +232,10 @@ Default state: The proxy reward sentence and full grid are visible before
 training begins.
 
 Controls: Start/pause training, a 5–150 episodes-per-second range slider,
-show/hide route Q-values, replay, and reset.
+show/hide route Q-values, drag C1–C4 or tap a checkpoint and then a legal open
+cell, keyboard movement, replay, and reset. Moving a checkpoint clears the
+learned Q-table and reward history so the next run learns the changed
+environment from scratch.
 On wide screens the controls and learning readouts sit beside the grid so the
 complete playground fits within a typical laptop viewport. On narrow screens
 the grid and learning panel stack without horizontal scrolling.
@@ -251,7 +257,8 @@ lap completion.
 Medium: Interactive learning playground.
 
 Reader task: Train the same agent and compare its final route with the proxy
-agent’s loop.
+agent’s loop. Move checkpoints and retrain to inspect ordered learning in a new
+layout.
 
 Takeaway: Repeated entry stops paying when the reward distinguishes the next
 expected checkpoint from arbitrary checkpoint contact.
@@ -259,7 +266,8 @@ expected checkpoint from arbitrary checkpoint contact.
 Visual encoding: Reuse the checkpoint grid, sampled exploratory actions,
 toggleable evolving route Q-values, learning readouts, reward-over-episodes
 chart, controls, and result labels from the proxy playground so only the reward
-and learned route change.
+and learned route change. Reuse the same checkpoint-label drag and tap-to-place
+handles without adding a separate editing panel.
 
 Sequence: Present the aligned reward first, then show learning snapshots and the
 final ordered lap.
@@ -270,8 +278,10 @@ Default state: Same grid and starting state as the proxy playground with the
 aligned reward sentence visible.
 
 Controls: Start/pause training, the same 5–150 episodes-per-second range slider,
-show/hide route Q-values, replay, and reset. Preserve the proxy playground’s
-side-by-side desktop layout and stacked small-screen layout.
+show/hide route Q-values, drag C1–C4 or tap a checkpoint and then a legal open
+cell, keyboard movement, replay, and reset. Moving a checkpoint clears prior
+learning. Preserve the proxy playground’s side-by-side desktop layout and
+stacked small-screen layout.
 
 Context: Only the reward function changes from the proxy playground.
 
@@ -426,8 +436,9 @@ The staging draft contains the complete editor-provided prose and equations.
 The checkpoint optimal-trajectory visualization and both checkpoint learning
 playgrounds are integrated. The reference grid is intentionally compact. Both
 learning playgrounds train the Q-table live, expose sampled exploration and
-evolving route Q-values, and place controls, learning readouts, and reward
-history beside the grid on wide screens and below it on narrow screens. The
-remaining four teaching elements are represented by labeled placeholders. The
-content metadata therefore reports zero implemented static visuals and three
-implemented interactions.
+evolving route Q-values, allow checkpoint repositioning directly on the grid,
+and place controls, learning readouts, and reward history beside the grid on
+wide screens and below it on narrow screens. The remaining four teaching
+elements are represented by labeled placeholders. The content metadata
+therefore reports zero implemented static visuals and three implemented
+interactions.

@@ -8,6 +8,8 @@ import {
   createEnvironment,
   evaluateCheckpointPolicy,
   initialState,
+  isPlaceable,
+  optimalCheckpointTrajectory,
   positionKey,
   stateIndex,
   transition,
@@ -251,9 +253,10 @@ function RewardHistory({
 function policyIsOptimal(
   evaluation: CheckpointEvaluation,
   rewardMode: RewardMode,
+  optimalSteps: number,
 ) {
   if (rewardMode === "aligned") {
-    return evaluation.completedLap && evaluation.steps === 16;
+    return evaluation.completedLap && evaluation.steps === optimalSteps;
   }
   return (
     !evaluation.completedLap &&
@@ -268,9 +271,16 @@ function CheckpointLearningPlayground({
   rewardMode: RewardMode;
 }) {
   const aligned = rewardMode === "aligned";
+  const [checkpoints, setCheckpoints] = useState<Position[]>(() =>
+    CHECKPOINT_LAYOUT.checkpoints.map((checkpoint) => ({ ...checkpoint })),
+  );
   const environment = useMemo(
-    () => createEnvironment({ ...CHECKPOINT_LAYOUT }),
-    [],
+    () => createEnvironment({ ...CHECKPOINT_LAYOUT, checkpoints }),
+    [checkpoints],
+  );
+  const optimalSteps = useMemo(
+    () => optimalCheckpointTrajectory(environment).length - 1,
+    [environment],
   );
   const trainerRef = useRef<Trainer<CheckpointState> | null>(null);
   if (!trainerRef.current) {
@@ -291,6 +301,15 @@ function CheckpointLearningPlayground({
   const [speed, setSpeed] = useState(75);
   const [valuesVisible, setValuesVisible] = useState(false);
   const [playbackStep, setPlaybackStep] = useState(0);
+  const [draggingCheckpoint, setDraggingCheckpoint] = useState<number | null>(
+    null,
+  );
+  const [selectedCheckpoint, setSelectedCheckpoint] = useState<number | null>(
+    null,
+  );
+  const [dropTarget, setDropTarget] = useState("");
+  const draggingCheckpointRef = useRef<number | null>(null);
+  const movedByDragRef = useRef(false);
   const stableChecksRef = useRef(0);
   const previousSignatureRef = useRef("");
   const episodeBudgetRef = useRef(0);
@@ -338,6 +357,147 @@ function CheckpointLearningPlayground({
     setSamples([]);
     setPlaybackStep(0);
     setMode(nextMode);
+  }
+
+  function clearLearningForLayoutChange() {
+    trainerRef.current = null;
+    stableChecksRef.current = 0;
+    previousSignatureRef.current = "";
+    episodeBudgetRef.current = 0;
+    previousTickRef.current = 0;
+    visualTickRef.current = 0;
+    setEpisodes(0);
+    setEvaluation(null);
+    setTrainingStep(null);
+    setTrainingTrail([]);
+    setSamples([]);
+    setPlaybackStep(0);
+    setSelectedCheckpoint(null);
+    setMode("idle");
+  }
+
+  function moveCheckpoint(checkpointIndex: number, position: Position) {
+    if (!isPlaceable(environment, position, checkpointIndex)) return;
+    if (
+      positionKey(environment.checkpoints[checkpointIndex]) ===
+      positionKey(position)
+    ) {
+      return;
+    }
+    setCheckpoints((current) =>
+      current.map((checkpoint, index) =>
+        index === checkpointIndex ? { ...position } : checkpoint,
+      ),
+    );
+    setSelectedCheckpoint(null);
+    clearLearningForLayoutChange();
+  }
+
+  function selectCheckpoint(
+    event: React.MouseEvent<HTMLButtonElement>,
+    checkpointIndex: number,
+  ) {
+    event.stopPropagation();
+    if (movedByDragRef.current) {
+      movedByDragRef.current = false;
+      return;
+    }
+    if (mode === "replaying") return;
+    setSelectedCheckpoint((selected) =>
+      selected === checkpointIndex ? null : checkpointIndex,
+    );
+  }
+
+  function placeSelectedCheckpoint(position: Position) {
+    if (selectedCheckpoint === null || mode === "replaying") return;
+    moveCheckpoint(selectedCheckpoint, position);
+  }
+
+  function pointerPosition(clientX: number, clientY: number) {
+    const element = document.elementFromPoint(clientX, clientY);
+    const cell = element?.closest<HTMLElement>("[data-grid-position]");
+    const value = cell?.dataset.gridPosition;
+    if (!value) return null;
+    const [x, y] = value.split(",").map(Number);
+    return Number.isInteger(x) && Number.isInteger(y) ? { x, y } : null;
+  }
+
+  function beginCheckpointDrag(
+    event: React.PointerEvent<HTMLButtonElement>,
+    checkpointIndex: number,
+  ) {
+    if (mode === "replaying") return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    movedByDragRef.current = false;
+    draggingCheckpointRef.current = checkpointIndex;
+    setDraggingCheckpoint(checkpointIndex);
+    setDropTarget(positionKey(environment.checkpoints[checkpointIndex]));
+  }
+
+  function updateCheckpointDrag(
+    event: React.PointerEvent<HTMLButtonElement>,
+  ) {
+    const checkpointIndex = draggingCheckpointRef.current;
+    if (checkpointIndex === null) return;
+    const position = pointerPosition(event.clientX, event.clientY);
+    setDropTarget(
+      position && isPlaceable(environment, position, checkpointIndex)
+        ? positionKey(position)
+        : "",
+    );
+  }
+
+  function finishCheckpointDrag(
+    event: React.PointerEvent<HTMLButtonElement>,
+  ) {
+    const checkpointIndex = draggingCheckpointRef.current;
+    if (checkpointIndex === null) return;
+    const position = pointerPosition(event.clientX, event.clientY);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    draggingCheckpointRef.current = null;
+    setDraggingCheckpoint(null);
+    setDropTarget("");
+    if (
+      position &&
+      positionKey(position) !==
+        positionKey(environment.checkpoints[checkpointIndex])
+    ) {
+      movedByDragRef.current = true;
+      moveCheckpoint(checkpointIndex, position);
+    }
+  }
+
+  function cancelCheckpointDrag(
+    event: React.PointerEvent<HTMLButtonElement>,
+  ) {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    draggingCheckpointRef.current = null;
+    setDraggingCheckpoint(null);
+    setDropTarget("");
+  }
+
+  function moveCheckpointWithKeyboard(
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    checkpointIndex: number,
+  ) {
+    const directions: Record<string, Position> = {
+      ArrowUp: { x: 0, y: -1 },
+      ArrowRight: { x: 1, y: 0 },
+      ArrowDown: { x: 0, y: 1 },
+      ArrowLeft: { x: -1, y: 0 },
+    };
+    const direction = directions[event.key];
+    if (!direction || mode === "replaying") return;
+    event.preventDefault();
+    const checkpoint = environment.checkpoints[checkpointIndex];
+    moveCheckpoint(checkpointIndex, {
+      x: checkpoint.x + direction.x,
+      y: checkpoint.y + direction.y,
+    });
   }
 
   useEffect(() => {
@@ -397,7 +557,7 @@ function CheckpointLearningPlayground({
         const lastEpisode = current.at(-1)?.episode ?? 0;
         if (
           nextEpisodes - lastEpisode < HISTORY_INTERVAL &&
-          !policyIsOptimal(nextEvaluation, rewardMode) &&
+          !policyIsOptimal(nextEvaluation, rewardMode, optimalSteps) &&
           !trainer.finished
         ) {
           return current;
@@ -405,7 +565,7 @@ function CheckpointLearningPlayground({
         return [...current, { episode: nextEpisodes, evaluation: nextEvaluation }];
       });
 
-      if (policyIsOptimal(nextEvaluation, rewardMode)) {
+      if (policyIsOptimal(nextEvaluation, rewardMode, optimalSteps)) {
         const signature = nextEvaluation.actions.join(",");
         stableChecksRef.current =
           signature === previousSignatureRef.current
@@ -429,7 +589,7 @@ function CheckpointLearningPlayground({
     }, TRAINING_TICK_MS);
 
     return () => window.clearInterval(interval);
-  }, [environment, mode, rewardMode]);
+  }, [environment, mode, optimalSteps, rewardMode]);
 
   useEffect(() => {
     if (mode !== "replaying") return undefined;
@@ -445,6 +605,7 @@ function CheckpointLearningPlayground({
   }, [mode, playbackStep, policyFrames.length]);
 
   function toggleTraining() {
+    setSelectedCheckpoint(null);
     if (mode === "training") {
       setMode("paused");
       return;
@@ -458,6 +619,7 @@ function CheckpointLearningPlayground({
 
   function replayPolicy() {
     if (!evaluation) return;
+    setSelectedCheckpoint(null);
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -593,7 +755,7 @@ function CheckpointLearningPlayground({
               valuesVisible ? styles.learningBoardValues : ""
             }`}
             role="grid"
-            aria-label={`Seven by seven checkpoint track during ${aligned ? "aligned" : "proxy"}-reward learning`}
+            aria-label={`Seven by seven checkpoint track with movable checkpoints during ${aligned ? "aligned" : "proxy"}-reward learning`}
           >
             {Array.from({ length: environment.height }, (_, y) =>
               Array.from({ length: environment.width }, (_, x) => {
@@ -622,6 +784,9 @@ function CheckpointLearningPlayground({
                       rewardedPosition === key
                         ? styles.learningRewarded
                         : "",
+                      dropTarget === key && draggingCheckpoint !== null
+                        ? styles.learningDropTarget
+                        : "",
                     ]
                       .filter(Boolean)
                       .join(" ")}
@@ -633,10 +798,37 @@ function CheckpointLearningPlayground({
                           ? `${label} at column ${x + 1}, row ${y + 1}`
                           : `Open cell at column ${x + 1}, row ${y + 1}`
                     }
+                    data-grid-position={key}
+                    onClick={() => placeSelectedCheckpoint(position)}
                     key={key}
                   >
                     {label ? (
-                      <span className={styles.optimalCellLabel}>{label}</span>
+                      checkpointIndex >= 0 ? (
+                        <button
+                          type="button"
+                          className={`${styles.optimalCellLabel} ${styles.learningCheckpointHandle}`}
+                          aria-label={`Move checkpoint ${label}. Drag it, tap it then an open cell, or use the arrow keys.`}
+                          aria-keyshortcuts="ArrowUp ArrowRight ArrowDown ArrowLeft"
+                          aria-pressed={selectedCheckpoint === checkpointIndex}
+                          onClick={(event) =>
+                            selectCheckpoint(event, checkpointIndex)
+                          }
+                          onPointerDown={(event) =>
+                            beginCheckpointDrag(event, checkpointIndex)
+                          }
+                          onPointerMove={updateCheckpointDrag}
+                          onPointerUp={finishCheckpointDrag}
+                          onPointerCancel={cancelCheckpointDrag}
+                          onKeyDown={(event) =>
+                            moveCheckpointWithKeyboard(event, checkpointIndex)
+                          }
+                          disabled={mode === "replaying"}
+                        >
+                          {label}
+                        </button>
+                      ) : (
+                        <span className={styles.optimalCellLabel}>{label}</span>
+                      )
                     ) : null}
                     {!isWall ? (
                       <span
@@ -705,6 +897,10 @@ function CheckpointLearningPlayground({
           </div>
           <p className={styles.learningBoardCaption}>
             Intended: S → C1 → C2 → C3 → C4 → S
+            <span>
+              Drag a checkpoint—or tap it, then an open cell. Moving it resets
+              learning.
+            </span>
           </p>
         </div>
 

@@ -5,6 +5,7 @@ import {
   CHECKPOINT_LAYOUT,
   trainCheckpointAgent,
   evaluateCheckpointPolicy,
+  isPlaceable,
   optimalCheckpointTrajectory,
   positionKey,
 } from "./checkpointMdp";
@@ -54,6 +55,36 @@ describe("reward-hacking MDP fixtures", () => {
     expect(steps.length).toBeGreaterThan(0);
     expect(steps.every((step) => step.exploring)).toBe(true);
     expect(steps.some((step) => step.qAfter !== step.qBefore)).toBe(true);
+  });
+
+  it("relearns both rewards after checkpoints move", () => {
+    const movedCheckpoints = [
+      { x: 1, y: 2 },
+      ...CHECKPOINT_LAYOUT.checkpoints.slice(1),
+    ];
+    const env = createEnvironment({
+      ...CHECKPOINT_LAYOUT,
+      checkpoints: movedCheckpoints,
+    });
+    const optimalSteps = optimalCheckpointTrajectory(env).length - 1;
+    const proxy = evaluateCheckpointPolicy(
+      env,
+      trainCheckpointAgent(env, "proxy"),
+      "proxy",
+    );
+    const aligned = evaluateCheckpointPolicy(
+      env,
+      trainCheckpointAgent(env, "aligned"),
+      "aligned",
+    );
+
+    expect(isPlaceable(env, { x: 0, y: 2 }, 0)).toBe(true);
+    expect(isPlaceable(env, env.start, 0)).toBe(false);
+    expect(isPlaceable(env, env.checkpoints[1], 0)).toBe(false);
+    expect(proxy.completedLap).toBe(false);
+    expect(proxy.repeatedEntries).toBeGreaterThanOrEqual(40);
+    expect(aligned.completedLap).toBe(true);
+    expect(aligned.steps).toBe(optimalSteps);
   });
 
   // The article claims the proxy agent never completes a lap for ANY legal C1

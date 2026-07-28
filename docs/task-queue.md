@@ -85,6 +85,8 @@ references for longer-term editorial direction.
     history.
   - [x] Integrate the matching checkpoint aligned-learning playground with the
     same live-learning controls and readouts.
+  - [x] Let readers reposition checkpoints directly in both checkpoint
+    playgrounds and retrain from a cleared Q-table.
   - [ ] Review the rewritten article in staging and integrate each deferred
     visualization or playground where its placeholder supports a specific
     learning objective.

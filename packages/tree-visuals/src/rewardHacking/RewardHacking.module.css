@@ -324,6 +324,37 @@
   box-shadow: inset 0 0 0 3px #a7552b;
 }
 
+.learningDropTarget {
+  box-shadow: inset 0 0 0 3px var(--accent);
+}
+
+.learningCheckpointHandle {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  cursor: grab;
+  font-weight: inherit;
+  line-height: 1;
+  touch-action: none;
+}
+
+.learningCheckpointHandle:active {
+  cursor: grabbing;
+}
+
+.learningCheckpointHandle[aria-pressed="true"] {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.learningCheckpointHandle:disabled {
+  color: inherit;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
 .learningActionValues {
   position: absolute;
   inset: 3px;
@@ -396,6 +427,12 @@
   color: var(--text-muted);
   font-size: 0.72rem;
   text-align: center;
+}
+
+.learningBoardCaption span {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.65rem;
 }
 
 .learningPanel {
