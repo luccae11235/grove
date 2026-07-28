@@ -21,8 +21,9 @@ database belonging to its own environment. There is no public reporting route.
    rate limits, and a new 32-byte-or-longer `OBSERVABILITY_LINK_SECRET`.
 4. Put the same secret on the same-environment newsletter API. Never copy it
    between staging and production.
-5. Give the service a Railway domain. After staging proof, attach
-   `observe.aflora.page` in production and configure DNS/HTTPS.
+5. Give the service a Railway domain. Production currently uses
+   `grove-observability-api-production-production.up.railway.app`; a shorter
+   custom domain can replace it after DNS ownership is available.
 6. Build the website with `PUBLIC_OBSERVABILITY_API_URL`,
    `PUBLIC_OBSERVABILITY_CONSENT_VERSION`, and
    `PUBLIC_OBSERVABILITY_ENABLED=true` only after service health, CORS, privacy
@@ -47,7 +48,8 @@ It verifies health, rejection before consent, persistence after consent,
 cumulative engagement, and revocation, then removes the synthetic visitor.
 
 After production deployment, run the public smoke with
-`--observability-url https://observe.aflora.page --expect-observability enabled`.
+`--observability-url https://grove-observability-api-production-production.up.railway.app`
+and `--expect-observability enabled`.
 Then use one owner-controlled browser to accept measurement, read an article,
 confirm one controlled subscription, and verify it with the report command. Do
 not create synthetic production subscribers.

@@ -64,7 +64,7 @@ jobs:
             production|"aflora / production")
               WEB_URL="https://aflora.page"
               API_URL="https://api.aflora.page"
-              OBSERVABILITY_URL="https://observe.aflora.page"
+              OBSERVABILITY_URL="https://grove-observability-api-production-production.up.railway.app"
               EXPECTED_FORM="enabled"
               EXPECTED_OBSERVABILITY="enabled"
               EXPECTED_AUDIENCE="public"
