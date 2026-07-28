@@ -1,9 +1,19 @@
 ---
-import { CheckpointLab, SensorLab, TrafficLab } from "@grove/tree-visuals";
+import {
+  CheckpointLab,
+  OptimalCheckpointTrajectory,
+  SensorLab,
+  TrafficLab,
+} from "@grove/tree-visuals";
 import type { Locale } from "../i18n";
 
 interface Props {
-  kind: "checkpoint" | "checkpoint-editable" | "sensor" | "traffic";
+  kind:
+    | "checkpoint-optimal"
+    | "checkpoint"
+    | "checkpoint-editable"
+    | "sensor"
+    | "traffic";
   locale?: Locale;
 }
 
@@ -11,7 +21,9 @@ const { kind, locale = "en" } = Astro.props;
 ---
 
 <div data-analytics-lab={`reward-hacking-${kind}`}>
-  {kind === "checkpoint" ? (
+  {kind === "checkpoint-optimal" ? (
+    <OptimalCheckpointTrajectory client:load />
+  ) : kind === "checkpoint" ? (
     <CheckpointLab client:load locale={locale} />
   ) : kind === "checkpoint-editable" ? (
     <CheckpointLab client:load locale={locale} editable />

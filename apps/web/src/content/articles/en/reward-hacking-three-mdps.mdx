@@ -12,7 +12,7 @@ topic: Reward hacking
 summary: Three small MDPs show how an agent can exploit a missing restriction, manipulate a measurement process, or optimize an incomplete objective.
 status: draft
 readingTime: 20–25 min
-interactiveCount: 0
+interactiveCount: 1
 staticVisualCount: 0
 difficulty: intermediate
 series: reinforcement-learning
@@ -36,6 +36,7 @@ learning:
 ---
 
 import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import RewardHackingLab from "../../../components/RewardHackingLab.astro";
 
 <header className="page-header lesson-header article-hero">
   <p className="eyebrow">Reinforcement learning · Reward design</p>
@@ -44,7 +45,8 @@ import DifficultyBadge from "../../../components/DifficultyBadge.astro";
   <div className="article-meta" aria-label="Article information">
     <DifficultyBadge difficulty="intermediate" showDescription />
     <span><strong>3</strong> environments</span>
-    <span><strong>Draft</strong> · visuals deferred</span>
+    <span><strong>1</strong> interactive visualization</span>
+    <span><strong>Draft</strong> · in progress</span>
   </div>
 </header>
 
@@ -199,10 +201,7 @@ Here is the checkpoint problem as an MDP:
 As visualizations and interactions are a central part of Aflora articles, let
 us first examine the landscape and the behavior we want the agent to learn.
 
-<aside className="article-visual-placeholder" aria-label="Planned visualization placeholder">
-  <strong>Visualization placeholder</strong>
-  <span>Gridworld and one “Run optimal trajectory” button.</span>
-</aside>
+<RewardHackingLab kind="checkpoint-optimal" />
 
 What you have just seen is the agent following the ideal trajectory. Before it
 can behave optimally, however, it must explore. It begins by making largely

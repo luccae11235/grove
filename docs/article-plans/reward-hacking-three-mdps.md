@@ -159,8 +159,8 @@ while omitting another.]
 end on the distinction between what humans meant and what the reward makes
 valuable.]
 
-{The staged draft intentionally contains placeholders for all seven teaching
-elements. No visualization or interaction is integrated in this revision.}
+{The checkpoint optimal-trajectory visualization is integrated in staging. The
+remaining six teaching elements stay as placeholders.}
 
 ## Visual and Interactive Plan
 
@@ -187,7 +187,9 @@ Focus: The agent and the next expected checkpoint.
 Default state: The full grid is visible with the agent at S and C1 identified as
 the next checkpoint.
 
-Controls: One “Run optimal trajectory” button and replay after completion.
+Controls: Exactly one “Run optimal trajectory” button. The same button replays
+the route after completion. There are no learning, training, pause, step, speed,
+reward-selection, reset, or value-display controls.
 
 Context: The route is a reference trajectory, not the output of training.
 
@@ -409,7 +411,7 @@ components.
 ## Current implementation state
 
 The staging draft contains the complete editor-provided prose and equations.
-All seven planned teaching elements are represented by labeled placeholders.
-No visual component, interactive component, animation, or playground is
-integrated in this revision. The content metadata therefore reports zero
-implemented static visuals and zero implemented interactions.
+The checkpoint optimal-trajectory visualization is integrated with one replayable
+button. The remaining six teaching elements are represented by labeled
+placeholders. The content metadata therefore reports zero implemented static
+visuals and one implemented interaction.

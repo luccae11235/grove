@@ -1,9 +1,31 @@
 import { describe, it, expect } from "vitest";
-import { createEnvironment, CHECKPOINT_LAYOUT, trainCheckpointAgent, evaluateCheckpointPolicy } from "./checkpointMdp";
+import {
+  createEnvironment,
+  CHECKPOINT_LAYOUT,
+  trainCheckpointAgent,
+  evaluateCheckpointPolicy,
+  optimalCheckpointTrajectory,
+  positionKey,
+} from "./checkpointMdp";
 import { trainSensorAgent, evaluateSensorPolicy } from "./sensorMdp";
 import { trainTrafficAgent, evaluateTrafficPolicy } from "./trafficMdp";
 
 describe("reward-hacking MDP fixtures", () => {
+  it("builds the 16-step ordered reference lap", () => {
+    const env = createEnvironment({ ...CHECKPOINT_LAYOUT });
+    const trajectory = optimalCheckpointTrajectory(env);
+    const keys = trajectory.map(positionKey);
+    const checkpointVisits = env.checkpoints.map((checkpoint) =>
+      keys.indexOf(positionKey(checkpoint)),
+    );
+
+    expect(trajectory).toHaveLength(17);
+    expect(positionKey(trajectory[0])).toBe(positionKey(env.start));
+    expect(positionKey(trajectory.at(-1)!)).toBe(positionKey(env.start));
+    expect(checkpointVisits).toEqual([...checkpointVisits].sort((a, b) => a - b));
+    expect(checkpointVisits.every((step) => step > 0)).toBe(true);
+  });
+
   it("checkpoint matches", () => {
     const env = createEnvironment({ ...CHECKPOINT_LAYOUT });
     const p = evaluateCheckpointPolicy(env, trainCheckpointAgent(env, "proxy"), "proxy");
