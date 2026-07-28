@@ -48,6 +48,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
   description={article.description}
   translations={translations}
   pageType="article"
+  analyticsContentId={article.id}
   publishedAt={article.publishedAt}
   updatedAt={article.updatedAt}
   wide
@@ -263,7 +264,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </div>
   </article>
 
-  <div class="interactive-breakout article-interactive">
+  <div class="interactive-breakout article-interactive" data-analytics-lab="threshold-intuition">
     <ThresholdIntuitionPlayground client:load />
   </div>
 
@@ -305,7 +306,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </div>
   </article>
 
-  <div class="interactive-breakout article-interactive">
+  <div class="interactive-breakout article-interactive" data-analytics-lab="manual-tree">
     <ManualTreePlayground client:load />
   </div>
 
@@ -633,7 +634,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </p>
   </article>
 
-  <div class="interactive-breakout article-interactive">
+  <div class="interactive-breakout article-interactive" data-analytics-lab="split-search">
     <SplitSearchPlayground client:load />
   </div>
 
@@ -672,7 +673,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </div>
   </article>
 
-  <div class="interactive-breakout article-interactive">
+  <div class="interactive-breakout article-interactive" data-analytics-lab="tree-growth">
     <TreeGrowthPlayground client:load />
   </div>
 
@@ -734,7 +735,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </p>
   </article>
 
-  <div class="interactive-breakout article-interactive">
+  <div class="interactive-breakout article-interactive" data-analytics-lab="dataset-complexity">
     <DatasetComplexityPlayground client:load />
   </div>
 
@@ -859,7 +860,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </div>
   </article>
 
-  <div class="interactive-breakout article-interactive">
+  <div class="interactive-breakout article-interactive" data-analytics-lab="multi-feature-split">
     <MultiFeatureSplitPlayground client:load />
   </div>
 

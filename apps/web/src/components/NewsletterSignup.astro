@@ -127,6 +127,9 @@ const copy = locale === "pt-BR"
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (!form.reportValidity()) return;
+      window.groveAnalytics?.track("newsletter_signup_submitted", {
+        source: form.querySelector<HTMLInputElement>("input[name='source']")?.value ?? "website",
+      });
       const payload = Object.fromEntries(new FormData(form).entries());
       const query = new URLSearchParams(window.location.search);
       for (const [parameter, field] of [
@@ -153,6 +156,9 @@ const copy = locale === "pt-BR"
         });
         if (!response.ok) throw new Error(`Subscription failed with ${response.status}`);
         form.reset();
+        window.groveAnalytics?.track("newsletter_signup_accepted", {
+          source: String(payload.source ?? "website"),
+        });
         status.textContent = status.dataset.success ?? "";
         status.dataset.state = "success";
         const retryingLabel = button.dataset.retryingLabel ?? "";

@@ -11,7 +11,7 @@ const privacyContact = import.meta.env.PUBLIC_PRIVACY_CONTACT_EMAIL?.trim();
   translations={{ en: "/privacy", "pt-BR": "/pt-br/privacy" }}
 >
   <header class="page-header">
-    <p class="eyebrow">Última atualização · 18 de julho de 2026</p>
+    <p class="eyebrow">Última atualização · 28 de julho de 2026</p>
     <h1>Privacidade na Aflora</h1>
     <p class="lede">A newsletter coleta apenas o necessário para confirmar o consentimento, entregar cada edição e verificar a saúde dos envios.</p>
   </header>
@@ -25,8 +25,14 @@ const privacyContact = import.meta.env.PUBLIC_PRIVACY_CONTACT_EMAIL?.trim();
     <p>Endereços confirmados são sincronizados com o Resend, responsável pelas confirmações e edições. O Railway hospeda o site, a API e o PostgreSQL.</p>
     <p>Webhooks assinados informam envios, entregas, aberturas, cliques, devoluções, denúncias, supressões e mudanças de inscrição. A tabela analítica guarda um hash com chave, e não o e-mail, além do tipo, horário, edição e URL clicada quando aplicável. Aberturas podem ser distorcidas por proxies de privacidade e bloqueio de imagens.</p>
 
+    <h2>Medição opcional de leitura</h2>
+    <p>A Aflora não mede sua atividade de leitura sem sua aceitação. Ao aceitar, a Aflora cria um identificador aleatório do navegador e registra visualizações, tempo de leitura ativo em primeiro plano, conclusão de rolagem, classe ampla do dispositivo, idioma, parâmetros de campanha, início de laboratórios, chamadas para ação selecionadas, desempenho do navegador e categorias de erro higienizadas.</p>
+    <p>A Aflora não armazena seu endereço de rede, assinatura completa do navegador, texto digitado, movimentos do ponteiro ou replay da página. Referências externas são reduzidas ao domínio de origem; referências internas mantêm apenas o caminho.</p>
+    <p>Ao confirmar uma assinatura no mesmo navegador que aceitou a medição, um token de uso único e curta duração pode vincular o identificador do navegador ao identificador do assinante. O token não contém e-mail e não reconhece você em outros navegadores ou dispositivos.</p>
+
     <h2>Retenção e controle</h2>
-    <p>Solicitações não confirmadas com mais de 30 dias e eventos de entrega com mais de 400 dias podem ser excluídos. Registros de consentimento e supressão são mantidos para documentar a permissão e evitar envios indesejados. Toda edição inclui um link de cancelamento.</p>
+    <p>Solicitações não confirmadas com mais de 30 dias, eventos de entrega com mais de 400 dias e atividade de leitura individual com mais de 400 dias são excluídos pelo processo de retenção. Antes da exclusão, totais diários não identificáveis por artigo podem ser mantidos. Registros de consentimento e supressão são preservados para documentar a permissão e evitar envios indesejados. Toda edição inclui um link de cancelamento.</p>
+    <p>Use o controle “Configurações de medição” em qualquer página para rejeitar ou retirar o consentimento. A retirada interrompe a coleta, remove o identificador do navegador e solicita a exclusão da atividade individual. A assinatura da newsletter e o consentimento analítico são independentes.</p>
     <p>Você pode solicitar acesso ou exclusão. Após a verificação, pode ser mantido o registro mínimo de supressão necessário para que a Aflora não envie mensagens novamente.</p>
 
     <h2>Contato</h2>

@@ -13,6 +13,7 @@ test("smoke arguments distinguish form, audience, and release expectations", () 
   ]), {
     apiUrl: "https://api.aflora.page",
     expectedAudience: "restricted",
+    expectedObservability: "either",
     expectedReleaseSha: "abc123",
     expectedSignupForm: "disabled",
     waitSeconds: 600,

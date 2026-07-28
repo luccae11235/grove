@@ -69,7 +69,11 @@ class FakeProvider implements NewsletterProvider {
   async sendBroadcast(_providerBroadcastId: string, _scheduledAt?: string) {}
 }
 
-function testSystem(overrides: { rateLimitMax?: number; recipientAllowlist?: string[] } = {}) {
+function testSystem(overrides: {
+  rateLimitMax?: number;
+  recipientAllowlist?: string[];
+  observabilityLinkSecret?: string;
+} = {}) {
   const repository = new MemoryNewsletterRepository();
   const provider = new FakeProvider();
   let currentTime = new Date("2026-07-18T12:00:00.000Z");
@@ -80,6 +84,7 @@ function testSystem(overrides: { rateLimitMax?: number; recipientAllowlist?: str
     apiPublicUrl: "https://letters.aflora.example",
     allowedOrigins: ["https://aflora.example"],
     recipientAllowlist: overrides.recipientAllowlist,
+    observabilityLinkSecret: overrides.observabilityLinkSecret,
     eventHashSalt: "a-secret-test-salt-longer-than-sixteen",
     confirmationTtlHours: 48,
     actionTtlHours: 24,
@@ -110,6 +115,25 @@ test("recipient allowlist accepts configured addresses and silently ignores all 
   assert.equal(allowed.status, 202);
   assert.equal(repository.subscribers.get("allowed@example.com")?.status, "pending");
   assert.equal(provider.confirmations.length, 1);
+});
+
+test("successful confirmation includes a short-lived pseudonymous browser link token", async () => {
+  const { app, provider } = testSystem({
+    observabilityLinkSecret: "observability-test-secret-at-least-32-characters",
+  });
+  await subscribe(app, { email: "linked@example.com" });
+  const confirmationUrl = new URL(provider.confirmations[0].confirmationUrl);
+  const confirmation = await app.request(confirmationApiPath(confirmationUrl));
+  const location = confirmation.headers.get("location") ?? "";
+  assert.match(location, /^https:\/\/aflora\.example\/newsletter\/confirmed#grove-link=/);
+  const token = decodeURIComponent(location.split("#grove-link=")[1]);
+  const [payload] = token.split(".");
+  const decoded = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+  assert.equal(decoded.version, 1);
+  assert.equal(typeof decoded.subscriberId, "string");
+  assert.equal(typeof decoded.nonce, "string");
+  assert.equal(decoded.expiresAt, Math.floor(new Date("2026-07-18T12:00:00.000Z").getTime() / 1000) + 900);
+  assert.equal(JSON.stringify(decoded).includes("linked@example.com"), false);
 });
 
 test("double opt-in activates a pending subscriber and privately reports active status", async () => {

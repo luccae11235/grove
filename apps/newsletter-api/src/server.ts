@@ -23,6 +23,8 @@ const app = createApp({
   allowedOrigins: config.allowedOrigins,
   recipientAllowlist: config.recipientAllowlist,
   eventHashSalt: config.eventHashSalt,
+  observabilityLinkSecret: config.observabilityLinkSecret,
+  deploymentEnvironment: config.deploymentEnvironment,
   confirmationTtlHours: config.confirmationTtlHours,
   actionTtlHours: config.actionTtlHours,
   resendCooldownSeconds: config.resendCooldownSeconds,

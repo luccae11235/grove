@@ -8,6 +8,7 @@ import type {
   SubscriberStatus,
   SubscriptionRequest,
   WebhookRecord,
+  WebhookSubscriberUpdate,
 } from "./domain.js";
 import { emptyIssueMetrics, type NewsletterRepository } from "./repository.js";
 
@@ -102,6 +103,22 @@ export class PostgresNewsletterRepository implements NewsletterRepository {
           ${input.actionId}, ${existing[0]?.subscriber_id ?? input.subscriberId},
           'confirm', ${input.tokenHash}, ${input.expiresAt}, ${input.requestedAt}
         )
+      `;
+      const subscriberId = existing[0]?.subscriber_id ?? input.subscriberId;
+      const previousStatus = existing[0]?.status ?? null;
+      await sql`
+        INSERT INTO newsletter_subscriber_events (
+          subscriber_id, event_type, previous_status, new_status,
+          occurred_at, source, source_event_id
+        ) VALUES (
+          ${subscriberId},
+          ${previousStatus && previousStatus !== "pending"
+            ? "reactivation_requested"
+            : "subscription_requested"},
+          ${previousStatus}, 'pending', ${input.requestedAt}, 'signup',
+          ${`request:${input.actionId}`}
+        )
+        ON CONFLICT (source_event_id) DO NOTHING
       `;
       return "send-confirmation";
     });
@@ -266,6 +283,16 @@ export class PostgresNewsletterRepository implements NewsletterRepository {
         SET used_at = ${now}
         WHERE action_id = ${actionId}
       `;
+      await sql`
+        INSERT INTO newsletter_subscriber_events (
+          subscriber_id, event_type, previous_status, new_status,
+          occurred_at, source, source_event_id
+        ) VALUES (
+          ${subscriberId}, 'confirmed', 'pending', 'active',
+          ${now}, 'confirmation', ${`confirm:${actionId}`}
+        )
+        ON CONFLICT (source_event_id) DO NOTHING
+      `;
       return true;
     });
   }
@@ -293,33 +320,94 @@ export class PostgresNewsletterRepository implements NewsletterRepository {
         SET used_at = ${now}
         WHERE action_id = ${actionId}
       `;
+      await sql`
+        INSERT INTO newsletter_subscriber_events (
+          subscriber_id, event_type, previous_status, new_status,
+          occurred_at, source, source_event_id
+        ) VALUES (
+          ${subscriberId}, 'unsubscribed', 'active', 'unsubscribed',
+          ${now}, 'confirmation', ${`unsubscribe:${actionId}`}
+        )
+        ON CONFLICT (source_event_id) DO NOTHING
+      `;
       return true;
     });
   }
 
-  async recordWebhook(event: WebhookRecord) {
-    const rows = await this.sql<{ svix_id: string }[]>`
-      INSERT INTO newsletter_events (
-        svix_id, event_type, event_created_at, provider_email_id,
-        provider_broadcast_id, recipient_hash, clicked_url, tags
-      ) VALUES (
-        ${event.svixId}, ${event.eventType}, ${event.eventCreatedAt},
-        ${event.providerEmailId ?? null}, ${event.providerBroadcastId ?? null},
-        ${event.recipientHash ?? null}, ${event.clickedUrl ?? null},
-        ${this.sql.json(event.tags)}
-      )
-      ON CONFLICT (svix_id) DO NOTHING
-      RETURNING svix_id
-    `;
-    return rows.length === 1;
+  async recordWebhook(event: WebhookRecord, subscriberUpdate?: WebhookSubscriberUpdate) {
+    return this.sql.begin(async (sql) => {
+      const rows = await sql<{ svix_id: string }[]>`
+        INSERT INTO newsletter_events (
+          svix_id, event_type, event_created_at, provider_email_id,
+          provider_broadcast_id, recipient_hash, clicked_url, tags
+        ) VALUES (
+          ${event.svixId}, ${event.eventType}, ${event.eventCreatedAt},
+          ${event.providerEmailId ?? null}, ${event.providerBroadcastId ?? null},
+          ${event.recipientHash ?? null}, ${event.clickedUrl ?? null},
+          ${sql.json(event.tags)}
+        )
+        ON CONFLICT (svix_id) DO NOTHING
+        RETURNING svix_id
+      `;
+      if (rows.length !== 1 || !subscriberUpdate) return rows.length === 1;
+      const subscribers = await sql<{
+        subscriber_id: string;
+        status: SubscriberStatus;
+      }[]>`
+        SELECT subscriber_id, status
+        FROM newsletter_subscribers
+        WHERE email = ${subscriberUpdate.email.toLowerCase()}
+        FOR UPDATE
+      `;
+      const subscriber = subscribers[0];
+      if (!subscriber) return true;
+      await sql`
+        UPDATE newsletter_subscribers
+        SET status = ${subscriberUpdate.status}, updated_at = ${event.eventCreatedAt}
+        WHERE subscriber_id = ${subscriber.subscriber_id}
+      `;
+      await sql`
+        INSERT INTO newsletter_subscriber_events (
+          subscriber_id, event_type, previous_status, new_status,
+          occurred_at, source, source_event_id
+        ) VALUES (
+          ${subscriber.subscriber_id}, ${subscriberUpdate.status},
+          ${subscriber.status}, ${subscriberUpdate.status},
+          ${event.eventCreatedAt}, 'resend_webhook', ${`resend:${event.svixId}`}
+        )
+        ON CONFLICT (source_event_id) DO NOTHING
+      `;
+      return true;
+    });
   }
 
   async markSubscriberStatusByEmail(email: string, status: SubscriberStatus, now: Date) {
-    await this.sql`
-      UPDATE newsletter_subscribers
-      SET status = ${status}, updated_at = ${now}
-      WHERE email = ${email.toLowerCase()}
-    `;
+    await this.sql.begin(async (sql) => {
+      const rows = await sql<{ subscriber_id: string; status: SubscriberStatus }[]>`
+        SELECT subscriber_id, status
+        FROM newsletter_subscribers
+        WHERE email = ${email.toLowerCase()}
+        FOR UPDATE
+      `;
+      const subscriber = rows[0];
+      if (!subscriber) return;
+      await sql`
+        UPDATE newsletter_subscribers
+        SET status = ${status}, updated_at = ${now}
+        WHERE subscriber_id = ${subscriber.subscriber_id}
+      `;
+      await sql`
+        INSERT INTO newsletter_subscriber_events (
+          subscriber_id, event_type, previous_status, new_status,
+          occurred_at, source, source_event_id
+        ) VALUES (
+          ${subscriber.subscriber_id}, ${status}, ${subscriber.status}, ${status},
+          ${now}, 'resend_webhook',
+          ${`manual:${subscriber.subscriber_id}:${status}:${now.toISOString()}`}
+        )
+        ON CONFLICT (source_event_id) DO NOTHING
+      `;
+    });
   }
 
   async recordBroadcast(record: BroadcastRecord) {

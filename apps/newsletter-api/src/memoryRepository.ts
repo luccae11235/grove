@@ -5,6 +5,7 @@ import type {
   SubscriberStatus,
   SubscriptionRequest,
   WebhookRecord,
+  WebhookSubscriberUpdate,
 } from "./domain.js";
 import { emptyIssueMetrics, type NewsletterRepository } from "./repository.js";
 
@@ -33,6 +34,14 @@ export class MemoryNewsletterRepository implements NewsletterRepository {
   readonly actions = new Map<string, StoredAction>();
   readonly events = new Map<string, WebhookRecord>();
   readonly broadcasts = new Map<string, BroadcastRecord>();
+  readonly subscriberEvents: Array<{
+    subscriberId: string;
+    eventType: string;
+    previousStatus: SubscriberStatus | null;
+    newStatus: SubscriberStatus;
+    occurredAt: Date;
+    sourceEventId: string;
+  }> = [];
 
   async requestSubscription(input: SubscriptionRequest) {
     const email = input.email.toLowerCase();
@@ -71,6 +80,16 @@ export class MemoryNewsletterRepository implements NewsletterRepository {
       tokenHash: input.tokenHash,
       expiresAt: input.expiresAt,
       requestedAt: input.requestedAt,
+    });
+    this.subscriberEvents.push({
+      subscriberId,
+      eventType: current && current.status !== "pending"
+        ? "reactivation_requested"
+        : "subscription_requested",
+      previousStatus: current?.status ?? null,
+      newStatus: "pending",
+      occurredAt: input.requestedAt,
+      sourceEventId: `request:${input.actionId}`,
     });
     return "send-confirmation" as const;
   }
@@ -159,6 +178,14 @@ export class MemoryNewsletterRepository implements NewsletterRepository {
     subscriber.status = "active";
     subscriber.providerContactId = providerContactId;
     action.usedAt = now;
+    this.subscriberEvents.push({
+      subscriberId,
+      eventType: "confirmed",
+      previousStatus: "pending",
+      newStatus: "active",
+      occurredAt: now,
+      sourceEventId: `confirm:${actionId}`,
+    });
     return true;
   }
 
@@ -181,18 +208,51 @@ export class MemoryNewsletterRepository implements NewsletterRepository {
     ) return false;
     subscriber.status = "unsubscribed";
     action.usedAt = now;
+    this.subscriberEvents.push({
+      subscriberId,
+      eventType: "unsubscribed",
+      previousStatus: "active",
+      newStatus: "unsubscribed",
+      occurredAt: now,
+      sourceEventId: `unsubscribe:${actionId}`,
+    });
     return true;
   }
 
-  async recordWebhook(event: WebhookRecord) {
+  async recordWebhook(event: WebhookRecord, subscriberUpdate?: WebhookSubscriberUpdate) {
     if (this.events.has(event.svixId)) return false;
     this.events.set(event.svixId, event);
+    if (subscriberUpdate) {
+      const subscriber = this.subscribers.get(subscriberUpdate.email.toLowerCase());
+      if (subscriber) {
+        const previousStatus = subscriber.status;
+        subscriber.status = subscriberUpdate.status;
+        this.subscriberEvents.push({
+          subscriberId: subscriber.subscriberId,
+          eventType: subscriberUpdate.status,
+          previousStatus,
+          newStatus: subscriberUpdate.status,
+          occurredAt: event.eventCreatedAt,
+          sourceEventId: `resend:${event.svixId}`,
+        });
+      }
+    }
     return true;
   }
 
-  async markSubscriberStatusByEmail(email: string, status: SubscriberStatus, _now: Date) {
+  async markSubscriberStatusByEmail(email: string, status: SubscriberStatus, now: Date) {
     const subscriber = this.subscribers.get(email.toLowerCase());
-    if (subscriber) subscriber.status = status;
+    if (!subscriber) return;
+    const previousStatus = subscriber.status;
+    subscriber.status = status;
+    this.subscriberEvents.push({
+      subscriberId: subscriber.subscriberId,
+      eventType: status,
+      previousStatus,
+      newStatus: status,
+      occurredAt: now,
+      sourceEventId: `manual:${subscriber.subscriberId}:${status}:${now.toISOString()}`,
+    });
   }
 
   async recordBroadcast(record: BroadcastRecord) {
