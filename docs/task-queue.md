@@ -127,11 +127,15 @@ references for longer-term editorial direction.
   - Audit published routes and interactive visuals for keyboard access, screen
     reader semantics, contrast, reduced motion, and small-screen behavior.
 
-- [ ] **Set up web analytics with consent-aware measurement**
-  - Select a privacy-appropriate provider, document the events that matter, and
-    verify consent and retention behavior against the privacy policy.
-
 ## Done
+
+### Operations and quality
+
+- [x] **Set up web analytics with consent-aware measurement** — 2026-07-28
+  - Shipped isolated first-party observability services in staging and
+    production, consented browser measurement, subscriber lifecycle history,
+    reports and exports, immediate withdrawal deletion, and verified 400-day
+    retention behavior.
 
 ### Learning experience
 
