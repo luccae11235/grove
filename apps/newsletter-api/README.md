@@ -3,6 +3,8 @@
 The API owns consent and delivery telemetry. It keeps pending signups in
 PostgreSQL, activates them only after a signed confirmation link is used, syncs
 confirmed contacts to Resend, and records verified webhook events idempotently.
+An append-only lifecycle table preserves request, confirmation, reactivation,
+unsubscribe, bounce, complaint, and suppression times.
 Each confirmation request has an independent expiring action token, so a resend
 does not invalidate an earlier delivered link. Active readers receive status and
 management details only through their inbox, which avoids a public
@@ -41,3 +43,6 @@ the test isolates itself in a temporary schema.
 
 There is no public subscriber-list endpoint. Logs avoid email addresses, and
 analytics store a keyed recipient hash instead of the recipient itself.
+When the environment-specific observability link secret is configured, a
+successful confirmation redirect also carries a 15-minute pseudonymous token
+in its URL fragment. It contains the subscriber id, never the email address.

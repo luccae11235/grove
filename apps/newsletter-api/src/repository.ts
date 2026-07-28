@@ -8,6 +8,7 @@ import type {
   SubscriberStatus,
   SubscriptionRequest,
   WebhookRecord,
+  WebhookSubscriberUpdate,
 } from "./domain.js";
 
 export interface NewsletterRepository {
@@ -23,7 +24,10 @@ export interface NewsletterRepository {
     now: Date,
   ): Promise<boolean>;
   unsubscribeSubscriber(subscriberId: string, actionId: string, now: Date): Promise<boolean>;
-  recordWebhook(event: WebhookRecord): Promise<boolean>;
+  recordWebhook(
+    event: WebhookRecord,
+    subscriberUpdate?: WebhookSubscriberUpdate,
+  ): Promise<boolean>;
   markSubscriberStatusByEmail(email: string, status: SubscriberStatus, now: Date): Promise<void>;
   recordBroadcast(record: BroadcastRecord): Promise<void>;
   getBroadcast(issueId: string): Promise<BroadcastRecord | null>;

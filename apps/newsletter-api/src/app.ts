@@ -38,6 +38,8 @@ export interface AppOptions {
   allowedOrigins: string[];
   recipientAllowlist?: string[];
   eventHashSalt: string;
+  observabilityLinkSecret?: string;
+  deploymentEnvironment?: string;
   confirmationTtlHours?: number;
   actionTtlHours?: number;
   resendCooldownSeconds?: number;
@@ -75,9 +77,10 @@ export function createApp(options: AppOptions) {
     context.header("x-request-id", requestId);
     await next();
     log("request", {
+      environment: options.deploymentEnvironment ?? "development",
       requestId,
       method: context.req.method,
-      path: context.req.path,
+      route: context.req.routePath,
       status: context.res.status,
       durationMs: Date.now() - startedAt,
     });
@@ -217,8 +220,17 @@ export function createApp(options: AppOptions) {
       providerContactId,
       now(),
     );
+    const identityLinkToken = activated && options.observabilityLinkSecret
+      ? createIdentityLinkToken(
+          subscriber.subscriberId,
+          options.observabilityLinkSecret,
+          now(),
+        )
+      : undefined;
     return context.redirect(
-      `${options.webUrl}${confirmedPath}${activated ? "" : "?status=invalid"}`,
+      identityLinkToken
+        ? `${options.webUrl}${confirmedPath}#grove-link=${encodeURIComponent(identityLinkToken)}`
+        : `${options.webUrl}${confirmedPath}${activated ? "" : "?status=invalid"}`,
       303,
     );
   });
@@ -283,15 +295,13 @@ export function createApp(options: AppOptions) {
       clickedUrl: extractClickedUrl(data),
       tags: stringRecord(data.tags),
     };
-    const inserted = await options.repository.recordWebhook(record);
+    const status = recipient ? subscriberStatus(event.type, data) : null;
+    const inserted = await options.repository.recordWebhook(
+      record,
+      recipient && status ? { email: recipient, status } : undefined,
+    );
     if (inserted && event.type === "email.sent" && record.providerBroadcastId) {
       await options.repository.markBroadcastSent(record.providerBroadcastId);
-    }
-    if (inserted && recipient) {
-      const status = subscriberStatus(event.type, data);
-      if (status) {
-        await options.repository.markSubscriberStatusByEmail(recipient, status, now());
-      }
     }
     return context.json({ ok: true, duplicate: !inserted });
   });
@@ -337,6 +347,21 @@ export function createApp(options: AppOptions) {
       throw error;
     }
   }
+}
+
+export function createIdentityLinkToken(
+  subscriberId: string,
+  secret: string,
+  issuedAt: Date,
+) {
+  const payload = Buffer.from(JSON.stringify({
+    version: 1,
+    subscriberId,
+    expiresAt: Math.floor(issuedAt.getTime() / 1000) + 15 * 60,
+    nonce: randomUUID(),
+  })).toString("base64url");
+  const signature = createHmac("sha256", secret).update(payload).digest("base64url");
+  return `${payload}.${signature}`;
 }
 
 function accepted(context: Context) {

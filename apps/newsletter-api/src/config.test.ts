@@ -17,6 +17,8 @@ const environment = {
   API_PUBLIC_URL: "https://letters.grove.example",
   ALLOWED_ORIGINS: "https://grove.example",
   EVENT_HASH_SALT: "a-long-random-secret-for-tests",
+  DEPLOYMENT_ENV: "production",
+  OBSERVABILITY_LINK_SECRET: "",
 } satisfies NodeJS.ProcessEnv;
 
 test("runtime config accepts explicit HTTPS origins and empty optional values", () => {
@@ -26,6 +28,8 @@ test("runtime config accepts explicit HTTPS origins and empty optional values", 
   assert.equal(config.newsletterReplyTo, undefined);
   assert.equal(config.recipientAllowlist, undefined);
   assert.equal(config.publicSignup, true);
+  assert.equal(config.deploymentEnvironment, "production");
+  assert.equal(config.observabilityLinkSecret, undefined);
   assert.equal(config.actionTtlHours, 24);
   assert.equal(config.resendCooldownSeconds, 60);
 });

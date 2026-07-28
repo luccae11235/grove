@@ -61,6 +61,11 @@ export interface WebhookRecord {
   tags: Record<string, string>;
 }
 
+export interface WebhookSubscriberUpdate {
+  email: string;
+  status: SubscriberStatus;
+}
+
 export interface BroadcastRecord {
   issueId: string;
   providerBroadcastId: string;

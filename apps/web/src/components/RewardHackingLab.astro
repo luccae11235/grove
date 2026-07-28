@@ -10,12 +10,14 @@ interface Props {
 const { kind, locale = "en" } = Astro.props;
 ---
 
-{kind === "checkpoint" ? (
-  <CheckpointLab client:load locale={locale} />
-) : kind === "checkpoint-editable" ? (
-  <CheckpointLab client:load locale={locale} editable />
-) : kind === "sensor" ? (
-  <SensorLab client:load locale={locale} />
-) : (
-  <TrafficLab client:load locale={locale} />
-)}
+<div data-analytics-lab={`reward-hacking-${kind}`}>
+  {kind === "checkpoint" ? (
+    <CheckpointLab client:load locale={locale} />
+  ) : kind === "checkpoint-editable" ? (
+    <CheckpointLab client:load locale={locale} editable />
+  ) : kind === "sensor" ? (
+    <SensorLab client:load locale={locale} />
+  ) : (
+    <TrafficLab client:load locale={locale} />
+  )}
+</div>

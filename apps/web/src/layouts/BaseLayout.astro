@@ -1,6 +1,7 @@
 ---
 import Brand from "../components/Brand.astro";
 import ArticleChapters from "../components/ArticleChapters.astro";
+import AnalyticsConsent from "../components/AnalyticsConsent.astro";
 import LanguageSwitcher from "../components/LanguageSwitcher.astro";
 import { getSiteCopy, type Locale } from "../i18n";
 import "../styles/global.css";
@@ -17,6 +18,8 @@ interface Props {
   publishedAt?: Date;
   updatedAt?: Date;
   noindex?: boolean;
+  analyticsContentType?: "page" | "article" | "issue";
+  analyticsContentId?: string;
 }
 
 const {
@@ -31,6 +34,8 @@ const {
   publishedAt,
   updatedAt,
   noindex = false,
+  analyticsContentType = pageType === "article" ? "article" : "page",
+  analyticsContentId,
 } = Astro.props;
 const siteCopy = getSiteCopy(locale);
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -139,5 +144,10 @@ const alternateOgLocales = Object.keys(availableTranslations)
       <slot />
     </main>
     {pageType === "article" && <ArticleChapters locale={locale} />}
+    <AnalyticsConsent
+      locale={locale}
+      contentType={analyticsContentType}
+      contentId={analyticsContentId}
+    />
   </body>
 </html>

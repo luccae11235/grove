@@ -44,6 +44,12 @@ try {
     }
   }
   if (syntheticEmails.size > 0) {
+    await sql`
+      DELETE FROM newsletter_subscriber_events
+      WHERE subscriber_id IN (
+        SELECT subscriber_id FROM newsletter_subscribers WHERE source = ${source}
+      )
+    `;
     await sql`DELETE FROM newsletter_subscribers WHERE source = ${source}`;
   }
   await sql.end();
