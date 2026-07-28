@@ -1,0 +1,90 @@
+---
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import ArticleConnections from "../../components/ArticleConnections.astro";
+import NewsletterSignup from "../../components/NewsletterSignup.astro";
+import { articles } from "../../content/articles";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+type ArticleEntry = CollectionEntry<"articles">;
+
+export async function getStaticPaths() {
+  const includeDrafts =
+    import.meta.env.DEV || import.meta.env.SHOW_DRAFTS === "true";
+
+  if (!includeDrafts) return [];
+
+  const entries = await getCollection(
+    "articles",
+    ({ data }) =>
+      data.articleId === "reward-hacking-three-mdps" &&
+      data.locale === "en" &&
+      data.status === "draft",
+  );
+
+  return entries.map((entry) => ({
+    params: { slug: entry.data.routeSlug },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: ArticleEntry;
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const inCatalog = articles.some((article) => article.id === entry.data.articleId);
+---
+
+<BaseLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  canonicalPath={entry.data.href}
+  pageType="article"
+  analyticsContentId={entry.data.articleId}
+  noindex
+  wide
+>
+  <Content />
+  {inCatalog && <ArticleConnections articleId={entry.data.articleId} />}
+  <NewsletterSignup source="reward-hacking-article" compact />
+</BaseLayout>
+
+<style is:global>
+  .reward-hacking-article h2,
+  .reward-hacking-article h3 {
+    scroll-margin-top: 84px;
+  }
+
+  .reward-hacking-article .article-visual-placeholder {
+    display: grid;
+    gap: 6px;
+    margin: 32px 0;
+    padding: 22px 24px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 12px;
+    background: var(--surface-subtle);
+    color: var(--text-muted);
+  }
+
+  .reward-hacking-article .article-visual-placeholder strong {
+    color: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .reward-hacking-article .article-visual-placeholder span {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .reward-hacking-article .formula > p {
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    line-height: 1.65;
+  }
+</style>

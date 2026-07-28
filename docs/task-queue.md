@@ -77,8 +77,11 @@ references for longer-term editorial direction.
 ### Publishing and content
 
 - [ ] **Complete the reward hacking article**
-  - Finish the editorial pass and integrate the companion lab where it supports
-    a specific learning objective.
+  - [x] Replace the staging draft with the editor-authored rewrite and keep the
+    article absent from production while it remains a draft.
+  - [ ] Review the rewritten article in staging and integrate each deferred
+    visualization or playground where its placeholder supports a specific
+    learning objective.
   - Done when the English article is complete, reviewed in the site, and ready
     to be published.
 
