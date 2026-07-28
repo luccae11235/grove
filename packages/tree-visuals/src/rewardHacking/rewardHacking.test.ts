@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   createEnvironment,
+  createCheckpointTrainer,
   CHECKPOINT_LAYOUT,
   trainCheckpointAgent,
   evaluateCheckpointPolicy,
@@ -37,6 +38,24 @@ describe("reward-hacking MDP fixtures", () => {
     expect(a.completedLap).toBe(true);
     expect(a.steps).toBe(16);
   });
+
+  it("exposes live exploratory steps and Q-value updates", () => {
+    const env = createEnvironment({ ...CHECKPOINT_LAYOUT });
+    const trainer = createCheckpointTrainer(env, "aligned");
+    const steps: Array<{
+      exploring: boolean;
+      qBefore: number;
+      qAfter: number;
+    }> = [];
+
+    trainer.trainEpisode((step) => steps.push(step));
+
+    expect(trainer.episodesCompleted).toBe(1);
+    expect(steps.length).toBeGreaterThan(0);
+    expect(steps.every((step) => step.exploring)).toBe(true);
+    expect(steps.some((step) => step.qAfter !== step.qBefore)).toBe(true);
+  });
+
   // The article claims the proxy agent never completes a lap for ANY legal C1
   // position. That claim is load-bearing, so it is pinned here.
   it("proxy completes no lap at any legal C1 position", () => {

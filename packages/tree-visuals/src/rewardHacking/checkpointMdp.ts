@@ -14,6 +14,8 @@ import {
   seededRandom,
   trainWithSnapshots,
   type RewardMode,
+  type Trainer,
+  type TrainingStep,
   type TrainingOptions,
 } from "./engine";
 
@@ -273,14 +275,24 @@ function model(environment: CheckpointEnvironment) {
   };
 }
 
+export type CheckpointTrainingStep = TrainingStep<CheckpointState>;
+
+export function createCheckpointTrainer(
+  environment: CheckpointEnvironment,
+  rewardMode: RewardMode,
+  overrides: Partial<TrainingOptions> = {},
+): Trainer<CheckpointState> {
+  const options = { ...CHECKPOINT_TRAINING, ...overrides };
+  return createTabularTrainer(model(environment), rewardMode, options);
+}
+
 export function trainCheckpointAgent(
   environment: CheckpointEnvironment,
   rewardMode: RewardMode,
   overrides: Partial<TrainingOptions> = {},
 ): Float64Array {
-  const options = { ...CHECKPOINT_TRAINING, ...overrides };
   return finishTraining(
-    createTabularTrainer(model(environment), rewardMode, options),
+    createCheckpointTrainer(environment, rewardMode, overrides),
   );
 }
 
@@ -290,11 +302,10 @@ export function trainCheckpointSnapshots(
   snapshotEpisodes: readonly number[],
   overrides: Partial<TrainingOptions> = {},
 ) {
-  const options = { ...CHECKPOINT_TRAINING, ...overrides };
   return trainWithSnapshots(
     model(environment),
     rewardMode,
-    options,
+    { ...CHECKPOINT_TRAINING, ...overrides },
     snapshotEpisodes,
   );
 }

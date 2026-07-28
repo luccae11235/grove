@@ -257,6 +257,46 @@
   min-width: 0;
 }
 
+.learningValueToolbar {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+
+.learningValueToolbar p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  line-height: 1.35;
+}
+
+.learningValueButton {
+  flex: 0 0 auto;
+  min-height: 32px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  padding: 5px 9px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.learningValueButton:hover:not(:disabled),
+.learningValueButton[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--surface-subtle);
+}
+
+.learningValueButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .learningBoard {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -284,6 +324,55 @@
   box-shadow: inset 0 0 0 3px #a7552b;
 }
 
+.learningActionValues {
+  position: absolute;
+  inset: 3px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.learningValueArrow {
+  position: absolute;
+  color: var(--aligned);
+  font-size: clamp(0.48rem, 1.4vw, 0.66rem);
+  font-weight: 800;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.learningValueArrow[data-action="0"] {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.learningValueArrow[data-action="1"] {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+.learningValueArrow[data-action="2"] {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.learningValueArrow[data-action="3"] {
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+
+.learningValueArrowChosen {
+  font-size: clamp(0.62rem, 1.7vw, 0.8rem);
+}
+
+.learningBoardValues .learningTrail::after {
+  opacity: 0;
+}
+
 .learningAgent {
   position: absolute;
   z-index: 3;
@@ -296,6 +385,10 @@
   box-shadow: 0 0 0 3px var(--surface-raised);
   color: white;
   font-size: 0.62rem;
+}
+
+.learningAgentExploring {
+  background: #a7552b;
 }
 
 .learningBoardCaption {
@@ -367,8 +460,16 @@
   font-variant-numeric: tabular-nums;
 }
 
+.learningEvent {
+  min-height: 42px;
+  margin: 9px 0 0;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  line-height: 1.4;
+}
+
 .learningChart {
-  margin: 12px 0 0;
+  margin: 8px 0 0;
 }
 
 .learningChartHeading {
@@ -445,7 +546,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 9px;
 }
 
 .learningControls .button {
@@ -454,30 +555,41 @@
   font-size: 0.72rem;
 }
 
-.learningSpeed {
+.learningSpeedSlider {
   display: grid;
-  grid-template-columns: 1fr auto;
-  grid-column: 1;
-  align-items: center;
-  gap: 10px;
+  grid-column: 1 / -1;
+  gap: 5px;
   color: var(--text-muted);
   font-size: 0.68rem;
   font-weight: 700;
 }
 
-.learningSpeed select {
-  min-height: 32px;
-  border: 1px solid var(--border-strong);
-  border-radius: 8px;
-  background: var(--surface-raised);
-  padding: 4px 26px 4px 8px;
+.learningSpeedSlider > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.learningSpeedSlider output {
   color: var(--text);
-  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.learningSpeedSlider input {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.learningSpeedSlider input:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .learningReset {
-  grid-column: 2;
-  justify-self: end;
+  grid-column: 1 / -1;
+  justify-self: start;
   align-self: center;
   border: 0;
   background: transparent;
@@ -806,6 +918,10 @@
     width: min(100%, 360px);
   }
 
+  .learningValueToolbar {
+    align-items: flex-start;
+  }
+
   .learningPanel {
     border-top: 1px solid var(--border);
     border-left: 0;
@@ -826,5 +942,11 @@
 
   .qBarRow {
     grid-template-columns: 7rem 1fr 3rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .learningValueArrow {
+    transition: none;
   }
 }

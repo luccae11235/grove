@@ -80,9 +80,11 @@ references for longer-term editorial direction.
   - [x] Replace the staging draft with the editor-authored rewrite and keep the
     article absent from production while it remains a draft.
   - [x] Integrate the checkpoint grid and its single optimal-trajectory action.
-  - [x] Integrate the compact checkpoint proxy-learning playground and reward
+  - [x] Integrate the compact checkpoint proxy-learning playground with live
+    exploration, evolving route Q-values, a training-speed slider, and reward
     history.
-  - [x] Integrate the matching checkpoint aligned-learning playground.
+  - [x] Integrate the matching checkpoint aligned-learning playground with the
+    same live-learning controls and readouts.
   - [ ] Review the rewritten article in staging and integrate each deferred
     visualization or playground where its placeholder supports a specific
     learning objective.

@@ -1,67 +1,166 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./RewardHacking.module.css";
 import {
+  CHECKPOINT_ACTIONS,
   CHECKPOINT_LAYOUT,
   CHECKPOINT_TRAINING,
+  createCheckpointTrainer,
   createEnvironment,
   evaluateCheckpointPolicy,
+  initialState,
   positionKey,
-  trainCheckpointSnapshots,
+  stateIndex,
+  transition,
+  type CheckpointEnvironment,
   type CheckpointEvaluation,
+  type CheckpointEvent,
+  type CheckpointState,
+  type CheckpointTrainingStep,
   type Position,
 } from "./checkpointMdp";
-import type { RewardMode } from "./engine";
+import type { RewardMode, Trainer } from "./engine";
 
-const SNAPSHOT_EPISODES = Array.from({ length: 40 }, (_, index) => (index + 1) * 50);
-const SPEEDS = {
-  slow: 240,
-  normal: 130,
-  fast: 70,
-} as const;
+const MAX_TRAINING_EPISODES = 5_000;
+const TRAINING_TICK_MS = 80;
+const REQUIRED_STABLE_CHECKS = 2;
+const HISTORY_INTERVAL = 25;
 
-type PlaybackMode = "idle" | "training" | "paused" | "complete" | "replaying";
-type Speed = keyof typeof SPEEDS;
+type PlaybackMode =
+  | "idle"
+  | "training"
+  | "paused"
+  | "complete"
+  | "replaying"
+  | "limit";
 
 interface LearningSample {
   episode: number;
   evaluation: CheckpointEvaluation;
 }
 
+interface PolicyFrame {
+  previousState: CheckpointState;
+  state: CheckpointState;
+  action: number;
+  cumulativeReward: number;
+  completedLap: boolean;
+  event: CheckpointEvent;
+}
+
 function compactReward(value: number) {
   return value.toLocaleString("en-US", {
-    maximumFractionDigits: 1,
-    minimumFractionDigits: 1,
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
   });
+}
+
+function tracePolicy(
+  environment: CheckpointEnvironment,
+  evaluation: CheckpointEvaluation,
+  rewardMode: RewardMode,
+): PolicyFrame[] {
+  const frames: PolicyFrame[] = [];
+  let state = initialState(environment);
+  let cumulativeReward = 0;
+  let completedLap = false;
+
+  for (const action of evaluation.actions) {
+    const result = transition(environment, state, action, rewardMode);
+    cumulativeReward += result.reward;
+    completedLap ||= result.done;
+    frames.push({
+      previousState: state,
+      state: result.state,
+      action,
+      cumulativeReward,
+      completedLap,
+      event: result.event,
+    });
+    state = result.state;
+    if (result.done) break;
+  }
+  return frames;
+}
+
+function compactDeterministicRoute(frames: PolicyFrame[]) {
+  const seenStates = new Set<string>();
+  for (let index = 0; index < frames.length; index += 1) {
+    const state = frames[index].previousState;
+    const key = `${positionKey(state.position)}|${state.nextCheckpoint}`;
+    if (seenStates.has(key)) return frames.slice(0, index);
+    seenStates.add(key);
+  }
+  return frames;
+}
+
+function actionIsAvailable(
+  environment: CheckpointEnvironment,
+  position: Position,
+  actionIndex: number,
+) {
+  const action = CHECKPOINT_ACTIONS[actionIndex];
+  const candidate = {
+    x: position.x + action.dx,
+    y: position.y + action.dy,
+  };
+  return (
+    candidate.x >= 0 &&
+    candidate.x < environment.width &&
+    candidate.y >= 0 &&
+    candidate.y < environment.height &&
+    !environment.walls.has(positionKey(candidate))
+  );
+}
+
+function routeValueMap(
+  environment: CheckpointEnvironment,
+  frames: PolicyFrame[],
+  qValues: Float64Array,
+) {
+  const route = new Map<string, number>();
+  for (const frame of compactDeterministicRoute(frames)) {
+    const offset =
+      stateIndex(environment, frame.previousState) * CHECKPOINT_ACTIONS.length;
+    const key = `${positionKey(frame.previousState.position)}|${frame.action}`;
+    const value = qValues[offset + frame.action];
+    route.set(key, Math.max(route.get(key) ?? -Infinity, value));
+  }
+  const positiveValues = [...route.values()].filter((value) => value > 0);
+  return {
+    route,
+    floor: positiveValues.length ? Math.min(...positiveValues) : 0,
+    ceiling: positiveValues.length ? Math.max(...positiveValues) : 0,
+  };
 }
 
 function RewardHistory({
   samples,
-  visibleCount,
   rewardMode,
 }: {
   samples: LearningSample[];
-  visibleCount: number;
   rewardMode: RewardMode;
 }) {
   const width = 260;
-  const height = 118;
+  const height = 112;
   const inset = { top: 12, right: 10, bottom: 24, left: 34 };
   const rewards = samples.map((sample) => sample.evaluation.reward);
   const minimum = Math.min(0, ...rewards);
   const maximum = Math.max(1, ...rewards);
   const range = Math.max(1, maximum - minimum);
+  const latest = samples.at(-1);
+  const domainMaximum = Math.max(
+    100,
+    Math.ceil((latest?.episode ?? 0) / 100) * 100,
+  );
   const x = (episode: number) =>
     inset.left +
-    (episode / CHECKPOINT_TRAINING.episodes) *
-      (width - inset.left - inset.right);
+    (episode / domainMaximum) * (width - inset.left - inset.right);
   const y = (reward: number) =>
     inset.top +
     ((maximum - reward) / range) * (height - inset.top - inset.bottom);
-  const visible = samples.slice(0, visibleCount);
-  const points = visible
+  const points = samples
     .map((sample) => `${x(sample.episode)},${y(sample.evaluation.reward)}`)
     .join(" ");
-  const latest = visible.at(-1);
 
   return (
     <figure className={styles.learningChart}>
@@ -125,7 +224,7 @@ function RewardHistory({
           y={height - 6}
           textAnchor="end"
         >
-          2,000 episodes
+          {domainMaximum.toLocaleString("en-US")} episodes
         </text>
         <text
           className={styles.chartLabel}
@@ -144,8 +243,22 @@ function RewardHistory({
           {Math.floor(minimum)}
         </text>
       </svg>
-      <figcaption>Greedy policy reward, sampled every 50 episodes.</figcaption>
+      <figcaption>Current greedy-policy reward, sampled every 25 episodes.</figcaption>
     </figure>
+  );
+}
+
+function policyIsOptimal(
+  evaluation: CheckpointEvaluation,
+  rewardMode: RewardMode,
+) {
+  if (rewardMode === "aligned") {
+    return evaluation.completedLap && evaluation.steps === 16;
+  }
+  return (
+    !evaluation.completedLap &&
+    evaluation.repeatedEntries >= 40 &&
+    evaluation.reward >= 40
   );
 }
 
@@ -159,76 +272,168 @@ function CheckpointLearningPlayground({
     () => createEnvironment({ ...CHECKPOINT_LAYOUT }),
     [],
   );
-  const samples = useMemo<LearningSample[]>(() => {
-    const { snapshots } = trainCheckpointSnapshots(
-      environment,
-      rewardMode,
-      SNAPSHOT_EPISODES,
-    );
-    return SNAPSHOT_EPISODES.map((episode) => {
-      const qValues = snapshots.get(episode);
-      if (!qValues) {
-        throw new Error(`Missing checkpoint snapshot for episode ${episode}.`);
-      }
-      return {
-        episode,
-        evaluation: evaluateCheckpointPolicy(
-          environment,
-          qValues,
-          rewardMode,
-        ),
-      };
+  const trainerRef = useRef<Trainer<CheckpointState> | null>(null);
+  if (!trainerRef.current) {
+    trainerRef.current = createCheckpointTrainer(environment, rewardMode, {
+      episodes: MAX_TRAINING_EPISODES,
+      epsilonDecayEpisodes: CHECKPOINT_TRAINING.episodes,
     });
-  }, [environment, rewardMode]);
-  const [sampleCount, setSampleCount] = useState(0);
+  }
+
   const [mode, setMode] = useState<PlaybackMode>("idle");
-  const [speed, setSpeed] = useState<Speed>("normal");
+  const [episodes, setEpisodes] = useState(0);
+  const [evaluation, setEvaluation] =
+    useState<CheckpointEvaluation | null>(null);
+  const [trainingStep, setTrainingStep] =
+    useState<CheckpointTrainingStep | null>(null);
+  const [trainingTrail, setTrainingTrail] = useState<Position[]>([]);
+  const [samples, setSamples] = useState<LearningSample[]>([]);
+  const [speed, setSpeed] = useState(75);
+  const [valuesVisible, setValuesVisible] = useState(false);
   const [playbackStep, setPlaybackStep] = useState(0);
+  const stableChecksRef = useRef(0);
+  const previousSignatureRef = useRef("");
+  const episodeBudgetRef = useRef(0);
+  const previousTickRef = useRef(0);
+  const visualTickRef = useRef(0);
+  const speedRef = useRef(speed);
+  speedRef.current = speed;
 
-  const currentSample = sampleCount > 0 ? samples[sampleCount - 1] : null;
-  const evaluation = currentSample?.evaluation ?? null;
-  const trajectory = evaluation?.trajectory ?? [environment.start];
-  const trainingStep =
-    mode === "training" && trajectory.length > 1
-      ? sampleCount % Math.min(trajectory.length, 18)
-      : 0;
-  const visibleStep =
-    mode === "replaying"
-      ? Math.min(playbackStep, trajectory.length - 1)
-      : trainingStep;
-  const currentPosition = trajectory[visibleStep] ?? environment.start;
-  const visited = new Set(
-    trajectory
-      .slice(0, visibleStep + 1)
-      .map((position) => positionKey(position)),
+  const policyFrames = useMemo(
+    () =>
+      evaluation
+        ? tracePolicy(environment, evaluation, rewardMode)
+        : [],
+    [environment, evaluation, rewardMode],
   );
-  const episode = currentSample?.episode ?? 0;
-  const epsilon =
-    episode === 0
-      ? CHECKPOINT_TRAINING.epsilonStart
-      : CHECKPOINT_TRAINING.epsilonStart *
-          (1 - episode / (CHECKPOINT_TRAINING.episodes - 1)) +
-        CHECKPOINT_TRAINING.epsilonEnd *
-          (episode / (CHECKPOINT_TRAINING.episodes - 1));
+  const compactFrames = useMemo(
+    () => compactDeterministicRoute(policyFrames),
+    [policyFrames],
+  );
+  const qValueView = useMemo(
+    () =>
+      routeValueMap(
+        environment,
+        policyFrames,
+        trainerRef.current?.qValues ?? new Float64Array(),
+      ),
+    // episodes makes the memo follow mutations in the trainer's Q-table.
+    [environment, episodes, policyFrames],
+  );
+
+  function resetExperience(nextMode: PlaybackMode = "idle") {
+    trainerRef.current = createCheckpointTrainer(environment, rewardMode, {
+      episodes: MAX_TRAINING_EPISODES,
+      epsilonDecayEpisodes: CHECKPOINT_TRAINING.episodes,
+    });
+    stableChecksRef.current = 0;
+    previousSignatureRef.current = "";
+    episodeBudgetRef.current = 0;
+    previousTickRef.current = 0;
+    visualTickRef.current = 0;
+    setEpisodes(0);
+    setEvaluation(null);
+    setTrainingStep(null);
+    setTrainingTrail([]);
+    setSamples([]);
+    setPlaybackStep(0);
+    setMode(nextMode);
+  }
 
   useEffect(() => {
-    if (mode !== "training" || sampleCount >= samples.length) return undefined;
-    const timer = window.setTimeout(
-      () => setSampleCount((count) => Math.min(samples.length, count + 1)),
-      SPEEDS[speed],
-    );
-    return () => window.clearTimeout(timer);
-  }, [mode, sampleCount, samples.length, speed]);
+    if (mode !== "training") return undefined;
+    previousTickRef.current = performance.now();
 
-  useEffect(() => {
-    if (mode === "training" && sampleCount >= samples.length) {
-      setMode("complete");
-    }
-  }, [mode, sampleCount, samples.length]);
+    const interval = window.setInterval(() => {
+      const trainer = trainerRef.current;
+      if (!trainer) return;
+      const now = performance.now();
+      episodeBudgetRef.current +=
+        (speedRef.current * (now - previousTickRef.current)) / 1_000;
+      previousTickRef.current = now;
+      const episodesThisTick = Math.floor(episodeBudgetRef.current);
+      episodeBudgetRef.current -= episodesThisTick;
+      if (episodesThisTick === 0) return;
+
+      const frames: CheckpointTrainingStep[] = [];
+      const batchEnd = Math.min(
+        MAX_TRAINING_EPISODES,
+        trainer.episodesCompleted + episodesThisTick,
+      );
+      while (trainer.episodesCompleted < batchEnd) {
+        trainer.trainEpisode((step) => frames.push(step));
+      }
+
+      const nextEvaluation = evaluateCheckpointPolicy(
+        environment,
+        trainer.qValues,
+        rewardMode,
+      );
+      const nextEpisodes = trainer.episodesCompleted;
+      visualTickRef.current += 1;
+      const visibleFrame =
+        frames.length > 0
+          ? frames[visualTickRef.current % frames.length]
+          : null;
+      setTrainingStep(visibleFrame);
+      setTrainingTrail(
+        visibleFrame
+          ? frames
+              .filter(
+                (frame) =>
+                  frame.episode === visibleFrame.episode &&
+                  frame.step <= visibleFrame.step,
+              )
+              .flatMap((frame, index) =>
+                index === 0
+                  ? [frame.state.position, frame.nextState.position]
+                  : [frame.nextState.position],
+              )
+          : [],
+      );
+      setEpisodes(nextEpisodes);
+      setEvaluation(nextEvaluation);
+      setSamples((current) => {
+        const lastEpisode = current.at(-1)?.episode ?? 0;
+        if (
+          nextEpisodes - lastEpisode < HISTORY_INTERVAL &&
+          !policyIsOptimal(nextEvaluation, rewardMode) &&
+          !trainer.finished
+        ) {
+          return current;
+        }
+        return [...current, { episode: nextEpisodes, evaluation: nextEvaluation }];
+      });
+
+      if (policyIsOptimal(nextEvaluation, rewardMode)) {
+        const signature = nextEvaluation.actions.join(",");
+        stableChecksRef.current =
+          signature === previousSignatureRef.current
+            ? stableChecksRef.current + 1
+            : 1;
+        previousSignatureRef.current = signature;
+      } else {
+        stableChecksRef.current = 0;
+        previousSignatureRef.current = "";
+      }
+
+      if (stableChecksRef.current >= REQUIRED_STABLE_CHECKS) {
+        setTrainingStep(null);
+        setTrainingTrail([]);
+        setMode("complete");
+      } else if (trainer.finished) {
+        setTrainingStep(null);
+        setTrainingTrail([]);
+        setMode("limit");
+      }
+    }, TRAINING_TICK_MS);
+
+    return () => window.clearInterval(interval);
+  }, [environment, mode, rewardMode]);
 
   useEffect(() => {
     if (mode !== "replaying") return undefined;
-    if (playbackStep >= trajectory.length - 1) {
+    if (playbackStep >= policyFrames.length) {
       setMode("complete");
       return undefined;
     }
@@ -237,16 +442,16 @@ function CheckpointLearningPlayground({
       72,
     );
     return () => window.clearTimeout(timer);
-  }, [mode, playbackStep, trajectory.length]);
+  }, [mode, playbackStep, policyFrames.length]);
 
   function toggleTraining() {
     if (mode === "training") {
       setMode("paused");
       return;
     }
-    if (mode === "complete" || sampleCount >= samples.length) {
-      setSampleCount(0);
-      setPlaybackStep(0);
+    if (mode === "complete" || mode === "limit") {
+      resetExperience("training");
+      return;
     }
     setMode("training");
   }
@@ -256,33 +461,97 @@ function CheckpointLearningPlayground({
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    setPlaybackStep(reducedMotion ? trajectory.length - 1 : 0);
+    setPlaybackStep(reducedMotion ? policyFrames.length : 0);
     setMode(reducedMotion ? "complete" : "replaying");
   }
 
-  function reset() {
-    setMode("idle");
-    setSampleCount(0);
-    setPlaybackStep(0);
-  }
+  const replayFrame =
+    mode === "replaying" && playbackStep > 0
+      ? policyFrames[Math.min(playbackStep - 1, policyFrames.length - 1)]
+      : null;
+  const currentPosition =
+    mode === "training" && trainingStep
+      ? trainingStep.nextState.position
+      : replayFrame?.state.position ??
+        (mode === "complete" && compactFrames.length > 0
+          ? (compactFrames.at(-1)?.state.position ?? environment.start)
+          : environment.start);
+  const trailPositions =
+    mode === "training"
+      ? trainingTrail
+      : mode === "replaying"
+        ? policyFrames
+            .slice(0, playbackStep)
+            .flatMap((frame, index) =>
+              index === 0
+                ? [frame.previousState.position, frame.state.position]
+                : [frame.state.position],
+            )
+        : compactFrames.flatMap((frame, index) =>
+            index === 0
+              ? [frame.previousState.position, frame.state.position]
+              : [frame.state.position],
+          );
+  const visited = new Set(trailPositions.map(positionKey));
+  const rewardedPosition =
+    mode === "training" &&
+    trainingStep &&
+    positionKey(trainingStep.state.position) !==
+      positionKey(trainingStep.nextState.position) &&
+    environment.checkpoints.some(
+      (checkpoint) =>
+        positionKey(checkpoint) ===
+        positionKey(trainingStep.nextState.position),
+    )
+      ? positionKey(trainingStep.nextState.position)
+      : replayFrame && replayFrame.event.enteredCheckpoint >= 0
+        ? positionKey(replayFrame.state.position)
+        : "";
+  const currentEpsilon =
+    trainingStep?.epsilon ??
+    (episodes === 0
+      ? CHECKPOINT_TRAINING.epsilonStart
+      : CHECKPOINT_TRAINING.epsilonStart *
+          (1 -
+            Math.min(1, episodes / (CHECKPOINT_TRAINING.episodes - 1))) +
+        CHECKPOINT_TRAINING.epsilonEnd *
+          Math.min(1, episodes / (CHECKPOINT_TRAINING.episodes - 1)));
 
   const status =
     mode === "idle"
-      ? "Ready to train"
+      ? "Ready to learn"
       : mode === "training"
-        ? "Learning from checkpoint rewards…"
+        ? "Exploring and updating Q-values…"
         : mode === "paused"
-          ? "Training paused"
+          ? `Paused after ${episodes.toLocaleString("en-US")} episodes`
           : mode === "replaying"
-            ? `Replaying step ${playbackStep} of ${trajectory.length - 1}`
-            : aligned
-              ? "Ordered-lap policy found"
-              : "Optimal proxy policy found";
+            ? `Running learned policy · step ${playbackStep} of ${policyFrames.length}`
+            : mode === "limit"
+              ? "Training limit reached"
+              : aligned
+                ? "Optimal route found"
+                : "Optimal reward policy found";
+
+  const eventText =
+    mode === "training" && trainingStep
+      ? `Episode ${trainingStep.episode.toLocaleString("en-US")}, step ${trainingStep.step}: ${
+          trainingStep.exploring ? "explored" : "followed current values"
+        } ${CHECKPOINT_ACTIONS[trainingStep.action].label}. Q changed from ${trainingStep.qBefore.toFixed(2)} to ${trainingStep.qAfter.toFixed(2)}.`
+      : mode === "replaying" && replayFrame
+        ? `Step ${playbackStep} of ${policyFrames.length}: chose ${CHECKPOINT_ACTIONS[replayFrame.action].label}.`
+        : mode === "complete" && evaluation
+          ? aligned
+            ? `Shortest ordered lap: ${evaluation.steps} steps.`
+            : `Repeated a visited checkpoint ${evaluation.repeatedEntries} times and completed 0 laps.`
+          : mode === "limit"
+            ? `Stopped after ${MAX_TRAINING_EPISODES.toLocaleString("en-US")} episodes without a stable optimum.`
+            : "Start learning to watch exploration, Q-values, and the greedy route change.";
 
   return (
     <section
       className={`${styles.lab} ${styles.learningLab}`}
       aria-label={`Checkpoint ${aligned ? "aligned" : "proxy"}-reward learning playground`}
+      data-training-model="live-q-learning"
     >
       <header className={styles.learningHeader}>
         <div>
@@ -301,8 +570,28 @@ function CheckpointLearningPlayground({
 
       <div className={styles.learningStage}>
         <div className={styles.learningBoardColumn}>
+          <div className={styles.learningValueToolbar}>
+            <p>
+              {valuesVisible
+                ? qValueView.route.size > 0
+                  ? `Min–max Q-values · ${qValueView.route.size} route actions`
+                  : "No learned route values yet."
+                : "Learned route Q-values are hidden."}
+            </p>
+            <button
+              type="button"
+              className={styles.learningValueButton}
+              aria-pressed={valuesVisible}
+              onClick={() => setValuesVisible((visible) => !visible)}
+              disabled={mode === "replaying"}
+            >
+              {valuesVisible ? "Hide route values" : "Show route values"}
+            </button>
+          </div>
           <div
-            className={styles.learningBoard}
+            className={`${styles.learningBoard} ${
+              valuesVisible ? styles.learningBoardValues : ""
+            }`}
             role="grid"
             aria-label={`Seven by seven checkpoint track during ${aligned ? "aligned" : "proxy"}-reward learning`}
           >
@@ -330,10 +619,7 @@ function CheckpointLearningPlayground({
                       isStart ? styles.optimalStart : "",
                       checkpointIndex >= 0 ? styles.optimalCheckpoint : "",
                       isTrail ? styles.learningTrail : "",
-                      checkpointIndex === 0 &&
-                      !aligned &&
-                      mode === "complete" &&
-                      evaluation?.repeatedEntries
+                      rewardedPosition === key
                         ? styles.learningRewarded
                         : "",
                     ]
@@ -352,8 +638,63 @@ function CheckpointLearningPlayground({
                     {label ? (
                       <span className={styles.optimalCellLabel}>{label}</span>
                     ) : null}
+                    {!isWall ? (
+                      <span
+                        className={styles.learningActionValues}
+                        aria-hidden="true"
+                      >
+                        {CHECKPOINT_ACTIONS.map((action, actionIndex) => {
+                          if (
+                            !actionIsAvailable(
+                              environment,
+                              position,
+                              actionIndex,
+                            )
+                          ) {
+                            return null;
+                          }
+                          const value = qValueView.route.get(
+                            `${key}|${actionIndex}`,
+                          );
+                          const normalized =
+                            value !== undefined &&
+                            qValueView.ceiling > qValueView.floor
+                              ? (value - qValueView.floor) /
+                                (qValueView.ceiling - qValueView.floor)
+                              : 0.72;
+                          return (
+                            <span
+                              className={`${styles.learningValueArrow} ${
+                                value !== undefined
+                                  ? styles.learningValueArrowChosen
+                                  : ""
+                              }`}
+                              data-action={actionIndex}
+                              style={{
+                                opacity:
+                                  valuesVisible &&
+                                  value !== undefined &&
+                                  value > 0
+                                    ? 0.28 + normalized * 0.68
+                                    : 0,
+                              }}
+                              key={action.name}
+                            >
+                              {action.label}
+                            </span>
+                          );
+                        })}
+                      </span>
+                    ) : null}
                     {isCurrent ? (
-                      <span className={styles.learningAgent} aria-hidden="true">
+                      <span
+                        className={`${styles.learningAgent} ${
+                          mode === "training" && trainingStep?.exploring
+                            ? styles.learningAgentExploring
+                            : ""
+                        }`}
+                        aria-hidden="true"
+                      >
                         A
                       </span>
                     ) : null}
@@ -367,24 +708,31 @@ function CheckpointLearningPlayground({
           </p>
         </div>
 
-        <aside className={styles.learningPanel} aria-label="Learning controls and progress">
+        <aside
+          className={styles.learningPanel}
+          aria-label="Learning controls and progress"
+        >
           <div className={styles.learningStatus} aria-live="polite">
             <span>{status}</span>
-            <strong>{episode.toLocaleString("en-US")} / 2,000 episodes</strong>
+            <strong>{episodes.toLocaleString("en-US")} episodes</strong>
           </div>
 
           <div className={styles.learningMetrics}>
             <div>
               <span>Exploration ε</span>
-              <strong>{Math.max(CHECKPOINT_TRAINING.epsilonEnd, epsilon).toFixed(2)}</strong>
+              <strong>{currentEpsilon.toFixed(2)}</strong>
             </div>
             <div>
               <span>Greedy reward</span>
-              <strong>{evaluation ? compactReward(evaluation.reward) : "—"}</strong>
+              <strong>
+                {evaluation ? compactReward(evaluation.reward) : "—"}
+              </strong>
             </div>
             <div>
               <span>Lap completed?</span>
-              <strong>{evaluation ? (evaluation.completedLap ? "Yes" : "No") : "—"}</strong>
+              <strong>
+                {evaluation ? (evaluation.completedLap ? "Yes" : "No") : "—"}
+              </strong>
             </div>
             <div>
               <span>Repeated entries</span>
@@ -392,13 +740,28 @@ function CheckpointLearningPlayground({
             </div>
           </div>
 
-          <RewardHistory
-            samples={samples}
-            visibleCount={sampleCount}
-            rewardMode={rewardMode}
-          />
+          <p className={styles.learningEvent} aria-live="polite">
+            {eventText}
+          </p>
+
+          <RewardHistory samples={samples} rewardMode={rewardMode} />
 
           <div className={styles.learningControls}>
+            <label className={styles.learningSpeedSlider}>
+              <span>
+                Training speed
+                <output>{speed} episodes/s</output>
+              </span>
+              <input
+                type="range"
+                min="5"
+                max="150"
+                step="5"
+                value={speed}
+                onChange={(event) => setSpeed(Number(event.target.value))}
+                disabled={mode === "replaying"}
+              />
+            </label>
             <button
               type="button"
               className={`${styles.button} ${styles.buttonPrimary}`}
@@ -409,37 +772,30 @@ function CheckpointLearningPlayground({
                 ? "Pause training"
                 : mode === "paused"
                   ? "Continue training"
-                  : mode === "complete"
+                  : mode === "complete" || mode === "limit"
                     ? "Train again"
-                    : "Start training"}
+                    : "Train until optimal"}
             </button>
             <button
               type="button"
               className={styles.button}
               onClick={replayPolicy}
-              disabled={mode !== "complete" || !evaluation}
+              disabled={
+                !evaluation ||
+                mode === "training" ||
+                mode === "replaying" ||
+                mode === "idle"
+              }
             >
-              Replay policy
+              Run learned agent
             </button>
-            <label className={styles.learningSpeed}>
-              Display speed
-              <select
-                value={speed}
-                onChange={(event) => setSpeed(event.target.value as Speed)}
-                disabled={mode === "replaying"}
-              >
-                <option value="slow">Slow</option>
-                <option value="normal">Normal</option>
-                <option value="fast">Fast</option>
-              </select>
-            </label>
             <button
               type="button"
               className={styles.learningReset}
-              onClick={reset}
-              disabled={mode === "idle"}
+              onClick={() => resetExperience()}
+              disabled={mode === "replaying"}
             >
-              Reset
+              Reset learning
             </button>
           </div>
         </aside>
@@ -449,21 +805,21 @@ function CheckpointLearningPlayground({
         {mode === "complete" && evaluation ? (
           aligned ? (
             <>
-              Reward reached{" "}
-              <strong>{compactReward(evaluation.reward)}</strong>, and the
-              policy completed the ordered lap in{" "}
-              <strong>{evaluation.steps} steps</strong>. Re-entering old
-              checkpoints no longer pays.
+              The agent explored before converging. Its greedy policy now earns{" "}
+              <strong>{compactReward(evaluation.reward)}</strong> and completes
+              the shortest ordered lap in{" "}
+              <strong>{evaluation.steps} steps</strong>.
             </>
           ) : (
             <>
-              Reward rose to <strong>{compactReward(evaluation.reward)}</strong>,
-              but the policy completed <strong>0 laps</strong>. It learned to
-              leave and re-enter C1 because every return pays again.
+              The agent explored before converging. Reward rose to{" "}
+              <strong>{compactReward(evaluation.reward)}</strong>, but the
+              greedy policy completed <strong>0 laps</strong> and learned to
+              re-enter C1.
             </>
           )
         ) : (
-          "Watch whether reward and lap completion improve together as training proceeds."
+          "Watch exploratory actions update the Q-values, then compare rising reward with lap completion."
         )}
       </p>
     </section>
