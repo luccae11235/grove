@@ -11,14 +11,12 @@ export async function getStaticPaths() {
   const includeDrafts =
     import.meta.env.DEV || import.meta.env.SHOW_DRAFTS === "true";
 
-  if (!includeDrafts) return [];
-
   const entries = await getCollection(
     "articles",
     ({ data }) =>
       data.articleId === "reward-hacking-three-mdps" &&
       data.locale === "en" &&
-      data.status === "draft",
+      (data.status === "published" || includeDrafts),
   );
 
   return entries.map((entry) => ({
@@ -42,7 +40,9 @@ const inCatalog = articles.some((article) => article.id === entry.data.articleId
   canonicalPath={entry.data.href}
   pageType="article"
   analyticsContentId={entry.data.articleId}
-  noindex
+  publishedAt={entry.data.publishedAt}
+  updatedAt={entry.data.updatedAt}
+  noindex={entry.data.status === "draft"}
   wide
 >
   <Content />

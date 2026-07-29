@@ -1,10 +1,10 @@
 # Reward Hacking in Reinforcement Learning
 
 Article ID: reward-hacking-three-mdps
-Status: drafting
+Status: published
 Article source: apps/web/src/content/articles/en/reward-hacking-three-mdps.mdx
 Plan owner: Aflora editorial
-Last reviewed: 2026-07-28
+Last reviewed: 2026-07-29
 
 ## Learning Scope
 
@@ -159,9 +159,8 @@ while omitting another.]
 end on the distinction between what humans meant and what the reward makes
 valuable.]
 
-{The checkpoint optimal-trajectory visualization and both checkpoint learning
-playgrounds are integrated in staging. The remaining four teaching elements
-stay as placeholders.}
+{The checkpoint optimal-trajectory visualization and all six learning
+playgrounds are integrated in the draft.}
 
 ## Visual and Interactive Plan
 
@@ -374,16 +373,28 @@ queue, and hold/release policy.
 Takeaway: The controller maximizes highway speed by never serving the omitted
 ramp queue.
 
-Visual encoding: A compact highway and on-ramp diagram with direct values for
-queue size, congestion, highway speed, action, and overflow.
+Visual encoding: Preserve the standalone traffic playground’s highway and
+curved on-ramp scene: highway cars move continuously at one stable visual speed,
+queued cars occupy fixed ramp positions, and only released ramp cars travel
+through the merge. Direct values report queue size, congestion, highway speed,
+action, and overflow. Below the scene, preserve the paired 4 × 9 Q-value grids
+for hold and release. Each grid uses congestion as rows and queue size as
+columns; direct numeric values, a WIN label, a current-state outline, and an
+updated-or-chosen-action outline reveal which action is winning in every state
+without relying on color alone.
 
-Sequence: Begin with an empty queue and no congestion, show arrivals during
-training, then replay the learned hold policy long enough for the queue to fill.
+Sequence: Begin with an empty queue, no congestion, and both zero-valued Q
+tables. During training, update the queue scene and the exact Q-table cell
+changed by each visible learning step. Then replay the learned hold policy long
+enough for the queue to fill while the chosen state-action cell remains
+highlighted.
 
-Focus: Highway speed remains high while ramp queue and overflow increase.
+Focus: First, highway traffic continues moving while the ramp queue grows.
+Second, the hold table wins across the states the controller encounters,
+connecting the visible behavior to the learned action values.
 
-Default state: q = 0, c = 0, the proxy equation visible, and both actions
-directly labeled.
+Default state: q = 0, c = 0, the proxy equation visible, both actions directly
+labeled, and both 4 × 9 Q-value grids visible with the current state outlined.
 
 Controls: Start/pause training, bounded display-speed control, replay, and reset.
 
@@ -391,8 +402,10 @@ Context: Arrival probability is 0.35, release serves at most two cars, the queue
 is capped at eight, and the simplified model is illustrative.
 
 Accessibility: Report each action and the changing queue, congestion, speed, and
-overflow in text; use labels in addition to color; support keyboard operation
-and stepped reduced-motion updates.
+overflow in text; give every Q-value cell an action, state, value, and policy
+status label; pair color with WIN and outline markers; make the table region
+keyboard-scrollable; support keyboard operation and stepped reduced-motion
+updates.
 
 ### Combined-delay playground
 
@@ -409,36 +422,43 @@ delay with the proxy controller.
 Takeaway: The aligned controller accepts temporary highway congestion to avoid
 unbounded ramp delay.
 
-Visual encoding: Reuse the same highway/on-ramp representation and direct result
-labels from the proxy playground, adding only the combined-delay result required
-for comparison.
+Visual encoding: Reuse the exact highway/on-ramp scene, paired 4 × 9 Q-value
+grids, direct result labels, WIN markers, and current/action outlines from the
+proxy playground, adding only the combined-delay result required for comparison.
 
-Sequence: Present the combined-delay reward, train, and replay a policy that
-alternates between holding and releasing.
+Sequence: Present the combined-delay reward with zero-valued tables, update the
+same state-action cells during training, and replay a policy that alternates
+between holding and releasing while released ramp cars visibly traverse the
+merge.
 
-Focus: The tradeoff between short-lived congestion and accumulating ramp delay.
+Focus: The tradeoff between short-lived congestion and accumulating ramp delay,
+and the state-dependent shift between winning hold and release values.
 
-Default state: Identical traffic state to the proxy playground with the aligned
-reward equation visible.
+Default state: Identical traffic state and zero-valued Q tables to the proxy
+playground with the aligned reward equation visible.
 
 Controls: Start/pause training, bounded display-speed control, replay, and reset.
 
 Context: Traffic dynamics, arrivals, algorithm, and hyperparameters are held
 fixed; only the reward function changes.
 
-Accessibility: Preserve the proxy playground’s keyboard, textual, non-color,
-and reduced-motion alternatives, including a textual comparison of both delay
-components.
+Accessibility: Preserve the proxy playground’s keyboard, textual, Q-table,
+non-color, and reduced-motion alternatives, including a textual comparison of
+both delay components.
 
 ## Current implementation state
 
-The staging draft contains the complete editor-provided prose and equations.
-The checkpoint optimal-trajectory visualization and both checkpoint learning
-playgrounds are integrated. The reference grid is intentionally compact. Both
-learning playgrounds train the Q-table live, expose sampled exploration and
-evolving route Q-values, allow checkpoint repositioning directly on the grid,
-and place controls, learning readouts, and reward history beside the grid on
-wide screens and below it on narrow screens. The remaining four teaching
-elements are represented by labeled placeholders. The content metadata
-therefore reports zero implemented static visuals and three implemented
-interactions.
+The draft contains the complete editor-provided prose and equations, the
+checkpoint optimal-trajectory visualization, and all six planned learning
+playgrounds. The reference grid is intentionally compact. All learning
+playgrounds train the Q-table live and place controls, learning readouts, and
+reward history beside the environment on wide screens and below it on narrow
+screens. The checkpoint playgrounds additionally expose sampled exploration,
+evolving route Q-values, and direct checkpoint repositioning. The
+package-delivery pair keeps the exact same learning shell and room grid while
+changing only whether detected damage or physical damage receives the penalty.
+The traffic pair keeps the same traffic dynamics, fixed arrival sequence,
+5,000-episode Q-learning setup, controls, original highway/on-ramp animation,
+paired hold/release Q-value grids, and replay while changing only whether the
+reward counts highway speed or combined delay. The content metadata therefore
+reports zero implemented static visuals and seven implemented interactions.

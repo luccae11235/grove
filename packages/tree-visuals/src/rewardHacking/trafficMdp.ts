@@ -15,6 +15,8 @@ import {
   greedyAction,
   seededRandom,
   type RewardMode,
+  type Trainer,
+  type TrainingStep,
   type TrainingOptions,
 } from "./engine";
 
@@ -124,14 +126,21 @@ const TRAFFIC_MODEL = {
   transition: trafficTransition,
 };
 
+export type TrafficTrainingStep = TrainingStep<TrafficState>;
+
+export function createTrafficTrainer(
+  rewardMode: RewardMode,
+  overrides: Partial<TrainingOptions> = {},
+): Trainer<TrafficState> {
+  const options = { ...TRAFFIC_TRAINING, ...overrides };
+  return createTabularTrainer(TRAFFIC_MODEL, rewardMode, options);
+}
+
 export function trainTrafficAgent(
   rewardMode: RewardMode,
   overrides: Partial<TrainingOptions> = {},
 ): Float64Array {
-  const options = { ...TRAFFIC_TRAINING, ...overrides };
-  return finishTraining(
-    createTabularTrainer(TRAFFIC_MODEL, rewardMode, options),
-  );
+  return finishTraining(createTrafficTrainer(rewardMode, overrides));
 }
 
 export interface TrafficTraceStep {

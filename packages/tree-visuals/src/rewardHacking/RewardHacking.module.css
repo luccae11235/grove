@@ -404,6 +404,101 @@
   opacity: 0;
 }
 
+.sensorStatusBar {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+}
+
+.sensorStatusBar strong {
+  color: var(--text);
+  font-size: 0.72rem;
+}
+
+.sensorStatusBar strong[data-camera-active="true"] {
+  color: var(--accent);
+}
+
+.sensorLearningBoard {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  width: min(100%, 390px);
+  margin: 0 auto;
+  border: 1px solid var(--border-strong);
+  background: var(--border);
+  gap: 1px;
+}
+
+.sensorCell {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  aspect-ratio: 1;
+  place-items: center;
+  background: var(--surface-raised);
+  color: var(--text);
+  font-size: clamp(0.46rem, 1.5vw, 0.68rem);
+  font-weight: 800;
+}
+
+.sensorCellLabel {
+  position: relative;
+  z-index: 2;
+}
+
+.sensorVoid {
+  background: #40534b;
+}
+
+.sensorStart {
+  background: var(--surface-subtle);
+}
+
+.sensorDestination {
+  background: var(--aligned-soft);
+  color: var(--aligned);
+}
+
+.sensorFragile {
+  border: 2px dashed #a7552b;
+  background: #f8e9dc;
+  color: #773b20;
+}
+
+.sensorSwitch {
+  background: #e5ece8;
+  color: #40534b;
+}
+
+.sensorSafe {
+  background: #edf5f1;
+  color: var(--aligned);
+}
+
+.sensorTrail::after {
+  width: 18%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--border-strong);
+  content: "";
+}
+
+.sensorStart.sensorTrail::after,
+.sensorDestination.sensorTrail::after,
+.sensorFragile.sensorTrail::after,
+.sensorSafe.sensorTrail::after {
+  display: none;
+}
+
+.sensorEvent {
+  box-shadow: inset 0 0 0 3px #a7552b;
+}
+
 .learningAgent {
   position: absolute;
   z-index: 3;
@@ -881,6 +976,345 @@
   text-transform: uppercase;
 }
 
+.trafficOriginalScene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 640 / 300;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface-subtle);
+}
+
+.trafficOriginalMap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.trafficRoad {
+  fill: none;
+  stroke: #40534b;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 58;
+}
+
+.trafficHighwayRoad {
+  fill: #40534b;
+}
+
+.trafficLaneLine {
+  fill: none;
+  stroke: rgb(255 255 255 / 58%);
+  stroke-dasharray: 8 7;
+  stroke-width: 2;
+}
+
+.trafficMapLabel {
+  fill: var(--text-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.trafficFlowLabel {
+  fill: var(--text);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.trafficCarMark {
+  fill: #a7552b;
+  stroke: white;
+  stroke-width: 2.5;
+}
+
+.trafficFlowCar {
+  animation: trafficHighwayFlow 4.4s linear infinite;
+  will-change: transform;
+}
+
+@keyframes trafficHighwayFlow {
+  from {
+    transform: translateX(-70px);
+  }
+
+  to {
+    transform: translateX(710px);
+  }
+}
+
+.trafficOriginalSignal rect {
+  fill: #963b35;
+  stroke: white;
+  stroke-width: 3;
+}
+
+.trafficOriginalSignalRelease rect {
+  fill: var(--aligned);
+}
+
+.trafficOriginalSignal text {
+  fill: white;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-anchor: middle;
+}
+
+.trafficOriginalSignalExploring rect {
+  stroke: #d49a43;
+  stroke-width: 5;
+}
+
+.trafficOriginalCongestion {
+  position: absolute;
+  z-index: 3;
+  top: 47.33%;
+  left: 2.5%;
+  width: 36%;
+}
+
+.trafficOriginalCongestion > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 0.58rem;
+  font-weight: 700;
+}
+
+.trafficOriginalCongestion > div:last-child {
+  height: 6px;
+  overflow: hidden;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.trafficOriginalCongestion > div:last-child span {
+  display: block;
+  height: 100%;
+  background: #a7552b;
+  transition: width 70ms linear;
+}
+
+.trafficLearningMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.trafficLearningMetrics div {
+  min-width: 0;
+  padding: 9px 8px;
+}
+
+.trafficLearningMetrics div + div {
+  border-left: 1px solid var(--border);
+}
+
+.trafficLearningMetrics span,
+.trafficLearningMetrics strong {
+  display: block;
+}
+
+.trafficLearningMetrics span {
+  margin-bottom: 2px;
+  color: var(--text-muted);
+  font-size: 0.61rem;
+}
+
+.trafficLearningMetrics strong {
+  overflow: hidden;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  text-transform: capitalize;
+}
+
+.trafficEpsilon {
+  display: flex;
+  justify-content: space-between;
+  margin: 3px 0 0;
+  color: var(--text-muted);
+  font-size: 0.64rem;
+}
+
+.trafficEpsilon strong {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.trafficValues {
+  border-top: 1px solid var(--border);
+  padding: 18px 22px 20px;
+}
+
+.trafficValueHeading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.trafficValueHeading h4 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.trafficValueHeading p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.62rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.trafficValueLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 8px 0 10px;
+  color: var(--text-muted);
+  font-size: 0.6rem;
+}
+
+.trafficValueLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.trafficLegendWinner {
+  border-radius: 3px;
+  background: var(--text);
+  padding: 1px 4px;
+  color: white;
+  font-size: 0.5rem;
+  font-weight: 900;
+}
+
+.trafficLegendCurrent,
+.trafficLegendAction {
+  width: 12px;
+  aspect-ratio: 1;
+  border: 2px solid var(--text);
+  border-radius: 3px;
+}
+
+.trafficLegendAction {
+  border-color: #a7552b;
+}
+
+.trafficHeatmapScroll {
+  overflow-x: auto;
+  padding: 3px;
+  scrollbar-width: thin;
+}
+
+.trafficHeatmapScroll:focus-visible {
+  outline: 3px solid #d49a43;
+  outline-offset: 2px;
+}
+
+.trafficHeatmaps {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  min-width: 660px;
+}
+
+.trafficHeatmapPanel h5 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 5px;
+  font-size: 0.73rem;
+}
+
+.trafficHeatmapPanel h5 span {
+  color: var(--text-muted);
+  font-size: 0.56rem;
+  font-weight: 650;
+}
+
+.trafficHeatmapPanel > p {
+  margin: 5px 0 0;
+  color: var(--text-muted);
+  font-size: 0.56rem;
+}
+
+.trafficQTable {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.trafficQTable th {
+  height: 19px;
+  color: var(--text-muted);
+  font-size: 0.54rem;
+  font-weight: 800;
+}
+
+.trafficQTable td {
+  position: relative;
+  height: 34px;
+  border: 2px solid transparent;
+  border-radius: 5px;
+  background: rgb(20 107 74 / var(--traffic-heat));
+  color: var(--text);
+  font-size: 0.48rem;
+  text-align: center;
+  transition: background 70ms linear;
+}
+
+.trafficQTable td > b {
+  position: absolute;
+  top: 1px;
+  right: 2px;
+  border-radius: 2px;
+  background: var(--text);
+  padding: 1px 2px;
+  color: white;
+  font-size: 0.32rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.trafficQCellCurrent {
+  border-color: var(--text) !important;
+  outline: 1px solid white;
+  outline-offset: -3px;
+}
+
+.trafficQCellLoser span {
+  opacity: 0.66;
+}
+
+.trafficQCellAction::after {
+  position: absolute;
+  inset: 3px;
+  border: 2px solid #a7552b;
+  border-radius: 3px;
+  content: "";
+  pointer-events: none;
+}
+
+.trafficQCellAction span {
+  font-weight: 900;
+}
+
 .actionPill {
   display: inline-block;
   border-radius: 999px;
@@ -955,6 +1389,23 @@
     width: min(100%, 360px);
   }
 
+  .sensorLearningBoard {
+    width: min(100%, 360px);
+  }
+
+  .trafficValues {
+    padding: 16px;
+  }
+
+  .trafficValueHeading {
+    display: block;
+  }
+
+  .trafficValueHeading p {
+    margin-top: 5px;
+    text-align: left;
+  }
+
   .learningValueToolbar {
     align-items: flex-start;
   }
@@ -983,7 +1434,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .learningValueArrow {
+  .learningValueArrow,
+  .trafficOriginalCongestion > div:last-child span,
+  .trafficQTable td {
     transition: none;
+  }
+
+  .trafficFlowCar {
+    animation: none;
+    transform: translateX(42px);
   }
 }

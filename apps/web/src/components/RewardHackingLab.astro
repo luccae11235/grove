@@ -4,8 +4,12 @@ import {
   CheckpointLab,
   CheckpointProxyPlayground,
   OptimalCheckpointTrajectory,
+  SensorAlignedPlayground,
   SensorLab,
+  SensorProxyPlayground,
+  TrafficAlignedPlayground,
   TrafficLab,
+  TrafficProxyPlayground,
 } from "@grove/tree-visuals";
 import type { Locale } from "../i18n";
 
@@ -16,7 +20,11 @@ interface Props {
     | "checkpoint-aligned"
     | "checkpoint"
     | "checkpoint-editable"
+    | "sensor-proxy"
+    | "sensor-aligned"
     | "sensor"
+    | "traffic-proxy"
+    | "traffic-aligned"
     | "traffic";
   locale?: Locale;
 }
@@ -35,8 +43,16 @@ const { kind, locale = "en" } = Astro.props;
     <CheckpointLab client:load locale={locale} />
   ) : kind === "checkpoint-editable" ? (
     <CheckpointLab client:load locale={locale} editable />
+  ) : kind === "sensor-proxy" ? (
+    <SensorProxyPlayground client:load />
+  ) : kind === "sensor-aligned" ? (
+    <SensorAlignedPlayground client:load />
   ) : kind === "sensor" ? (
     <SensorLab client:load locale={locale} />
+  ) : kind === "traffic-proxy" ? (
+    <TrafficProxyPlayground client:load />
+  ) : kind === "traffic-aligned" ? (
+    <TrafficAlignedPlayground client:load />
   ) : (
     <TrafficLab client:load locale={locale} />
   )}

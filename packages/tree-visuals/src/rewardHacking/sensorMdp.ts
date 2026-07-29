@@ -13,6 +13,8 @@ import {
   greedyAction,
   seededRandom,
   type RewardMode,
+  type Trainer,
+  type TrainingStep,
   type TrainingOptions,
 } from "./engine";
 import type { Position } from "./checkpointMdp";
@@ -157,14 +159,21 @@ const SENSOR_MODEL = {
     sensorTransition(state, action, mode),
 };
 
+export type SensorTrainingStep = TrainingStep<SensorState>;
+
+export function createSensorTrainer(
+  rewardMode: RewardMode,
+  overrides: Partial<TrainingOptions> = {},
+): Trainer<SensorState> {
+  const options = { ...SENSOR_TRAINING, ...overrides };
+  return createTabularTrainer(SENSOR_MODEL, rewardMode, options);
+}
+
 export function trainSensorAgent(
   rewardMode: RewardMode,
   overrides: Partial<TrainingOptions> = {},
 ): Float64Array {
-  const options = { ...SENSOR_TRAINING, ...overrides };
-  return finishTraining(
-    createTabularTrainer(SENSOR_MODEL, rewardMode, options),
-  );
+  return finishTraining(createSensorTrainer(rewardMode, overrides));
 }
 
 export interface SensorTraceStep {
