@@ -74,25 +74,6 @@ references for longer-term editorial direction.
 
 ## Ready
 
-### Publishing and content
-
-- [ ] **Complete the reward hacking article**
-  - [x] Replace the staging draft with the editor-authored rewrite and keep the
-    article absent from production while it remains a draft.
-  - [x] Integrate the checkpoint grid and its single optimal-trajectory action.
-  - [x] Integrate the compact checkpoint proxy-learning playground with live
-    exploration, evolving route Q-values, a training-speed slider, and reward
-    history.
-  - [x] Integrate the matching checkpoint aligned-learning playground with the
-    same live-learning controls and readouts.
-  - [x] Let readers reposition checkpoints directly in both checkpoint
-    playgrounds and retrain from a cleared Q-table.
-  - [ ] Review the rewritten article in staging and integrate each deferred
-    visualization or playground where its placeholder supports a specific
-    learning objective.
-  - Done when the English article is complete, reviewed in the site, and ready
-    to be published.
-
 ### Localization
 
 - [ ] **Translate the article library to Brazilian Portuguese**
@@ -279,6 +260,17 @@ references for longer-term editorial direction.
     provider-specific secrets in the repository.
 
 ### Publishing and content
+
+- [x] **Complete the reward hacking article** — 2026-07-29
+  - Replaced the staging draft with the editor-authored article and published
+    its seven focused interactions.
+  - Preserved the checkpoint playgrounds and added paired proxy/aligned
+    learning playgrounds for the sensor and traffic examples.
+  - Restored the traffic scene's fixed-speed highway flow, moving ramp queue,
+    and paired 4-by-9 hold/release Q-value grids.
+  - Completion check: the full repository gate passes, and a published-only
+    Aflora build includes the indexed article, publication metadata, sitemap
+    entry, and RSS entry.
 
 - [x] **Fix the home library catalog source** — 2026-07-21
   - The shelf now uses the complete authored English catalog instead of the

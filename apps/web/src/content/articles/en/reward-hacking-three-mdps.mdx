@@ -10,9 +10,11 @@ eyebrow: Reinforcement learning · Reward design
 area: Reinforcement learning
 topic: Reward hacking
 summary: Three small MDPs show how an agent can exploit a missing restriction, manipulate a measurement process, or optimize an incomplete objective.
-status: draft
+status: published
+publishedAt: 2026-07-29
+updatedAt: 2026-07-29
 readingTime: 20–25 min
-interactiveCount: 3
+interactiveCount: 7
 staticVisualCount: 0
 difficulty: intermediate
 series: reinforcement-learning
@@ -45,8 +47,8 @@ import RewardHackingLab from "../../../components/RewardHackingLab.astro";
   <div className="article-meta" aria-label="Article information">
     <DifficultyBadge difficulty="intermediate" showDescription />
     <span><strong>3</strong> environments</span>
-    <span><strong>3</strong> interactive visualizations</span>
-    <span><strong>Draft</strong> · in progress</span>
+    <span><strong>7</strong> interactive visualizations</span>
+    <span><strong>Published</strong> · July 29, 2026</span>
   </div>
 </header>
 
@@ -377,10 +379,7 @@ penalty is applied.
 The reward function therefore measures whether damage was observed, not whether
 damage actually occurred.
 
-<aside className="article-visual-placeholder" aria-label="Planned interactive playground placeholder">
-  <strong>Playground placeholder 3</strong>
-  <span>Package-delivery MDP trained with the camera-based reward function.</span>
-</aside>
+<RewardHackingLab kind="sensor-proxy" />
 
 As the simulation shows, the trained agent learns to turn off the camera before
 crossing the fragile floor.
@@ -416,10 +415,7 @@ Now let us train the same agent again. The grid, actions, transition rules,
 learning algorithm, and hyperparameters remain unchanged. We will modify only
 the reward function.
 
-<aside className="article-visual-placeholder" aria-label="Planned interactive playground placeholder">
-  <strong>Playground placeholder 4</strong>
-  <span>The same package-delivery MDP trained with the physical-violation reward function.</span>
-</aside>
+<RewardHackingLab kind="sensor-aligned" />
 
 Now the behavior changes completely. The agent may still discover the camera
 switch while exploring, but turning the camera off does not improve its return.
@@ -525,10 +521,7 @@ traffic produces a larger reward, while actions that create congestion reduce
 it. A controller maximizing cumulative reward should therefore learn to keep
 the highway flowing smoothly.
 
-<aside className="article-visual-placeholder" aria-label="Planned interactive playground placeholder">
-  <strong>Playground placeholder 5</strong>
-  <span>Ramp-metering MDP trained with the highway-speed reward function.</span>
-</aside>
+<RewardHackingLab kind="traffic-proxy" />
 
 The highway certainly moves smoothly—but only because the controller never
 releases the ramp queue.
@@ -579,10 +572,7 @@ Now let us train the same controller again. The states, actions, traffic
 dynamics, arrivals, learning algorithm, and hyperparameters remain unchanged.
 Only the reward function is different.
 
-<aside className="article-visual-placeholder" aria-label="Planned interactive playground placeholder">
-  <strong>Playground placeholder 6</strong>
-  <span>The same ramp-metering MDP trained with the combined-delay reward function.</span>
-</aside>
+<RewardHackingLab kind="traffic-aligned" />
 
 The aligned controller learns to alternate between holding and releasing. It
 sometimes accepts a temporary reduction in highway speed because allowing cars

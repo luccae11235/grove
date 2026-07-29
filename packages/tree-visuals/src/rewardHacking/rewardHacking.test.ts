@@ -9,8 +9,16 @@ import {
   optimalCheckpointTrajectory,
   positionKey,
 } from "./checkpointMdp";
-import { trainSensorAgent, evaluateSensorPolicy } from "./sensorMdp";
-import { trainTrafficAgent, evaluateTrafficPolicy } from "./trafficMdp";
+import {
+  createSensorTrainer,
+  trainSensorAgent,
+  evaluateSensorPolicy,
+} from "./sensorMdp";
+import {
+  createTrafficTrainer,
+  trainTrafficAgent,
+  evaluateTrafficPolicy,
+} from "./trafficMdp";
 
 describe("reward-hacking MDP fixtures", () => {
   it("builds the 16-step ordered reference lap", () => {
@@ -129,6 +137,23 @@ describe("reward-hacking MDP fixtures", () => {
     expect(a.realViolations).toBe(0);
     expect(a.cameraDisabled).toBe(false);
   });
+
+  it("exposes live sensor exploration before learning the camera exploit", () => {
+    const trainer = createSensorTrainer("proxy");
+    const steps: Array<{
+      exploring: boolean;
+      qBefore: number;
+      qAfter: number;
+    }> = [];
+
+    trainer.trainEpisode((step) => steps.push(step));
+
+    expect(trainer.episodesCompleted).toBe(1);
+    expect(steps.length).toBeGreaterThan(0);
+    expect(steps.every((step) => step.exploring)).toBe(true);
+    expect(steps.some((step) => step.qAfter !== step.qBefore)).toBe(true);
+  });
+
   it("traffic matches", () => {
     const p = evaluateTrafficPolicy(trainTrafficAgent("proxy"), "proxy");
     const a = evaluateTrafficPolicy(trainTrafficAgent("aligned"), "aligned");
@@ -139,5 +164,27 @@ describe("reward-hacking MDP fixtures", () => {
     expect(a.releasedCars).toBe(38);
     expect(a.averageQueue).toBeCloseTo(0.77, 2);
     expect(p.totalSystemDelay / a.totalSystemDelay).toBeCloseTo(2.44, 1);
+  });
+
+  it("exposes live traffic exploration with the standalone training setup", () => {
+    const trainer = createTrafficTrainer("proxy");
+    const steps: Array<{
+      exploring: boolean;
+      qBefore: number;
+      qAfter: number;
+    }> = [];
+
+    trainer.trainEpisode((step) => steps.push(step));
+
+    expect(trainer.options).toMatchObject({
+      episodes: 5_000,
+      maxSteps: 200,
+      discount: 0.98,
+      seed: 23,
+    });
+    expect(trainer.episodesCompleted).toBe(1);
+    expect(steps).toHaveLength(200);
+    expect(steps.every((step) => step.exploring)).toBe(true);
+    expect(steps.some((step) => step.qAfter !== step.qBefore)).toBe(true);
   });
 });
