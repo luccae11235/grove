@@ -627,7 +627,7 @@ function TrafficLearningPlayground({
 
   return (
     <section
-      className={`${styles.lab} ${styles.learningLab}`}
+      className={`${styles.lab} ${styles.learningLab} ${styles.trafficLearningLab}`}
       aria-label={`${aligned ? "Combined-delay" : "Highway-speed proxy"} learning playground`}
       data-training-model="live-q-learning"
     >
@@ -690,7 +690,7 @@ function TrafficLearningPlayground({
             </div>
           </div>
 
-          <p className={styles.learningEvent} aria-live="polite">
+          <p className={styles.srOnly} aria-live="polite">
             {eventText}
           </p>
 
