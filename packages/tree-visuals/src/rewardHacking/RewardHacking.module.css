@@ -1108,9 +1108,27 @@
   border-bottom: 1px solid var(--border);
 }
 
+.trafficLearningLab .learningStage {
+  grid-template-columns: minmax(360px, 1.45fr) minmax(220px, 0.55fr);
+  gap: 16px;
+}
+
+.trafficLearningLab .learningPanel {
+  padding-left: 16px;
+}
+
+.trafficLearningLab .learningStatus {
+  margin-bottom: 8px;
+}
+
+.trafficLearningLab .learningControls {
+  gap: 6px;
+  margin-top: 7px;
+}
+
 .trafficLearningMetrics div {
   min-width: 0;
-  padding: 9px 8px;
+  padding: 7px 6px;
 }
 
 .trafficLearningMetrics div + div {
@@ -1385,6 +1403,10 @@
     padding: 16px;
   }
 
+  .trafficLearningLab .learningStage {
+    grid-template-columns: 1fr;
+  }
+
   .learningBoard {
     width: min(100%, 360px);
   }
@@ -1414,6 +1436,10 @@
     border-top: 1px solid var(--border);
     border-left: 0;
     padding-top: 14px;
+    padding-left: 0;
+  }
+
+  .trafficLearningLab .learningPanel {
     padding-left: 0;
   }
 
