@@ -9,8 +9,21 @@ export {
   multiFeatureRegressionSummary,
 } from "./MultiFeatureRegressionPlayground";
 export { CheckpointLab } from "./rewardHacking/CheckpointLab";
+export {
+  CheckpointAlignedPlayground,
+  CheckpointProxyPlayground,
+} from "./rewardHacking/CheckpointProxyPlayground";
+export { OptimalCheckpointTrajectory } from "./rewardHacking/OptimalCheckpointTrajectory";
 export { SensorLab } from "./rewardHacking/SensorLab";
+export {
+  SensorAlignedPlayground,
+  SensorProxyPlayground,
+} from "./rewardHacking/SensorProxyPlayground";
 export { TrafficLab } from "./rewardHacking/TrafficLab";
+export {
+  TrafficAlignedPlayground,
+  TrafficProxyPlayground,
+} from "./rewardHacking/TrafficProxyPlayground";
 export {
   DatasetComplexityPlayground,
   FeatureImportancePlayground,

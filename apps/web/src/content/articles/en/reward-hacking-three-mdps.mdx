@@ -10,9 +10,11 @@ eyebrow: Reinforcement learning · Reward design
 area: Reinforcement learning
 topic: Reward hacking
 summary: Three small MDPs show how an agent can exploit a missing restriction, manipulate a measurement process, or optimize an incomplete objective.
-status: draft
+status: published
+publishedAt: 2026-07-29
+updatedAt: 2026-07-29
 readingTime: 20–25 min
-interactiveCount: 0
+interactiveCount: 7
 staticVisualCount: 0
 difficulty: intermediate
 series: reinforcement-learning
@@ -36,6 +38,7 @@ learning:
 ---
 
 import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import RewardHackingLab from "../../../components/RewardHackingLab.astro";
 
 <header className="page-header lesson-header article-hero">
   <p className="eyebrow">Reinforcement learning · Reward design</p>
@@ -44,7 +47,8 @@ import DifficultyBadge from "../../../components/DifficultyBadge.astro";
   <div className="article-meta" aria-label="Article information">
     <DifficultyBadge difficulty="intermediate" showDescription />
     <span><strong>3</strong> environments</span>
-    <span><strong>Draft</strong> · visuals deferred</span>
+    <span><strong>7</strong> interactive visualizations</span>
+    <span><strong>Published</strong> · July 29, 2026</span>
   </div>
 </header>
 
@@ -199,10 +203,7 @@ Here is the checkpoint problem as an MDP:
 As visualizations and interactions are a central part of Aflora articles, let
 us first examine the landscape and the behavior we want the agent to learn.
 
-<aside className="article-visual-placeholder" aria-label="Planned visualization placeholder">
-  <strong>Visualization placeholder</strong>
-  <span>Gridworld and one “Run optimal trajectory” button.</span>
-</aside>
+<RewardHackingLab kind="checkpoint-optimal" />
 
 What you have just seen is the agent following the ideal trajectory. Before it
 can behave optimally, however, it must explore. It begins by making largely
@@ -237,10 +238,7 @@ The reward describes touching checkpoints, not completing the ordered lap.
 curious, the experiment uses tabular Q-learning with four available movement
 actions.
 
-<aside className="article-visual-placeholder" aria-label="Planned interactive playground placeholder">
-  <strong>Playground placeholder 1</strong>
-  <span>Checkpoint MDP trained with the poorly specified reward function.</span>
-</aside>
+<RewardHackingLab kind="checkpoint-proxy" />
 
 Wait—what happened?
 
@@ -284,10 +282,7 @@ sequence.
 
 Now let us watch the agent learn again.
 
-<aside className="article-visual-placeholder" aria-label="Planned interactive playground placeholder">
-  <strong>Playground placeholder 2</strong>
-  <span>The same checkpoint MDP trained with the aligned reward function.</span>
-</aside>
+<RewardHackingLab kind="checkpoint-aligned" />
 
 Now it is working better.
 
@@ -384,10 +379,7 @@ penalty is applied.
 The reward function therefore measures whether damage was observed, not whether
 damage actually occurred.
 
-<aside className="article-visual-placeholder" aria-label="Planned interactive playground placeholder">
-  <strong>Playground placeholder 3</strong>
-  <span>Package-delivery MDP trained with the camera-based reward function.</span>
-</aside>
+<RewardHackingLab kind="sensor-proxy" />
 
 As the simulation shows, the trained agent learns to turn off the camera before
 crossing the fragile floor.
@@ -423,10 +415,7 @@ Now let us train the same agent again. The grid, actions, transition rules,
 learning algorithm, and hyperparameters remain unchanged. We will modify only
 the reward function.
 
-<aside className="article-visual-placeholder" aria-label="Planned interactive playground placeholder">
-  <strong>Playground placeholder 4</strong>
-  <span>The same package-delivery MDP trained with the physical-violation reward function.</span>
-</aside>
+<RewardHackingLab kind="sensor-aligned" />
 
 Now the behavior changes completely. The agent may still discover the camera
 switch while exploring, but turning the camera off does not improve its return.
@@ -532,10 +521,7 @@ traffic produces a larger reward, while actions that create congestion reduce
 it. A controller maximizing cumulative reward should therefore learn to keep
 the highway flowing smoothly.
 
-<aside className="article-visual-placeholder" aria-label="Planned interactive playground placeholder">
-  <strong>Playground placeholder 5</strong>
-  <span>Ramp-metering MDP trained with the highway-speed reward function.</span>
-</aside>
+<RewardHackingLab kind="traffic-proxy" />
 
 The highway certainly moves smoothly—but only because the controller never
 releases the ramp queue.
@@ -586,10 +572,7 @@ Now let us train the same controller again. The states, actions, traffic
 dynamics, arrivals, learning algorithm, and hyperparameters remain unchanged.
 Only the reward function is different.
 
-<aside className="article-visual-placeholder" aria-label="Planned interactive playground placeholder">
-  <strong>Playground placeholder 6</strong>
-  <span>The same ramp-metering MDP trained with the combined-delay reward function.</span>
-</aside>
+<RewardHackingLab kind="traffic-aligned" />
 
 The aligned controller learns to alternate between holding and releasing. It
 sometimes accepts a temporary reduction in highway speed because allowing cars

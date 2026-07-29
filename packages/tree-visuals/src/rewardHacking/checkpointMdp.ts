@@ -14,6 +14,8 @@ import {
   seededRandom,
   trainWithSnapshots,
   type RewardMode,
+  type Trainer,
+  type TrainingStep,
   type TrainingOptions,
 } from "./engine";
 
@@ -118,6 +120,73 @@ export function initialState(environment: CheckpointEnvironment): CheckpointStat
   return { position: { ...environment.start }, nextCheckpoint: 0 };
 }
 
+function shortestPath(
+  environment: CheckpointEnvironment,
+  start: Position,
+  target: Position,
+): Position[] {
+  const startKey = positionKey(start);
+  const targetKey = positionKey(target);
+  const queue: Position[] = [{ ...start }];
+  const previous = new Map<string, Position | null>([[startKey, null]]);
+
+  for (let cursor = 0; cursor < queue.length; cursor += 1) {
+    const position = queue[cursor];
+    if (positionKey(position) === targetKey) break;
+
+    for (const action of CHECKPOINT_ACTIONS) {
+      const candidate = {
+        x: position.x + action.dx,
+        y: position.y + action.dy,
+      };
+      const key = positionKey(candidate);
+      if (
+        candidate.x < 0 ||
+        candidate.x >= environment.width ||
+        candidate.y < 0 ||
+        candidate.y >= environment.height ||
+        environment.walls.has(key) ||
+        previous.has(key)
+      ) {
+        continue;
+      }
+      previous.set(key, position);
+      queue.push(candidate);
+    }
+  }
+
+  if (!previous.has(targetKey)) {
+    throw new Error(`Checkpoint target ${targetKey} is unreachable.`);
+  }
+
+  const path: Position[] = [];
+  let current: Position | null = target;
+  while (current) {
+    path.push({ ...current });
+    current = previous.get(positionKey(current)) ?? null;
+  }
+  return path.reverse();
+}
+
+/**
+ * Returns the shortest reference lap through the ordered checkpoints and back
+ * to the start. This is a route-planning baseline, not a learned policy.
+ */
+export function optimalCheckpointTrajectory(
+  environment: CheckpointEnvironment,
+): Position[] {
+  const trajectory: Position[] = [{ ...environment.start }];
+  let current = environment.start;
+
+  for (const target of [...environment.checkpoints, environment.start]) {
+    const segment = shortestPath(environment, current, target);
+    trajectory.push(...segment.slice(1));
+    current = target;
+  }
+
+  return trajectory;
+}
+
 export function stateIndex(
   environment: CheckpointEnvironment,
   state: CheckpointState,
@@ -206,14 +275,24 @@ function model(environment: CheckpointEnvironment) {
   };
 }
 
+export type CheckpointTrainingStep = TrainingStep<CheckpointState>;
+
+export function createCheckpointTrainer(
+  environment: CheckpointEnvironment,
+  rewardMode: RewardMode,
+  overrides: Partial<TrainingOptions> = {},
+): Trainer<CheckpointState> {
+  const options = { ...CHECKPOINT_TRAINING, ...overrides };
+  return createTabularTrainer(model(environment), rewardMode, options);
+}
+
 export function trainCheckpointAgent(
   environment: CheckpointEnvironment,
   rewardMode: RewardMode,
   overrides: Partial<TrainingOptions> = {},
 ): Float64Array {
-  const options = { ...CHECKPOINT_TRAINING, ...overrides };
   return finishTraining(
-    createTabularTrainer(model(environment), rewardMode, options),
+    createCheckpointTrainer(environment, rewardMode, overrides),
   );
 }
 
@@ -223,11 +302,10 @@ export function trainCheckpointSnapshots(
   snapshotEpisodes: readonly number[],
   overrides: Partial<TrainingOptions> = {},
 ) {
-  const options = { ...CHECKPOINT_TRAINING, ...overrides };
   return trainWithSnapshots(
     model(environment),
     rewardMode,
-    options,
+    { ...CHECKPOINT_TRAINING, ...overrides },
     snapshotEpisodes,
   );
 }

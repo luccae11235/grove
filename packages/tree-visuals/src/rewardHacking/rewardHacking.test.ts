@@ -1,9 +1,41 @@
 import { describe, it, expect } from "vitest";
-import { createEnvironment, CHECKPOINT_LAYOUT, trainCheckpointAgent, evaluateCheckpointPolicy } from "./checkpointMdp";
-import { trainSensorAgent, evaluateSensorPolicy } from "./sensorMdp";
-import { trainTrafficAgent, evaluateTrafficPolicy } from "./trafficMdp";
+import {
+  createEnvironment,
+  createCheckpointTrainer,
+  CHECKPOINT_LAYOUT,
+  trainCheckpointAgent,
+  evaluateCheckpointPolicy,
+  isPlaceable,
+  optimalCheckpointTrajectory,
+  positionKey,
+} from "./checkpointMdp";
+import {
+  createSensorTrainer,
+  trainSensorAgent,
+  evaluateSensorPolicy,
+} from "./sensorMdp";
+import {
+  createTrafficTrainer,
+  trainTrafficAgent,
+  evaluateTrafficPolicy,
+} from "./trafficMdp";
 
 describe("reward-hacking MDP fixtures", () => {
+  it("builds the 16-step ordered reference lap", () => {
+    const env = createEnvironment({ ...CHECKPOINT_LAYOUT });
+    const trajectory = optimalCheckpointTrajectory(env);
+    const keys = trajectory.map(positionKey);
+    const checkpointVisits = env.checkpoints.map((checkpoint) =>
+      keys.indexOf(positionKey(checkpoint)),
+    );
+
+    expect(trajectory).toHaveLength(17);
+    expect(positionKey(trajectory[0])).toBe(positionKey(env.start));
+    expect(positionKey(trajectory.at(-1)!)).toBe(positionKey(env.start));
+    expect(checkpointVisits).toEqual([...checkpointVisits].sort((a, b) => a - b));
+    expect(checkpointVisits.every((step) => step > 0)).toBe(true);
+  });
+
   it("checkpoint matches", () => {
     const env = createEnvironment({ ...CHECKPOINT_LAYOUT });
     const p = evaluateCheckpointPolicy(env, trainCheckpointAgent(env, "proxy"), "proxy");
@@ -15,6 +47,54 @@ describe("reward-hacking MDP fixtures", () => {
     expect(a.completedLap).toBe(true);
     expect(a.steps).toBe(16);
   });
+
+  it("exposes live exploratory steps and Q-value updates", () => {
+    const env = createEnvironment({ ...CHECKPOINT_LAYOUT });
+    const trainer = createCheckpointTrainer(env, "aligned");
+    const steps: Array<{
+      exploring: boolean;
+      qBefore: number;
+      qAfter: number;
+    }> = [];
+
+    trainer.trainEpisode((step) => steps.push(step));
+
+    expect(trainer.episodesCompleted).toBe(1);
+    expect(steps.length).toBeGreaterThan(0);
+    expect(steps.every((step) => step.exploring)).toBe(true);
+    expect(steps.some((step) => step.qAfter !== step.qBefore)).toBe(true);
+  });
+
+  it("relearns both rewards after checkpoints move", () => {
+    const movedCheckpoints = [
+      { x: 1, y: 2 },
+      ...CHECKPOINT_LAYOUT.checkpoints.slice(1),
+    ];
+    const env = createEnvironment({
+      ...CHECKPOINT_LAYOUT,
+      checkpoints: movedCheckpoints,
+    });
+    const optimalSteps = optimalCheckpointTrajectory(env).length - 1;
+    const proxy = evaluateCheckpointPolicy(
+      env,
+      trainCheckpointAgent(env, "proxy"),
+      "proxy",
+    );
+    const aligned = evaluateCheckpointPolicy(
+      env,
+      trainCheckpointAgent(env, "aligned"),
+      "aligned",
+    );
+
+    expect(isPlaceable(env, { x: 0, y: 2 }, 0)).toBe(true);
+    expect(isPlaceable(env, env.start, 0)).toBe(false);
+    expect(isPlaceable(env, env.checkpoints[1], 0)).toBe(false);
+    expect(proxy.completedLap).toBe(false);
+    expect(proxy.repeatedEntries).toBeGreaterThanOrEqual(40);
+    expect(aligned.completedLap).toBe(true);
+    expect(aligned.steps).toBe(optimalSteps);
+  });
+
   // The article claims the proxy agent never completes a lap for ANY legal C1
   // position. That claim is load-bearing, so it is pinned here.
   it("proxy completes no lap at any legal C1 position", () => {
@@ -57,6 +137,23 @@ describe("reward-hacking MDP fixtures", () => {
     expect(a.realViolations).toBe(0);
     expect(a.cameraDisabled).toBe(false);
   });
+
+  it("exposes live sensor exploration before learning the camera exploit", () => {
+    const trainer = createSensorTrainer("proxy");
+    const steps: Array<{
+      exploring: boolean;
+      qBefore: number;
+      qAfter: number;
+    }> = [];
+
+    trainer.trainEpisode((step) => steps.push(step));
+
+    expect(trainer.episodesCompleted).toBe(1);
+    expect(steps.length).toBeGreaterThan(0);
+    expect(steps.every((step) => step.exploring)).toBe(true);
+    expect(steps.some((step) => step.qAfter !== step.qBefore)).toBe(true);
+  });
+
   it("traffic matches", () => {
     const p = evaluateTrafficPolicy(trainTrafficAgent("proxy"), "proxy");
     const a = evaluateTrafficPolicy(trainTrafficAgent("aligned"), "aligned");
@@ -67,5 +164,27 @@ describe("reward-hacking MDP fixtures", () => {
     expect(a.releasedCars).toBe(38);
     expect(a.averageQueue).toBeCloseTo(0.77, 2);
     expect(p.totalSystemDelay / a.totalSystemDelay).toBeCloseTo(2.44, 1);
+  });
+
+  it("exposes live traffic exploration with the standalone training setup", () => {
+    const trainer = createTrafficTrainer("proxy");
+    const steps: Array<{
+      exploring: boolean;
+      qBefore: number;
+      qAfter: number;
+    }> = [];
+
+    trainer.trainEpisode((step) => steps.push(step));
+
+    expect(trainer.options).toMatchObject({
+      episodes: 5_000,
+      maxSteps: 200,
+      discount: 0.98,
+      seed: 23,
+    });
+    expect(trainer.episodesCompleted).toBe(1);
+    expect(steps).toHaveLength(200);
+    expect(steps.every((step) => step.exploring)).toBe(true);
+    expect(steps.some((step) => step.qAfter !== step.qBefore)).toBe(true);
   });
 });

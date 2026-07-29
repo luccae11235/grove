@@ -16,6 +16,7 @@ export interface TrainingOptions {
   discount: number;
   epsilonStart: number;
   epsilonEnd: number;
+  epsilonDecayEpisodes?: number;
   seed: number;
 }
 
@@ -71,10 +72,26 @@ export function greedyAction(
   return ties[Math.floor(random() * ties.length)];
 }
 
-export interface Trainer {
+export interface TrainingStep<State> {
+  episode: number;
+  step: number;
+  epsilon: number;
+  exploring: boolean;
+  state: State;
+  stateOffset: number;
+  action: number;
+  reward: number;
+  nextState: State;
+  done: boolean;
+  qBefore: number;
+  qAfter: number;
+  result: StepResult<State>;
+}
+
+export interface Trainer<State = unknown> {
   qValues: Float64Array;
   options: TrainingOptions;
-  trainEpisode: () => boolean;
+  trainEpisode: (onStep?: (step: TrainingStep<State>) => void) => boolean;
   readonly episodesCompleted: number;
   readonly finished: boolean;
 }
@@ -83,25 +100,31 @@ export function createTabularTrainer<State>(
   model: QModel<State>,
   rewardMode: RewardMode,
   options: TrainingOptions,
-): Trainer {
+): Trainer<State> {
   const qValues = new Float64Array(model.stateCount * model.actionCount);
   const random = seededRandom(options.seed);
   let episodesCompleted = 0;
 
-  function trainEpisode(): boolean {
+  function trainEpisode(
+    onStep?: (step: TrainingStep<State>) => void,
+  ): boolean {
     if (episodesCompleted >= options.episodes) return false;
+    const epsilonDecayEpisodes =
+      options.epsilonDecayEpisodes ?? options.episodes;
     const progress =
-      options.episodes <= 1 ? 1 : episodesCompleted / (options.episodes - 1);
+      epsilonDecayEpisodes <= 1
+        ? 1
+        : Math.min(1, episodesCompleted / (epsilonDecayEpisodes - 1));
     const epsilon =
       options.epsilonStart * (1 - progress) + options.epsilonEnd * progress;
     let state = model.initialState();
 
     for (let step = 0; step < options.maxSteps; step += 1) {
       const currentOffset = model.stateIndex(state) * model.actionCount;
-      const action =
-        random() < epsilon
-          ? Math.floor(random() * model.actionCount)
-          : greedyAction(qValues, currentOffset, model.actionCount, random);
+      const exploring = random() < epsilon;
+      const action = exploring
+        ? Math.floor(random() * model.actionCount)
+        : greedyAction(qValues, currentOffset, model.actionCount, random);
       const result = model.transition(state, action, rewardMode, random);
       const nextOffset = model.stateIndex(result.state) * model.actionCount;
       let bestNext = qValues[nextOffset];
@@ -110,8 +133,24 @@ export function createTabularTrainer<State>(
       }
       const target =
         result.reward + (result.done ? 0 : options.discount * bestNext);
+      const qBefore = qValues[currentOffset + action];
       qValues[currentOffset + action] +=
         options.learningRate * (target - qValues[currentOffset + action]);
+      onStep?.({
+        episode: episodesCompleted + 1,
+        step: step + 1,
+        epsilon,
+        exploring,
+        state,
+        stateOffset: currentOffset,
+        action,
+        reward: result.reward,
+        nextState: result.state,
+        done: result.done,
+        qBefore,
+        qAfter: qValues[currentOffset + action],
+        result,
+      });
       state = result.state;
       if (result.done) break;
     }
