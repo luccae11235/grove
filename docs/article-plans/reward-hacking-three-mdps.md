@@ -381,7 +381,10 @@ action, and overflow. Below the scene, preserve the paired 4 × 9 Q-value grids
 for hold and release. Each grid uses congestion as rows and queue size as
 columns; direct numeric values, a WIN label, a current-state outline, and an
 updated-or-chosen-action outline reveal which action is winning in every state
-without relying on color alone.
+without relying on color alone. On wide screens, give the traffic scene most of
+the stage width and keep the controls column to the smallest height needed for
+status, metrics, exploration, speed, and actions. Do not repeat each learning
+event as visible prose; announce that detail to assistive technology instead.
 
 Sequence: Begin with an empty queue, no congestion, and both zero-valued Q
 tables. During training, update the queue scene and the exact Q-table cell
