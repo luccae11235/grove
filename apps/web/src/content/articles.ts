@@ -61,9 +61,11 @@ const includeDrafts = import.meta.env.DEV || import.meta.env.SHOW_DRAFTS === "tr
 const isVisible = (entry: ArticleEntry) =>
   entry.data.status === "published" || includeDrafts;
 const entryKey = (articleId: ArticleId, locale: Locale) => `${locale}:${articleId}`;
+const canonicalArticleHref = (href: string) =>
+  href.endsWith("/") ? href : `${href}/`;
 const toArticle = (entry: ArticleEntry): Article => {
   const { articleId, ...data } = entry.data;
-  return { ...data, id: articleId };
+  return { ...data, href: canonicalArticleHref(data.href), id: articleId };
 };
 
 const entriesByLocaleAndId = new Map<string, ArticleEntry>();
