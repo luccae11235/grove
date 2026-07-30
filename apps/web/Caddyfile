@@ -4,6 +4,8 @@
 
   @immutable path /_astro/*
   header @immutable Cache-Control "public, max-age=31536000, immutable"
+  @revalidatable not path /_astro/*
+  header @revalidatable Cache-Control "no-cache"
   @releaseIdentity path /version.json
   header @releaseIdentity Cache-Control "no-store"
   header {
@@ -14,6 +16,9 @@
 
   @www host www.aflora.page
   redir @www https://aflora.page{uri} permanent
+
+  @article_without_trailing_slash path_regexp article_without_trailing_slash ^/(?:pt-br/)?learn/[^/]+$
+  redir @article_without_trailing_slash {http.request.uri.path}/ 308
 
   try_files {path} {path}/index.html
   file_server
