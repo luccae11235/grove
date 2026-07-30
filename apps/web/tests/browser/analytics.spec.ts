@@ -66,7 +66,7 @@ test("reading navigation remains usable after either consent choice", async ({ p
   await page.goto("/");
   await page.getByRole("button", { name: "Reject", exact: true }).click();
   await page.getByRole("link", { name: /How to invent the decision tree/ }).click();
-  await expect(page).toHaveURL(/\/learn\/decision-trees$/);
+  await expect(page).toHaveURL(/\/learn\/decision-trees\/$/);
   await expect(page.getByRole("heading", {
     name: /How to invent the decision tree algorithm from scratch/,
   })).toBeVisible();
