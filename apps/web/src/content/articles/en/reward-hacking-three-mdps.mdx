@@ -45,15 +45,13 @@ import RewardHackingLab from "../../../components/RewardHackingLab.astro";
   <h1>Reward Hacking in Reinforcement Learning</h1>
   <p className="lede">An agent can successfully maximize its reward while failing to accomplish what we intended—or while making surprisingly devious choices.</p>
   <div className="article-meta" aria-label="Article information">
-    <DifficultyBadge difficulty="intermediate" showDescription />
-    <span><strong>3</strong> environments</span>
-    <span><strong>7</strong> interactive visualizations</span>
+    <DifficultyBadge difficulty="intermediate" />
   </div>
 </header>
 
 <article className="lesson-body deep-article reward-hacking-article">
 
-## 1. Introduction
+## Introduction
 
 It may already be clear that a good machine learning solution depends on many
 design choices: which features to keep, how to clean incoming data continuously,
@@ -157,7 +155,7 @@ definition alone can transform the learned behavior.
 We will see agents successfully maximize their rewards while failing to
 accomplish what we intended—or while making surprisingly devious choices.
 
-## 2. Reaching Checkpoints
+## Reaching Checkpoints
 
 Let us begin with a simple problem. An agent must traverse a gridworld, visit
 four checkpoints in order, and then return to where it started:
@@ -294,7 +292,7 @@ Once the distinction between repeated checkpoint entries and actual task
 progress was included, the learned behavior became aligned with the intended
 goal.
 
-## 3. The Devious Robot
+## The Devious Robot
 
 In this example, we again have a gridworld. Instead of visiting checkpoints,
 however, a robot must cross a room and deliver a package.
@@ -446,7 +444,7 @@ disappeared. The lesson is not merely that cameras can be switched off. It is
 that any measurement channel can become part of the environment that an
 optimizer learns to influence.
 
-## 4. The Traffic Light Problem
+## The Traffic Light Problem
 
 For our final example, imagine a highway with an on-ramp controlled by a traffic
 light. Cars already on the highway want to continue moving quickly, while cars
@@ -589,7 +587,7 @@ them to do: maximize expected cumulative reward. The failures came from the gap
 between the quantity that was optimized and the outcome that humans actually
 intended.
 
-## 5. Conclusion
+## Conclusion
 
 Across these three examples, the agents failed in different ways, even though
 every one of them successfully optimized the reward it was given.

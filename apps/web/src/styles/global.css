@@ -1305,6 +1305,14 @@ h1 {
   line-height: 1.35;
 }
 
+.difficulty-intermediate {
+  color: #9a6700;
+}
+
+.difficulty-advanced {
+  color: #b44332;
+}
+
 .difficulty-badge small {
   color: var(--text-muted);
   font-size: inherit;
@@ -1325,12 +1333,12 @@ h1 {
 .difficulty-dots i {
   width: 5px;
   height: 5px;
-  border: 1px solid var(--accent);
+  border: 1px solid currentColor;
   border-radius: 50%;
 }
 
 .difficulty-dots i.filled {
-  background: var(--accent);
+  background: currentColor;
 }
 
 .article-map {
