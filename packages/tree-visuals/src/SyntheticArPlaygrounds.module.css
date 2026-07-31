@@ -1,0 +1,154 @@
+.builder {
+  --acf-accent: #157451;
+  --acf-warm: #c47b2c;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface-raised);
+  box-shadow: 0 18px 54px rgb(17 45 34 / 9%);
+  container-type: inline-size;
+  overflow: hidden;
+}
+
+.header,
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 18px;
+  padding: 16px 22px;
+}
+
+.header {
+  border-bottom: 1px solid var(--border);
+}
+
+.header strong {
+  color: var(--text);
+  font-size: 0.78rem;
+}
+
+.header span {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  padding: 4px 12px 0;
+}
+
+.gridline,
+.zeroLine {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.zeroLine {
+  stroke: var(--text-muted);
+}
+
+.tick,
+.axisLabel {
+  fill: var(--text-muted);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 10px;
+}
+
+.axisLabel {
+  font-size: 10.5px;
+  font-weight: 650;
+}
+
+.series {
+  fill: none;
+  stroke: var(--acf-accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.currentStep {
+  stroke: var(--acf-warm);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.currentPoint {
+  fill: var(--surface-raised);
+  stroke: var(--acf-warm);
+  stroke-width: 3;
+}
+
+.footer {
+  border-top: 1px solid var(--border);
+  background: var(--surface-subtle);
+}
+
+.step {
+  margin: 0;
+  color: var(--text-muted);
+  font-family: "STIX Two Math", "Cambria Math", Georgia, serif;
+  font-size: 0.82rem;
+  font-style: italic;
+  font-variant-numeric: tabular-nums;
+}
+
+.step strong {
+  color: var(--text);
+}
+
+.playButton {
+  min-height: 36px;
+  border: 1px solid var(--acf-accent);
+  border-radius: 8px;
+  background: var(--acf-accent);
+  color: white;
+  cursor: pointer;
+  padding: 7px 14px;
+  font: inherit;
+  font-size: 0.73rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.playButton:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+@container (max-width: 460px) {
+  .header,
+  .footer {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .footer {
+    display: grid;
+  }
+
+  .playButton {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .series,
+  .currentStep,
+  .currentPoint {
+    transition: none;
+  }
+}

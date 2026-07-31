@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="420" viewBox="0 0 1000 420" role="img" aria-labelledby="title description">
+  <title id="title">The intermediate observations predict both endpoints</title>
+  <desc id="description">A sequence runs from X t through the intermediate observations to X t plus n. The middle observations are enclosed together. Two outward arrows show the same middle values being used to predict the left endpoint X t and the right endpoint X t plus n.</desc>
+  <defs>
+    <marker id="green-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#157451"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="420" fill="#ffffff"/>
+  <text x="50" y="48" fill="#17231e" font-size="25" font-weight="600" font-family="Inter, ui-sans-serif, system-ui, sans-serif">Use the middle to predict both ends</text>
+  <text x="50" y="76" fill="#65736c" font-size="14" font-family="Inter, ui-sans-serif, system-ui, sans-serif">The same intermediate values feed two separate linear models</text>
+
+  <path d="M 312 150 C 250 104, 170 112, 136 165" fill="none" stroke="#157451" stroke-width="2.5" marker-end="url(#green-arrow)"/>
+  <path d="M 688 150 C 750 104, 830 112, 864 165" fill="none" stroke="#157451" stroke-width="2.5" marker-end="url(#green-arrow)"/>
+  <text x="224" y="115" fill="#157451" font-size="13" font-weight="600" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui, sans-serif">predict left</text>
+  <text x="776" y="115" fill="#157451" font-size="13" font-weight="600" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui, sans-serif">predict right</text>
+
+  <rect x="50" y="165" width="140" height="112" rx="16" fill="#f5f8f6" stroke="#aebbb4" stroke-width="1.5"/>
+  <rect x="810" y="165" width="140" height="112" rx="16" fill="#f5f8f6" stroke="#aebbb4" stroke-width="1.5"/>
+  <text x="120" y="233" fill="#17231e" font-size="30" font-weight="500" text-anchor="middle" font-family="STIX Two Math, Cambria Math, Georgia, serif" font-style="italic">Xₜ</text>
+  <text x="880" y="233" fill="#17231e" font-size="30" font-weight="500" text-anchor="middle" font-family="STIX Two Math, Cambria Math, Georgia, serif" font-style="italic">Xₜ₊ₙ</text>
+
+  <rect x="225" y="140" width="550" height="188" rx="20" fill="#e5f3ec" stroke="#157451" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="500" y="174" fill="#157451" font-size="13" font-weight="600" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui, sans-serif">INTERMEDIATE VALUES</text>
+
+  <rect x="255" y="197" width="112" height="82" rx="13" fill="#ffffff" stroke="#b8cbc1" stroke-width="1.5"/>
+  <rect x="389" y="197" width="112" height="82" rx="13" fill="#ffffff" stroke="#b8cbc1" stroke-width="1.5"/>
+  <rect x="633" y="197" width="112" height="82" rx="13" fill="#ffffff" stroke="#b8cbc1" stroke-width="1.5"/>
+  <text x="311" y="247" fill="#17231e" font-size="25" font-weight="500" text-anchor="middle" font-family="STIX Two Math, Cambria Math, Georgia, serif" font-style="italic">Xₜ₊₁</text>
+  <text x="445" y="247" fill="#17231e" font-size="25" font-weight="500" text-anchor="middle" font-family="STIX Two Math, Cambria Math, Georgia, serif" font-style="italic">Xₜ₊₂</text>
+  <text x="567" y="247" fill="#65736c" font-size="28" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui, sans-serif">…</text>
+  <text x="689" y="247" fill="#17231e" font-size="25" font-weight="500" text-anchor="middle" font-family="STIX Two Math, Cambria Math, Georgia, serif" font-style="italic">Xₜ₊ₙ₋₁</text>
+
+  <text x="120" y="309" fill="#65736c" font-size="13" font-weight="500" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui, sans-serif">left endpoint</text>
+  <text x="880" y="309" fill="#65736c" font-size="13" font-weight="500" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui, sans-serif">right endpoint</text>
+  <text x="500" y="362" fill="#65736c" font-size="14" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui, sans-serif">Slide this window through the series and repeat</text>
+</svg>

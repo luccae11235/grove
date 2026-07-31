@@ -1,0 +1,13 @@
+---
+import { AutocorrelationPlayground } from "@grove/tree-visuals";
+import examples from "../data/acf-pacf-examples.json";
+
+const points = examples.sales.values.map((point) => ({
+  date: point.date,
+  value: Number(point.value),
+}));
+---
+
+<div data-analytics-lab="autocorrelation-scan">
+  <AutocorrelationPlayground client:load points={points} />
+</div>
