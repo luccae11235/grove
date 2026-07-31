@@ -1,4 +1,18 @@
 export { FirstSplitExplorer } from "./FirstSplitExplorer";
+export { AutocorrelationPlayground } from "./AutocorrelationPlayground";
+export type { TimeSeriesPoint } from "./AutocorrelationPlayground";
+export {
+  partialAutocorrelation,
+  PartialAutocorrelationPlayground,
+  residualPairsAtLag,
+} from "./PartialAutocorrelationPlayground";
+export type { ResidualPair } from "./PartialAutocorrelationPlayground";
+export {
+  generateAr1Series,
+  SyntheticAutocorrelationPlayground,
+  SyntheticPartialAutocorrelationPlayground,
+  SyntheticSeriesBuilder,
+} from "./SyntheticArPlaygrounds";
 export {
   RegressionSplitPlayground,
   RegressionTreeGrowthPlayground,

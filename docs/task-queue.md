@@ -118,6 +118,16 @@ references for longer-term editorial direction.
 
 ## Done
 
+### Publishing and content
+
+- [x] **Draft the ACF and PACF article — issue #76** — 2026-07-31
+  - Completed the article from temporal correlation through ACF, PACF, and
+    diagnostic interpretation using sourced datasets and correctly rendered math.
+  - Added twelve static visuals and four guided interactions with accessible,
+    responsive Aflora styling.
+  - Passed editorial, mathematical-consistency, responsive, type, test, build,
+    and rendered-browser review.
+
 ### Operations and quality
 
 - [x] **Set up web analytics with consent-aware measurement** — 2026-07-28

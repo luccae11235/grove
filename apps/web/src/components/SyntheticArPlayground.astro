@@ -1,0 +1,21 @@
+---
+import {
+  SyntheticAutocorrelationPlayground,
+  SyntheticPartialAutocorrelationPlayground,
+  SyntheticSeriesBuilder,
+} from "@grove/tree-visuals";
+
+interface Props {
+  mode: "builder" | "autocorrelation" | "partial-autocorrelation";
+}
+
+const { mode } = Astro.props;
+---
+
+<div data-analytics-lab={`synthetic-ar1-${mode}`}>
+  {mode === "builder"
+    ? <SyntheticSeriesBuilder client:load />
+    : mode === "autocorrelation"
+      ? <SyntheticAutocorrelationPlayground client:load />
+      : <SyntheticPartialAutocorrelationPlayground client:load />}
+</div>

@@ -1,0 +1,390 @@
+.playground {
+  --acf-accent: #157451;
+  --acf-warm: #c47b2c;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface-raised);
+  box-shadow: 0 18px 54px rgb(17 45 34 / 9%);
+  container-type: inline-size;
+  overflow: hidden;
+}
+
+.playground button,
+.playground input {
+  font: inherit;
+}
+
+.playground button:focus-visible,
+.playground input:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.lagPicker {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.lagPicker legend {
+  float: left;
+  width: auto;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 780;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lagButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lagButtons button {
+  width: 38px;
+  min-height: 36px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 720;
+}
+
+.lagButtons button:hover {
+  border-color: var(--acf-accent);
+  color: var(--text);
+}
+
+.lagButtons button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.lagButtons .activeLag {
+  border-color: var(--acf-accent);
+  background: var(--acf-accent);
+  color: white;
+}
+
+.timePanel,
+.scatterPanel,
+.barPanel {
+  min-width: 0;
+  padding: 18px 22px 20px;
+}
+
+.timePanel {
+  border-bottom: 1px solid var(--border);
+}
+
+.panelHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 5px 16px;
+}
+
+.panelHeader strong {
+  color: var(--text);
+  font-size: 0.78rem;
+}
+
+.panelHeader span {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.panelNote {
+  min-height: 2.8em;
+  margin: 7px 0 0;
+  color: var(--text-muted);
+  font-size: 0.67rem;
+  line-height: 1.4;
+}
+
+.timeChart,
+.smallChart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.timeChart {
+  margin-top: 6px;
+}
+
+.smallChart {
+  margin-top: 8px;
+}
+
+.gridline {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.zeroLine {
+  stroke: var(--text-muted);
+  stroke-width: 1.2;
+}
+
+.tick,
+.selectedTick,
+.axisLabel {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.tick {
+  fill: var(--text-muted);
+  font-size: 10px;
+}
+
+.selectedTick {
+  fill: var(--text);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.axisLabel {
+  fill: var(--text-muted);
+  font-size: 10.5px;
+  font-weight: 650;
+}
+
+.seriesMuted,
+.seriesScanned {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.seriesMuted {
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+}
+
+.seriesScanned {
+  stroke: var(--acf-accent);
+  stroke-width: 2.2;
+}
+
+.scanner line {
+  stroke: var(--acf-warm);
+  stroke-width: 1.8;
+}
+
+.sourcePoint {
+  fill: var(--surface-raised);
+  stroke: var(--acf-accent);
+  stroke-width: 3;
+}
+
+.targetPoint {
+  fill: var(--surface-raised);
+  stroke: var(--acf-warm);
+  stroke-width: 3;
+}
+
+.middleScanner rect {
+  fill: #e5f3ec;
+  fill-opacity: 0.58;
+  stroke: #157451;
+  stroke-width: 1.2;
+  stroke-dasharray: 4 3;
+}
+
+.middleScanner line,
+.middleScanner path {
+  fill: none;
+  stroke: #157451;
+  stroke-width: 1.5;
+}
+
+.middleScanner marker path {
+  fill: #157451;
+}
+
+.predictedEndpoint {
+  fill: var(--surface-raised);
+  stroke: #157451;
+  stroke-width: 2.5;
+}
+
+.middleNote {
+  fill: var(--text-muted);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.scanControl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 5px 12px;
+  align-items: center;
+  margin-top: 3px;
+}
+
+.scanControl span,
+.scanControl strong {
+  font-size: 0.68rem;
+}
+
+.scanControl span {
+  color: var(--text-muted);
+}
+
+.scanControl strong {
+  justify-self: end;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.scanControl input {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 0;
+  accent-color: var(--acf-accent);
+  cursor: ew-resize;
+}
+
+.lowerPanels {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.barPanel {
+  border-left: 1px solid var(--border);
+}
+
+.guide {
+  border-top: 1px solid var(--border);
+  background: var(--surface-subtle);
+  padding: 15px 22px 17px;
+}
+
+.guide > p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+.guideControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.runButton {
+  min-height: 36px;
+  border: 1px solid var(--acf-accent);
+  border-radius: 8px;
+  background: var(--acf-accent);
+  color: white;
+  cursor: pointer;
+  padding: 7px 13px;
+  font-size: 0.73rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.scatterPoint {
+  fill: #72ad94;
+  fill-opacity: 0.64;
+}
+
+.currentScatterPoint {
+  fill: var(--surface-raised);
+  stroke: var(--acf-warm);
+  stroke-width: 2.5;
+}
+
+.fitLine {
+  stroke: var(--acf-accent);
+  stroke-width: 1.7;
+}
+
+.bar {
+  fill: var(--border-strong);
+}
+
+.selectedBar {
+  fill: var(--acf-accent);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.error {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-subtle);
+  color: var(--text-muted);
+  padding: 18px;
+}
+
+@container (max-width: 700px) {
+  .lowerPanels {
+    grid-template-columns: 1fr;
+  }
+
+  .barPanel {
+    border-top: 1px solid var(--border);
+    border-left: 0;
+  }
+}
+
+@container (max-width: 520px) {
+  .timePanel,
+  .scatterPanel,
+  .barPanel,
+  .guide {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .lagPicker {
+    display: grid;
+    gap: 9px;
+  }
+
+  .lagButtons {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .lagButtons button {
+    width: 100%;
+  }
+
+  .guideControls {
+    display: grid;
+    align-items: stretch;
+  }
+
+  .runButton {
+    width: 100%;
+  }
+
+  .timeChart {
+    margin-top: 10px;
+  }
+}

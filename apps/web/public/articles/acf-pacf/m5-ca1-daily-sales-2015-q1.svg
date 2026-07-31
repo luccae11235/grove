@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="430" viewBox="0 0 1000 430" role="img" aria-labelledby="title description">
+  <title id="title">Daily Walmart unit sales for store CA_1 from January through March 2015</title>
+  <desc id="description">The positive sales series rises and falls in a repeating seven-day rhythm without zero-sales days.</desc>
+  <rect width="1000" height="430" fill="#ffffff"/>
+  <text x="50.0" y="46.0" fill="#17231e" font-size="25" font-weight="600" text-anchor="start" font-family="Inter, ui-sans-serif, system-ui, sans-serif">Sales return to a weekly rhythm</text>
+  <text x="50.0" y="73.0" fill="#65736c" font-size="14" font-weight="400" text-anchor="start" font-family="Inter, ui-sans-serif, system-ui, sans-serif">Walmart CA_1 · daily units across all products · Jan–Mar 2015</text>
+  <line x1="76" y1="355.00" x2="950" y2="355.00" stroke="#e1e9e4" stroke-width="1"/>
+  <text x="62.0" y="360.0" fill="#65736c" font-size="12" font-weight="400" text-anchor="end" font-family="Inter, ui-sans-serif, system-ui, sans-serif">2,000</text>
+  <line x1="76" y1="305.00" x2="950" y2="305.00" stroke="#e1e9e4" stroke-width="1"/>
+  <text x="62.0" y="310.0" fill="#65736c" font-size="12" font-weight="400" text-anchor="end" font-family="Inter, ui-sans-serif, system-ui, sans-serif">3,000</text>
+  <line x1="76" y1="255.00" x2="950" y2="255.00" stroke="#e1e9e4" stroke-width="1"/>
+  <text x="62.0" y="260.0" fill="#65736c" font-size="12" font-weight="400" text-anchor="end" font-family="Inter, ui-sans-serif, system-ui, sans-serif">4,000</text>
+  <line x1="76" y1="205.00" x2="950" y2="205.00" stroke="#e1e9e4" stroke-width="1"/>
+  <text x="62.0" y="210.0" fill="#65736c" font-size="12" font-weight="400" text-anchor="end" font-family="Inter, ui-sans-serif, system-ui, sans-serif">5,000</text>
+  <line x1="76" y1="155.00" x2="950" y2="155.00" stroke="#e1e9e4" stroke-width="1"/>
+  <text x="62.0" y="160.0" fill="#65736c" font-size="12" font-weight="400" text-anchor="end" font-family="Inter, ui-sans-serif, system-ui, sans-serif">6,000</text>
+  <line x1="76" y1="105.00" x2="950" y2="105.00" stroke="#e1e9e4" stroke-width="1"/>
+  <text x="62.0" y="110.0" fill="#65736c" font-size="12" font-weight="400" text-anchor="end" font-family="Inter, ui-sans-serif, system-ui, sans-serif">7,000</text>
+  <line x1="115.28" y1="105" x2="115.28" y2="355" stroke="#f2f7f4" stroke-width="1"/>
+  <line x1="184.02" y1="105" x2="184.02" y2="355" stroke="#f2f7f4" stroke-width="1"/>
+  <line x1="252.76" y1="105" x2="252.76" y2="355" stroke="#f2f7f4" stroke-width="1"/>
+  <line x1="321.51" y1="105" x2="321.51" y2="355" stroke="#f2f7f4" stroke-width="1"/>
+  <line x1="390.25" y1="105" x2="390.25" y2="355" stroke="#f2f7f4" stroke-width="1"/>
+  <line x1="458.99" y1="105" x2="458.99" y2="355" stroke="#f2f7f4" stroke-width="1"/>
+  <line x1="527.73" y1="105" x2="527.73" y2="355" stroke="#f2f7f4" stroke-width="1"/>
+  <line x1="596.47" y1="105" x2="596.47" y2="355" stroke="#f2f7f4" stroke-width="1"/>
+  <line x1="665.21" y1="105" x2="665.21" y2="355" stroke="#f2f7f4" stroke-width="1"/>
+  <line x1="733.96" y1="105" x2="733.96" y2="355" stroke="#f2f7f4" stroke-width="1"/>
+  <line x1="802.70" y1="105" x2="802.70" y2="355" stroke="#f2f7f4" stroke-width="1"/>
+  <line x1="871.44" y1="105" x2="871.44" y2="355" stroke="#f2f7f4" stroke-width="1"/>
+  <line x1="940.18" y1="105" x2="940.18" y2="355" stroke="#f2f7f4" stroke-width="1"/>
+  <text x="76.0" y="386.0" fill="#65736c" font-size="12" font-weight="400" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui, sans-serif">Jan</text>
+  <text x="380.4" y="386.0" fill="#65736c" font-size="12" font-weight="400" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui, sans-serif">Feb</text>
+  <text x="655.4" y="386.0" fill="#65736c" font-size="12" font-weight="400" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui, sans-serif">Mar</text>
+  <path d="M 76.00 297.50 L 85.82 221.85 L 95.64 187.40 L 105.46 171.70 L 115.28 230.75 L 125.10 274.20 L 134.92 285.30 L 144.74 279.15 L 154.56 253.25 L 164.38 169.75 L 174.20 164.80 L 184.02 250.85 L 193.84 290.80 L 203.66 293.75 L 213.48 282.05 L 223.30 253.85 L 233.12 196.70 L 242.94 195.25 L 252.76 232.20 L 262.58 290.00 L 272.40 290.95 L 282.22 309.95 L 292.04 252.90 L 301.87 178.15 L 311.69 176.15 L 321.51 285.95 L 331.33 305.40 L 341.15 301.15 L 350.97 294.05 L 360.79 247.05 L 370.61 151.45 L 380.43 181.90 L 390.25 260.70 L 400.07 252.45 L 409.89 271.35 L 419.71 260.55 L 429.53 254.10 L 439.35 139.30 L 449.17 162.05 L 458.99 206.15 L 468.81 248.30 L 478.63 253.00 L 488.45 263.55 L 498.27 245.85 L 508.09 215.55 L 517.91 213.80 L 527.73 240.95 L 537.55 284.40 L 547.37 303.10 L 557.19 296.00 L 567.01 248.10 L 576.83 216.65 L 586.65 183.70 L 596.47 277.60 L 606.29 306.40 L 616.11 299.70 L 625.93 304.40 L 635.75 249.30 L 645.57 174.85 L 655.39 166.30 L 665.21 254.35 L 675.03 263.65 L 684.85 275.80 L 694.67 272.00 L 704.49 238.45 L 714.31 193.30 L 724.13 156.45 L 733.96 252.70 L 743.78 269.50 L 753.60 281.30 L 763.42 279.05 L 773.24 245.80 L 783.06 204.25 L 792.88 164.75 L 802.70 251.80 L 812.52 283.45 L 822.34 282.90 L 832.16 295.30 L 841.98 249.00 L 851.80 178.60 L 861.62 176.50 L 871.44 264.10 L 881.26 284.95 L 891.08 295.35 L 900.90 285.65 L 910.72 252.95 L 920.54 211.65 L 930.36 182.35 L 940.18 242.20 L 950.00 261.15" fill="none" stroke="#157451" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
