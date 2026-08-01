@@ -42,6 +42,13 @@ references for longer-term editorial direction.
   - Completion check: focused tests and repository gates pass, and the exact
     release is verified in staging and production.
 
+- [ ] **Standardize oversized ACF article playground widths — issue #81**
+  - Keep the sales-correlation and partial-correlation playgrounds within the
+    same readable width as the article's inline synthetic-series playground.
+  - Preserve responsive behavior and every playground interaction.
+  - Completion check: focused checks and the full repository gate pass, and
+    the exact release is verified in staging and production.
+
 ### Release and platform readiness
 
 - [ ] **Phase 8 — Open the newsletter**
