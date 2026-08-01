@@ -32,15 +32,6 @@ references for longer-term editorial direction.
 
 ## In progress
 
-### Learning experience
-
-- [ ] **Standardize oversized ACF article playground widths — issue #81**
-  - Keep the sales-correlation and partial-correlation playgrounds within the
-    same readable width as the article's inline synthetic-series playground.
-  - Preserve responsive behavior and every playground interaction.
-  - Completion check: focused checks and the full repository gate pass, and
-    the exact release is verified in staging and production.
-
 ### Release and platform readiness
 
 - [ ] **Phase 8 — Open the newsletter**
@@ -128,6 +119,14 @@ references for longer-term editorial direction.
 ## Done
 
 ### Learning experience
+
+- [x] **Standardize oversized ACF article playground widths — issue #81** — 2026-08-01
+  - Constrained the sales-correlation and partial-correlation playgrounds to
+    the same 720px desktop width as the inline synthetic-series playground.
+  - Added desktop and mobile browser regression coverage while preserving
+    responsive containment and keyboard interaction.
+  - Completion check: the full repository gate passed; exact-SHA staging and
+    production verification passed on `0b698dc` and `c6dab0e`, respectively.
 
 - [x] **Animate released ramp cars through the highway merge — issue #80** — 2026-08-01
   - Released cars now remain visible while traversing the curved on-ramp into
