@@ -167,6 +167,14 @@ references for longer-term editorial direction.
 
 ### Product design
 
+- [x] **Simplify article-card metadata and latest badge — issue #83** — 2026-08-01
+  - Removed reading-time estimates and interactive counts from main-library
+    article cards while preserving the underlying publishing metadata.
+  - Placed the latest badge beside the newest article's publication date so all
+    card titles share the same vertical alignment.
+  - Completion check: focused web type, test, build, CI, and rendered browser
+    checks passed at desktop and mobile widths.
+
 - [x] **Rebrand Grove as Aflora — issue #6** — 2026-07-23
   - Preserved the existing green palette, editorial hierarchy, navigation, and
     professional visual density.

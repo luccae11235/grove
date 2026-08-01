@@ -45,18 +45,16 @@ const formatDate = (date?: Date) => date?.toLocaleDateString("en", {
       {libraryArticles.map((article, index) => (
         <a class="library-card" href={`${base}${article.href}`}>
           <span class="library-card-topline">
-            <span>{article.topic}</span>
+            <span class="library-card-topic">{article.topic}</span>
             {article.publishedAt
-              ? <time datetime={article.publishedAt.toISOString()}>{formatDate(article.publishedAt)}</time>
+              ? <span class="library-card-publication">
+                  {index === 0 && <span class="library-card-latest">Latest</span>}
+                  <time datetime={article.publishedAt.toISOString()}>{formatDate(article.publishedAt)}</time>
+                </span>
               : <span class="library-card-status">Draft</span>}
           </span>
-          {index === 0 && <span class="library-card-latest">Latest</span>}
           <h3>{article.title}</h3>
           <p>{article.summary}</p>
-          <span class="library-card-footer">
-            <span>{article.readingTime} · {article.interactiveCount} interactives</span>
-            <b aria-hidden="true">↗</b>
-          </span>
         </a>
       ))}
     </div>
