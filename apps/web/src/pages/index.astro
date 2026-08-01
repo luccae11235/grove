@@ -1,10 +1,12 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import NewsletterSignup from "../components/NewsletterSignup.astro";
-import { getAuthoredArticles } from "../content/articles";
+import { articles } from "../content/articles";
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-const libraryArticles = getAuthoredArticles("en");
+// `articles` admits drafts only in local development or an explicit draft
+// preview. The production library must never render a draft entry.
+const libraryArticles = articles;
 const formatDate = (date?: Date) => date?.toLocaleDateString("en", {
   month: "short",
   day: "numeric",
@@ -46,7 +48,7 @@ const formatDate = (date?: Date) => date?.toLocaleDateString("en", {
         <a class="library-card" href={`${base}${article.href}`}>
           <span class="library-card-topline">
             <span class="library-card-topic">{article.topic}</span>
-            {article.publishedAt
+            {article.status === "published" && article.publishedAt
               ? <span class="library-card-publication">
                   {index === 0 && <span class="library-card-latest">Latest</span>}
                   <time datetime={article.publishedAt.toISOString()}>{formatDate(article.publishedAt)}</time>

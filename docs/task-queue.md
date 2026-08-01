@@ -151,6 +151,13 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Prevent production articles from displaying a draft label — issue #78** — 2026-08-01
+  - The production library now reads only the production-visible catalog.
+  - Bespoke draft article routes resolve to noindex redirects outside a local or explicit draft preview.
+  - Completion check: a production build excludes draft article cards and labels.
+
+### Publishing and content
+
 - [x] **Draft the ACF and PACF article — issue #76** — 2026-07-31
   - Completed the article from temporal correlation through ACF, PACF, and
     diagnostic interpretation using sourced datasets and correctly rendered math.
