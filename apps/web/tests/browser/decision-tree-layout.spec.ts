@@ -6,6 +6,7 @@ for (const route of routes) {
   test(`${route} keeps teaching visuals on the reading measure`, async ({ page }) => {
     await page.setViewportSize({ width: 1_600, height: 1_000 });
     await page.goto(route);
+    test.skip(await page.locator('meta[http-equiv="refresh"]').count() > 0, "Draft article is excluded from production builds.");
 
     const layout = await page.evaluate(() => {
       const articleWidth = document.querySelector<HTMLElement>(".lesson-body")
@@ -32,6 +33,7 @@ for (const route of routes) {
   test(`${route} remains contained on a narrow screen`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(route);
+    test.skip(await page.locator('meta[http-equiv="refresh"]').count() > 0, "Draft article is excluded from production builds.");
 
     const layout = await page.evaluate(() => ({
       viewportWidth: document.documentElement.clientWidth,
