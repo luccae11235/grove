@@ -95,7 +95,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
       meaning because no seed depends on the row before it.
     </p>
 
-    <figure class="static-figure data-shape-figure">
+    <figure class="static-figure decision-tree-figure data-shape-figure">
       <div class="data-shape-grid" aria-label="Three shapes of data">
         <div class="shape-card">
           <span class="shape-label">Sequence</span>
@@ -147,7 +147,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
       the experiment, each seed was either thriving or struggling.
     </p>
 
-    <figure class="static-figure seed-table-figure">
+    <figure class="static-figure decision-tree-figure seed-table-figure">
       <div class="seed-table-wrap">
         <table class="seed-table">
           <thead>
@@ -193,7 +193,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
       seeds; squares are struggling seeds.
     </p>
 
-    <figure class="static-figure split-figure">
+    <figure class="static-figure decision-tree-figure split-figure">
       <svg class="seed-plot" viewBox="0 0 570 340" role="img" aria-labelledby="seed-plot-title seed-plot-desc">
         <title id="seed-plot-title">The ten seeds before a dividing question is chosen</title>
         <desc id="seed-plot-desc">A scatter plot of sunlight and water. Four thriving seeds are circles and six struggling seeds are squares. No dividing line has been selected yet.</desc>
@@ -251,7 +251,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </div>
   </article>
 
-  <div class="interactive-breakout article-interactive" data-analytics-lab="threshold-intuition">
+  <div class="interactive-breakout article-interactive decision-tree-interactive" data-analytics-lab="threshold-intuition">
     <ThresholdIntuitionPlayground client:load />
   </div>
 
@@ -293,7 +293,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </div>
   </article>
 
-  <div class="interactive-breakout article-interactive" data-analytics-lab="manual-tree">
+  <div class="interactive-breakout article-interactive decision-tree-interactive" data-analytics-lab="manual-tree">
     <ManualTreePlayground client:load />
   </div>
 
@@ -426,7 +426,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
       group still contains a strong mixture of both labels.
     </p>
 
-    <figure class="static-figure gini-figure">
+    <figure class="static-figure decision-tree-figure gini-figure">
       <svg class="gini-curve" viewBox="0 0 580 310" role="img" aria-labelledby="gini-title gini-desc">
         <title id="gini-title">Gini impurity for two classes</title>
         <desc id="gini-desc">Gini impurity is zero when a group contains only one class. It rises to 0.5 when both classes are present in equal shares.</desc>
@@ -508,7 +508,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
       question leaves less mixture behind.
     </p>
 
-    <figure class="static-figure gini-comparison-figure">
+    <figure class="static-figure decision-tree-figure gini-comparison-figure">
       <div class="gini-split-grid">
         <section class="gini-candidate" aria-labelledby="candidate-a-title">
           <div class="gini-candidate-heading">
@@ -621,7 +621,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </p>
   </article>
 
-  <div class="interactive-breakout article-interactive" data-analytics-lab="split-search">
+  <div class="interactive-breakout article-interactive decision-tree-interactive" data-analytics-lab="split-search">
     <SplitSearchPlayground client:load />
   </div>
 
@@ -660,7 +660,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </div>
   </article>
 
-  <div class="interactive-breakout article-interactive" data-analytics-lab="tree-growth">
+  <div class="interactive-breakout article-interactive decision-tree-interactive" data-analytics-lab="tree-growth">
     <TreeGrowthPlayground client:load />
   </div>
 
@@ -669,7 +669,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
       The finished structure is worth a full look:
     </p>
 
-    <figure class="static-figure tree-figure">
+    <figure class="static-figure decision-tree-figure tree-figure">
       <p class="mobile-scroll-cue">Swipe horizontally to follow the complete tree.</p>
       <svg class="tree-snapshot" viewBox="0 0 760 340" role="img" aria-labelledby="tree-title tree-desc">
         <title id="tree-title">The complete two-question branching structure</title>
@@ -722,7 +722,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </p>
   </article>
 
-  <div class="interactive-breakout article-interactive" data-analytics-lab="dataset-complexity">
+  <div class="interactive-breakout article-interactive decision-tree-interactive" data-analytics-lab="dataset-complexity">
     <DatasetComplexityPlayground client:load />
   </div>
 
@@ -847,7 +847,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </div>
   </article>
 
-  <div class="interactive-breakout article-interactive" data-analytics-lab="multi-feature-split">
+  <div class="interactive-breakout article-interactive decision-tree-interactive" data-analytics-lab="multi-feature-split">
     <MultiFeatureSplitPlayground client:load />
   </div>
 

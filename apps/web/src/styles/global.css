@@ -2435,6 +2435,22 @@ h1 {
   margin-bottom: 68px;
 }
 
+/* Decision-tree lessons keep each teaching object on the same measure as the
+   prose. The playground itself owns the responsive rearrangement within it. */
+.decision-tree-interactive {
+  width: min(720px, 100%);
+}
+
+.static-figure.decision-tree-figure {
+  left: auto;
+  width: 100%;
+  transform: none;
+}
+
+.decision-tree-figure .tree-snapshot {
+  min-width: 0;
+}
+
 .derivation-card {
   display: grid;
   grid-template-columns: 1fr auto;

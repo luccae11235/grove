@@ -114,11 +114,8 @@ const rightAt30 = rows.filter((row) => row.fertilizer > 30);
 
 <style>
   .regression-static {
-    position: relative;
-    left: 50%;
-    width: min(860px, calc(100vw - 84px));
+    width: 100%;
     margin: 34px 0 38px;
-    transform: translateX(-50%);
   }
 
   .split-groups-grid {
@@ -256,7 +253,7 @@ const rightAt30 = rows.filter((row) => row.fertilizer > 30);
   }
 
   .stump-means-visual {
-    width: min(760px, calc(100vw - 84px));
+    width: 100%;
   }
 
   .stump-question {
@@ -348,22 +345,7 @@ const rightAt30 = rows.filter((row) => row.fertilizer > 30);
     font-size: 0.84rem;
   }
 
-  @media (min-width: 1240px) {
-    :global(body.article-chapters-open) .regression-static {
-      width: min(860px, calc(100vw - 292px - 96px));
-    }
-  }
-
   @media (max-width: 900px) {
-    .regression-static,
-    .stump-means-visual {
-      width: 100%;
-      left: auto;
-      margin-right: 0;
-      margin-left: 0;
-      transform: none;
-    }
-
     .split-groups-grid {
       grid-template-columns: 1fr;
     }

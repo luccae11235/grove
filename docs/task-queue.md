@@ -32,6 +32,18 @@ references for longer-term editorial direction.
 
 ## In progress
 
+### Learning experience
+
+- [ ] **Bound and simplify both decision-tree article visualizations — issue #91**
+  - Keep classification and regression tables and playgrounds within the
+    article content boundary at supported viewport widths.
+  - Simplify oversized layouts so each primary learning state is complete,
+    centered, and readable without horizontal clipping.
+  - Preserve computed results, interactions, accessibility, and responsive
+    behavior.
+  - Completion check: focused checks and the full repository gate pass, and
+    representative desktop, tablet, and mobile layouts are visually verified.
+
 ### Release and platform readiness
 
 - [ ] **Phase 8 — Open the newsletter**
