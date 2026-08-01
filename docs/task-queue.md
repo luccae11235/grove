@@ -32,6 +32,16 @@ references for longer-term editorial direction.
 
 ## In progress
 
+### Learning experience
+
+- [ ] **Animate released ramp cars through the highway merge — issue #80**
+  - Retain released cars long enough to traverse the on-ramp and enter the
+    highway in both reward-function playgrounds.
+  - Preserve the traffic MDP, training behavior, accessibility, responsive
+    layout, and reduced-motion behavior.
+  - Completion check: focused tests and repository gates pass, and the exact
+    release is verified in staging and production.
+
 ### Release and platform readiness
 
 - [ ] **Phase 8 — Open the newsletter**
