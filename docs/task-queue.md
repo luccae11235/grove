@@ -34,14 +34,6 @@ references for longer-term editorial direction.
 
 ### Learning experience
 
-- [ ] **Animate released ramp cars through the highway merge — issue #80**
-  - Retain released cars long enough to traverse the on-ramp and enter the
-    highway in both reward-function playgrounds.
-  - Preserve the traffic MDP, training behavior, accessibility, responsive
-    layout, and reduced-motion behavior.
-  - Completion check: focused tests and repository gates pass, and the exact
-    release is verified in staging and production.
-
 - [ ] **Standardize oversized ACF article playground widths — issue #81**
   - Keep the sales-correlation and partial-correlation playgrounds within the
     same readable width as the article's inline synthetic-series playground.
@@ -134,6 +126,17 @@ references for longer-term editorial direction.
     reader semantics, contrast, reduced motion, and small-screen behavior.
 
 ## Done
+
+### Learning experience
+
+- [x] **Animate released ramp cars through the highway merge — issue #80** — 2026-08-01
+  - Released cars now remain visible while traversing the curved on-ramp into
+    the highway during live training and learned-policy replay in both traffic
+    playgrounds.
+  - Preserved the traffic MDP, responsive layout, accessibility, and
+    reduced-motion behavior while limiting live training to one legible batch.
+  - Completion check: the full repository gate passed; exact-SHA staging and
+    production verification passed on `8b2b127` and `891b7da`, respectively.
 
 ### Publishing and content
 
