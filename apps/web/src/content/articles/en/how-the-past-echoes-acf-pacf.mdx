@@ -1,0 +1,663 @@
+---
+articleId: how-the-past-echoes-acf-pacf
+locale: en
+routeSlug: acf-and-pacf
+href: /learn/acf-and-pacf
+title: "How the Past Echoes: Understanding ACF and PACF"
+navTitle: Understanding ACF and PACF
+description: "Build an intuition for temporal correlation by pairing a time series with shifted versions of itself."
+eyebrow: Time series · Temporal correlation
+area: Time series
+topic: ACF and PACF
+summary: Begin with ordinary correlation, shift a series through time, and see how lagged relationships become an autocorrelation function.
+status: draft
+readingTime: 20–25 min
+interactiveCount: 4
+staticVisualCount: 12
+difficulty: foundational
+series: time-series
+access: public
+prerequisites: []
+related: []
+implementation: mdx
+learning:
+  priorKnowledge:
+    - Read values arranged in rows and columns.
+    - Follow a sequence indexed by time.
+  likelyMisconception: A strong autocorrelation proves that an earlier value directly causes a later value.
+  transferOutcome: Compare what the ACF and PACF reveal about dependence across lags and use their shapes as diagnostic clues.
+  motivatingQuestion: How much information about the present is contained in a series’s own past?
+  conceptualBottleneck: Each lag compares two overlapping, shifted versions of the same variable rather than two different features.
+  evidenceOfUnderstanding:
+    - Construct the observation pairs for a chosen lag.
+    - Explain why larger lags contain fewer pairs.
+    - Interpret a comparatively large autocorrelation without claiming causation.
+    - Explain why an autocorrelation can persist after a direct relationship has ended.
+    - Distinguish an ACF pattern from a PACF pattern in a simple diagnostic example.
+---
+
+import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import AutocorrelationPlayground from "../../../components/AutocorrelationPlayground.astro";
+import SyntheticArPlayground from "../../../components/SyntheticArPlayground.astro";
+
+<header className="page-header lesson-header article-hero">
+  <p className="eyebrow">Time series · Temporal correlation</p>
+  <h1>How the Past Echoes: Understanding ACF and PACF</h1>
+  <div className="article-meta" aria-label="Article information">
+    <DifficultyBadge difficulty="foundational" showDescription />
+    <span><strong>Draft</strong></span>
+  </div>
+</header>
+
+<article className="lesson-body deep-article acf-article">
+  <h2 id="the-past-and-future">The past and future</h2>
+
+  In machine learning, there is no shortage of problems involving time series. In these problems, the order of the data matters: observations made at different points in time may be related. This differs from standard cross-sectional data, where each data point is generally treated as independent from the others.
+
+  <figure className="static-figure acf-data-index-figure">
+    <img
+      src="/articles/acf-pacf/tabular-vs-time-series.png"
+      alt="An ordinary table with nonsequential row indices beside a date-indexed time-series table whose values become a line chart ordered by time."
+      width="1774"
+      height="887"
+      loading="eager"
+      decoding="async"
+    />
+  </figure>
+
+  Although time-series datasets can contain multiple features, just like other machine-learning datasets, it is common to begin with a single sequence of values observed at a fixed frequency. One example is the daily average temperature throughout a year.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/nyc-daily-temperature-2023.svg"
+      alt="Daily mean temperature in New York City rises from winter into summer and falls again toward winter across 2023."
+      width="1000"
+      height="430"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>
+      Daily mean temperature at 2 meters for New York City in 2023. Source: <a href="https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M&amp;community=RE&amp;longitude=-73.97&amp;latitude=40.78&amp;start=20230101&amp;end=20231231&amp;format=JSON&amp;time-standard=LST">NASA POWER</a> meteorological data derived from MERRA-2.
+    </figcaption>
+  </figure>
+
+  Most time series can be visualized, and these visualizations often reveal clear patterns. There may be a **trend**, indicating the general direction in which the values are moving. Sometimes the series increases or decreases over time; in other cases, it remains around approximately the same average.
+
+  A series may also contain **seasonality**: patterns that repeat at regular intervals. Weekly seasonal movements, for example, are common in sales data because consumer behavior often changes systematically across the days of the week.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/m5-ca1-daily-sales-2015-q1.svg"
+      alt="Daily Walmart unit sales for store CA_1 remain above zero and rise and fall in a repeating seven-day rhythm from January through March 2015."
+      width="1000"
+      height="430"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>
+      Daily units sold by Walmart store CA_1, summed across all products. Source: <a href="https://doi.org/10.5281/zenodo.10203108">M5 Forecasting dataset</a>, published by the University of Nicosia via Zenodo.
+    </figcaption>
+  </figure>
+
+  In many cases, as in the example above, we can do more than identify these patterns. Our minds can naturally project them into the future. When trends and seasonalities are clear, forecasting can feel like simply “continuing the line.”
+
+  Machine learning offers a wide range of methods for automating this task. Before thinking about how future observations relate to the present, however, it is useful to examine how the observations we already have relate to their own past.
+
+  If we can understand how previous values influence—or at least provide information about—the present, we may uncover important clues about how the current state of the series relates to its future. This article focuses on two techniques designed to reveal these temporal relationships.
+
+  <h2 id="scattering-time">Scattering time</h2>
+
+  <h3 id="scatter-plots-and-correlation">Scatter plots and correlation</h3>
+
+  A basic technique for finding relationships in data is the scatter plot. We take two features from a dataset—usually numerical features—and plot their values on an $x$-$y$ plane.
+
+  For example, consider a dataset containing people’s heights and weights.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/nhanes-height-weight-youth.svg"
+      alt="A scatter plot of standing height and weight for 2,830 measured participants aged 2 to 19 forms a strong upward-sloping cloud, with Pearson correlation 0.85."
+      width="1000"
+      height="470"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>
+      Standing height and weight for all 2,830 NHANES 2017–2018 participants aged 2–19 with both measurements; unweighted sample. Pearson correlation: 0.85. Source: <a href="https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/BMX_J.htm">CDC/NCHS NHANES Body Measures</a>.
+    </figcaption>
+  </figure>
+
+  We can see that the two features have an approximately linear relationship. Taller people tend, on average, to weigh more. The two features are therefore **positively correlated**. In this example, their correlation is <strong>0.85</strong>.
+
+  Correlation measures **how two features tend to change together**.
+
+  - **Positive correlation:** when one increases, the other tends to increase.
+  - **Negative correlation:** when one increases, the other tends to decrease.
+  - **No correlation:** knowing one feature gives little information about the direction of the other.
+
+  The formula is relatively simple. It receives two features and returns a number between $-1$ and $1$. In this article, we will use the following notation:
+
+$$
+\operatorname{Corr}(X,Y)
+=
+\frac{\sum_{i=1}^{N}(x_i-\bar{x})(y_i-\bar{y})}
+{\sqrt{\sum_{i=1}^{N}(x_i-\bar{x})^2}\sqrt{\sum_{i=1}^{N}(y_i-\bar{y})^2}}.
+$$
+
+  Here, $\bar{x}$ and $\bar{y}$ are the means of the two features.
+
+  A simple but powerful consequence of correlation is often overlooked. Regardless of whether one feature causes the other, a sufficiently strong relationship can still contain predictive information.
+
+  In the height-and-weight example, if we observe only a person’s height, we cannot determine their exact weight. However, we can make a more informed estimate of their expected weight than we could without knowing their height.
+
+  The same principle applies to time series. If past values are correlated with later values, observing the present may give us information about how the series is likely to evolve. Correlation does not guarantee the future, but it tells us whether the past contains a measurable relationship with it.
+
+  <h3 id="time-correlation">Time correlation</h3>
+
+  The kind of simple time series discussed here can be represented as a sequence of values indexed from $1$ to $T$:
+
+  $$
+  x_1,x_2,x_3,\ldots,x_T
+  $$
+
+  To investigate how the past relates to the future, we can reorganize this sequence into pairs of neighboring observations.
+
+  We scan the series and collect every pair
+
+  $$
+  (X_t,X_{t+1}),
+  $$
+
+  beginning with $(X_1,X_2)$ and continuing until $(X_{T-1},X_T)$.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/lag-one-pairing.svg"
+      alt="Three scans of one sequence highlight x one with x two, x two with x three, and x T minus one with x T. Arrows map each highlighted pair to one row of a two-column sales table."
+      width="1000"
+      height="510"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>
+      At lag 1, each sales value becomes $X_t$ and the following day becomes $X_{t+1}$. Table values are rounded for display; calculations use full precision.
+    </figcaption>
+  </figure>
+
+  We now have a dataset with two numerical features. We can place $X_t$ on the horizontal axis and $X_{t+1}$ on the vertical axis.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/lag-one-sales-scatter.svg"
+      alt="A scatter plot of 89 adjacent daily-sales pairs has an upward fitted line and Pearson correlation 0.51."
+      width="1000"
+      height="475"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>
+      Each point is one adjacent-day pair from Walmart store CA_1’s daily unit-sales series. Pearson correlation: 0.51. Source: <a href="https://doi.org/10.5281/zenodo.10203108">M5 Forecasting dataset</a>.
+    </figcaption>
+  </figure>
+
+  As before, the features appear correlated because the points are concentrated around a line. If we calculate the correlation between them, we obtain <strong>0.51</strong>.
+
+  The difference is that these are not two separate variables such as height and weight. They are two shifted versions of the same variable: one contains the value at time $t$, while the other contains the value observed one step later.
+
+  We are therefore measuring whether large values tend to be followed by large values, whether small values tend to be followed by small values, or whether consecutive observations have little linear relationship.
+
+  <h3 id="more-lags">More lags</h3>
+
+  Instead of pairing $X_t$ with $X_{t+1}$, we can pair it with $X_{t+n}$, where $n$ is an integer representing a **lag**.
+
+  A lag describes the distance between two observations in the series.
+
+  When $n=1$, we compare observations that are one time step apart:
+
+  $$
+  (X_t,X_{t+1}).
+  $$
+
+  When $n=2$, we compare observations that are two time steps apart:
+
+  $$
+  (X_t,X_{t+2}).
+  $$
+
+  We scan the series as before, but the paired observations are now separated by one intermediate value.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/lag-two-pairing.svg"
+      alt="Three scans of one sequence highlight x one with x three, x two with x four, and x T minus two with x T. One unselected value remains between each highlighted pair, and arrows map each pair to one row of a two-column sales table."
+      width="1000"
+      height="510"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>
+      At lag 2, each sales value becomes $X_t$ and the value two days later becomes $X_{t+2}$. The value between them is skipped.
+    </figcaption>
+  </figure>
+
+  This produces a new scatter plot and a new correlation value.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/lag-two-sales-scatter.svg"
+      alt="A scatter plot of 88 daily-sales pairs separated by two days has a slightly downward fitted line and Pearson correlation minus 0.20."
+      width="1000"
+      height="475"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>
+      Each point pairs one day of Walmart store CA_1’s unit sales with the value two days later. Pearson correlation: −0.20. Source: <a href="https://doi.org/10.5281/zenodo.10203108">M5 Forecasting dataset</a>.
+    </figcaption>
+  </figure>
+
+  We can repeat this process for many lags. Beginning with lag $1$, we calculate the correlation between observations separated by two steps, three steps, four steps, and so on.
+
+  In principle, we can continue until the dataset no longer permits another pair. In practice, we usually stop earlier, once the remaining lags contain too little data or are no longer relevant to the problem.
+
+  All time series are finite. For a series containing $T$ observations, calculating the correlation at lag $n$ requires pairs of the form
+
+  $$
+  (X_t,X_{t+n}).
+  $$
+
+  The second observation exists only when
+
+  $$
+  t+n \leq T.
+  $$
+
+  Therefore,
+
+  $$
+  t \leq T-n.
+  $$
+
+  At lag $n$, only $T-n$ pairs are available. As the lag increases, fewer observations remain for estimating the correlation. Correlations at very large lags are therefore based on less data and are generally more uncertain.
+
+  Now let us perform this process directly. In the following visualization, you will see the sales time series we have been analyzing and choose the lag used in the calculation.
+
+  You will begin at lag $1$. Each time you increase the lag, the series will be scanned again, and a new scatter plot will be constructed from the resulting pairs.
+
+  On the right-hand side, a bar chart will summarize the results. The horizontal axis will represent the lag, while the vertical axis will show the correlation calculated at that lag.
+
+  Run the simulation and observe whether any interesting pattern appears.
+
+</article>
+
+<div className="interactive-breakout article-interactive acf-playground-breakout">
+  <AutocorrelationPlayground />
+</div>
+
+<article className="lesson-body deep-article acf-article">
+
+  Once you have finished the simulation, did you notice that lag $7$ has a higher correlation than several of the intermediate lags?
+
+  This tells us that observations separated by seven time steps tend to have a stronger linear relationship than observations separated by some shorter intervals. It does not necessarily mean that the value from seven steps ago directly causes the present value. It means that knowing one of these observations provides relatively strong information about the other.
+
+  For daily sales data, this result is not surprising. A distance of seven observations corresponds to one week, and the same days of consecutive weeks often exhibit similar purchasing behavior. Mondays may resemble other Mondays more than they resemble the Tuesdays immediately following them.
+
+  The visualization may have already suggested this weekly pattern. The correlation calculation now confirms it numerically and quantifies its strength.
+
+  This entire process is called **autocorrelation**. The prefix *auto* indicates that the series is being correlated with a shifted version of itself.
+
+  For lag $n$, we can write:
+
+  $$
+  \operatorname{ACF}(n)=\operatorname{Corr}(X_t,X_{t+n}).
+  $$
+
+  More explicitly, using the same Pearson calculation as the playground, let $\bar{x}_{\mathrm{left}}$ and $\bar{x}_{\mathrm{right}}$ be the means of the two overlapping sequences. Then the sample autocorrelation at lag $n$ is
+
+  $$
+  \widehat{\rho}(n)
+  =
+  \frac{\sum_{t=1}^{T-n}(x_t-\bar{x}_{\mathrm{left}})(x_{t+n}-\bar{x}_{\mathrm{right}})}
+  {\sqrt{\sum_{t=1}^{T-n}(x_t-\bar{x}_{\mathrm{left}})^2}
+  \sqrt{\sum_{t=1}^{T-n}(x_{t+n}-\bar{x}_{\mathrm{right}})^2}}.
+  $$
+
+  Here, the left sequence is $x_1,\ldots,x_{T-n}$ and the right sequence is $x_{1+n},\ldots,x_T$. The formula is therefore the ordinary correlation formula applied to the two shifted columns constructed by the scan.
+
+  The collection of autocorrelations calculated across multiple lags is called the **autocorrelation function**, or **ACF**.
+
+  The visualization provides an intuition for how the ACF is constructed: shift the series by a chosen lag, pair the overlapping observations, measure their correlation, and repeat the process for additional lags.
+
+  <h2 id="the-indirect-influences">The indirect influences</h2>
+
+  So far, we have used the autocorrelation function to measure the correlation between $X_t$ and $X_{t+n}$ for different values of $n$.
+
+  In many time-series processes, however, relationships propagate through intermediate observations. Consider three consecutive values:
+
+  $$
+  X_t,X_{t+1},X_{t+2}.
+  $$
+
+  If $X_t$ helps determine $X_{t+1}$, and $X_{t+1}$ helps determine $X_{t+2}$, then part of the relationship between $X_t$ and $X_{t+2}$ may be transmitted through $X_{t+1}$.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/propagated-influence.svg"
+      alt="X t points to X t plus one, which points to X t plus two, showing influence moving through consecutive observations."
+      width="1000"
+      height="320"
+      loading="lazy"
+      decoding="async"
+    />
+  </figure>
+
+  This does not mean that correlation is always transitive. In general, knowing that two pairs of variables are correlated is not enough to guarantee that the remaining pair will also be correlated. However, in a recursive time-series process, earlier observations can affect later observations through the values between them.
+
+  The autocorrelation at lag $1$,
+
+  $$
+  \operatorname{ACF}(1)=\operatorname{Corr}(X_t,X_{t+1}),
+  $$
+
+  measures the relationship between consecutive observations.
+
+  The autocorrelation at lag $2$,
+
+  $$
+  \operatorname{ACF}(2)=\operatorname{Corr}(X_t,X_{t+2}),
+  $$
+
+  measures the total relationship between observations two steps apart. It does not distinguish between a relationship that is specific to lag $2$ and one that has been propagated through $X_{t+1}$.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/acf-total-influence.svg"
+      alt="X t points through X t plus one to X t plus two, while an arc from X t to X t plus two marks the total relationship measured by ACF at lag two."
+      width="1000"
+      height="380"
+      loading="lazy"
+      decoding="async"
+    />
+  </figure>
+
+  This raises an important question. If $X_t$ is related to $X_{t+1}$, which is itself related to $X_{t+2}$, how much of $\operatorname{ACF}(2)$ represents a relationship unique to lag $2$? Are we partly measuring information that has already appeared at lag $1$?
+
+  The answer is yes. The ACF measures the complete linear relationship between two observations at a given distance. It does not separate relationships transmitted through intermediate observations from relationships that remain after those intermediate values are accounted for.
+
+  We can see this clearly by constructing a simple synthetic time series with only one explicitly defined lag:
+
+  $$
+  X_{t+1}=0.8X_t+\varepsilon_{t+1},
+  $$
+
+  where each $\varepsilon_{t+1}$ is sampled independently from a Gaussian distribution. We will initialize the series with $X_1=1$, multiply the latest value by $0.8$, add a new error term, and repeat the process.
+
+  <div className="acf-inline-playground">
+    <SyntheticArPlayground mode="builder" />
+  </div>
+
+  Although the equation contains only $X_t$, its effect propagates beyond the next observation. Substituting the first equation into the following step gives
+
+  $$
+  \begin{aligned}
+  X_{t+2}
+  &=0.8X_{t+1}+\varepsilon_{t+2} \\
+  &=0.8\left(0.8X_t+\varepsilon_{t+1}\right)+\varepsilon_{t+2} \\
+  &=0.8^2X_t+0.8\varepsilon_{t+1}+\varepsilon_{t+2}.
+  \end{aligned}
+  $$
+
+  There is no separate $X_t$ term in the original equation for predicting two steps ahead. Nevertheless, the influence of $X_t$ reaches $X_{t+2}$ through $X_{t+1}$.
+
+  The same propagation continues across additional lags:
+
+  $$
+  X_{t+n}=0.8^nX_t+\text{accumulated error terms}.
+  $$
+
+  <div className="acf-inline-playground">
+    <SyntheticArPlayground mode="autocorrelation" />
+  </div>
+
+  After running the visualization, notice that the ACF does not disappear after lag $1$. Even though we defined only a direct one-step relationship, meaningful autocorrelations remain at lags $2$, $3$, and beyond.
+
+  For a stationary process of this form, the population autocorrelation follows
+
+  $$
+  \rho(n)=0.8^n.
+  $$
+
+  Therefore,
+
+  $$
+  \rho(1)=0.8,
+  $$
+
+  $$
+  \rho(2)=0.8^2=0.64,
+  $$
+
+  and
+
+  $$
+  \rho(3)=0.8^3=0.512.
+  $$
+
+  In a finite noisy sample, the measured values will not be exactly equal to these numbers, but they should be reasonably close when the series is sufficiently long.
+
+  This decay reveals how the one-step relationship propagates through time. The ACF at lag $2$ contains the relationship transmitted through lag $1$; the ACF at lag $3$ contains relationships transmitted through the previous observations; and the same pattern continues across later lags.
+
+  Now that we know the ACF combines these direct and propagated relationships, a new question emerges:
+
+  **Can we isolate the relationship associated with a particular lag after removing the relationships carried through the intermediate values?**
+
+  <h3 id="removing-the-influence">Removing the influence</h3>
+
+  To separate direct relationships from the ones carried through time, we need one more familiar idea from machine learning: the residual.
+
+  Suppose a linear model predicts $Y_t$ from a set of features:
+
+  $$
+  Y_t=\beta_0+\beta_1X_{1,t}+\cdots+\beta_pX_{p,t}+\varepsilon_t.
+  $$
+
+  After fitting the model, we obtain a prediction $\widehat{Y}_t$. The difference between the value we observed and the value the model predicted is the **residual**:
+
+  $$
+  e_t=Y_t-\widehat{Y}_t.
+  $$
+
+  This allows us to separate an observation into two components:
+
+  $$
+  Y_t
+  =
+  \underbrace{\widehat{Y}_t}_{\text{explained by the model}}
+  +
+  \underbrace{e_t}_{\text{not explained by the model}}.
+  $$
+
+  Here, “not explained” does not mean random or impossible to understand. It means only that the model did not capture that part using the predictors we gave it. The residual is useful because it lets us keep what remains after those predictors have done their work.
+
+  Before generalizing this idea, consider one lag-$2$ window from the synthetic series above. Its three observations, rounded for display, are
+
+  $$
+  \begin{aligned}
+  X_t &= 0.14, \\
+  X_{t+1} &= -0.03, \\
+  X_{t+2} &= -0.27.
+  \end{aligned}
+  $$
+
+  Across all available lag-$2$ windows, we fit one model that uses the middle value to predict the left endpoint and another that uses it to predict the right endpoint. For this window, those models predict $-0.09$ on the left and $-0.08$ on the right. The residuals are therefore
+
+  $$
+  \begin{aligned}
+  r_t^{\text{left}} &= 0.14-(-0.09)=0.23, \\
+  r_t^{\text{right}} &= -0.27-(-0.08)=-0.19.
+  \end{aligned}
+  $$
+
+  This window contributes the point $(0.23,-0.19)$ to the residual scatter plot. The original endpoints do not enter the plot directly. Only the parts that the middle observation failed to predict remain.
+
+  Return now to two observations separated by $n$ steps: $X_t$ and $X_{t+n}$. Between them are the observations
+
+  $$
+  X_{t+1},X_{t+2},\ldots,X_{t+n-1}.
+  $$
+
+  These middle values are precisely the path through which an earlier observation may echo into a later one. So we give them one job: predict both endpoints.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/middle-predicts-endpoints.svg"
+      alt="The observations between X t and X t plus n are highlighted together, with arrows showing that the same middle observations predict the left and right endpoints separately."
+      width="1000"
+      height="420"
+      loading="lazy"
+      decoding="async"
+    />
+  </figure>
+
+  For one window of the series, collect the middle observations into a feature vector:
+
+  $$
+  \mathbf{M}_t=\left(X_{t+1},X_{t+2},\ldots,X_{t+n-1}\right).
+  $$
+
+  Use that same vector in two linear models. One predicts the endpoint on the left,
+
+  $$
+  \widehat{X}_t=f(\mathbf{M}_t),
+  $$
+
+  and the other predicts the endpoint on the right:
+
+  $$
+  \widehat{X}_{t+n}=g(\mathbf{M}_t).
+  $$
+
+  Now subtract each prediction from its observed endpoint:
+
+  $$
+  r_t^{\text{left}}=X_t-\widehat{X}_t,
+  $$
+
+  $$
+  r_t^{\text{right}}=X_{t+n}-\widehat{X}_{t+n}.
+  $$
+
+  Each window gives us one pair of residuals. The pair contains what the middle could not predict on the left and what it could not predict on the right. These residuals—not the original observations—are the points we place in the scatter plot.
+
+  Slide the window forward and repeat. As the highlighted middle values move across the series, each position adds one residual pair. Their correlation is
+
+  $$
+  \operatorname{Corr}\left(r_t^{\text{left}},r_t^{\text{right}}\right).
+  $$
+
+  If the residuals still line up, the endpoints retain a linear relationship that the observations between them did not explain. If the cloud loses its direction, the apparent relationship was mostly carried through the middle.
+
+  <div className="prediction-prompt">
+    <p className="lesson-stage">Before you scan</p>
+    <h3>What should remain after lag 1?</h3>
+    <p>The ACF for our synthetic series stayed high at lags $2$ and $3$, even though the process was defined using only a one-step relationship. Predict what should happen after the middle observations are allowed to explain both endpoints.</p>
+  </div>
+
+</article>
+
+<div className="interactive-breakout article-interactive acf-playground-breakout">
+  <SyntheticArPlayground mode="partial-autocorrelation" />
+</div>
+
+<article className="lesson-body deep-article acf-article">
+
+  At lag $1$, there is no middle observation to remove. The residual scatter therefore preserves the same relationship we saw in the ACF, and the partial correlation remains close to $0.8$.
+
+  At lag $2$, the moving band contains $X_{t+1}$. Once that middle value is used to predict both $X_t$ and $X_{t+2}$, the residual cloud loses most of its slope. The bar falls close to zero. Later lags behave similarly in this series.
+
+  This is the distinction we were looking for. The ACF showed that a relationship reaches across several time steps. The residual scan reveals that most of that later relationship travels through the observations in between.
+
+  This remaining relationship is the **partial autocorrelation** at lag $n$:
+
+  $$
+  \operatorname{PACF}(n)
+  =
+  \operatorname{Corr}\left(
+  r_t^{\text{left}},
+  r_t^{\text{right}}
+  \right),
+  $$
+
+  where both residuals come from predictions made with the intermediate observations
+
+  $$
+  X_{t+1},\ldots,X_{t+n-1}.
+  $$
+
+  The two functions now answer related but different questions.
+
+  The ACF asks:
+
+  > How correlated are two observations separated by $n$ time steps?
+
+  The PACF asks a more specific question:
+
+  > How correlated are those observations after removing the linear relationships explained by everything between them?
+
+  At lag $1$, there are no intermediate observations to remove. Therefore,
+
+  $$
+  \operatorname{PACF}(1)=\operatorname{ACF}(1).
+  $$
+
+  For larger lags, the distinction matters. The ACF sees the entire relationship across the gap. The PACF asks how much of that relationship survives after the path through the middle has been removed.
+
+  <h2 id="reading-the-echoes">Reading the echoes</h2>
+
+  We can now read the ACF and PACF as two views of the same temporal memory.
+
+  The **ACF shows how dependence propagates**. If information enters the series at one point and is carried forward through later observations, its echo may remain visible across several lags. A slowly decaying ACF suggests that this information persists. Spikes that return at regular distances may reveal seasonality. An ACF near zero after a short distance suggests that the linear echo does not travel very far.
+
+  This is the ACF’s strength: it shows the total relationship across each gap. Its limitation is that it does not separate a relationship belonging to lag $n$ from one that merely arrived there through the lags in between.
+
+  The **PACF looks for the relationship added by one particular lag**. A large partial autocorrelation at lag $n$ tells us that this lag still contributes linear information after the intermediate lags have been accounted for. In that sense, the PACF is often the clearer view when we want to identify individual lag relationships.
+
+  This difference becomes useful when diagnosing two classical families of time-series models.
+
+  An **autoregressive model**, or **AR model**, predicts the present from earlier values of the same series. Because one value influences the next and that influence can continue forward, its ACF often trails away. The PACF may show a clearer stopping point after the lags used directly by the model.
+
+  A **moving-average model**, or **MA model**, builds each value from the current and recent random shocks. Here, “moving average” names a probabilistic model; it is not the rolling-average smoother often used in charts. Because only a limited set of shocks overlaps across observations, the ACF may show the clearer stopping point, while the PACF trails away.
+
+  <figure className="static-figure acf-series-figure acf-diagnostic-figure">
+    <img
+      src="/articles/acf-pacf/acf-pacf-diagnostic-clues.svg"
+      alt="Four idealized bar plots compare AR one and MA one processes. For AR one, the ACF decays across lags while the PACF stops after lag one. For MA one, the ACF stops after lag one while the PACF alternates and fades."
+      width="1000"
+      height="640"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>
+      Idealized population patterns for an AR(1) and MA(1) process. Estimates from a finite sample will be noisier and will rarely stop at exactly zero.
+    </figcaption>
+  </figure>
+
+  <div className="prediction-prompt">
+    <p className="lesson-stage">Try one without the labels</p>
+    <h3>Which family does this pattern resemble?</h3>
+    <p>Imagine an unknown series whose ACF fades gradually across several lags, while its PACF has one clear spike and then falls close to zero. Is that evidence more consistent with an AR-like or an MA-like process? What feature of the two plots supports your answer?</p>
+  </div>
+
+  This is the classic AR-like clue: the ACF carries the propagated relationship forward, while the PACF isolates the first lag as the main individual relationship. If the ACF stopped clearly and the PACF faded instead, the pattern would be more consistent with an MA-like process.
+
+  These patterns are clues, not automatic model-selection rules. Real series may combine autoregressive and moving-average behavior, contain trends or seasonalities, change over time, or produce isolated spikes through sampling noise. The plots help us form a hypothesis; validation and domain knowledge still decide whether that hypothesis is useful.
+
+  Their diagnostic value also extends beyond classical AR and MA models. Before modeling, the ACF can reveal persistence and repeated seasonal distances, while the PACF can suggest which individual lags deserve closer attention. After modeling, both functions can be applied to the residuals. If strong correlations remain, the model has left temporal structure unexplained.
+
+  This remains useful even when the final forecaster is a state-space model, a tree-based system, or a neural network. ACF and PACF are compact ways to ask whether the past is still leaving a detectable linear signal—and whether that signal is propagated across the series or concentrated at particular lags.
+
+  <div className="mental-model">
+    <p className="lesson-stage">Keep the smallest useful distinction</p>
+    <p><strong>The ACF traces the echo across time. The PACF asks which lag still speaks after the observations in between have been accounted for.</strong></p>
+  </div>
+</article>

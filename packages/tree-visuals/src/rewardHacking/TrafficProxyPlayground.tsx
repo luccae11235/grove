@@ -254,21 +254,62 @@ function TrafficLearningScene({
   action,
   event,
   exploring,
-  replayKey,
 }: {
   previousState: TrafficState;
   state: TrafficState;
   action: number | null;
   event: TrafficEvent | null;
   exploring: boolean;
-  replayKey: number | null;
 }) {
+  const [releaseAnimations, setReleaseAnimations] = useState<
+    { id: number; position: number }[]
+  >([]);
+  const nextReleaseId = useRef(0);
+  const lastAnimatedEvent = useRef<TrafficEvent | null>(null);
+  const releaseAnimationActive = useRef(false);
+  const releaseTimers = useRef<number[]>([]);
   const speed = event?.speed ?? highwaySpeed(state.congestion);
   const actionName =
     action === null ? "hold" : TRAFFIC_ACTIONS[action].name;
-  const releasedDuringReplay =
-    replayKey === null ? 0 : Math.min(2, event?.released ?? 0);
   const queueCarX = [256, 222, 188, 154, 120, 86, 52, 18];
+
+  useEffect(() => {
+    if (!event || event === lastAnimatedEvent.current) return;
+    lastAnimatedEvent.current = event;
+    const released = Math.min(2, event.released);
+    if (
+      released === 0 ||
+      releaseAnimationActive.current ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+
+    const cars = Array.from({ length: released }, (_, position) => ({
+      id: nextReleaseId.current++,
+      position,
+    }));
+    releaseAnimationActive.current = true;
+    setReleaseAnimations((current) => [...current, ...cars]);
+    const timer = window.setTimeout(() => {
+      const releasedIds = new Set(cars.map((car) => car.id));
+      setReleaseAnimations((current) =>
+        current.filter((car) => !releasedIds.has(car.id)),
+      );
+      releaseAnimationActive.current = false;
+      releaseTimers.current = releaseTimers.current.filter(
+        (timerId) => timerId !== timer,
+      );
+    }, RELEASE_REPLAY_STEP_MS);
+    releaseTimers.current.push(timer);
+  }, [event]);
+
+  useEffect(
+    () => () => {
+      releaseTimers.current.forEach((timer) => window.clearTimeout(timer));
+    },
+    [],
+  );
 
   return (
     <div
@@ -360,8 +401,8 @@ function TrafficLearningScene({
           ) : null,
         )}
 
-        {Array.from({ length: releasedDuringReplay }, (_, index) => (
-          <g key={`${replayKey}-${index}`}>
+        {releaseAnimations.map(({ id, position }) => (
+          <g key={id}>
             <rect
               className={styles.trafficCarMark}
               x="-14"
@@ -371,12 +412,12 @@ function TrafficLearningScene({
               rx="5"
             />
             <animateMotion
-              begin={`${index * 0.1}s`}
+              begin={`${position * 0.1}s`}
               dur="1.05s"
               fill="freeze"
               rotate="auto"
               path={
-                index === 0
+                position === 0
                   ? "M 270 244 C 365 244 370 119 490 119 H 680"
                   : "M 236 244 H 270 C 365 244 370 119 490 119 H 680"
               }
@@ -656,7 +697,6 @@ function TrafficLearningPlayground({
             exploring={
               mode === "training" && Boolean(trainingStep?.exploring)
             }
-            replayKey={mode === "replaying" ? playbackStep : null}
           />
         </div>
 

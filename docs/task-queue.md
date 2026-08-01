@@ -32,6 +32,16 @@ references for longer-term editorial direction.
 
 ## In progress
 
+### Learning experience
+
+- [ ] **Animate released ramp cars through the highway merge — issue #80**
+  - Retain released cars long enough to traverse the on-ramp and enter the
+    highway in both reward-function playgrounds.
+  - Preserve the traffic MDP, training behavior, accessibility, responsive
+    layout, and reduced-motion behavior.
+  - Completion check: focused tests and repository gates pass, and the exact
+    release is verified in staging and production.
+
 ### Release and platform readiness
 
 - [ ] **Phase 8 — Open the newsletter**
@@ -117,6 +127,16 @@ references for longer-term editorial direction.
     reader semantics, contrast, reduced motion, and small-screen behavior.
 
 ## Done
+
+### Publishing and content
+
+- [x] **Draft the ACF and PACF article — issue #76** — 2026-07-31
+  - Completed the article from temporal correlation through ACF, PACF, and
+    diagnostic interpretation using sourced datasets and correctly rendered math.
+  - Added twelve static visuals and four guided interactions with accessible,
+    responsive Aflora styling.
+  - Passed editorial, mathematical-consistency, responsive, type, test, build,
+    and rendered-browser review.
 
 ### Operations and quality
 
