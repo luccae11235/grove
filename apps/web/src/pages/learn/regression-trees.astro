@@ -11,12 +11,13 @@ const entries = await getCollection(
 );
 const entry = entries[0];
 if (!entry) throw new Error("Missing regression-trees-from-scratch article entry.");
-const { Content } = await render(entry);
 
-// Connections resolve only for articles in the visible catalog (published, or
-// any article during local dev). A draft is absent from the production build,
-// so we skip the block there rather than let it throw.
+// Bespoke routes must respect the same visibility boundary as the catalog.
+// In production a draft may not be rendered as an article at its direct URL.
 const inCatalog = articles.some((article) => article.id === entry.data.articleId);
+if (!inCatalog) return Astro.redirect("/");
+
+const { Content } = await render(entry);
 ---
 
 <BaseLayout

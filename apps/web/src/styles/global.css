@@ -764,9 +764,12 @@ h1 {
 }
 
 .library-card-topline,
-.library-card-footer {
+.library-card-publication {
   display: flex;
   align-items: center;
+}
+
+.library-card-topline {
   justify-content: space-between;
   gap: 14px;
 }
@@ -776,7 +779,7 @@ h1 {
   font-size: 0.64rem;
 }
 
-.library-card-topline > span {
+.library-card-topic {
   color: var(--accent);
   font-weight: 760;
   letter-spacing: 0.06em;
@@ -791,9 +794,12 @@ h1 {
   font-size: 0.58rem;
 }
 
+.library-card-publication {
+  flex-shrink: 0;
+  gap: 8px;
+}
+
 .library-card-latest {
-  width: fit-content;
-  margin-top: 28px;
   border-radius: 999px;
   background: var(--accent-soft);
   color: var(--accent-hover);
@@ -805,7 +811,7 @@ h1 {
 }
 
 .library-card h3 {
-  margin: 12px 0 10px;
+  margin: 28px 0 10px;
   font-size: clamp(1.25rem, 2vw, 1.55rem);
   letter-spacing: -0.035em;
 }
@@ -819,20 +825,6 @@ h1 {
   line-height: 1.55;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
-}
-
-.library-card-footer {
-  margin-top: auto;
-  border-top: 1px solid var(--border);
-  color: var(--text-muted);
-  padding-top: 15px;
-  font-size: 0.66rem;
-  font-weight: 650;
-}
-
-.library-card-footer b {
-  color: var(--accent);
-  font-size: 1rem;
 }
 
 .home-question {
@@ -2441,6 +2433,22 @@ h1 {
   width: min(1160px, 100%);
   margin-top: 56px;
   margin-bottom: 68px;
+}
+
+/* Decision-tree lessons keep each teaching object on the same measure as the
+   prose. The playground itself owns the responsive rearrangement within it. */
+.decision-tree-interactive {
+  width: min(720px, 100%);
+}
+
+.static-figure.decision-tree-figure {
+  left: auto;
+  width: 100%;
+  transform: none;
+}
+
+.decision-tree-figure .tree-snapshot {
+  min-width: 0;
 }
 
 .derivation-card {

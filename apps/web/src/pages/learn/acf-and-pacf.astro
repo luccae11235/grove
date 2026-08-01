@@ -12,8 +12,10 @@ const entries = await getCollection(
 );
 const entry = entries[0];
 if (!entry) throw new Error("Missing how-the-past-echoes-acf-pacf article entry.");
-const { Content } = await render(entry);
 const inCatalog = articles.some((article) => article.id === entry.data.articleId);
+if (!inCatalog) return Astro.redirect("/");
+
+const { Content } = await render(entry);
 ---
 
 <BaseLayout

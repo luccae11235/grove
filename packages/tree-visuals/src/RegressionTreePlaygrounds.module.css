@@ -674,12 +674,10 @@
 }
 
 @container (max-width: 820px) {
-  .splitLayout,
   .growthLayout {
     grid-template-columns: 1fr;
   }
 
-  .tracePanel,
   .treePanel {
     border-top: 1px solid var(--border);
     border-left: 0;
@@ -695,6 +693,15 @@
 }
 
 @container (max-width: 560px) {
+  .splitLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .splitLayout .tracePanel {
+    border-top: 1px solid var(--border);
+    border-left: 0;
+  }
+
   .header {
     align-items: flex-start;
     flex-direction: column;
@@ -770,11 +777,7 @@
   }
 
   .cropPlot {
-    min-width: 560px;
-  }
-
-  .chartScroll {
-    overflow-x: auto;
+    min-width: 0;
   }
 }
 

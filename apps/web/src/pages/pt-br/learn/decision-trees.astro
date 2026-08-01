@@ -98,7 +98,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
       significado porque nenhuma semente depende da linha anterior.
     </p>
 
-    <figure class="static-figure data-shape-figure">
+    <figure class="static-figure decision-tree-figure data-shape-figure">
       <div class="data-shape-grid" aria-label="Três formatos de dados">
         <div class="shape-card">
           <span class="shape-label">Sequência</span>
@@ -150,7 +150,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
       experimento, cada semente estava saudável ou com dificuldade.
     </p>
 
-    <figure class="static-figure seed-table-figure">
+    <figure class="static-figure decision-tree-figure seed-table-figure">
       <div class="seed-table-wrap">
         <table class="seed-table">
           <thead>
@@ -196,7 +196,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
       Os círculos são sementes saudáveis; os quadrados, sementes com dificuldade.
     </p>
 
-    <figure class="static-figure split-figure">
+    <figure class="static-figure decision-tree-figure split-figure">
       <svg class="seed-plot" viewBox="0 0 570 340" role="img" aria-labelledby="seed-plot-title seed-plot-desc">
         <title id="seed-plot-title">As dez sementes antes da escolha de uma pergunta divisória</title>
         <desc id="seed-plot-desc">Um gráfico de dispersão de luz solar e água. Quatro sementes saudáveis são círculos e seis sementes com dificuldade são quadrados. Nenhuma linha divisória foi escolhida ainda.</desc>
@@ -255,7 +255,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </div>
   </article>
 
-  <div class="interactive-breakout article-interactive" data-analytics-lab="threshold-intuition">
+  <div class="interactive-breakout article-interactive decision-tree-interactive" data-analytics-lab="threshold-intuition">
     <ThresholdIntuitionPlayground client:load locale="pt-BR" />
   </div>
 
@@ -298,7 +298,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </div>
   </article>
 
-  <div class="interactive-breakout article-interactive" data-analytics-lab="manual-tree">
+  <div class="interactive-breakout article-interactive decision-tree-interactive" data-analytics-lab="manual-tree">
     <ManualTreePlayground client:load locale="pt-BR" />
   </div>
 
@@ -431,7 +431,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
       que o grupo ainda contém uma mistura forte dos dois rótulos.
     </p>
 
-    <figure class="static-figure gini-figure">
+    <figure class="static-figure decision-tree-figure gini-figure">
       <svg class="gini-curve" viewBox="0 0 580 310" role="img" aria-labelledby="gini-title gini-desc">
         <title id="gini-title">Impureza de Gini para duas classes</title>
         <desc id="gini-desc">A impureza de Gini é zero quando um grupo contém apenas uma classe. Ela sobe até 0,5 quando as duas classes têm proporções iguais.</desc>
@@ -514,7 +514,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
       pergunta deixa menos mistura para trás.
     </p>
 
-    <figure class="static-figure gini-comparison-figure">
+    <figure class="static-figure decision-tree-figure gini-comparison-figure">
       <div class="gini-split-grid">
         <section class="gini-candidate" aria-labelledby="candidate-a-title">
           <div class="gini-candidate-heading">
@@ -627,7 +627,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </p>
   </article>
 
-  <div class="interactive-breakout article-interactive" data-analytics-lab="split-search">
+  <div class="interactive-breakout article-interactive decision-tree-interactive" data-analytics-lab="split-search">
     <SplitSearchPlayground client:load locale="pt-BR" />
   </div>
 
@@ -666,7 +666,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </div>
   </article>
 
-  <div class="interactive-breakout article-interactive" data-analytics-lab="tree-growth">
+  <div class="interactive-breakout article-interactive decision-tree-interactive" data-analytics-lab="tree-growth">
     <TreeGrowthPlayground client:load locale="pt-BR" />
   </div>
 
@@ -675,7 +675,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
       A estrutura final merece um olhar completo:
     </p>
 
-    <figure class="static-figure tree-figure">
+    <figure class="static-figure decision-tree-figure tree-figure">
       <p class="mobile-scroll-cue">Deslize horizontalmente para acompanhar a árvore completa.</p>
       <svg class="tree-snapshot" viewBox="0 0 760 340" role="img" aria-labelledby="tree-title tree-desc">
         <title id="tree-title">A estrutura ramificada completa, com duas perguntas</title>
@@ -728,7 +728,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </p>
   </article>
 
-  <div class="interactive-breakout article-interactive" data-analytics-lab="dataset-complexity">
+  <div class="interactive-breakout article-interactive decision-tree-interactive" data-analytics-lab="dataset-complexity">
     <DatasetComplexityPlayground client:load locale="pt-BR" />
   </div>
 
@@ -856,7 +856,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </div>
   </article>
 
-  <div class="interactive-breakout article-interactive" data-analytics-lab="multi-feature-split">
+  <div class="interactive-breakout article-interactive decision-tree-interactive" data-analytics-lab="multi-feature-split">
     <MultiFeatureSplitPlayground client:load locale="pt-BR" />
   </div>
 

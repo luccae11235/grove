@@ -34,12 +34,15 @@ references for longer-term editorial direction.
 
 ### Learning experience
 
-- [ ] **Standardize oversized ACF article playground widths — issue #81**
-  - Keep the sales-correlation and partial-correlation playgrounds within the
-    same readable width as the article's inline synthetic-series playground.
-  - Preserve responsive behavior and every playground interaction.
+- [ ] **Bound and simplify both decision-tree article visualizations — issue #91**
+  - Keep classification and regression tables and playgrounds within the
+    article content boundary at supported viewport widths.
+  - Simplify oversized layouts so each primary learning state is complete,
+    centered, and readable without horizontal clipping.
+  - Preserve computed results, interactions, accessibility, and responsive
+    behavior.
   - Completion check: focused checks and the full repository gate pass, and
-    the exact release is verified in staging and production.
+    representative desktop, tablet, and mobile layouts are visually verified.
 
 ### Release and platform readiness
 
@@ -129,6 +132,14 @@ references for longer-term editorial direction.
 
 ### Learning experience
 
+- [x] **Standardize oversized ACF article playground widths — issue #81** — 2026-08-01
+  - Constrained the sales-correlation and partial-correlation playgrounds to
+    the same 720px desktop width as the inline synthetic-series playground.
+  - Added desktop and mobile browser regression coverage while preserving
+    responsive containment and keyboard interaction.
+  - Completion check: the full repository gate passed; exact-SHA staging and
+    production verification passed on `0b698dc` and `c6dab0e`, respectively.
+
 - [x] **Animate released ramp cars through the highway merge — issue #80** — 2026-08-01
   - Released cars now remain visible while traversing the curved on-ramp into
     the highway during live training and learned-policy replay in both traffic
@@ -137,6 +148,13 @@ references for longer-term editorial direction.
     reduced-motion behavior while limiting live training to one legible batch.
   - Completion check: the full repository gate passed; exact-SHA staging and
     production verification passed on `8b2b127` and `891b7da`, respectively.
+
+### Publishing and content
+
+- [x] **Prevent production articles from displaying a draft label — issue #78** — 2026-08-01
+  - The production library now reads only the production-visible catalog.
+  - Bespoke draft article routes resolve to noindex redirects outside a local or explicit draft preview.
+  - Completion check: a production build excludes draft article cards and labels.
 
 ### Publishing and content
 
@@ -167,6 +185,14 @@ references for longer-term editorial direction.
     exact-SHA staging and production smoke tests pass.
 
 ### Product design
+
+- [x] **Simplify article-card metadata and latest badge — issue #83** — 2026-08-01
+  - Removed reading-time estimates and interactive counts from main-library
+    article cards while preserving the underlying publishing metadata.
+  - Placed the latest badge beside the newest article's publication date so all
+    card titles share the same vertical alignment.
+  - Completion check: focused web type, test, build, CI, and rendered browser
+    checks passed at desktop and mobile widths.
 
 - [x] **Rebrand Grove as Aflora — issue #6** — 2026-07-23
   - Preserved the existing green palette, editorial hierarchy, navigation, and
