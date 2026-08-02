@@ -114,8 +114,10 @@
 }
 
 .tableWrap {
+  max-height: 150px;
   margin-top: 10px;
-  overflow-x: auto;
+  overflow: auto;
+  overscroll-behavior: contain;
 }
 
 .tableWrap:focus-visible,
@@ -141,6 +143,10 @@
 }
 
 .datasetTable thead th {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  background: var(--surface-raised);
   color: var(--text-muted);
   font-size: 0.62rem;
   font-weight: 760;
