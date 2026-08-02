@@ -1,0 +1,37 @@
+---
+issueId: "2026-002"
+locale: en
+issueNumber: 2
+routeSlug: "what-changes-when-a-decision-tree-predicts-a-number"
+href: "/newsletter/2026/002/what-changes-when-a-decision-tree-predicts-a-number"
+subject: "What changes when a decision tree predicts a number?"
+preheader: "The tree-building loop stays the same. The meaning of a good split—and the prediction at each leaf—changes."
+summary: "The second Aflora issue connects classification and regression trees through the procedure they share. It invites readers to see what changes when the target becomes a number."
+status: draft
+featuredArticles:
+  - "decision-trees-from-scratch"
+  - "regression-trees-from-scratch"
+tags:
+  - "decision-trees"
+  - "regression"
+  - "machine-learning"
+cta:
+  label: "Build a regression tree"
+  href: "/learn/regression-trees"
+---
+
+In the first decision-tree lesson, ten seeds asked a yes-or-no question: will
+this seed sprout? A useful split made the answers on each side less mixed.
+
+Now imagine that the label is not *sprouted* or *did not sprout*, but the
+height of the plant after four weeks. The boundary still divides one group into
+two. The tree still repeats the same propose–judge–repeat loop. But “less mixed”
+needs a new meaning, and every leaf must predict a number.
+
+The new interactive lesson lets you reuse the intuition from classification,
+replace class impurity with squared error, and watch each leaf settle on the
+mean of the observations it receives.
+
+That is the useful connection between the two articles: a decision tree is not
+one finished diagram or one special formula. It is a way to search for
+questions that make the next prediction simpler.

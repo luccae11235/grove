@@ -34,6 +34,17 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Draft and test Issue 002 about classification and regression trees — issue #92**
+  - Keep the newsletter issue in draft while reviewing its web, HTML email,
+    and plain-text forms.
+  - Publish both destination articles and the issue before creating the final
+    provider send.
+  - Review one Resend draft before the explicit, separately authorized send to
+    the production segment.
+  - Completion check: delivery events and the Issue 002 report confirm the
+    three-person test audience received the intended broadcast without a
+    duplicate send.
+
 - [ ] **Align the launch article publication schedule — issue #95**
   - Publish the completed regression-tree article for launch week.
   - Return Reward Hacking to draft for next week's release and keep ACF/PACF
@@ -66,7 +77,6 @@ references for longer-term editorial direction.
     behavior.
   - Completion check: focused checks and the full repository gate pass, and
     representative desktop, tablet, and mobile layouts are visually verified.
-
 ### Release and platform readiness
 
 - [ ] **Phase 8 — Open the newsletter**
