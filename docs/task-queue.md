@@ -32,6 +32,16 @@ references for longer-term editorial direction.
 
 ## In progress
 
+### Publishing and content
+
+- [ ] **Align the launch article publication schedule — issue #95**
+  - Publish the completed regression-tree article for launch week.
+  - Return Reward Hacking to draft for next week's release and keep ACF/PACF
+    in draft for the following week.
+  - Do not create or send a newsletter broadcast as part of the website release.
+  - Completion check: published-only staging and production expose exactly the
+    two decision-tree articles, with exact-SHA deployment verification passing.
+
 ### Learning experience
 
 - [ ] **Bound and simplify both decision-tree article visualizations — issue #91**
