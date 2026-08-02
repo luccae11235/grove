@@ -16,3 +16,23 @@ test("retention removes only stale visitor-level activity", async () => {
   assert.equal(repository.visitors.has(stale), false);
   assert.equal(repository.visitors.has(current), true);
 });
+
+test("retention removes stale feedback comments but preserves ratings", async () => {
+  const repository = new MemoryObservabilityRepository();
+  const feedbackId = randomUUID();
+  await repository.createFeedback({
+    feedbackId,
+    contentId: "decision-trees-from-scratch",
+    locale: "en",
+    path: "/learn/decision-trees",
+    sentiment: "helpful",
+    reason: "clear",
+    comment: "A useful explanation.",
+    submittedAt: new Date("2025-01-01T00:00:00.000Z"),
+  });
+  const cutoff = new Date("2026-01-01T00:00:00.000Z");
+  assert.equal((await repository.inspectRetention(cutoff)).feedbackComments, 1);
+  await repository.applyRetention(cutoff);
+  assert.equal(repository.feedback.get(feedbackId)?.sentiment, "helpful");
+  assert.equal(repository.feedback.get(feedbackId)?.comment, undefined);
+});

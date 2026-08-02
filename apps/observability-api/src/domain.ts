@@ -63,9 +63,36 @@ export interface IdentityLink {
   nonce: string;
 }
 
+export const feedbackSentiments = ["helpful", "not_helpful"] as const;
+export const feedbackReasons = [
+  "clear",
+  "useful_example",
+  "too_difficult",
+  "too_basic",
+  "confusing",
+  "missing_example",
+] as const;
+
+export type FeedbackSentiment = typeof feedbackSentiments[number];
+export type FeedbackReason = typeof feedbackReasons[number];
+
+export interface ArticleFeedbackInput {
+  feedbackId: string;
+  contentId: string;
+  locale: Locale;
+  path: string;
+  sentiment: FeedbackSentiment;
+  reason?: FeedbackReason;
+  comment?: string;
+  submittedAt: Date;
+}
+
+export type FeedbackCreateResult = "created" | "duplicate" | "conflict";
+
 export interface RetentionCounts {
   visitors: number;
   sessions: number;
   events: number;
   engagements: number;
+  feedbackComments: number;
 }

@@ -44,6 +44,16 @@ references for longer-term editorial direction.
 
 ### Learning experience
 
+- [ ] **Add minimal anonymous article feedback — issue #96**
+  - Let readers rate whether an article was useful without an account,
+    newsletter subscription, or analytics consent.
+  - Collect one optional structured reason and one bounded optional comment,
+    with localized, accessible UI and safe retry/update behavior.
+  - Store feedback in the existing environment-local observability database;
+    add private reporting, retention, staging proof, and automated coverage.
+  - Completion check: the full repository gate passes and the exact release is
+    verified in staging before merge.
+
 - [ ] **Bound and simplify both decision-tree article visualizations — issue #91**
   - Keep classification and regression tables and playgrounds within the
     article content boundary at supported viewport widths.

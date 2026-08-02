@@ -2,8 +2,10 @@
 
 ## Ownership and boundaries
 
-The static website owns the consent interface and browser measurement. The
-observability API validates and persists only consented data. The newsletter API
+The static website owns the consent interface, browser measurement, and article
+feedback interface. The observability API validates and persists consented
+measurement plus intentional anonymous feedback. Feedback does not require an
+analytics visitor and is not linked to subscriber identity. The newsletter API
 owns email consent and status history, and issues a 15-minute, single-use link
 token after confirmation when `OBSERVABILITY_LINK_SECRET` is configured.
 
@@ -28,6 +30,8 @@ database belonging to its own environment. There is no public reporting route.
    `PUBLIC_OBSERVABILITY_CONSENT_VERSION`, and
    `PUBLIC_OBSERVABILITY_ENABLED=true` only after service health, CORS, privacy
    copy, and withdrawal have been reviewed.
+7. Enable `PUBLIC_FEEDBACK_ENABLED=true` only after the feedback migration,
+   staging proof, localized privacy copy, and article widget have been reviewed.
 
 Rollback is the web build switch: set `PUBLIC_OBSERVABILITY_ENABLED=false` and
 redeploy the static website. The additive service and schema may remain for
@@ -59,15 +63,20 @@ not create synthetic production subscribers.
 ```bash
 pnpm observability:report --from 2026-07-01 --to 2026-08-01
 pnpm observability:report --article decision-trees-from-scratch
+pnpm observability:report --article decision-trees-from-scratch --include-feedback-comments
 pnpm observability:report --subscriber reader@example.com
 pnpm observability:report --subscriber reader@example.com --include-email
 pnpm observability:export --scope aggregate --format csv
+pnpm observability:export --scope feedback --format csv
+pnpm observability:export --scope feedback --format ndjson --include-feedback-comments
 pnpm observability:export --scope visitor --format ndjson
 pnpm observability:retention
 pnpm observability:retention --apply --confirm DELETE:observability-retention
 ```
 
-Retention uses a UTC-day cutoff 400 days in the past. It rolls old article
+Retention uses a UTC-day cutoff 400 days in the past. It removes free-text
+feedback comments while preserving their anonymous rating and standardized
+reason. It also rolls old article
 engagement into non-identifying daily totals before deleting raw events,
 engagement, sessions, profiles, and expired link nonces. Withdrawal through the
 site deletes that browser profile immediately.
@@ -96,7 +105,8 @@ GRANT SELECT ON
   observability_daily_articles,
   observability_consenting_reader_cohorts,
   observability_acquisition,
-  observability_locale_devices
+  observability_locale_devices,
+  observability_article_feedback
 TO grove_observability_reader;
 ```
 
