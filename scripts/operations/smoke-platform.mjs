@@ -8,6 +8,7 @@ export async function runSmoke(arguments_, dependencies = {}) {
       "Usage: pnpm operations:smoke --web-url <origin> --api-url <origin> " +
       "[--expect-signup-form enabled|disabled|either] " +
       "[--observability-url <origin>] [--expect-observability enabled|disabled|either] " +
+      "[--expect-feedback enabled|disabled|either] " +
       "[--expect-audience restricted|public|either] " +
       "[--expect-release-sha <sha>] [--wait-seconds <seconds>]",
     );
@@ -236,6 +237,21 @@ export async function runSmoke(arguments_, dependencies = {}) {
     });
   }
 
+  if ((arguments_.expectedFeedback ?? "either") !== "either") {
+    await check(checks, "article feedback switch matches configuration", async () => {
+      const response = await request(`${webUrl}/learn/decision-trees/`);
+      assertStatus(response, 200);
+      const body = await response.text();
+      const enabled = body.includes("data-article-feedback");
+      if (arguments_.expectedFeedback === "enabled" && !enabled) {
+        throw new Error("article feedback was expected to be enabled but the widget is absent");
+      }
+      if (arguments_.expectedFeedback === "disabled" && enabled) {
+        throw new Error("article feedback was expected to be disabled but the widget is present");
+      }
+    });
+  }
+
   if (arguments_.expectedAudience !== "either") {
     await check(checks, "newsletter audience policy matches the API configuration", async () => {
       if (health.audienceMode !== arguments_.expectedAudience) {
@@ -252,6 +268,7 @@ export async function runSmoke(arguments_, dependencies = {}) {
 export function parseArguments(values) {
   const result = {
     expectedAudience: "either",
+    expectedFeedback: "either",
     expectedSignupForm: "either",
     expectedObservability: "either",
     waitSeconds: 0,
@@ -264,6 +281,9 @@ export function parseArguments(values) {
       result.observabilityUrl = requiredValue(values, ++index, argument);
     } else if (argument === "--expect-observability") {
       result.expectedObservability = requiredValue(values, ++index, argument);
+    }
+    else if (argument === "--expect-feedback") {
+      result.expectedFeedback = requiredValue(values, ++index, argument);
     }
     else if (argument === "--expect-signup-form" || argument === "--expect-signup") {
       result.expectedSignupForm = requiredValue(values, ++index, argument);
@@ -281,6 +301,11 @@ export function parseArguments(values) {
     result.expectedObservability,
     ["enabled", "disabled", "either"],
     "--expect-observability",
+  );
+  assertChoice(
+    result.expectedFeedback,
+    ["enabled", "disabled", "either"],
+    "--expect-feedback",
   );
   assertChoice(
     result.expectedSignupForm,
