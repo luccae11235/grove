@@ -1,12 +1,16 @@
 import type {
+  ArticleFeedbackInput,
   AnalyticsEventInput,
   EngagementInput,
   IdentityLink,
   RetentionCounts,
   SessionInput,
+  FeedbackCreateResult,
 } from "./domain.js";
 
 export interface ObservabilityRepository {
+  createFeedback(input: ArticleFeedbackInput): Promise<FeedbackCreateResult>;
+  updateFeedback(input: ArticleFeedbackInput): Promise<boolean>;
   registerVisitor(visitorId: string, consentVersion: string, consentedAt: Date): Promise<void>;
   recordEvents(
     visitorId: string,

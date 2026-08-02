@@ -13,12 +13,52 @@ before(async () => {
   await runMigrations(databaseUrl);
   const sql = postgres(databaseUrl, { max: 1 });
   await sql`
-    TRUNCATE analytics_identity_nonces, analytics_events,
+    TRUNCATE article_feedback, analytics_identity_nonces, analytics_events,
       analytics_page_engagement, analytics_sessions, analytics_visitors,
       analytics_daily_article_rollups CASCADE
   `;
   await sql.end();
   repository = new PostgresObservabilityRepository(databaseUrl);
+});
+
+test("PostgreSQL feedback create, retry, update, aggregate, and retention", {
+  skip: !databaseUrl,
+}, async () => {
+  assert.ok(repository);
+  const feedbackId = randomUUID();
+  const old = new Date("2024-01-01T12:00:00.000Z");
+  const input = {
+    feedbackId,
+    contentId: "decision-trees-from-scratch",
+    locale: "en" as const,
+    path: "/learn/decision-trees",
+    sentiment: "helpful" as const,
+    reason: "clear" as const,
+    comment: "The example helped.",
+    submittedAt: old,
+  };
+  assert.equal(await repository.createFeedback(input), "created");
+  assert.equal(await repository.createFeedback(input), "duplicate");
+  assert.equal(await repository.updateFeedback({
+    ...input,
+    sentiment: "not_helpful",
+    reason: "missing_example",
+  }), true);
+  const aggregate = await repository.sql<{ responses: string }[]>`
+    SELECT responses::text FROM observability_article_feedback
+    WHERE content_id = ${input.contentId} AND sentiment = 'not_helpful'
+  `;
+  assert.equal(Number(aggregate[0]?.responses), 1);
+  assert.equal(
+    (await repository.inspectRetention(new Date("2025-06-01T00:00:00.000Z"))).feedbackComments,
+    1,
+  );
+  await repository.applyRetention(new Date("2025-06-01T00:00:00.000Z"));
+  const rows = await repository.sql<{ sentiment: string; comment: string | null }[]>`
+    SELECT sentiment, comment FROM article_feedback WHERE feedback_id = ${feedbackId}
+  `;
+  assert.equal(rows[0]?.sentiment, "not_helpful");
+  assert.equal(rows[0]?.comment, null);
 });
 
 after(async () => {

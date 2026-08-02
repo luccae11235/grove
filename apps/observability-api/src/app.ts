@@ -4,7 +4,14 @@ import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
 import { secureHeaders } from "hono/secure-headers";
 import { z } from "zod";
-import { eventNames, type AnalyticsEventInput, type EngagementInput } from "./domain.js";
+import {
+  eventNames,
+  feedbackReasons,
+  feedbackSentiments,
+  type AnalyticsEventInput,
+  type ArticleFeedbackInput,
+  type EngagementInput,
+} from "./domain.js";
 import { verifyIdentityLinkToken } from "./identityToken.js";
 import type { ObservabilityRepository } from "./repository.js";
 
@@ -72,6 +79,18 @@ const linkSchema = z.object({
   visitorId: uuid,
   token: z.string().min(40).max(1000),
 });
+const feedbackSchema = z.object({
+  feedbackId: uuid,
+  contentId: safeText(120),
+  locale,
+  path,
+  sentiment: z.enum(feedbackSentiments),
+  reason: z.enum(feedbackReasons).optional(),
+  comment: z.string().trim().min(1).max(500).refine(
+    (value) => !/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(value),
+    "comment contains unsupported control characters",
+  ).optional(),
+});
 
 export interface AppOptions {
   repository: ObservabilityRepository;
@@ -125,7 +144,7 @@ export function createApp(options: AppOptions) {
     const allowance = limiter.consume(key);
     if (!allowance.allowed) {
       context.header("Retry-After", String(allowance.retryAfterSeconds));
-      return context.json({ ok: false, error: "Too many analytics requests." }, 429);
+      return context.json({ ok: false, error: "Too many requests." }, 429);
     }
     return next();
   });
@@ -208,6 +227,37 @@ export function createApp(options: AppOptions) {
       return context.json({ ok: false, error: "Identity link was already used." }, 409);
     }
     return context.json({ ok: true });
+  });
+
+  app.post("/v1/feedback", async (context) => {
+    const parsed = feedbackSchema.safeParse(await readJson(context.req.raw));
+    if (!parsed.success) {
+      return context.json({ ok: false, error: "Invalid article feedback." }, 400);
+    }
+    const result = await options.repository.createFeedback({
+      ...parsed.data,
+      submittedAt: now(),
+    } as ArticleFeedbackInput);
+    if (result === "conflict") {
+      return context.json({ ok: false, error: "Feedback identifier is already in use." }, 409);
+    }
+    return context.json({ ok: true }, result === "created" ? 201 : 200);
+  });
+
+  app.put("/v1/feedback/:feedbackId", async (context) => {
+    const feedbackId = uuid.safeParse(context.req.param("feedbackId"));
+    const parsed = feedbackSchema.safeParse(await readJson(context.req.raw));
+    if (!feedbackId.success || !parsed.success || feedbackId.data !== parsed.data.feedbackId) {
+      return context.json({ ok: false, error: "Invalid article feedback." }, 400);
+    }
+    const updated = await options.repository.updateFeedback({
+      ...parsed.data,
+      submittedAt: now(),
+    } as ArticleFeedbackInput);
+    if (!updated) {
+      return context.json({ ok: false, error: "Feedback response was not found." }, 404);
+    }
+    return context.json({ ok: true }, 200);
   });
 
   app.delete("/v1/visitors/:visitorId", async (context) => {

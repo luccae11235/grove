@@ -2,6 +2,7 @@
 import Brand from "../components/Brand.astro";
 import ArticleChapters from "../components/ArticleChapters.astro";
 import AnalyticsConsent from "../components/AnalyticsConsent.astro";
+import ArticleFeedback from "../components/ArticleFeedback.astro";
 import LanguageSwitcher from "../components/LanguageSwitcher.astro";
 import { getSiteCopy, type Locale } from "../i18n";
 import "../styles/global.css";
@@ -143,6 +144,9 @@ const alternateOgLocales = Object.keys(availableTranslations)
     <main id="main-content" class:list={["main-content", { wide }]}>
       <slot />
     </main>
+    {pageType === "article" && analyticsContentId && (
+      <ArticleFeedback locale={locale} contentId={analyticsContentId} />
+    )}
     {pageType === "article" && <ArticleChapters locale={locale} />}
     <AnalyticsConsent
       locale={locale}

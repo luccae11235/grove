@@ -26,6 +26,10 @@ delivery telemetry also require a durable, privacy-conscious record.
 - Metrics store a keyed recipient hash rather than an email address.
 - Readership measurement is a separate first-party service and remains disabled
   until the reader explicitly accepts it.
+- Intentional article feedback may use the same service and environment-local
+  database without requiring analytics consent. It remains unlinked from the
+  analytics visitor and subscriber identities, and free-text comments expire
+  after 400 days while anonymous ratings and standardized reasons may remain.
 - A random browser profile may be linked to a subscriber only through the
   short-lived, single-use token issued on the confirmation browser. Raw
   readership activity is retained for 400 days; non-identifying daily article

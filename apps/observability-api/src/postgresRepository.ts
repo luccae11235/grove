@@ -1,6 +1,7 @@
 import postgres, { type Sql } from "postgres";
 import type {
   AnalyticsEventInput,
+  ArticleFeedbackInput,
   EngagementInput,
   IdentityLink,
   SessionInput,
@@ -16,6 +17,55 @@ export class PostgresObservabilityRepository implements ObservabilityRepository 
       idle_timeout: 20,
       connect_timeout: 10,
     });
+  }
+
+  async createFeedback(input: ArticleFeedbackInput) {
+    const inserted = await this.sql<{ feedback_id: string }[]>`
+      INSERT INTO article_feedback (
+        feedback_id, content_id, locale, path, sentiment, reason, comment,
+        created_at, updated_at
+      ) VALUES (
+        ${input.feedbackId}, ${input.contentId}, ${input.locale}, ${input.path},
+        ${input.sentiment}, ${input.reason ?? null}, ${input.comment ?? null},
+        ${input.submittedAt}, ${input.submittedAt}
+      )
+      ON CONFLICT (feedback_id) DO NOTHING
+      RETURNING feedback_id
+    `;
+    if (inserted.length === 1) return "created" as const;
+    const existing = await this.sql<{
+      content_id: string;
+      locale: string;
+      path: string;
+      sentiment: string;
+      reason: string | null;
+      comment: string | null;
+    }[]>`
+      SELECT content_id, locale, path, sentiment, reason, comment
+      FROM article_feedback
+      WHERE feedback_id = ${input.feedbackId}
+    `;
+    const row = existing[0];
+    if (
+      row && row.content_id === input.contentId && row.locale === input.locale &&
+      row.path === input.path && row.sentiment === input.sentiment &&
+      row.reason === (input.reason ?? null) && row.comment === (input.comment ?? null)
+    ) return "duplicate" as const;
+    return "conflict" as const;
+  }
+
+  async updateFeedback(input: ArticleFeedbackInput) {
+    const rows = await this.sql<{ feedback_id: string }[]>`
+      UPDATE article_feedback
+      SET sentiment = ${input.sentiment}, reason = ${input.reason ?? null},
+        comment = ${input.comment ?? null}, updated_at = ${input.submittedAt}
+      WHERE feedback_id = ${input.feedbackId}
+        AND content_id = ${input.contentId}
+        AND locale = ${input.locale}
+        AND path = ${input.path}
+      RETURNING feedback_id
+    `;
+    return rows.length === 1;
   }
 
   async registerVisitor(visitorId: string, consentVersion: string, consentedAt: Date) {
@@ -135,12 +185,15 @@ export class PostgresObservabilityRepository implements ObservabilityRepository 
       sessions: string;
       events: string;
       engagements: string;
+      feedback_comments: string;
     }[]>`
       SELECT
         (SELECT count(*) FROM analytics_visitors WHERE last_seen_at < ${cutoff}) AS visitors,
         (SELECT count(*) FROM analytics_sessions WHERE last_seen_at < ${cutoff}) AS sessions,
         (SELECT count(*) FROM analytics_events WHERE occurred_at < ${cutoff}) AS events,
-        (SELECT count(*) FROM analytics_page_engagement WHERE last_seen_at < ${cutoff}) AS engagements
+        (SELECT count(*) FROM analytics_page_engagement WHERE last_seen_at < ${cutoff}) AS engagements,
+        (SELECT count(*) FROM article_feedback
+          WHERE comment IS NOT NULL AND updated_at < ${cutoff}) AS feedback_comments
     `;
     return toRetentionCounts(rows[0]);
   }
@@ -178,6 +231,10 @@ export class PostgresObservabilityRepository implements ObservabilityRepository 
       await sql`DELETE FROM analytics_sessions WHERE last_seen_at < ${cutoff}`;
       await sql`DELETE FROM analytics_visitors WHERE last_seen_at < ${cutoff}`;
       await sql`DELETE FROM analytics_identity_nonces WHERE expires_at < ${cutoff}`;
+      await sql`
+        UPDATE article_feedback SET comment = NULL
+        WHERE comment IS NOT NULL AND updated_at < ${cutoff}
+      `;
     });
     return counts;
   }
@@ -230,5 +287,6 @@ function toRetentionCounts(row?: Record<string, string>) {
     sessions: Number(row?.sessions ?? 0),
     events: Number(row?.events ?? 0),
     engagements: Number(row?.engagements ?? 0),
+    feedbackComments: Number(row?.feedback_comments ?? 0),
   };
 }

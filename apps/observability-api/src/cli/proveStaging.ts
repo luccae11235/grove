@@ -21,6 +21,7 @@ const visitorId = randomUUID();
 const sessionId = randomUUID();
 const pageViewId = randomUUID();
 const eventId = randomUUID();
+const feedbackId = randomUUID();
 const now = new Date();
 const origin = config.allowedOrigins[0];
 const checks: Array<{ check: string; status: "passed" }> = [];
@@ -33,6 +34,25 @@ try {
   const beforeConsent = await request("/v1/events", "POST", eventBatch());
   assert(beforeConsent.status === 403, "pre-consent ingestion was not rejected");
   checks.push({ check: "pre-consent ingestion is rejected", status: "passed" });
+
+  assert((await request("/v1/feedback", "POST", feedback("helpful", "clear"))).status === 201,
+    "anonymous feedback was not accepted");
+  assert((await request("/v1/feedback", "POST", feedback("helpful", "clear"))).status === 200,
+    "feedback retry was not idempotent");
+  assert((await request(
+    `/v1/feedback/${feedbackId}`,
+    "PUT",
+    feedback("not_helpful", "confusing"),
+  )).status === 200, "feedback update was not accepted");
+  const feedbackRows = await sql<{ sentiment: string; reason: string | null }[]>`
+    SELECT sentiment, reason FROM article_feedback WHERE feedback_id = ${feedbackId}
+  `;
+  assert(feedbackRows[0]?.sentiment === "not_helpful", "feedback update was not persisted");
+  assert(feedbackRows[0]?.reason === "confusing", "feedback reason was not persisted");
+  checks.push({
+    check: "anonymous feedback persists, retries safely, and updates without analytics consent",
+    status: "passed",
+  });
 
   assert((await request("/v1/visitors", "POST", {
     visitorId,
@@ -74,8 +94,21 @@ try {
 
   process.stdout.write(`${JSON.stringify({ ok: true, apiUrl, checks }, null, 2)}\n`);
 } finally {
+  await sql`DELETE FROM article_feedback WHERE feedback_id = ${feedbackId}`;
   await sql`DELETE FROM analytics_visitors WHERE visitor_id = ${visitorId}`;
   await sql.end();
+}
+
+function feedback(sentiment: "helpful" | "not_helpful", reason: "clear" | "confusing") {
+  return {
+    feedbackId,
+    contentId: "staging-observability-proof",
+    locale: "en",
+    path: "/staging-observability-proof",
+    sentiment,
+    reason,
+    comment: "Self-cleaning staging proof.",
+  };
 }
 
 function eventBatch() {

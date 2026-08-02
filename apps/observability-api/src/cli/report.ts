@@ -10,6 +10,7 @@ if (from >= to) throw new Error("--from must be earlier than --to.");
 const article = typeof arguments_.article === "string" ? arguments_.article : undefined;
 const subscriber = typeof arguments_.subscriber === "string" ? arguments_.subscriber : undefined;
 const includeEmail = arguments_["include-email"] === true;
+const includeFeedbackComments = arguments_["include-feedback-comments"] === true;
 const sql = postgres(databaseUrl, { max: 1, connect_timeout: 10 });
 
 try {
@@ -59,6 +60,30 @@ try {
     ORDER BY sum(engaged_ms) DESC, coalesce(content_id, path)
     LIMIT 50
   `;
+  const feedback = await sql<{
+    content_id: string;
+    sentiment: string;
+    reason: string | null;
+    responses: string;
+  }[]>`
+    SELECT content_id, sentiment, reason, count(*)::text AS responses
+    FROM article_feedback
+    WHERE created_at >= ${from} AND created_at < ${to}
+      ${article ? sql`AND content_id = ${article}` : sql``}
+    GROUP BY content_id, sentiment, reason
+    ORDER BY content_id, sentiment, reason NULLS FIRST
+  `;
+  const feedbackComments = includeFeedbackComments
+    ? await sql<{ content_id: string; created_at: Date; comment: string }[]>`
+        SELECT content_id, created_at, comment
+        FROM article_feedback
+        WHERE created_at >= ${from} AND created_at < ${to}
+          AND comment IS NOT NULL
+          ${article ? sql`AND content_id = ${article}` : sql``}
+        ORDER BY created_at, feedback_id
+        LIMIT 500
+      `
+    : [];
   const subscriberCounts = await sql<{ status: string; count: string }[]>`
     SELECT status, count(*)::text AS count
     FROM newsletter_subscribers
@@ -112,6 +137,12 @@ try {
       engagedSeconds: Math.round(Number(row.engaged_ms) / 1000),
       completions: Number(row.completions),
     })),
+    feedback: summarizeFeedback(feedback),
+    feedbackComments: feedbackComments.map((row) => ({
+      contentId: row.content_id,
+      createdAt: row.created_at.toISOString(),
+      comment: row.comment,
+    })),
   };
   if (arguments_.json) {
     process.stdout.write(`${JSON.stringify(report)}\n`);
@@ -162,6 +193,14 @@ function writeHumanReport(report: {
     engagedSeconds: number;
     completions: number;
   }>;
+  feedback: Array<{
+    contentId: string;
+    responses: number;
+    helpful: number;
+    notHelpful: number;
+    reasons: Record<string, number>;
+  }>;
+  feedbackComments: Array<{ contentId: string; createdAt: string; comment: string }>;
 }) {
   const lines = [
     `Observability report ${report.window.from} to ${report.window.to}`,
@@ -197,7 +236,60 @@ function writeHumanReport(report: {
         : ["(none)"]
     ),
   );
+  lines.push(
+    "",
+    "Feedback:",
+    ...(report.feedback.length
+      ? report.feedback.map((item) => {
+          const percent = item.responses ? Math.round((item.helpful / item.responses) * 100) : 0;
+          const reasons = Object.entries(item.reasons)
+            .map(([reason, count]) => `${reason}=${count}`)
+            .join(", ") || "none";
+          return `${item.contentId}: ${item.responses} responses, ${item.helpful} helpful (${percent}%), ${item.notHelpful} not helpful; reasons: ${reasons}`;
+        })
+      : ["(none)"]),
+  );
+  if (report.feedbackComments.length) {
+    lines.push(
+      "",
+      "Feedback comments:",
+      ...report.feedbackComments.map((item) =>
+        `${item.createdAt} ${item.contentId}: ${JSON.stringify(item.comment)}`
+      ),
+    );
+  }
   process.stdout.write(`${lines.join("\n")}\n`);
+}
+
+function summarizeFeedback(rows: Array<{
+  content_id: string;
+  sentiment: string;
+  reason: string | null;
+  responses: string;
+}>) {
+  const summaries = new Map<string, {
+    contentId: string;
+    responses: number;
+    helpful: number;
+    notHelpful: number;
+    reasons: Record<string, number>;
+  }>();
+  for (const row of rows) {
+    const summary = summaries.get(row.content_id) ?? {
+      contentId: row.content_id,
+      responses: 0,
+      helpful: 0,
+      notHelpful: 0,
+      reasons: {},
+    };
+    const count = Number(row.responses);
+    summary.responses += count;
+    if (row.sentiment === "helpful") summary.helpful += count;
+    else summary.notHelpful += count;
+    if (row.reason) summary.reasons[row.reason] = (summary.reasons[row.reason] ?? 0) + count;
+    summaries.set(row.content_id, summary);
+  }
+  return [...summaries.values()];
 }
 
 function entriesOrNone(entries: Record<string, number>) {

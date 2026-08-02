@@ -7,13 +7,27 @@ const arguments_ = parseArguments(process.argv.slice(2));
 const to = dateArgument(arguments_.to, new Date());
 const from = dateArgument(arguments_.from, new Date(to.getTime() - 30 * 24 * 60 * 60 * 1000));
 const format = arguments_.format === "ndjson" ? "ndjson" : "csv";
-const scope = arguments_.scope === "visitor" ? "visitor" : "aggregate";
+const scope = arguments_.scope === "visitor"
+  ? "visitor"
+  : arguments_.scope === "feedback"
+    ? "feedback"
+    : "aggregate";
 const includeEmail = arguments_["include-email"] === true;
+const includeFeedbackComments = arguments_["include-feedback-comments"] === true;
 if (from >= to) throw new Error("--from must be earlier than --to.");
 const sql = postgres(databaseUrl, { max: 1, connect_timeout: 10 });
 
 try {
-  const rows = scope === "visitor"
+  const rows = scope === "feedback"
+    ? await sql<Record<string, unknown>[]>`
+        SELECT
+          created_at, content_id, locale, sentiment, reason,
+          ${includeFeedbackComments ? sql`comment` : sql`NULL::text AS comment`}
+        FROM article_feedback
+        WHERE created_at >= ${from} AND created_at < ${to}
+        ORDER BY created_at, feedback_id
+      `
+    : scope === "visitor"
     ? await sql<Record<string, unknown>[]>`
         SELECT
           e.started_at,
