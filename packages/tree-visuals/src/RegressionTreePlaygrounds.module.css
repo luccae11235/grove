@@ -607,26 +607,19 @@
   margin-top: 25px;
 }
 
-.treeChildren::before,
-.treeChildren::after {
+.treeChildren::before {
   position: absolute;
   top: -25px;
-  width: 1px;
   height: 25px;
-  background: var(--border-strong);
+  border-top: 1px solid var(--border-strong);
+  border-right: 1px solid var(--border-strong);
+  border-left: 1px solid var(--border-strong);
   content: "";
 }
 
 .treeChildren::before {
   left: var(--left-center);
-  transform: rotate(38deg);
-  transform-origin: bottom;
-}
-
-.treeChildren::after {
-  left: var(--right-center);
-  transform: rotate(-38deg);
-  transform-origin: bottom;
+  right: calc(100% - var(--right-center));
 }
 
 .treeChildren > div {
