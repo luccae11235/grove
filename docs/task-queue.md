@@ -155,6 +155,14 @@ references for longer-term editorial direction.
 
 ### Learning experience
 
+- [x] **Rebalance Article 2 regression-tree playgrounds — issue #104** — 2026-08-02
+  - Kept Playground 2's prediction plot and growing tree side by side on desktop
+    with continuous connectors between every visible parent and child.
+  - Limited Playground 3's dataset to a compact scroll viewport with a sticky
+    header while preserving access to all twelve rows.
+  - Completion check: web typecheck and build passed; five focused browser tests
+    and rendered desktop/mobile review confirmed legibility and containment.
+
 - [x] **Standardize oversized ACF article playground widths — issue #81** — 2026-08-01
   - Constrained the sales-correlation and partial-correlation playgrounds to
     the same 720px desktop width as the inline synthetic-series playground.

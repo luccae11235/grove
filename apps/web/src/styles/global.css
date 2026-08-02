@@ -2441,6 +2441,19 @@ h1 {
   width: min(720px, 100%);
 }
 
+/* The two regression workspaces synchronize several views. Give their plot,
+   controls, and tree enough room to remain comparable in one desktop view. */
+.decision-tree-interactive.regression-tree-workspace {
+  width: min(1160px, 100%);
+}
+
+@media (min-width: 861px) {
+  .article-chapters-open .decision-tree-interactive.regression-tree-workspace {
+    width: min(1160px, calc(100vw - 340px));
+    transform: translateX(calc(50vw - 316px - 50%));
+  }
+}
+
 .static-figure.decision-tree-figure {
   left: auto;
   width: 100%;
