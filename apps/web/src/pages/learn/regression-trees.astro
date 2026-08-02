@@ -25,6 +25,7 @@ const { Content } = await render(entry);
   description={entry.data.description}
   canonicalPath={entry.data.href}
   pageType="article"
+  analyticsContentId={entry.data.articleId}
   noindex={entry.data.status === "draft"}
   wide
 >

@@ -161,6 +161,57 @@ test("event properties, paths, time bounds, and request rates are bounded", asyn
   assert.equal(rateLimited.status, 429);
 });
 
+test("feedback works without analytics consent and supports retry and update", async () => {
+  const { app, repository } = system();
+  const feedbackId = randomUUID();
+  const body = feedbackBody(feedbackId);
+  const created = await jsonRequest(app, "/v1/feedback", "POST", body);
+  assert.equal(created.status, 201);
+  assert.equal(repository.feedback.get(feedbackId)?.sentiment, "helpful");
+
+  assert.equal((await jsonRequest(app, "/v1/feedback", "POST", body)).status, 200);
+  assert.equal(repository.feedback.size, 1);
+
+  const conflicting = await jsonRequest(app, "/v1/feedback", "POST", {
+    ...body,
+    contentId: "another-article",
+  });
+  assert.equal(conflicting.status, 409);
+
+  const updated = await jsonRequest(app, `/v1/feedback/${feedbackId}`, "PUT", {
+    ...body,
+    sentiment: "not_helpful",
+    reason: "confusing",
+    comment: "The ending moved too quickly.",
+  });
+  assert.equal(updated.status, 200);
+  assert.equal(repository.feedback.get(feedbackId)?.reason, "confusing");
+});
+
+test("feedback accepts only bounded article data", async () => {
+  const { app } = system();
+  const feedbackId = randomUUID();
+  assert.equal((await jsonRequest(app, "/v1/feedback", "POST", {
+    ...feedbackBody(feedbackId),
+    comment: "x".repeat(501),
+  })).status, 400);
+  assert.equal((await jsonRequest(app, "/v1/feedback", "POST", {
+    ...feedbackBody(randomUUID()),
+    comment: "unsafe\u001bterminal sequence",
+  })).status, 400);
+  assert.equal((await jsonRequest(app, "/v1/feedback", "POST", {
+    ...feedbackBody(randomUUID()),
+    reason: "arbitrary",
+  })).status, 400);
+  assert.equal((await jsonRequest(app, "/v1/feedback", "POST", {
+    ...feedbackBody(randomUUID()),
+    path: "/learn/decision-trees?private=value",
+  })).status, 400);
+  assert.equal((await jsonRequest(app, `/v1/feedback/${randomUUID()}`, "PUT", {
+    ...feedbackBody(randomUUID()),
+  })).status, 400);
+});
+
 function system(overrides: Partial<Parameters<typeof createApp>[0]> = {}) {
   const repository = new MemoryObservabilityRepository();
   const app = createApp({
@@ -192,6 +243,18 @@ function eventBatch(visitorId: string, sessionId: string, eventId: string) {
       path: "/learn/decision-trees",
       properties: {},
     }],
+  };
+}
+
+function feedbackBody(feedbackId: string) {
+  return {
+    feedbackId,
+    contentId: "decision-trees-from-scratch",
+    locale: "en",
+    path: "/learn/decision-trees",
+    sentiment: "helpful",
+    reason: "clear",
+    comment: "The split animation made this click.",
   };
 }
 

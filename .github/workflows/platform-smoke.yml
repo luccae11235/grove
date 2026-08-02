@@ -59,6 +59,7 @@ jobs:
               OBSERVABILITY_URL="https://grove-observability-api-staging.up.railway.app"
               EXPECTED_FORM="enabled"
               EXPECTED_OBSERVABILITY="enabled"
+              EXPECTED_FEEDBACK="enabled"
               EXPECTED_AUDIENCE="restricted"
               ;;
             production|"aflora / production")
@@ -67,6 +68,7 @@ jobs:
               OBSERVABILITY_URL="https://grove-observability-api-production-production.up.railway.app"
               EXPECTED_FORM="enabled"
               EXPECTED_OBSERVABILITY="enabled"
+              EXPECTED_FEEDBACK="enabled"
               EXPECTED_AUDIENCE="public"
               ;;
             *)
@@ -80,6 +82,7 @@ jobs:
             echo "OBSERVABILITY_URL=$OBSERVABILITY_URL"
             echo "EXPECTED_FORM=$EXPECTED_FORM"
             echo "EXPECTED_OBSERVABILITY=$EXPECTED_OBSERVABILITY"
+            echo "EXPECTED_FEEDBACK=$EXPECTED_FEEDBACK"
             echo "EXPECTED_AUDIENCE=$EXPECTED_AUDIENCE"
           } >> "$GITHUB_ENV"
 
@@ -125,6 +128,7 @@ jobs:
           --observability-url "$OBSERVABILITY_URL"
           --expect-signup-form "$EXPECTED_FORM"
           --expect-observability "$EXPECTED_OBSERVABILITY"
+          --expect-feedback "$EXPECTED_FEEDBACK"
           --expect-audience "$EXPECTED_AUDIENCE"
           --expect-release-sha "$EXPECTED_SHA"
           --wait-seconds 600

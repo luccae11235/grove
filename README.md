@@ -22,7 +22,7 @@ apps/web                         Astro site and localized lesson content
 apps/web/src/content/articles    Typed publication metadata and MDX entries
 apps/web/src/content/issues      Typed weekly issue content and delivery metadata
 apps/newsletter-api              Double opt-in, Resend adapter, webhooks, reports
-apps/observability-api           Consented readership events, retention, exports
+apps/observability-api           Consented readership events, anonymous feedback, retention, exports
 packages/tree-core/grove         Canonical, from-scratch Python algorithms
 packages/tree-core/tests         Python correctness tests
 packages/tree-visuals            React/SVG views of Python-generated results

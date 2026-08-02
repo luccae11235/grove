@@ -7,12 +7,14 @@ test("smoke arguments distinguish form, audience, and release expectations", () 
     "--web-url", "https://aflora.page",
     "--api-url", "https://api.aflora.page",
     "--expect-signup-form", "disabled",
+    "--expect-feedback", "enabled",
     "--expect-audience", "restricted",
     "--expect-release-sha", "abc123",
     "--wait-seconds", "600",
   ]), {
     apiUrl: "https://api.aflora.page",
     expectedAudience: "restricted",
+    expectedFeedback: "enabled",
     expectedObservability: "either",
     expectedReleaseSha: "abc123",
     expectedSignupForm: "disabled",
@@ -42,6 +44,7 @@ test("smoke proves release identity, restricted audience, and visible staging fo
   const result = await runSmoke({
     apiUrl: "https://api.example",
     expectedAudience: "restricted",
+    expectedFeedback: "enabled",
     expectedReleaseSha: releaseSha,
     expectedSignupForm: "enabled",
     waitSeconds: 0,
@@ -61,6 +64,7 @@ test("smoke proves release identity, restricted audience, and visible staging fo
     "newsletter CORS accepts only the website origin",
     "newsletter form visibility matches the web configuration",
     "subscription recovery pages and safe API boundaries are available",
+    "article feedback switch matches configuration",
     "newsletter audience policy matches the API configuration",
   ]);
 });
@@ -123,6 +127,9 @@ function fixtureRequest({ releaseSha }) {
     }
     if (parsed.hostname === "web.example" && parsed.pathname === "/newsletter/") {
       return new Response("https://api.example/v1/subscriptions");
+    }
+    if (parsed.hostname === "web.example" && parsed.pathname === "/learn/decision-trees/") {
+      return new Response('<section data-article-feedback></section>');
     }
     if (
       parsed.hostname === "web.example" &&
