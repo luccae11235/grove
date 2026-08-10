@@ -77,7 +77,16 @@ references for longer-term editorial direction.
     behavior.
   - Completion check: focused checks and the full repository gate pass, and
     representative desktop, tablet, and mobile layouts are visually verified.
+
 ### Release and platform readiness
+
+- [ ] **Finalize repository and publication licensing — issue #109**
+  - License original software under MIT and original articles, newsletter issues,
+    and educational illustrations under CC BY 4.0.
+  - Keep the Aflora brand, third-party materials, and externally sourced data
+    outside grants the project cannot or does not intend to make.
+  - Completion check: repository and public notices agree, the full repository
+    gate passes, and the exact change is reviewed in staging before merge.
 
 - [ ] **Phase 8 — Open the newsletter**
   - [x] Configure postal/contact details and the production segment.
@@ -132,8 +141,6 @@ references for longer-term editorial direction.
 ### Public release
 
 - [ ] **Finalize public-release essentials**
-  - Choose licenses for original writing, illustrations, and remaining workspace
-    code; make the public notices consistent with the standalone project license.
   - Replace publication placeholders required for newsletter sending, including
     the postal address, and verify privacy/contact information.
   - Done when the repository and published site have complete, consistent legal

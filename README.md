@@ -106,6 +106,12 @@ service URL and explicit web build switch are configured. See the
 
 ## Licensing
 
-The standalone `grove-tree-core` project is licensed under MIT. Licensing for the
-publication's original writing, illustrations, and remaining workspace code must
-be finalized before the first public release.
+Aflora uses separate licenses for software and publication content:
+
+- original software is licensed under the [MIT License](LICENSE);
+- original articles, newsletter issues, and educational illustrations are
+  licensed under [CC BY 4.0](LICENSE-CONTENT.md).
+
+The Aflora name and logo, third-party materials, and externally sourced data are
+not included in those grants. See [the licensing guide](LICENSING.md) for exact
+path-level scope, attribution guidance, and exclusions.
