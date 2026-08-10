@@ -44,8 +44,11 @@ const pathname = Astro.url.pathname;
 const activePath = base && pathname.startsWith(base)
   ? pathname.slice(base.length) || "/"
   : pathname;
-const homeHref = `${base}/` || "/";
+const localePrefix = locale === "pt-BR" ? "/pt-br" : "";
+const homeHref = `${base}${localePrefix}/` || "/";
 const articlesHref = pageType === "website" && activePath === "/" ? "#articles" : `${homeHref}#articles`;
+const newsletterHref = `${base}${localePrefix}/newsletter`;
+const aboutHref = `${base}${localePrefix}/about`;
 const availableTranslations = { [locale]: activePath, ...translations };
 const documentTitle = title === siteCopy.brand ? title : `${title} · ${siteCopy.brand}`;
 const site = Astro.site ?? Astro.url;
@@ -121,8 +124,8 @@ const alternateOgLocales = Object.keys(availableTranslations)
         <Brand href={homeHref} locale={locale} />
         <nav class="header-nav" aria-label={siteCopy.navigation.primary}>
           <a href={articlesHref}>{locale === "pt-BR" ? "Artigos" : "Articles"}</a>
-          <a href={`${base}/newsletter`}>{siteCopy.navigation.newsletter}</a>
-          <a href={`${base}/about`}>{siteCopy.navigation.about}</a>
+          <a href={newsletterHref}>{siteCopy.navigation.newsletter}</a>
+          <a href={aboutHref}>{siteCopy.navigation.about}</a>
         </nav>
         <div class="header-actions">
           <LanguageSwitcher locale={locale} translations={availableTranslations} base={base} />
@@ -132,8 +135,8 @@ const alternateOgLocales = Object.keys(availableTranslations)
             </summary>
             <nav class="header-menu-panel" aria-label={siteCopy.navigation.primary}>
               <a href={articlesHref}>{locale === "pt-BR" ? "Artigos" : "Articles"}</a>
-              <a href={`${base}/newsletter`}>{siteCopy.navigation.newsletter}</a>
-              <a href={`${base}/about`}>{siteCopy.navigation.about}</a>
+              <a href={newsletterHref}>{siteCopy.navigation.newsletter}</a>
+              <a href={aboutHref}>{siteCopy.navigation.about}</a>
               <LanguageSwitcher locale={locale} translations={availableTranslations} base={base} />
             </nav>
           </details>

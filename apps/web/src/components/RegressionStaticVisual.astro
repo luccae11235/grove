@@ -1,9 +1,11 @@
 ---
 interface Props {
   kind: "split-groups" | "stump-means";
+  locale?: "en" | "pt-BR";
 }
 
-const { kind } = Astro.props;
+const { kind, locale = "en" } = Astro.props;
+const pt = locale === "pt-BR";
 
 const rows = [
   { id: "A", fertilizer: 0, yield: 1.5 },
@@ -27,13 +29,13 @@ const rightAt30 = rows.filter((row) => row.fertilizer > 30);
       <div class="split-table-wrap">
         <table class="split-table">
           <caption class="sr-only">
-            The fertilizer dataset divided at 50 kilograms per hectare
+            {pt ? "O conjunto de fertilizante dividido em 50 quilogramas por hectare" : "The fertilizer dataset divided at 50 kilograms per hectare"}
           </caption>
           <thead>
             <tr>
-              <th scope="col">Row</th>
-              <th scope="col">Fertilizer</th>
-              <th scope="col">Yield</th>
+              <th scope="col">{pt ? "Linha" : "Row"}</th>
+              <th scope="col">{pt ? "Fertilizante" : "Fertilizer"}</th>
+              <th scope="col">{pt ? "Produtividade" : "Yield"}</th>
             </tr>
           </thead>
           <tbody>
@@ -41,33 +43,33 @@ const rightAt30 = rows.filter((row) => row.fertilizer > 30);
               <tr class:list={[row.fertilizer <= 50 ? "split-left" : "split-right", { "split-boundary": row.id === "C" }]}>
                 <th scope="row">{row.id}</th>
                 <td>{row.fertilizer} kg/ha</td>
-                <td>{row.yield} tons/ha</td>
+                <td>{row.yield} {pt ? "t/ha" : "tons/ha"}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <div class="variance-comparison" role="group" aria-label="Variance before and after the split">
-        <strong class="variance-title">Variance</strong>
+      <div class="variance-comparison" role="group" aria-label={pt ? "Variância antes e depois da divisão" : "Variance before and after the split"}>
+        <strong class="variance-title">{pt ? "Variância" : "Variance"}</strong>
         <div class="variance-before">
-          <span>Before · all rows</span>
+          <span>{pt ? "Antes · todas as linhas" : "Before · all rows"}</span>
           <div class="variance-row">
             <i class="variance-bar variance-all" aria-hidden="true"></i>
             <strong>1.738</strong>
           </div>
         </div>
         <div class="variance-after">
-          <span>After · split at 50 kg/ha</span>
+          <span>{pt ? "Depois · divisão em 50 kg/ha" : "After · split at 50 kg/ha"}</span>
           <div class="variance-group">
-            <small>Rows A–C</small>
+            <small>{pt ? "Linhas A–C" : "Rows A–C"}</small>
             <div class="variance-row">
               <i class="variance-bar variance-left" aria-hidden="true"></i>
               <strong>0.896</strong>
             </div>
           </div>
           <div class="variance-group">
-            <small>Rows D–I</small>
+            <small>{pt ? "Linhas D–I" : "Rows D–I"}</small>
             <div class="variance-row">
               <i class="variance-bar variance-right" aria-hidden="true"></i>
               <strong>0.471</strong>
@@ -77,37 +79,39 @@ const rightAt30 = rows.filter((row) => row.fertilizer > 30);
       </div>
     </div>
     <figcaption>
-      Both new groups vary less around their own mean than all nine rows varied
-      around Bob's single mean.
+      {pt
+        ? "Os dois novos grupos variam menos em torno da própria média do que as nove linhas variavam em torno da única média de Bob."
+        : "Both new groups vary less around their own mean than all nine rows varied around Bob's single mean."}
     </figcaption>
   </figure>
 ) : (
   <figure class="regression-static stump-means-visual">
     <div class="stump-question">
-      <span>one learned question</span>
-      <strong>fertilizer ≤ 30 kg/ha?</strong>
+      <span>{pt ? "uma pergunta aprendida" : "one learned question"}</span>
+      <strong>{pt ? "fertilizante ≤ 30 kg/ha?" : "fertilizer ≤ 30 kg/ha?"}</strong>
     </div>
     <div class="stump-branches">
-      <section aria-label="Left leaf">
-        <span class="branch-label">yes · left leaf</span>
+      <section aria-label={pt ? "Folha esquerda" : "Left leaf"}>
+        <span class="branch-label">{pt ? "sim · folha esquerda" : "yes · left leaf"}</span>
         <div class="target-values">
           {leftAt30.map((row) => <span><b>{row.id}</b>{row.yield}</span>)}
         </div>
         <p>(1.5 + 2.4) ÷ 2</p>
-        <strong>predict 1.95 tons/ha</strong>
+        <strong>{pt ? "previsão 1,95 t/ha" : "predict 1.95 tons/ha"}</strong>
       </section>
-      <section aria-label="Right leaf">
-        <span class="branch-label">no · right leaf</span>
+      <section aria-label={pt ? "Folha direita" : "Right leaf"}>
+        <span class="branch-label">{pt ? "não · folha direita" : "no · right leaf"}</span>
         <div class="target-values">
           {rightAt30.map((row) => <span><b>{row.id}</b>{row.yield}</span>)}
         </div>
         <p>(3.8 + 5.1 + 5.7 + 5.4 + 4.8 + 4.2 + 3.7) ÷ 7</p>
-        <strong>predict 4.67 tons/ha</strong>
+        <strong>{pt ? "previsão 4,67 t/ha" : "predict 4.67 tons/ha"}</strong>
       </section>
     </div>
     <figcaption>
-      A regression leaf stores one prediction: the average target value of the
-      training rows that reach it.
+      {pt
+        ? "Uma folha de regressão armazena uma previsão: o valor-alvo médio das linhas de treino que chegam até ela."
+        : "A regression leaf stores one prediction: the average target value of the training rows that reach it."}
     </figcaption>
   </figure>
 )}

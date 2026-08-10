@@ -58,6 +58,7 @@ test("smoke proves release identity, restricted audience, and visible staging fo
     "API health reaches PostgreSQL",
     "website serves the expected release",
     "website home is public",
+    "Brazilian Portuguese reading flow is public",
     "Aflora brand mark is available",
     "robots points to the production sitemap",
     "sitemap is available",
@@ -101,6 +102,19 @@ function fixtureRequest({ releaseSha }) {
           headers: { "Content-Type": "text/html" },
         },
       );
+    }
+    if (parsed.hostname === "web.example") {
+      const portuguesePages = {
+        "/pt-br/": "Todos os artigos",
+        "/pt-br/learn/decision-trees/": "Dois loops e uma memória",
+        "/pt-br/learn/regression-trees/": "Como árvores de decisão aprendem a prever números",
+      };
+      const expectedText = portuguesePages[parsed.pathname];
+      if (expectedText) {
+        return new Response(`<html><body>English Português (Brasil) ${expectedText}</body></html>`, {
+          headers: { "Content-Type": "text/html" },
+        });
+      }
     }
     if (parsed.hostname === "web.example" && parsed.pathname === "/brand/aflora-mark.svg") {
       return new Response("<svg></svg>", {

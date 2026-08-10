@@ -15,6 +15,27 @@ interface Props {
 const { articleId, locale = "en" } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const connections = getArticleConnections(articleId, locale);
+const copy = locale === "pt-BR"
+  ? {
+      eyebrow: "Continue explorando",
+      title: "Caminhos pela Aflora",
+      readFirst: "Leia antes",
+      readFirstDescription: "Ideias que este artigo pressupõe",
+      buildFromHere: "Continue daqui",
+      buildFromHereDescription: "Artigos que usam este como base",
+      exploreNearby: "Explore por perto",
+      exploreNearbyDescription: "Ideias relacionadas que não são pré-requisitos",
+    }
+  : {
+      eyebrow: "Keep exploring",
+      title: "Paths through Aflora",
+      readFirst: "Read first",
+      readFirstDescription: "Ideas this article expects you to know",
+      buildFromHere: "Build from here",
+      buildFromHereDescription: "Articles that use this one as a foundation",
+      exploreNearby: "Explore nearby",
+      exploreNearbyDescription: "Related ideas that are not required next steps",
+    };
 
 const groups: Array<{
   label: string;
@@ -22,18 +43,18 @@ const groups: Array<{
   articles: Article[];
 }> = [
   {
-    label: "Read first",
-    description: "Ideas this article expects you to know",
+    label: copy.readFirst,
+    description: copy.readFirstDescription,
     articles: connections.prerequisites,
   },
   {
-    label: "Build from here",
-    description: "Articles that use this one as a foundation",
+    label: copy.buildFromHere,
+    description: copy.buildFromHereDescription,
     articles: connections.buildsFromHere,
   },
   {
-    label: "Explore nearby",
-    description: "Related ideas that are not required next steps",
+    label: copy.exploreNearby,
+    description: copy.exploreNearbyDescription,
     articles: connections.related,
   },
 ].filter((group) => group.articles.length > 0);
@@ -42,8 +63,8 @@ const groups: Array<{
 {groups.length > 0 && (
   <nav class="article-connections" aria-labelledby="article-connections-title">
     <div class="article-connections-heading">
-      <p class="eyebrow">Keep exploring</p>
-      <h2 id="article-connections-title">Paths through Aflora</h2>
+      <p class="eyebrow">{copy.eyebrow}</p>
+      <h2 id="article-connections-title">{copy.title}</h2>
     </div>
     <div class="article-connection-groups">
       {groups.map((group) => (

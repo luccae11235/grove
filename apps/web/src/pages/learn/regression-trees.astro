@@ -24,6 +24,7 @@ const { Content } = await render(entry);
   title={entry.data.title}
   description={entry.data.description}
   canonicalPath={entry.data.href}
+  translations={{ en: "/learn/regression-trees/", "pt-BR": "/pt-br/learn/regression-trees/" }}
   pageType="article"
   analyticsContentId={entry.data.articleId}
   noindex={entry.data.status === "draft"}

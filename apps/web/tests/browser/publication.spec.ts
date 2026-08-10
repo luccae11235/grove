@@ -20,3 +20,27 @@ test("the production article library excludes drafts", async ({ page }) => {
   await page.goto("/learn/reward-hacking/");
   await expect(page).toHaveURL(/\/$/);
 });
+
+test("the published reading flow is complete in Brazilian Portuguese", async ({ page }) => {
+  await page.goto("/");
+
+  const portuguese = page.getByRole("link", { name: "Português (Brasil)", exact: true }).first();
+  await expect(portuguese).toBeVisible();
+  await portuguese.click();
+
+  await expect(page).toHaveURL(/\/pt-br\/$/);
+  await expect(page.locator("html")).toHaveAttribute("lang", "pt-BR");
+  await expect(page.getByRole("heading", { level: 1, name: /Aprendizado de máquina/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Como árvores de decisão aprendem a prever números/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Como inventar o algoritmo de árvore de decisão do zero/ })).toBeVisible();
+
+  await page.getByRole("link", { name: /Como árvores de decisão aprendem a prever números/ }).click();
+  await expect(page).toHaveURL(/\/pt-br\/learn\/regression-trees\/$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Como árvores de decisão aprendem a prever números" })).toBeVisible();
+  await expect(page.getByText("Experimento 1 · avalie cada divisão")).toBeVisible();
+  await expect(page.getByRole("link", { name: "English", exact: true }).first()).toBeVisible();
+
+  await page.goto("/pt-br/learn/decision-trees/");
+  await expect(page.getByText(/\blaço(s)?\b/i)).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Dois loops e uma memória" })).toBeVisible();
+});
