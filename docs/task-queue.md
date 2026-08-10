@@ -80,14 +80,6 @@ references for longer-term editorial direction.
 
 ### Release and platform readiness
 
-- [ ] **Finalize repository and publication licensing — issue #109**
-  - License original software under MIT and original articles, newsletter issues,
-    and educational illustrations under CC BY 4.0.
-  - Keep the Aflora brand, third-party materials, and externally sourced data
-    outside grants the project cannot or does not intend to make.
-  - Completion check: repository and public notices agree, the full repository
-    gate passes, and the exact change is reviewed in staging before merge.
-
 - [ ] **Phase 8 — Open the newsletter**
   - [x] Configure postal/contact details and the production segment.
   - [x] Publish Issue 001, perform an internal send, and verify its report.
@@ -256,6 +248,17 @@ references for longer-term editorial direction.
     promoting to `main`.
 
 ### Release and platform readiness
+
+- [x] **Finalize repository and publication licensing — issue #109** — 2026-08-10
+  - Licensed original software under MIT and original articles, newsletter
+    issues, and educational illustrations under CC BY 4.0, with explicit brand,
+    external-data, and third-party-material exclusions.
+  - Aligned repository files, package metadata, contribution guidance, the
+    public licensing page, and the About page notice.
+  - Completion check: the full repository gate and post-merge CI passed; staging
+    verification run `31422533290` confirmed exact revision
+    `8ab547a4424ca2732591436f49fe047cd73c6049`, and `/licensing/` plus its About
+    page link were visually verified without layout or navigation defects.
 
 - [x] **Phase 1 — Organize GitHub** — 2026-07-24
   - The repository, permanent branches, issue and pull-request policy checks,
