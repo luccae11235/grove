@@ -34,14 +34,6 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
-- [ ] **Translate the article library to Brazilian Portuguese — issue #112**
-  - Inventory every publishable English article, issue, and supporting UI string
-    before translating.
-  - Preserve interactive examples, metadata, routes, links, and the English
-    original as the source counterpart for each translation.
-  - Done when every published article has a reviewed `pt-BR` version and locale
-    switching works for all published pages.
-
 - [ ] **Draft and test Issue 002 about classification and regression trees — issue #92**
   - Keep the newsletter issue in draft while reviewing its web, HTML email,
     and plain-text forms.
@@ -188,6 +180,15 @@ references for longer-term editorial direction.
     production verification passed on `8b2b127` and `891b7da`, respectively.
 
 ### Publishing and content
+
+- [x] **Translate the article library to Brazilian Portuguese — issue #112** — 2026-08-10
+  - Added a complete Portuguese homepage and about page, plus reviewed `pt-BR`
+    versions of both published articles while preserving their English counterparts.
+  - Localized navigation, metadata, calls to action, article connections, static
+    visuals, interactive examples, and consent copy; replaced literal “laço”
+    translations with the natural technical term “loop”.
+  - Completion check: the full repository gate passed; exact-SHA staging and
+    production verification passed on `b21f0e8` and `b3d4514`, respectively.
 
 - [x] **Prevent production articles from displaying a draft label — issue #78** — 2026-08-01
   - The production library now reads only the production-visible catalog.
