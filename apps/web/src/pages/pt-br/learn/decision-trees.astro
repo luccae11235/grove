@@ -62,7 +62,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
       Esta lição tem duas metades. Na primeira, você vai construir uma árvore de decisão
       funcional com os olhos e as mãos — sem fórmulas. Na segunda, vai descobrir que o
       algoritmo de treino de verdade não passa daquilo que você acabou de fazer, repetido
-      por um laço paciente que pontua as próprias escolhas com um único número pequeno.
+      por um loop paciente que pontua as próprias escolhas com um único número pequeno.
     </p>
     <div class="article-meta" aria-label="Informações sobre o artigo">
       <DifficultyBadge difficulty={article.difficulty} showDescription locale="pt-BR" />
@@ -335,7 +335,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </ol>
 
     <p>
-      Duas dessas habilidades são mecânicas. Propor linhas é um laço sobre posições.
+      Duas dessas habilidades são mecânicas. Propor linhas é um loop sobre posições.
       Repetir é o mesmo procedimento aplicado a um grupo menor. Um computador faz as
       duas coisas sem nenhuma criatividade.
     </p>
@@ -606,7 +606,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </figure>
 
     <p class="lesson-stage">O algoritmo inteiro</p>
-    <h2 id="automate">Dois laços e uma memória</h2>
+    <h2 id="automate">Dois loops e uma memória</h2>
     <p>
       Agora todos os ingredientes estão na mesa, e o algoritmo quase se escreve sozinho.
       No grupo atual de linhas:
@@ -620,7 +620,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </ol>
 
     <p>
-      Essa é a busca inteira: dois laços aninhados e uma vencedora na memória. Não há
+      Essa é a busca inteira: dois loops aninhados e uma vencedora na memória. Não há
       nenhuma esperteza lá dentro — o computador faz exatamente o que você fez no
       primeiro experimento, exceto que ele testa todas as 18 perguntas e se recusa a
       ter gosto próprio. Veja a busca rodar.
@@ -636,7 +636,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
       Se você rodou a busca até o fim, a vencedora numérica confirmou o padrão que os
       seus olhos podiam ver: <strong>luz solar ≤ 3,5</strong> mantém juntas as cinco
       sementes com muita luz em um grupo puro com dificuldade e obtém ganho 0,320.
-      O laço não inventou uma ideia nova; ele mediu todas as linhas possíveis e confirmou
+      O loop não inventou uma ideia nova; ele mediu todas as linhas possíveis e confirmou
       a mais clara.
     </p>
 
@@ -819,7 +819,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     </div>
 
     <p class="lesson-stage">Além do plano</p>
-    <h2 id="more-features">Mais características, os mesmos dois laços</h2>
+    <h2 id="more-features">Mais características, os mesmos dois loops</h2>
     <p>
       Todos os experimentos até aqui usaram duas características, e essa foi uma escolha
       de cenário, não de método. Duas características cabem em uma tela, então cada
@@ -864,7 +864,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     <p>
       A pergunta vencedora da raiz veio da coluna de temperatura — uma característica
       que nenhum gráfico bidimensional de luz solar e água conseguiria sequer mostrar.
-      O laço não precisou saber disso de antemão; a temperatura simplesmente produziu o
+      O loop não precisou saber disso de antemão; a temperatura simplesmente produziu o
       maior ganho, e a memória a manteve. A recursão então rodou mais duas vezes: dentro
       do grupo quente, a água separou as três mudas com pouca água, e dentro do grupo
       quente e irrigado, a luz solar isolou a única muda sombreada. Três buscas, três
@@ -872,9 +872,9 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
       busca local.
     </p>
     <p>
-      Essa é toda a generalização. O laço nunca pergunta quantas colunas a tabela tem;
+      Essa é toda a generalização. O loop nunca pergunta quantas colunas a tabela tem;
       ele só pede a próxima. Dez características significariam dez pistas no registro e
-      um laço mais longo — não uma ideia nova. Os gráficos de duas características desta
+      um loop mais longo — não uma ideia nova. Os gráficos de duas características desta
       lição foram um andaime para os seus olhos. O algoritmo esteve lendo a tabela o
       tempo todo.
     </p>
@@ -908,7 +908,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
     <p>
       Você construiu a árvore primeiro e conheceu o algoritmo depois — e essa ordem era
       o ponto central. A fórmula não trouxe nenhuma ideia nova; o ganho de Gini apenas
-      transformou o julgamento que os seus olhos já faziam em um número que um laço
+      transformou o julgamento que os seus olhos já faziam em um número que um loop
       consegue maximizar. O diagrama nunca foi o ponto de partida. Ele foi o resultado.
     </p>
 
@@ -918,7 +918,7 @@ const giniPoints = Array.from({ length: 41 }, (_, index) => {
         <li>olhar para uma pequena tabela e propor um limiar útil;</li>
         <li>explicar por que apenas os limiares de ponto médio precisam ser testados;</li>
         <li>calcular a impureza de Gini e o ganho de Gini ponderado;</li>
-        <li>enunciar o algoritmo de treino como dois laços mais recursão;</li>
+        <li>enunciar o algoritmo de treino como dois loops mais recursão;</li>
         <li>prever por que geometrias diferentes exigem formatos diferentes de árvore;</li>
         <li>explicar por que a divisão vencedora é apenas uma vencedora local;</li>
         <li>acompanhar uma nova linha desde a raiz até uma previsão.</li>

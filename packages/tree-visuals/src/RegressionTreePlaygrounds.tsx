@@ -23,6 +23,7 @@ interface RegressionCandidate {
 }
 
 type StopMode = "depth" | "leaf-size" | "variance";
+type RegressionLocale = "en" | "pt-BR";
 
 interface StopConfig {
   mode: StopMode;
@@ -164,7 +165,8 @@ function format(value: number, digits = 2): string {
   return digits === 0 ? fixed : fixed.replace(/0+$/, "").replace(/\.$/, "");
 }
 
-function rowWord(count: number): string {
+function rowWord(count: number, locale: RegressionLocale = "en"): string {
+  if (locale === "pt-BR") return count === 1 ? "linha" : "linhas";
   return count === 1 ? "row" : "rows";
 }
 
@@ -182,13 +184,16 @@ function CropPlot({
   committedThresholds = [],
   titleId,
   descriptionId,
+  locale = "en",
 }: {
   candidate?: RegressionCandidate | null;
   regions?: VisibleRegion[];
   committedThresholds?: number[];
   titleId: string;
   descriptionId: string;
+  locale?: RegressionLocale;
 }) {
+  const pt = locale === "pt-BR";
   const splitX = candidate ? xScale(candidate.threshold) : null;
   return (
     <svg
@@ -197,10 +202,11 @@ function CropPlot({
       role="img"
       aria-labelledby={`${titleId} ${descriptionId}`}
     >
-      <title id={titleId}>Crop yield by fertilizer amount</title>
+      <title id={titleId}>{pt ? "Produtividade da plantação por quantidade de fertilizante" : "Crop yield by fertilizer amount"}</title>
       <desc id={descriptionId}>
-        Nine crop observations form a curved pattern. Vertical residual lines connect each
-        observation to the mean prediction for its current group.
+        {pt
+          ? "Nove observações formam um padrão curvo. Linhas verticais de resíduo conectam cada observação à previsão média do grupo atual."
+          : "Nine crop observations form a curved pattern. Vertical residual lines connect each observation to the mean prediction for its current group."}
       </desc>
 
       {[1, 2, 3, 4, 5, 6].map((tick) => (
@@ -283,8 +289,8 @@ function CropPlot({
         </g>
       ))}
 
-      <text className={styles.axisLabel} x={(PLOT.left + plotRight) / 2} y={PLOT.height - 8} textAnchor="middle">Fertilizer (kg/hectare)</text>
-      <text className={styles.axisLabel} x="14" y={(PLOT.top + plotBottom) / 2} textAnchor="middle" transform={`rotate(-90 14 ${(PLOT.top + plotBottom) / 2})`}>Yield (tons/hectare)</text>
+      <text className={styles.axisLabel} x={(PLOT.left + plotRight) / 2} y={PLOT.height - 8} textAnchor="middle">{pt ? "Fertilizante (kg/hectare)" : "Fertilizer (kg/hectare)"}</text>
+      <text className={styles.axisLabel} x="14" y={(PLOT.top + plotBottom) / 2} textAnchor="middle" transform={`rotate(-90 14 ${(PLOT.top + plotBottom) / 2})`}>{pt ? "Produtividade (t/hectare)" : "Yield (tons/hectare)"}</text>
     </svg>
   );
 }
@@ -295,13 +301,16 @@ function MetricTrace({
   visitedCount,
   selectedIndex,
   lowerIsBetter = false,
+  locale = "en",
 }: {
   label: string;
   values: number[];
   visitedCount: number;
   selectedIndex: number;
   lowerIsBetter?: boolean;
+  locale?: RegressionLocale;
 }) {
+  const pt = locale === "pt-BR";
   const chart = { width: 520, height: 112, left: 44, right: 500, top: 20, bottom: 74 };
   const maximum = Math.max(...values, 0.001) * 1.08;
   const xFor = (index: number) => chart.left + (index / Math.max(1, values.length - 1)) * (chart.right - chart.left);
@@ -315,7 +324,7 @@ function MetricTrace({
     <div className={styles.metricTrace}>
       <div className={styles.metricTraceHeader}>
         <strong>{label}</strong>
-        <span>{lowerIsBetter ? "lower is better" : "for the current group"}</span>
+        <span>{lowerIsBetter ? (pt ? "menor é melhor" : "lower is better") : (pt ? "para o grupo atual" : "for the current group")}</span>
       </div>
       <svg viewBox={`0 0 ${chart.width} ${chart.height}`} role="img" aria-label={`${label} for each tested fertilizer threshold`}>
         <line className={styles.traceAxis} x1={chart.left} x2={chart.right} y1={chart.bottom} y2={chart.bottom} />
@@ -331,14 +340,15 @@ function MetricTrace({
           );
         })}
         <text className={styles.traceValue} x={chart.right} y="13" textAnchor="end">
-          current: {format(values[selectedIndex], 3)}
+          {pt ? "atual" : "current"}: {format(values[selectedIndex], 3)}
         </text>
       </svg>
     </div>
   );
 }
 
-export function RegressionSplitPlayground() {
+export function RegressionSplitPlayground({ locale = "en" }: { locale?: RegressionLocale }) {
+  const pt = locale === "pt-BR";
   const [visitedCount, setVisitedCount] = useState(1);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -397,60 +407,59 @@ export function RegressionSplitPlayground() {
     <section className={styles.workshop} aria-labelledby="regression-split-title">
       <header className={styles.header}>
         <div>
-          <p className={styles.kicker}>Playground 1 · judge every split</p>
-          <h2 id="regression-split-title">Sweep the fertilizer thresholds</h2>
+          <p className={styles.kicker}>{pt ? "Experimento 1 · avalie cada divisão" : "Playground 1 · judge every split"}</p>
+          <h2 id="regression-split-title">{pt ? "Percorra os limiares de fertilizante" : "Sweep the fertilizer thresholds"}</h2>
         </div>
-        <span className={styles.stepPill}>{visitedCount} of {ROOT_CANDIDATES.length} thresholds tested</span>
+        <span className={styles.stepPill}>{visitedCount} {pt ? "de" : "of"} {ROOT_CANDIDATES.length} {pt ? "limiares testados" : "thresholds tested"}</span>
       </header>
 
       <div className={styles.controls}>
         <label className={styles.thresholdControl}>
-          <span>Threshold</span>
+          <span>{pt ? "Limiar" : "Threshold"}</span>
           <input
             type="range"
             min="0"
             max={ROOT_CANDIDATES.length - 1}
             step="1"
             value={selectedIndex}
-            aria-label="Fertilizer threshold"
-            aria-valuetext={`fertilizer at or below ${format(candidate.threshold, 0)} kilograms per hectare`}
+            aria-label={pt ? "Limiar de fertilizante" : "Fertilizer threshold"}
+            aria-valuetext={pt ? `fertilizante menor ou igual a ${format(candidate.threshold, 0)} quilogramas por hectare` : `fertilizer at or below ${format(candidate.threshold, 0)} kilograms per hectare`}
             onChange={(event) => chooseIndex(Number(event.target.value))}
           />
-          <strong>fertilizer ≤ {format(candidate.threshold, 0)} kg/ha</strong>
+          <strong>{pt ? "fertilizante" : "fertilizer"} ≤ {format(candidate.threshold, 0)} kg/ha</strong>
         </label>
         <div className={styles.controlButtons}>
-          <button type="button" onClick={testNext} disabled={done}>Next threshold →</button>
+          <button type="button" onClick={testNext} disabled={done}>{pt ? "Próximo limiar" : "Next threshold"} →</button>
           <button className={styles.primaryButton} type="button" onClick={runFullSweep}>
-            {playing ? "Pause" : done ? "Start sweep again" : "Run the full sweep"}
+            {playing ? (pt ? "Pausar" : "Pause") : done ? (pt ? "Recomeçar varredura" : "Start sweep again") : (pt ? "Executar varredura completa" : "Run the full sweep")}
           </button>
         </div>
       </div>
 
       <p className={styles.srOnly} aria-live="polite" aria-atomic="true">
-        Current threshold: fertilizer at or below {format(candidate.threshold, 0)} kilograms per hectare.
-        Split error {format(candidate.splitError, 3)}.
+        {pt ? "Limiar atual: fertilizante menor ou igual a" : "Current threshold: fertilizer at or below"} {format(candidate.threshold, 0)} {pt ? "quilogramas por hectare. Erro da divisão" : "kilograms per hectare. Split error"} {format(candidate.splitError, 3)}.
       </p>
 
       <div className={styles.splitLayout}>
         <div className={styles.plotPanel}>
-          <div className={styles.panelTitle}>Data and two group predictions</div>
-          <div className={styles.chartScroll} role="region" aria-label="Crop-yield chart" tabIndex={0}>
-            <CropPlot candidate={candidate} titleId="regression-split-plot-title" descriptionId="regression-split-plot-description" />
+          <div className={styles.panelTitle}>{pt ? "Dados e previsões dos dois grupos" : "Data and two group predictions"}</div>
+          <div className={styles.chartScroll} role="region" aria-label={pt ? "Gráfico de produtividade" : "Crop-yield chart"} tabIndex={0}>
+            <CropPlot candidate={candidate} titleId="regression-split-plot-title" descriptionId="regression-split-plot-description" locale={locale} />
           </div>
           <div className={styles.groupCards}>
             <div>
-              <span>Left · {candidate.leftIndices.length} {rowWord(candidate.leftIndices.length)}</span>
-              <strong>mean {format(candidate.leftMean)} tons/ha</strong>
-              <small>variance {format(candidate.leftVariance, 3)}</small>
+              <span>{pt ? "Esquerda" : "Left"} · {candidate.leftIndices.length} {rowWord(candidate.leftIndices.length, locale)}</span>
+              <strong>{pt ? "média" : "mean"} {format(candidate.leftMean)} {pt ? "t/ha" : "tons/ha"}</strong>
+              <small>{pt ? "variância" : "variance"} {format(candidate.leftVariance, 3)}</small>
             </div>
             <div>
-              <span>Right · {candidate.rightIndices.length} {rowWord(candidate.rightIndices.length)}</span>
-              <strong>mean {format(candidate.rightMean)} tons/ha</strong>
-              <small>variance {format(candidate.rightVariance, 3)}</small>
+              <span>{pt ? "Direita" : "Right"} · {candidate.rightIndices.length} {rowWord(candidate.rightIndices.length, locale)}</span>
+              <strong>{pt ? "média" : "mean"} {format(candidate.rightMean)} {pt ? "t/ha" : "tons/ha"}</strong>
+              <small>{pt ? "variância" : "variance"} {format(candidate.rightVariance, 3)}</small>
             </div>
           </div>
           <div className={styles.equation}>
-            <span>split error</span>
+            <span>{pt ? "erro da divisão" : "split error"}</span>
             <strong>{candidate.leftIndices.length} × {format(candidate.leftVariance, 3)}</strong>
             <b>+</b>
             <strong>{candidate.rightIndices.length} × {format(candidate.rightVariance, 3)}</strong>
@@ -460,13 +469,13 @@ export function RegressionSplitPlayground() {
         </div>
 
         <div className={styles.tracePanel}>
-          <div className={styles.panelTitle}>Split error across tested thresholds</div>
-          <MetricTrace label="Split error" values={ROOT_CANDIDATES.map((item) => item.splitError)} visitedCount={visitedCount} selectedIndex={selectedIndex} lowerIsBetter />
+          <div className={styles.panelTitle}>{pt ? "Erro da divisão nos limiares testados" : "Split error across tested thresholds"}</div>
+          <MetricTrace label={pt ? "Erro da divisão" : "Split error"} values={ROOT_CANDIDATES.map((item) => item.splitError)} visitedCount={visitedCount} selectedIndex={selectedIndex} lowerIsBetter locale={locale} />
           {bestSoFar && (
             <div className={styles.bestSoFar}>
-              <span>{done ? "Winner of the sweep" : "Lowest error so far"}</span>
-              <strong>fertilizer ≤ {format(bestSoFar.threshold, 0)} kg/ha</strong>
-              <small>split error {format(bestSoFar.splitError, 3)} · improvement {format(bestSoFar.improvement, 3)}</small>
+              <span>{done ? (pt ? "Vencedora da varredura" : "Winner of the sweep") : (pt ? "Menor erro até agora" : "Lowest error so far")}</span>
+              <strong>{pt ? "fertilizante" : "fertilizer"} ≤ {format(bestSoFar.threshold, 0)} kg/ha</strong>
+              <small>{pt ? "erro da divisão" : "split error"} {format(bestSoFar.splitError, 3)} · {pt ? "melhoria" : "improvement"} {format(bestSoFar.improvement, 3)}</small>
             </div>
           )}
         </div>
@@ -566,20 +575,23 @@ function RegressionTreeView({
   visibleSplits,
   stoppedLeaves,
   activeNodeId,
+  locale = "en",
 }: {
   node: RegressionNode;
   visibleSplits: Set<string>;
   stoppedLeaves: Set<string>;
   activeNodeId: string | null;
+  locale?: RegressionLocale;
 }): ReactNode {
+  const pt = locale === "pt-BR";
   const visible = node.kind === "split" && visibleSplits.has(node.id);
   if (!visible) {
     const isFinishedLeaf = node.kind === "leaf" && stoppedLeaves.has(node.id);
     return (
       <div className={`${styles.treeNode} ${isFinishedLeaf ? styles.treeLeaf : styles.treeFrontier} ${activeNodeId === node.id ? styles.treeActive : ""}`}>
-        <span>{isFinishedLeaf ? "leaf prediction" : activeNodeId === node.id ? "checking this group" : "rows waiting here"}</span>
-        <strong>{isFinishedLeaf ? `${format(node.prediction)} tons/ha` : `${node.indices.length} rows`}</strong>
-        <small>{node.indices.map((index) => CROPS[index].id).join(" ")} · variance {format(node.variance, 3)}</small>
+        <span>{isFinishedLeaf ? (pt ? "previsão da folha" : "leaf prediction") : activeNodeId === node.id ? (pt ? "avaliando este grupo" : "checking this group") : (pt ? "linhas aguardando aqui" : "rows waiting here")}</span>
+        <strong>{isFinishedLeaf ? `${format(node.prediction)} ${pt ? "t/ha" : "tons/ha"}` : `${node.indices.length} ${rowWord(node.indices.length, locale)}`}</strong>
+        <small>{node.indices.map((index) => CROPS[index].id).join(" ")} · {pt ? "variância" : "variance"} {format(node.variance, 3)}</small>
       </div>
     );
   }
@@ -596,18 +608,18 @@ function RegressionTreeView({
   return (
     <div className={styles.treeBranch}>
       <div className={styles.treeQuestion}>
-        <span>{node.id === "root" ? "root question" : "local question"}</span>
-        <strong>fertilizer ≤ {format(node.threshold, 0)}?</strong>
-        <small>error reduced by {format(node.improvement, 3)}</small>
+        <span>{node.id === "root" ? (pt ? "pergunta raiz" : "root question") : (pt ? "pergunta local" : "local question")}</span>
+        <strong>{pt ? "fertilizante" : "fertilizer"} ≤ {format(node.threshold, 0)}?</strong>
+        <small>{pt ? "erro reduzido em" : "error reduced by"} {format(node.improvement, 3)}</small>
       </div>
       <div className={styles.treeChildren} style={childStyle}>
         <div>
-          <span className={styles.edgeLabel}>yes · ≤</span>
-          <RegressionTreeView node={node.left} visibleSplits={visibleSplits} stoppedLeaves={stoppedLeaves} activeNodeId={activeNodeId} />
+          <span className={styles.edgeLabel}>{pt ? "sim" : "yes"} · ≤</span>
+          <RegressionTreeView node={node.left} visibleSplits={visibleSplits} stoppedLeaves={stoppedLeaves} activeNodeId={activeNodeId} locale={locale} />
         </div>
         <div>
-          <span className={styles.edgeLabel}>no · &gt;</span>
-          <RegressionTreeView node={node.right} visibleSplits={visibleSplits} stoppedLeaves={stoppedLeaves} activeNodeId={activeNodeId} />
+          <span className={styles.edgeLabel}>{pt ? "não" : "no"} · &gt;</span>
+          <RegressionTreeView node={node.right} visibleSplits={visibleSplits} stoppedLeaves={stoppedLeaves} activeNodeId={activeNodeId} locale={locale} />
         </div>
       </div>
     </div>
@@ -642,35 +654,42 @@ function narrate(
   event: GrowthEvent | null,
   frameIndex: number,
   totalEvents: number,
+  locale: RegressionLocale = "en",
 ): Narration {
+  const pt = locale === "pt-BR";
   if (event === null) {
     return {
-      step: "Done",
+      step: pt ? "Concluído" : "Done",
       phase: "repeat",
-      headline: "Every group has been resolved into a leaf.",
-      detail:
-        "No group is left to split. Each region now predicts one number — the mean of the rows that landed there.",
+      headline: pt ? "Todos os grupos foram transformados em folhas." : "Every group has been resolved into a leaf.",
+      detail: pt
+        ? "Não resta nenhum grupo para dividir. Cada região agora prevê um número — a média das linhas que chegaram até ela."
+        : "No group is left to split. Each region now predicts one number — the mean of the rows that landed there.",
     };
   }
 
   const scope = nodeScope(event.nodeId);
-  const rows = `${event.sampleCount} ${rowWord(event.sampleCount)}`;
-  const stepLabel = `Step ${frameIndex + 1} of ${totalEvents}`;
+  const rows = `${event.sampleCount} ${rowWord(event.sampleCount, locale)}`;
+  const stepLabel = pt ? `Passo ${frameIndex + 1} de ${totalEvents}` : `Step ${frameIndex + 1} of ${totalEvents}`;
 
   if (event.kind === "split") {
     return {
       step: stepLabel,
       phase: "judge",
-      headline: `Propose & judge — the split for ${scope} wins.`,
-      detail: `Across ${scope} (${rows}, mean ${format(event.prediction)} tons/ha) the search tried every threshold. The best is fertilizer ≤ ${format(event.threshold ?? 0, 0)}, which cuts the squared error by ${format(event.improvement ?? 0, 3)}. We accept it and split into two smaller groups — then repeat the same search inside each one.`,
+      headline: pt ? "Propor e avaliar — a melhor divisão vence." : `Propose & judge — the split for ${scope} wins.`,
+      detail: pt
+        ? `Neste grupo (${rows}, média ${format(event.prediction)} t/ha), a busca testou todos os limiares. O melhor é fertilizante ≤ ${format(event.threshold ?? 0, 0)}, que reduz o erro quadrático em ${format(event.improvement ?? 0, 3)}. Aceitamos a divisão e repetimos a mesma busca nos dois grupos menores.`
+        : `Across ${scope} (${rows}, mean ${format(event.prediction)} tons/ha) the search tried every threshold. The best is fertilizer ≤ ${format(event.threshold ?? 0, 0)}, which cuts the squared error by ${format(event.improvement ?? 0, 3)}. We accept it and split into two smaller groups — then repeat the same search inside each one.`,
     };
   }
 
   return {
     step: stepLabel,
     phase: "repeat",
-    headline: `Repeat, then stop — ${scope} becomes a leaf.`,
-    detail: `The search reached ${scope} (${rows}). ${event.reason ?? ""} So no further split is made: this group is a leaf that predicts ${format(event.prediction)} tons/ha.`,
+    headline: pt ? "Repetir e parar — o grupo se torna uma folha." : `Repeat, then stop — ${scope} becomes a leaf.`,
+    detail: pt
+      ? `A busca chegou a este grupo (${rows}) e a regra de parada foi atendida. Nenhuma nova divisão é feita: esta folha prevê ${format(event.prediction)} t/ha.`
+      : `The search reached ${scope} (${rows}). ${event.reason ?? ""} So no further split is made: this group is a leaf that predicts ${format(event.prediction)} tons/ha.`,
   };
 }
 
@@ -695,7 +714,37 @@ const STOP_OPTIONS: Record<StopMode, { label: string; values: number[]; formatVa
   },
 };
 
-export function RegressionTreeGrowthPlayground() {
+const STOP_OPTIONS_PT: typeof STOP_OPTIONS = {
+  depth: {
+    label: "Profundidade máxima da árvore",
+    values: [1, 2, 3],
+    formatValue: (value) => `${value} ${value === 1 ? "nível" : "níveis"} de perguntas`,
+    help: "Pare depois que a árvore fizer um número fixo de perguntas aninhadas.",
+  },
+  "leaf-size": {
+    label: "Mínimo de linhas por folha",
+    values: [2, 3],
+    formatValue: (value) => `${value} linhas de cada lado`,
+    help: "Rejeite uma divisão se alguma nova folha tiver poucas linhas de treino.",
+  },
+  variance: {
+    label: "Variância suficientemente pequena",
+    values: [0.05, 0.15, 0.5],
+    formatValue: (value) => `variância ≤ ${format(value, 2)}`,
+    help: "Pare de dividir um grupo quando seus valores-alvo já estiverem próximos.",
+  },
+};
+
+export function RegressionTreeGrowthPlayground({ locale = "en" }: { locale?: RegressionLocale }) {
+  const pt = locale === "pt-BR";
+  const stopOptions = pt ? STOP_OPTIONS_PT : STOP_OPTIONS;
+  const phaseSteps = pt
+    ? [
+        { id: "propose", label: "Propor uma divisão", blurb: "teste cada limiar do grupo" },
+        { id: "judge", label: "Avaliar os dois grupos", blurb: "mantenha a divisão somente se ela reduzir o erro" },
+        { id: "repeat", label: "Repetir dentro de cada grupo", blurb: "use recursão até uma regra de parada ser atendida" },
+      ] satisfies typeof PHASE_STEPS
+    : PHASE_STEPS;
   const [mode, setMode] = useState<StopMode>("depth");
   const [valueIndex, setValueIndex] = useState(1);
   const config = useMemo<StopConfig>(() => ({ mode, value: STOP_OPTIONS[mode].values[valueIndex] ?? STOP_OPTIONS[mode].values[0] }), [mode, valueIndex]);
@@ -705,7 +754,7 @@ export function RegressionTreeGrowthPlayground() {
   const [playing, setPlaying] = useState(false);
   const done = frameIndex >= events.length;
   const activeEvent = done ? null : events[frameIndex];
-  const narration = narrate(activeEvent, frameIndex, events.length);
+  const narration = narrate(activeEvent, frameIndex, events.length, locale);
   const completedEvents = events.slice(0, frameIndex);
   const visibleSplits = new Set(completedEvents.filter((event) => event.kind === "split").map((event) => event.nodeId));
   const stoppedLeaves = new Set(completedEvents.filter((event) => event.kind === "stop").map((event) => event.nodeId));
@@ -754,47 +803,47 @@ export function RegressionTreeGrowthPlayground() {
     <section className={styles.workshop} aria-labelledby="regression-growth-title">
       <header className={styles.header}>
         <div>
-          <p className={styles.kicker}>Playground 2 · choose when to stop</p>
-          <h2 id="regression-growth-title">Watch the same search grow a regression tree</h2>
+          <p className={styles.kicker}>{pt ? "Experimento 2 · escolha quando parar" : "Playground 2 · choose when to stop"}</p>
+          <h2 id="regression-growth-title">{pt ? "Veja a mesma busca formar uma árvore de regressão" : "Watch the same search grow a regression tree"}</h2>
         </div>
-        <span className={styles.stepPill}>{frameIndex} of {events.length} decisions made</span>
+        <span className={styles.stepPill}>{frameIndex} {pt ? "de" : "of"} {events.length} {pt ? "decisões tomadas" : "decisions made"}</span>
       </header>
 
       <div className={styles.stopControls}>
         <label>
-          <span>Stopping rule</span>
+          <span>{pt ? "Regra de parada" : "Stopping rule"}</span>
           <select value={mode} onChange={(event) => changeMode(event.target.value as StopMode)}>
-            {Object.entries(STOP_OPTIONS).map(([optionMode, option]) => (
+            {Object.entries(stopOptions).map(([optionMode, option]) => (
               <option value={optionMode} key={optionMode}>{option.label}</option>
             ))}
           </select>
         </label>
         <label>
-          <span>Rule value</span>
+          <span>{pt ? "Valor da regra" : "Rule value"}</span>
           <input
             type="range"
             min="0"
-            max={STOP_OPTIONS[mode].values.length - 1}
+            max={stopOptions[mode].values.length - 1}
             step="1"
             value={valueIndex}
-            aria-label={STOP_OPTIONS[mode].label}
-            aria-valuetext={STOP_OPTIONS[mode].formatValue(config.value)}
+            aria-label={stopOptions[mode].label}
+            aria-valuetext={stopOptions[mode].formatValue(config.value)}
             onChange={(event) => setValueIndex(Number(event.target.value))}
           />
-          <strong>{STOP_OPTIONS[mode].formatValue(config.value)}</strong>
+          <strong>{stopOptions[mode].formatValue(config.value)}</strong>
         </label>
-        <p><strong>{STOP_OPTIONS[mode].label}.</strong> {STOP_OPTIONS[mode].help}</p>
+        <p><strong>{stopOptions[mode].label}.</strong> {stopOptions[mode].help}</p>
       </div>
 
       <div className={styles.playbackControls}>
-        <button type="button" disabled={frameIndex === 0} onClick={() => { setFrameIndex((index) => Math.max(0, index - 1)); setPlaying(false); }}>← Back one step</button>
-        <button type="button" onClick={playGrowth}>{playing ? "Pause" : done ? "Start over" : "Play tree growth"}</button>
-        <button className={styles.primaryButton} type="button" disabled={done} onClick={() => { setFrameIndex((index) => Math.min(events.length, index + 1)); setPlaying(false); }}>Next decision →</button>
+        <button type="button" disabled={frameIndex === 0} onClick={() => { setFrameIndex((index) => Math.max(0, index - 1)); setPlaying(false); }}>← {pt ? "Voltar um passo" : "Back one step"}</button>
+        <button type="button" onClick={playGrowth}>{playing ? (pt ? "Pausar" : "Pause") : done ? (pt ? "Recomeçar" : "Start over") : (pt ? "Executar crescimento" : "Play tree growth")}</button>
+        <button className={styles.primaryButton} type="button" disabled={done} onClick={() => { setFrameIndex((index) => Math.min(events.length, index + 1)); setPlaying(false); }}>{pt ? "Próxima decisão" : "Next decision"} →</button>
       </div>
 
       <div className={styles.algorithmNarration}>
         <ol className={styles.phaseTrack}>
-          {PHASE_STEPS.map((step) => (
+          {phaseSteps.map((step) => (
             <li
               key={step.id}
               className={`${styles.phaseStep} ${narration.phase === step.id ? styles.phaseStepActive : ""}`}
@@ -813,24 +862,24 @@ export function RegressionTreeGrowthPlayground() {
 
       <div className={styles.growthLayout}>
         <div className={styles.plotPanel}>
-          <div className={styles.panelTitle}>Regions become fixed predictions</div>
-          <div className={styles.chartScroll} role="region" aria-label="Growing regression-tree chart" tabIndex={0}>
-            <CropPlot regions={regions} committedThresholds={committedThresholds} titleId="regression-growth-plot-title" descriptionId="regression-growth-plot-description" />
+          <div className={styles.panelTitle}>{pt ? "Regiões se tornam previsões fixas" : "Regions become fixed predictions"}</div>
+          <div className={styles.chartScroll} role="region" aria-label={pt ? "Gráfico da árvore de regressão em crescimento" : "Growing regression-tree chart"} tabIndex={0}>
+            <CropPlot regions={regions} committedThresholds={committedThresholds} titleId="regression-growth-plot-title" descriptionId="regression-growth-plot-description" locale={locale} />
           </div>
           <div className={styles.regionLedger}>
             {regions.map(({ node, xMin, xMax }) => (
               <div key={`region-ledger-${node.id}`}>
-                <span>{format(xMin, 0)}–{format(xMax, 0)} kg/ha · {node.indices.length} {rowWord(node.indices.length)}</span>
-                <strong>predict {format(node.prediction)} tons/ha</strong>
+                <span>{format(xMin, 0)}–{format(xMax, 0)} kg/ha · {node.indices.length} {rowWord(node.indices.length, locale)}</span>
+                <strong>{pt ? "previsão" : "predict"} {format(node.prediction)} {pt ? "t/ha" : "tons/ha"}</strong>
               </div>
             ))}
           </div>
         </div>
         <div className={styles.treePanel}>
-          <div className={styles.panelTitle}>Each local winner becomes one question</div>
+          <div className={styles.panelTitle}>{pt ? "Cada vencedora local se torna uma pergunta" : "Each local winner becomes one question"}</div>
           <div className={styles.treeScroller}>
             <div className={styles.treeCanvas} style={{ minWidth: `${Math.max(420, leafCount(tree, visibleSplits) * 150)}px` }}>
-              <RegressionTreeView node={tree} visibleSplits={visibleSplits} stoppedLeaves={stoppedLeaves} activeNodeId={activeEvent?.nodeId ?? null} />
+              <RegressionTreeView node={tree} visibleSplits={visibleSplits} stoppedLeaves={stoppedLeaves} activeNodeId={activeEvent?.nodeId ?? null} locale={locale} />
             </div>
           </div>
         </div>

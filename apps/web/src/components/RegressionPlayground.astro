@@ -7,17 +7,18 @@ import {
 
 interface Props {
   kind: "split" | "growth" | "features";
+  locale?: "en" | "pt-BR";
 }
 
-const { kind } = Astro.props;
+const { kind, locale = "en" } = Astro.props;
 ---
 
 <div data-analytics-lab={`regression-${kind}`}>
   {kind === "split" ? (
-    <RegressionSplitPlayground client:load />
+    <RegressionSplitPlayground locale={locale} client:load />
   ) : kind === "features" ? (
-    <MultiFeatureRegressionPlayground client:load />
+    <MultiFeatureRegressionPlayground locale={locale} client:load />
   ) : (
-    <RegressionTreeGrowthPlayground client:load />
+    <RegressionTreeGrowthPlayground locale={locale} client:load />
   )}
 </div>

@@ -34,6 +34,14 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Translate the article library to Brazilian Portuguese — issue #112**
+  - Inventory every publishable English article, issue, and supporting UI string
+    before translating.
+  - Preserve interactive examples, metadata, routes, links, and the English
+    original as the source counterpart for each translation.
+  - Done when every published article has a reviewed `pt-BR` version and locale
+    switching works for all published pages.
+
 - [ ] **Draft and test Issue 002 about classification and regression trees — issue #92**
   - Keep the newsletter issue in draft while reviewing its web, HTML email,
     and plain-text forms.
@@ -119,16 +127,6 @@ references for longer-term editorial direction.
     tested procedure.
 
 ## Ready
-
-### Localization
-
-- [ ] **Translate the article library to Brazilian Portuguese**
-  - Inventory every publishable English article, issue, and supporting UI string
-    before translating.
-  - Preserve interactive examples, metadata, routes, links, and the English
-    original as the source counterpart for each translation.
-  - Done when every published article has a reviewed `pt-BR` version and locale
-    switching works for all published pages.
 
 ### Public release
 
