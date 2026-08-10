@@ -34,6 +34,17 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Draft and test Issue 002 about classification and regression trees — issue #92**
+  - Keep the newsletter issue in draft while reviewing its web, HTML email,
+    and plain-text forms.
+  - Publish both destination articles and the issue before creating the final
+    provider send.
+  - Review one Resend draft before the explicit, separately authorized send to
+    the production segment.
+  - Completion check: delivery events and the Issue 002 report confirm the
+    three-person test audience received the intended broadcast without a
+    duplicate send.
+
 - [ ] **Align the launch article publication schedule — issue #95**
   - Publish the completed regression-tree article for launch week.
   - Return Reward Hacking to draft for next week's release and keep ACF/PACF
@@ -122,8 +133,6 @@ references for longer-term editorial direction.
 ### Public release
 
 - [ ] **Finalize public-release essentials**
-  - Choose licenses for original writing, illustrations, and remaining workspace
-    code; make the public notices consistent with the standalone project license.
   - Replace publication placeholders required for newsletter sending, including
     the postal address, and verify privacy/contact information.
   - Done when the repository and published site have complete, consistent legal
@@ -239,6 +248,17 @@ references for longer-term editorial direction.
     promoting to `main`.
 
 ### Release and platform readiness
+
+- [x] **Finalize repository and publication licensing — issue #109** — 2026-08-10
+  - Licensed original software under MIT and original articles, newsletter
+    issues, and educational illustrations under CC BY 4.0, with explicit brand,
+    external-data, and third-party-material exclusions.
+  - Aligned repository files, package metadata, contribution guidance, the
+    public licensing page, and the About page notice.
+  - Completion check: the full repository gate and post-merge CI passed; staging
+    verification run `31422533290` confirmed exact revision
+    `8ab547a4424ca2732591436f49fe047cd73c6049`, and `/licensing/` plus its About
+    page link were visually verified without layout or navigation defects.
 
 - [x] **Phase 1 — Organize GitHub** — 2026-07-24
   - The repository, permanent branches, issue and pull-request policy checks,

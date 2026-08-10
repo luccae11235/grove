@@ -95,3 +95,11 @@ O site e os pacotes compartilham inicialmente a versão do marco:
 - versões seguintes acompanham os marcos do roadmap.
 
 Antes de uma API pública, mudanças internas podem ser incompatíveis entre versões menores, desde que migrações sejam registradas. Depois da primeira API estável, o projeto seguirá Semantic Versioning estritamente.
+
+## Licenciamento das contribuições
+
+Ao enviar uma contribuição, você concorda que contribuições de software serão
+licenciadas sob MIT e que contribuições aos artigos, newsletters e ilustrações
+originais serão licenciadas sob CC BY 4.0. Materiais de terceiros devem manter
+seus avisos e termos de origem e não podem ser submetidos sem autorização
+compatível. Os limites completos estão em [`LICENSING.md`](LICENSING.md).
