@@ -76,6 +76,25 @@ export async function runSmoke(arguments_, dependencies = {}) {
     }
   });
 
+  await check(checks, "Brazilian Portuguese reading flow is public", async () => {
+    for (const [path, expectedText] of [
+      ["/pt-br/", "Todos os artigos"],
+      ["/pt-br/learn/decision-trees/", "Dois loops e uma memória"],
+      ["/pt-br/learn/regression-trees/", "Como árvores de decisão aprendem a prever números"],
+    ]) {
+      const response = await request(`${webUrl}${path}`);
+      assertStatus(response, 200);
+      assertHtml(response);
+      const body = await response.text();
+      if (!body.includes(expectedText)) {
+        throw new Error(`${path} is missing expected Portuguese reading content`);
+      }
+      if (!body.includes("English") || !body.includes("Português (Brasil)")) {
+        throw new Error(`${path} is missing the bilingual language switcher`);
+      }
+    }
+  });
+
   await check(checks, "Aflora brand mark is available", async () => {
     const response = await request(`${webUrl}/brand/aflora-mark.svg`);
     assertStatus(response, 200);

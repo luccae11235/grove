@@ -1,0 +1,355 @@
+---
+articleId: regression-trees-from-scratch
+locale: pt-BR
+routeSlug: regression-trees
+href: /pt-br/learn/regression-trees
+title: Como árvores de decisão aprendem a prever números
+navTitle: Preveja números com árvores
+description: "Transforme o procedimento da árvore de classificação em uma árvore de regressão mudando como uma divisão é avaliada e como cada folha prevê."
+eyebrow: Árvores de decisão · Regressão
+area: Aprendizado supervisionado
+topic: Árvores de regressão
+summary: Mantenha o procedimento propor–avaliar–repetir, troque a impureza de classe pelo erro quadrático e deixe cada folha prever a própria média.
+status: published
+publishedAt: 2026-08-02
+updatedAt: 2026-08-10
+readingTime: 20–25 min
+interactiveCount: 3
+staticVisualCount: 3
+difficulty: foundational
+series: tree-based-machine-learning
+access: public
+prerequisites:
+  - decision-trees-from-scratch
+related: []
+implementation: mdx
+learning:
+  priorKnowledge:
+    - Acompanhar uma pergunta de sim ou não por uma árvore de decisão.
+    - Entender que uma árvore de classificação escolhe um rótulo em cada folha.
+  likelyMisconception: Árvores de regressão precisam de um algoritmo de treino completamente diferente das árvores de classificação.
+  transferOutcome: Explicar como uma árvore de regressão escolhe uma divisão numérica, faz uma previsão na folha e usa uma regra de parada.
+  motivatingQuestion: As mesmas perguntas simples que preveem uma classe também conseguem prever um número?
+  conceptualBottleneck: O procedimento da árvore permanece igual enquanto a pontuação e a previsão da folha mudam juntas.
+  evidenceOfUnderstanding:
+    - Explicar por que a média é a previsão da folha usada pelo erro quadrático.
+    - Comparar limiares candidatos pelo erro quadrático total dos dois grupos.
+    - Explicar como a mesma busca de limiares compara várias características.
+    - Prever como uma regra de parada altera o tamanho de uma árvore de regressão.
+---
+
+import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import RegressionPlayground from "../../../components/RegressionPlayground.astro";
+import RegressionStaticVisual from "../../../components/RegressionStaticVisual.astro";
+
+<header className="page-header lesson-header article-hero">
+  <p className="eyebrow">Árvores de decisão · Regressão</p>
+  <h1>Como árvores de decisão aprendem a prever números</h1>
+  <p className="lede">
+    Uma árvore de classificação prevê um rótulo. Uma árvore de regressão prevê um
+    número. O surpreendente é como uma parte tão pequena do procedimento precisa mudar.
+  </p>
+  <div className="article-meta" aria-label="Informações sobre o artigo">
+    <DifficultyBadge difficulty="foundational" showDescription locale="pt-BR" />
+    <span><strong>2</strong> conjuntos de dados trabalhados</span>
+    <span><strong>3</strong> experimentos interativos</span>
+  </div>
+</header>
+
+<article className="lesson-body deep-article">
+  <p className="lesson-stage">Recapitulação</p>
+  <h2 id="recap">O procedimento que já temos</h2>
+
+  No Capítulo 1, inventamos um procedimento capaz de encontrar repetidamente
+  perguntas úteis e separar dados em regiões significativas. Essas regiões podiam
+  então prever uma classe para uma linha nova que ainda não tínhamos visto.
+
+  A criação da árvore envolvia três passos simples:
+
+  1. **Propor uma divisão.**
+  2. **Avaliar os dois grupos que ela cria.**
+  3. **Repetir dentro dos novos grupos.**
+
+  Essa ideia é poderosa, mas nossa primeira árvore era pequena de propósito.
+  Algoritmos reais baseados em árvores também precisam lidar com dados ausentes,
+  diferentes tipos de características de entrada, conjuntos de dados muito grandes
+  e o risco de crescer demais. Abordaremos esses problemas um de cada vez nos
+  próximos capítulos.
+
+  Por enquanto, vamos mudar o tipo de previsão que a árvore faz: em vez de uma
+  classe, queremos um número.
+
+  <p className="lesson-stage">Uma nova previsão</p>
+  <h2>Da classificação à regressão</h2>
+
+  No aprendizado de máquina supervisionado, duas tarefas comuns de previsão são
+  **classificação** e **regressão**.
+
+  A classificação escolhe entre um conjunto de rótulos. Prever se uma semente terá
+  dificuldade ou crescerá bem a partir da água e da luz solar que recebe é uma
+  classificação: a resposta é uma de duas classes nomeadas.
+
+  Prever a temperatura média de amanhã é diferente. A resposta pode ser 18,2 °C,
+  18,3 °C ou outro número entre esses valores. Isso é **regressão**.
+
+  Uma forma compacta de lembrar a diferença é:
+
+  - **A classificação atribui um rótulo a uma linha.**
+  - **A regressão atribui um número a uma linha.**
+
+  Na lição anterior, usamos a impureza de Gini para avaliar uma divisão. Gini foi
+  feita para classes: mede quanto os rótulos de classe estão misturados dentro de
+  um grupo. Quando nosso alvo é um número contínuo, não há classes para Gini contar.
+
+  A boa notícia é que não precisamos inventar a árvore novamente. Podemos trocar a
+  forma de avaliar uma divisão e manter o mesmo loop central: propor, avaliar, repetir.
+
+  <p className="lesson-stage">A nova pontuação</p>
+  <h2 id="judge">Como avaliar uma divisão de regressão?</h2>
+
+  Em um pequeno exemplo de classificação, muitas vezes conseguimos enxergar uma
+  separação útil. Coloque duas características em dois eixos, desenhe uma classe
+  como círculos e outra como quadrados, e uma linha divisória clara pode aparecer.
+
+  Para regressão, vamos usar um exemplo simples também. Imagine que queremos prever
+  a produtividade de uma plantação a partir da quantidade de fertilizante usada em
+  um hectare.
+
+  - Com pouco fertilizante, faltam nutrientes às plantas, então a produtividade é baixa.
+  - Com uma quantidade moderada, os nutrientes se aproximam do nível adequado, então a produtividade é alta.
+  - Com fertilizante demais, raízes danificadas ou desequilíbrio de nutrientes podem reduzir a produtividade novamente.
+
+  Isso produz um padrão em forma de colina, embora os dois lados não precisem ser
+  perfeitamente simétricos.
+
+  <figure className="static-figure decision-tree-figure seed-table-figure regression-table-figure">
+    <div className="seed-table-wrap">
+      <table className="seed-table">
+        <thead>
+          <tr><th>Linha</th><th>Fertilizante (kg/hectare)</th><th>Produtividade (toneladas/hectare)</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">A</th><td>0</td><td>1,5</td></tr>
+          <tr><th scope="row">B</th><td>20</td><td>2,4</td></tr>
+          <tr><th scope="row">C</th><td>40</td><td>3,8</td></tr>
+          <tr><th scope="row">D</th><td>60</td><td>5,1</td></tr>
+          <tr><th scope="row">E</th><td>80</td><td>5,7</td></tr>
+          <tr><th scope="row">F</th><td>100</td><td>5,4</td></tr>
+          <tr><th scope="row">G</th><td>120</td><td>4,8</td></tr>
+          <tr><th scope="row">H</th><td>140</td><td>4,2</td></tr>
+          <tr><th scope="row">I</th><td>160</td><td>3,7</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figcaption>
+      Uma característica de entrada, fertilizante, e um alvo numérico,
+      produtividade da plantação. A árvore só pode dividir entre valores vizinhos
+      de fertilizante.
+    </figcaption>
+  </figure>
+
+  Alice e Bob estão tentando construir um modelo com esses dados. Alice se lembra
+  do primeiro artigo e começa a explorar limiares. Bob toma um atalho: usa a
+  produtividade média como todas as previsões.
+
+  A previsão de Bob é de aproximadamente **4,07 toneladas por hectare**. Ela não é
+  absurda. Fica perto do centro das produtividades observadas, então oferece uma
+  referência útil: antes de acrescentar uma divisão, Alice consegue superar uma
+  única previsão para todo mundo?
+
+  Para responder, Bob mede a distância de cada produtividade observada até 4,07.
+  Algumas distâncias são positivas e outras negativas; somá-las diretamente faria
+  com que se anulassem. Ele eleva cada distância ao quadrado e depois soma os resultados.
+
+  <div className="derivation-card regression-derivation">
+    <span>Uma previsão para todas as linhas</span><strong>ȳ = 4,07</strong>
+    <span>Erro quadrático total</span><strong>Σ(yᵢ − ȳ)² = 15,64</strong>
+    <small>
+      Divida 15,64 pelas nove linhas e obtemos uma variância de aproximadamente
+      1,738. O total e a variância contam a mesma história aqui; o total é nove vezes maior.
+    </small>
+  </div>
+
+  Como Bob prevê a média, essa distância quadrática média também é a **variância**
+  dos valores-alvo. Uma variância menor significa que os valores ficam mais próximos
+  da média, portanto a média é uma previsão melhor para esse grupo.
+
+  Alice percebe algo interessante. Se posicionar um limiar em **50 kg/ha**, no ponto
+  médio entre 40 e 60, as linhas de cada lado podem usar sua própria média. Juntos,
+  os dois grupos têm erro quadrático total de 5,515, muito menor que os 15,64 de Bob.
+  Isso oferece a nova regra de avaliação:
+
+  <RegressionStaticVisual kind="split-groups" locale="pt-BR" />
+
+  > Teste todos os limiares de ponto médio e mantenha aquele cujos dois grupos deixam
+  > o menor erro quadrático total.
+
+  Para uma divisão candidata, o cálculo é:
+
+  <div className="formula-wide regression-formula">
+    erro da divisão = Σ<sub>i∈E</sub>(yᵢ − ȳ<sub>E</sub>)² + Σ<sub>i∈D</sub>(yᵢ − ȳ<sub>D</sub>)²
+  </div>
+
+  A primeira soma mede os erros em torno da média do grupo esquerdo. A segunda faz o
+  mesmo para o grupo direito. Nós as somamos porque os dois grupos fazem parte do
+  modelo. De forma equivalente, podemos multiplicar a variância de cada grupo por
+  seu número de linhas e somar os dois resultados.
+
+  Antes de executar o experimento, preveja onde aparecerá o ponto mais baixo do
+  gráfico de erro da divisão. O limiar 50 já é melhor do que nenhuma divisão, mas
+  será o melhor entre as oito opções?
+</article>
+
+<div className="interactive-breakout article-interactive decision-tree-interactive">
+  <RegressionPlayground kind="split" locale="pt-BR" />
+</div>
+
+<article className="lesson-body deep-article">
+  Ao executar a varredura completa, o melhor primeiro limiar é **30 kg/ha**. O grupo
+  esquerdo prevê 1,95 tonelada/ha, o direito prevê aproximadamente 4,67 toneladas/ha,
+  e o erro quadrático combinado é de aproximadamente 4,119.
+
+  Essa é a mesma busca que usamos na classificação. Ainda testamos os pontos médios
+  um a um e guardamos o melhor resultado. Só a pontuação mudou: em vez de procurar
+  menos mistura de classes, procuramos menos erro quadrático de previsão.
+
+  <p className="lesson-stage">O valor da folha</p>
+  <h2 id="prediction">Mas qual é a previsão?</h2>
+
+  Agora sabemos escolher uma divisão de regressão, mas ainda precisamos de uma
+  previsão para cada grupo resultante.
+
+  O ajuste é pequeno: **calcule a média dentro de cada folha**.
+
+  <RegressionStaticVisual kind="stump-means" locale="pt-BR" />
+
+  Se pararmos o modelo de Alice após a primeira divisão, quantidades de fertilizante
+  menores ou iguais a 30 kg/ha recebem a média esquerda, 1,95 tonelada/ha. Quantidades
+  maiores recebem a média direita, cerca de 4,67 toneladas/ha. Essas estimativas são
+  melhores para os dados de treino do que o único valor 4,07 de Bob, pois a divisão
+  reduziu o erro quadrático total.
+
+  A média não é uma escolha arbitrária. Entre todas as previsões de um único número
+  para um grupo, a média é a que produz o menor erro quadrático. Como escolhemos o
+  erro quadrático como pontuação, a média e a pontuação pertencem uma à outra.
+
+  <p className="lesson-stage">Tamanho da árvore</p>
+  <h2 id="stopping">Mas quando a árvore deve parar?</h2>
+
+  Em nosso primeiro exemplo de classificação, paramos quando cada folha ficou pura:
+  todas as linhas de uma folha tinham a mesma classe.
+
+  A regressão não tem classes para tornar puras. Com um conjunto de dados finito, a
+  árvore não crescerá literalmente para sempre, mas pode continuar dividindo até
+  quase toda folha conter uma única linha de treino. Suas previsões então copiam os
+  dados de treino de perto e podem funcionar mal em dados novos.
+
+  Por isso, damos uma regra de parada à árvore. Algumas escolhas comuns são:
+
+  1. **Profundidade máxima:** pare depois de um número fixo de perguntas aninhadas.
+  2. **Mínimo de linhas por folha:** rejeite divisões que criem grupos pequenos demais.
+  3. **Variância suficientemente pequena:** pare quando os valores-alvo de um grupo já estiverem próximos.
+  4. **Melhoria mínima:** divida somente quando o erro cair por uma quantidade relevante.
+
+  Todas essas regras fazem a mesma troca. Uma árvore menor oferece previsões mais
+  aproximadas e estáveis. Uma árvore maior acompanha os dados de treino mais de perto.
+  No próximo experimento, mude uma regra de parada por vez e preveja quantas folhas
+  de previsão a árvore criará.
+</article>
+
+<div className="interactive-breakout article-interactive decision-tree-interactive regression-tree-workspace">
+  <RegressionPlayground kind="growth" locale="pt-BR" />
+</div>
+
+<article className="lesson-body deep-article">
+  <p className="lesson-stage">Além de uma coluna</p>
+  <h2 id="more-features">Mais características, os mesmos dois loops</h2>
+
+  Nosso exemplo de fertilizante usou uma característica para que pudéssemos enxergar
+  a nova pontuação de regressão sem mudar mais nada. Uma tabela real normalmente dá
+  à árvore mais de uma coluna possível para perguntar.
+
+  Volte à estufa, agora com doze canteiros. Para cada um, sabemos a temperatura, a
+  água fornecida por semana, a luz solar por dia e a produtividade que queremos
+  prever. O alvo continua sendo um número. Só cresceu o número de perguntas possíveis.
+
+  A busca precisa de dois loops:
+
+  1. **Para cada característica**, escolha uma coluna.
+  2. **Para cada ponto médio entre valores distintos dessa coluna**, meça o erro da divisão.
+
+  A árvore guarda a candidata com menor erro nos dois loops. Depois, a recursão envia
+  cada novo grupo pela mesma busca outra vez.
+
+  A temperatura tem 11 intervalos distintos, a água tem 9 e a luz solar tem 7; assim,
+  a raiz compara **27 candidatas** no total. Valores repetidos não criam um limiar
+  extra porque não podem ser separados por um ponto médio.
+
+  Antes de selecionar uma característica abaixo, faça uma previsão: qual coluna pode
+  criar a primeira divisão com menor erro? Os pontos mantêm o mesmo eixo vertical do
+  alvo enquanto você troca de característica. Só a característica horizontal e seu
+  limiar mudam.
+</article>
+
+<div className="interactive-breakout article-interactive decision-tree-interactive regression-tree-workspace">
+  <RegressionPlayground kind="features" locale="pt-BR" />
+</div>
+
+<article className="lesson-body deep-article">
+  Na raiz, a melhor pergunta de temperatura deixa erro de divisão de aproximadamente
+  **5,129**. A melhor pergunta sobre água deixa **19,542** e a melhor sobre luz solar,
+  **25,302**. Portanto, a temperatura vence a primeira busca local com o limiar **19 °C**.
+
+  O processo não deixa de usar as outras colunas. Dentro do grupo mais quente, água
+  em **2,5 L por semana** se torna a próxima vencedora local. Dentro do grupo quente
+  e bem irrigado, luz solar em **4,5 horas por dia** vence a terceira busca. Com uma
+  melhoria mínima de 0,25, a pequena árvore final usa as três características e deixa
+  quatro previsões médias.
+
+  Essa é a mesma generalização que fizemos para classificação. Mais colunas criam mais
+  candidatas, não um novo algoritmo de treino. A classificação mantém a divisão com a
+  maior redução na mistura de classes. A regressão mantém a divisão com o menor erro
+  quadrático restante. Os dois loops e a recursão permanecem.
+</article>
+
+<article className="lesson-body deep-article regression-closing">
+  Todo o procedimento da árvore de regressão agora cabe em uma imagem compacta:
+
+  1. Para cada característica, proponha pontos médios entre seus valores distintos.
+  2. Avalie cada limiar pelo erro quadrático restante em torno das médias dos dois grupos.
+  3. Mantenha a divisão de menor erro entre todas as características e limiares.
+  4. Repita dentro dos novos grupos até uma regra de parada dizer que um grupo é uma folha.
+  5. Preveja a média dos alvos de treino dentro dessa folha.
+
+  <p className="lesson-stage">Mantenha o menor modelo mental útil</p>
+  <div className="mental-model">
+    <h2>Uma árvore de regressão é a mesma busca, avaliada pelo erro quadrático.</h2>
+    <p>
+      <strong>
+        Em cada nó, teste todas as divisões candidatas. Mantenha aquela que deixa o
+        menor erro quadrático em torno das médias dos dois grupos. Depois, repita nos
+        grupos ainda dispersos e deixe cada folha prever sua média.
+      </strong>
+    </p>
+  </div>
+
+  <p>
+    Não substituímos o algoritmo da árvore. Mudamos a pergunta usada para avaliar uma
+    divisão e o valor armazenado em uma folha — e esse era o ponto. Elevar ao quadrado
+    a distância até a média de um grupo transformou “estes números estão próximos” em
+    uma quantidade que o mesmo loop podia minimizar, assim como o ganho de Gini fazia
+    com a mistura de classes. A estrutura propor–avaliar–repetir fez o restante.
+  </p>
+
+  <div className="transfer-check">
+    <h3>Você entende o mecanismo se agora consegue…</h3>
+    <ul>
+      <li>explicar por que a média é a previsão de folha favorecida pelo erro quadrático;</li>
+      <li>pontuar um limiar candidato pelo erro quadrático de seus dois grupos;</li>
+      <li>enunciar o algoritmo de treino da regressão como dois loops mais recursão;</li>
+      <li>citar uma regra de parada e prever como ela altera o tamanho da árvore;</li>
+      <li>explicar como a mesma busca de limiares compara várias características;</li>
+      <li>dizer o que mudou em relação à árvore de classificação — e o que não mudou.</li>
+    </ul>
+  </div>
+</article>
