@@ -63,16 +63,39 @@ test("one-tree episodes learn, predict, and feed the histogram", async ({ page }
   await expect(experiment).toHaveAttribute("data-phase", "committed", { timeout: 7_000 });
   await expect(experiment).toHaveAttribute("data-history-count", "1");
   await expect(experiment.getByText(/Episode 1 added/)).toBeVisible();
+  const firstMean = await experiment.getAttribute("data-prediction-mean");
+  expect(Number.isFinite(Number(firstMean))).toBe(true);
+  await expect(experiment.locator("[data-running-mean]")).toHaveAttribute("data-running-mean", firstMean!);
 
   await experiment.getByRole("button", { name: "Show data process" }).click();
   await expect(experiment.locator("[data-process-layer]")).toBeVisible();
 
-  await experiment.getByRole("button", { name: "1×" }).click();
+  const speedSlider = experiment.getByRole("slider", { name: "Episode speed" });
+  await speedSlider.evaluate((element) => {
+    const input = element as HTMLInputElement;
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, "50");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  await expect(experiment).toHaveAttribute("data-speed", "1");
+  await speedSlider.evaluate((element) => {
+    const input = element as HTMLInputElement;
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, "100");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  await expect(experiment).toHaveAttribute("data-speed", "10");
   await experiment.getByRole("button", { name: "Play" }).click();
-  await expect(experiment).toHaveAttribute("data-history-count", "2", { timeout: 3_000 });
+  await expect.poll(async () => Number(await experiment.getAttribute("data-history-count")), {
+    timeout: 4_000,
+  }).toBeGreaterThanOrEqual(20);
   await experiment.getByRole("button", { name: "Pause" }).click();
   const pausedCount = await experiment.getAttribute("data-history-count");
-  await page.waitForTimeout(1_200);
+  const adaptiveBins = Number(await experiment.getAttribute("data-histogram-bins"));
+  expect(adaptiveBins).toBeGreaterThan(10);
+  await expect(experiment.locator("[data-histogram-bin]")).toHaveCount(adaptiveBins);
+  expect(Number.isFinite(Number(await experiment.getAttribute("data-prediction-mean")))).toBe(true);
+  await page.waitForTimeout(500);
   await expect(experiment).toHaveAttribute("data-history-count", pausedCount!);
 });
 
@@ -130,6 +153,7 @@ test("reduced motion disables autoplay but preserves a stepped episode", async (
   const experiment = page.locator('[data-bagging-visual="variance"]');
 
   await expect(experiment.getByRole("button", { name: "Play" })).toBeDisabled();
+  await expect(experiment.getByRole("slider", { name: "Episode speed" })).toBeDisabled();
   await page.waitForTimeout(1_100);
   await expect(experiment).toHaveAttribute("data-history-count", "0");
   await experiment.getByRole("button", { name: "Run one episode" }).click();

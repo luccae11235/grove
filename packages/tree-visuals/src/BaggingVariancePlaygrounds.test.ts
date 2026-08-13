@@ -1,14 +1,18 @@
 import { describe, expect, it } from "vitest";
 import {
+  adaptiveHistogramBinCount,
   bootstrapSample,
   createBaggingEpisode,
   fitRegressionTree,
+  fittingFrameStride,
   fitRegressionTreeWithTrace,
   generateSineSample,
   histogramBins,
   predictTree,
+  predictionMean,
   runBaggingExperiment,
   sampleVariance,
+  speedFromSliderPosition,
 } from "./BaggingVariancePlaygrounds";
 
 describe("bagging variance playground calculations", () => {
@@ -59,6 +63,26 @@ describe("bagging variance playground calculations", () => {
     expect(sampleVariance([4])).toBe(0);
   });
 
+  it("maps the speed slider endpoints and midpoint to 0.25x, 1x, and 10x", () => {
+    expect(speedFromSliderPosition(0)).toBeCloseTo(0.25, 12);
+    expect(speedFromSliderPosition(50)).toBeCloseTo(1, 12);
+    expect(speedFromSliderPosition(100)).toBeCloseTo(10, 12);
+    expect(speedFromSliderPosition(75)).toBeCloseTo(Math.sqrt(10), 12);
+    expect(speedFromSliderPosition(-10)).toBeCloseTo(0.25, 12);
+    expect(speedFromSliderPosition(110)).toBeCloseTo(10, 12);
+  });
+
+  it("skips only intermediate fitting frames at high episode speeds", () => {
+    expect(fittingFrameStride(25, 1)).toBe(1);
+    expect(fittingFrameStride(25, 10)).toBe(5);
+    expect(fittingFrameStride(5, 10)).toBe(1);
+  });
+
+  it("tracks the exact arithmetic mean of completed predictions", () => {
+    expect(predictionMean([])).toBeUndefined();
+    expect(predictionMean([0.5, 0.7, 1.2])).toBeCloseTo(0.8, 12);
+  });
+
   it("places every committed prediction into exactly one aligned histogram bin", () => {
     const values = [-1.55, -0.4, 0, 0.2, 1.55];
     const bins = histogramBins(values);
@@ -66,6 +90,19 @@ describe("bagging variance playground calculations", () => {
     expect(bins.reduce((total, bin) => total + bin.count, 0)).toBe(values.length);
     expect(bins[0].count).toBe(1);
     expect(bins.at(-1)?.count).toBe(1);
+  });
+
+  it("adds histogram detail monotonically as episode evidence accumulates", () => {
+    const counts = [0, 1, 25, 100, 200, 400, 10_000].map(adaptiveHistogramBinCount);
+
+    expect(counts[0]).toBe(10);
+    expect(counts.every((count, index) => index === 0 || count >= counts[index - 1])).toBe(true);
+    expect(counts[4]).toBeGreaterThanOrEqual(30);
+    expect(counts.at(-1)).toBe(42);
+
+    const values = Array.from({ length: 200 }, (_, index) => -0.2 + index / 500);
+    const bins = histogramBins(values, adaptiveHistogramBinCount(values.length));
+    expect(bins.reduce((total, bin) => total + bin.count, 0)).toBe(values.length);
   });
 
   it("computes every selectable ensemble from nested bootstrap trees in one outer episode", () => {

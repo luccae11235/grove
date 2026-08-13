@@ -23,15 +23,19 @@ export {
   multiFeatureRegressionSummary,
 } from "./MultiFeatureRegressionPlayground";
 export {
+  adaptiveHistogramBinCount,
   BaggingDistributionPlayground,
   BaggingEnsembleOverview,
   BootstrapSamplesPlayground,
   bootstrapSample,
   fitRegressionTree,
+  fittingFrameStride,
   generateSineSample,
   predictTree,
+  predictionMean,
   runBaggingExperiment,
   sampleVariance,
+  speedFromSliderPosition,
   TreeVariancePlayground,
 } from "./BaggingVariancePlaygrounds";
 export type {

@@ -74,7 +74,7 @@ const Y_MAX = 1.55;
 const X_ZERO = 0.8;
 const SAMPLE_SIZE = 38;
 const TREE_COUNTS = [1, 2, 5, 10, 25];
-const SPEEDS = [0.25, 0.5, 1];
+const SPEED_SLIDER_MIDPOINT = 50;
 const CHART = {
   width: 720,
   height: 360,
@@ -120,6 +120,23 @@ function average(values: number[]): number {
   return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
+export function predictionMean(values: number[]): number | undefined {
+  return values.length ? average(values) : undefined;
+}
+
+export function speedFromSliderPosition(position: number): number {
+  const bounded = Math.max(0, Math.min(100, position));
+  if (bounded <= SPEED_SLIDER_MIDPOINT) {
+    return 0.25 + (bounded / SPEED_SLIDER_MIDPOINT) * 0.75;
+  }
+  return 10 ** ((bounded - SPEED_SLIDER_MIDPOINT) / SPEED_SLIDER_MIDPOINT);
+}
+
+export function fittingFrameStride(fitSteps: number, speed: number): number {
+  const targetFrames = speed >= 8 ? 5 : speed >= 4 ? 8 : speed >= 2 ? 13 : fitSteps;
+  return Math.max(1, Math.ceil(fitSteps / targetFrames));
+}
+
 function squaredError(points: SinePoint[], prediction = average(points.map((point) => point.y))): number {
   return points.reduce((sum, point) => sum + (point.y - prediction) ** 2, 0);
 }
@@ -147,6 +164,10 @@ export function histogramBins(
     bins[index].count += 1;
   }
   return bins;
+}
+
+export function adaptiveHistogramBinCount(sampleCount: number): number {
+  return Math.min(42, Math.max(10, Math.round(8 + Math.sqrt(Math.max(0, sampleCount)) * 1.6)));
 }
 
 export function fitRegressionTree(
@@ -302,6 +323,10 @@ function format(value: number, digits = 3): string {
   return value.toFixed(digits).replace(/0+$/, "").replace(/\.$/, "");
 }
 
+function formatSpeed(value: number): string {
+  return format(value, value < 1 ? 2 : 1);
+}
+
 function useReducedMotion(): boolean {
   const [reduced, setReduced] = useState(false);
   useEffect(() => {
@@ -414,6 +439,7 @@ function ExperimentChart({
   history,
   showProcess,
   reducedMotion,
+  speed,
 }: {
   mode: ExperimentMode;
   episode: BaggingEpisode;
@@ -423,6 +449,7 @@ function ExperimentChart({
   history: number[];
   showProcess: boolean;
   reducedMotion: boolean;
+  speed: number;
 }) {
   const [activeLeaf, setActiveLeaf] = useState<number | null>(null);
   const dataVisible = phaseHasData(phase);
@@ -437,8 +464,10 @@ function ExperimentChart({
   const prediction = mode === "single"
     ? episode.singlePrediction
     : episode.ensemblePredictions[treeCount];
-  const bins = histogramBins(history);
+  const binCount = adaptiveHistogramBinCount(history.length);
+  const bins = histogramBins(history, binCount);
   const maximumBin = Math.max(1, ...bins.map((bin) => bin.count));
+  const historyMean = predictionMean(history);
   const process = Array.from({ length: 121 }, (_, index) => {
     const x = X_MIN + (index / 120) * (X_MAX - X_MIN);
     return { x, y: Math.sin(x) };
@@ -450,7 +479,10 @@ function ExperimentChart({
   const activeBounds = activeLeaf === null ? undefined : leaves[activeLeaf];
   const curve = mode === "single" ? curveForTree(singleTree) : averageCurve(ensembleTrees);
   const currentTreeCurve = mode === "ensemble" ? curveForTree(displayedTree) : undefined;
-  const transferStyle = { "--prediction-travel": `${CHART.histogramLeft - xScale(X_ZERO)}px` } as CSSProperties;
+  const transferStyle = {
+    "--prediction-travel": `${CHART.histogramLeft - xScale(X_ZERO)}px`,
+    "--transfer-duration": `${reducedMotion ? 0 : 210 / speed}ms`,
+  } as CSSProperties;
 
   const inspectLeaf = (event: KeyboardEvent<SVGSVGElement>) => {
     if (event.key === "Escape") {
@@ -481,7 +513,8 @@ function ExperimentChart({
       </title>
       <desc id={`${mode}-chart-desc`}>
         The input x zero and chart scales stay fixed. Each completed episode adds one prediction at the same
-        vertical position to the histogram. Use the left and right arrow keys to inspect learned leaves.
+        vertical position to the histogram. A dashed marker tracks their running mean, and narrower bins reveal
+        more detail as episodes accumulate. Use the left and right arrow keys to inspect learned leaves.
       </desc>
 
       {[Y_MIN, -1, 0, 1, Y_MAX].map((tick) => (
@@ -554,6 +587,7 @@ function ExperimentChart({
         return (
           <rect
             className={styles.histogramBar}
+            data-histogram-bin={index}
             x={CHART.histogramLeft}
             y={top + 1}
             width={width}
@@ -562,6 +596,29 @@ function ExperimentChart({
           />
         );
       })}
+      {historyMean !== undefined && (
+        <g data-running-mean={format(historyMean)}>
+          <line
+            className={styles.meanLine}
+            x1={CHART.histogramLeft - 5}
+            x2={CHART.histogramRight}
+            y1={yScale(historyMean)}
+            y2={yScale(historyMean)}
+          />
+          <path
+            className={styles.meanMarker}
+            d={`M${CHART.histogramLeft - 7},${yScale(historyMean)} l-8,-6 v12 Z`}
+          />
+          <text
+            className={styles.meanLabel}
+            x={CHART.histogramRight - 2}
+            y={Math.max(CHART.top + 15, Math.min(CHART.bottom - 5, yScale(historyMean) - 7))}
+            textAnchor="end"
+          >
+            mean {format(historyMean, 2)}
+          </text>
+        </g>
+      )}
       <text className={styles.histogramCount} x={CHART.histogramLeft} y={CHART.bottom + 22}>
         {history.length} {history.length === 1 ? "episode" : "episodes"}
       </text>
@@ -592,7 +649,7 @@ function VarianceExperiment({ mode }: { mode: ExperimentMode }) {
   const [episodeIndex, setEpisodeIndex] = useState(0);
   const [running, setRunning] = useState(false);
   const [autoplay, setAutoplay] = useState(false);
-  const [speed, setSpeed] = useState(0.25);
+  const [speedPosition, setSpeedPosition] = useState(0);
   const [treeCount, setTreeCount] = useState(5);
   const [showProcess, setShowProcess] = useState(false);
   const [singleHistory, setSingleHistory] = useState<number[]>([]);
@@ -603,6 +660,7 @@ function VarianceExperiment({ mode }: { mode: ExperimentMode }) {
   const history = mode === "single" ? singleHistory : ensembleHistories[treeCount];
   const fitSteps = mode === "single" ? episode.treeFrames.length : treeCount;
   const prediction = mode === "single" ? episode.singlePrediction : episode.ensemblePredictions[treeCount];
+  const speed = speedFromSliderPosition(speedPosition);
 
   useEffect(() => {
     if (!running) return undefined;
@@ -614,9 +672,11 @@ function VarianceExperiment({ mode }: { mode: ExperimentMode }) {
         setPhase("fitting");
       }, (reducedMotion ? 260 : 120) * multiplier);
     } else if (phase === "fitting") {
-      const frameDuration = (reducedMotion ? 700 : 470 * multiplier) / fitSteps;
+      const frameStride = reducedMotion ? 1 : fittingFrameStride(fitSteps, speed);
+      const frameIntervals = Math.ceil((fitSteps - 1) / frameStride) + 1;
+      const frameDuration = (reducedMotion ? 700 : 470 * multiplier) / frameIntervals;
       timeout = setTimeout(() => {
-        if (frame < fitSteps - 1) setFrame((value) => value + 1);
+        if (frame < fitSteps - 1) setFrame((value) => Math.min(fitSteps - 1, value + frameStride));
         else setPhase("predicting");
       }, frameDuration);
     } else if (phase === "predicting") {
@@ -692,6 +752,9 @@ function VarianceExperiment({ mode }: { mode: ExperimentMode }) {
       data-playing={running}
       data-tree-count={mode === "ensemble" ? treeCount : undefined}
       data-history-count={visibleCount}
+      data-histogram-bins={adaptiveHistogramBinCount(visibleCount)}
+      data-prediction-mean={predictionMean(history) === undefined ? undefined : format(predictionMean(history)!)}
+      data-speed={formatSpeed(speed)}
     >
       <header className={styles.experimentHeader}>
         <p>{mode === "single" ? "One unstable tree" : "One bagged model"}</p>
@@ -710,7 +773,7 @@ function VarianceExperiment({ mode }: { mode: ExperimentMode }) {
 
       <div className={styles.stageLine} aria-hidden="true">
         {stage}
-        {mode === "ensemble" && phase === "fitting" ? <strong>running mean {format(average(episode.bootstrapPredictions.slice(0, Math.min(frame + 1, treeCount))), 2)}</strong> : null}
+        {mode === "ensemble" && phase === "fitting" ? <strong>ensemble now {format(average(episode.bootstrapPredictions.slice(0, Math.min(frame + 1, treeCount))), 2)}</strong> : null}
       </div>
 
       <ExperimentChart
@@ -722,6 +785,7 @@ function VarianceExperiment({ mode }: { mode: ExperimentMode }) {
         history={history}
         showProcess={showProcess}
         reducedMotion={reducedMotion}
+        speed={speed}
       />
 
       <div className={styles.experimentControls}>
@@ -732,12 +796,24 @@ function VarianceExperiment({ mode }: { mode: ExperimentMode }) {
           <button type="button" onClick={() => start(false)} disabled={running}>Run one episode</button>
           <button type="button" onClick={reset} disabled={phase === "idle" && visibleCount === 0}>Reset</button>
         </div>
-        <div className={styles.speedControls} aria-label="Episode speed">
-          <span>Speed</span>
-          {SPEEDS.map((value) => (
-            <button type="button" aria-pressed={speed === value} onClick={() => setSpeed(value)} disabled={reducedMotion} key={value}>{value}×</button>
-          ))}
-        </div>
+        <label className={styles.speedControl}>
+          <span className={styles.speedHeading}>Speed <strong>{formatSpeed(speed)}×</strong></span>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            value={speedPosition}
+            onChange={(event) => setSpeedPosition(Number(event.currentTarget.value))}
+            aria-label="Episode speed"
+            aria-valuetext={`${formatSpeed(speed)} times speed`}
+            disabled={reducedMotion}
+            style={{ "--speed-position": `${speedPosition}%` } as CSSProperties}
+          />
+          <span className={styles.speedScale} aria-hidden="true">
+            <span>0.25×</span><span>1×</span><span>10×</span>
+          </span>
+        </label>
         <button className={styles.processButton} type="button" aria-pressed={showProcess} onClick={() => setShowProcess((value) => !value)}>
           {showProcess ? "Hide data process" : "Show data process"}
         </button>
@@ -745,7 +821,7 @@ function VarianceExperiment({ mode }: { mode: ExperimentMode }) {
       {reducedMotion && <p className={styles.motionNote}>Autoplay is off because reduced motion is enabled. Run one episode to step through the same sequence.</p>}
       <p className={styles.liveStatus} aria-live="polite">
         {phase === "committed"
-          ? `Episode ${episodeIndex + 1} added ${format(prediction, 2)}. ${visibleCount} completed ${visibleCount === 1 ? "episode" : "episodes"}; empirical variance ${visibleCount > 1 ? format(sampleVariance(history)) : "needs two episodes"}.`
+          ? `Episode ${episodeIndex + 1} added ${format(prediction, 2)}. ${visibleCount} completed ${visibleCount === 1 ? "episode" : "episodes"}; mean ${format(predictionMean(history)!, 2)}; empirical variance ${visibleCount > 1 ? format(sampleVariance(history)) : "needs two episodes"}.`
           : stage}
       </p>
     </section>

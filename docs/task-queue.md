@@ -40,7 +40,8 @@ references for longer-term editorial direction.
   - Two matched computed experiments show the single-tree and bagged-ensemble
     episodes; two restrained static visuals explain replacement and averaging.
   - Deterministic tests and desktop/mobile interaction coverage keep the episode
-    calculations, aligned histograms, responsive layout, and math rendering honest.
+    calculations, 0.25×–10× playback, running means, adaptive aligned histograms,
+    responsive layout, and math rendering honest.
   - Keep the article in draft through its pull request into `develop`; do not
     publish it before 2026-08-26 or couple it to this week's article release.
   - Reserve correlated trees, the variance floor, random-forest feature

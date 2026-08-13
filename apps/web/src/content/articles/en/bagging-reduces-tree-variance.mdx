@@ -122,8 +122,9 @@ import BaggingPlayground from "../../../components/BaggingPlayground.astro";
   The first experiment turns that definition into a visible process. One episode
   samples a dataset, learns a regression tree depth by depth, predicts at the
   fixed $x_0$, and moves that prediction into the histogram on the right. Start
-  with **Run one episode**. Then use **Play** and the speed choices to let the
-  distribution accumulate. The fastest setting is one complete episode per second.
+  with **Run one episode**. Then use **Play** and the speed slider to let the
+  distribution accumulate. The slider begins at $0.25\times$, reaches $1\times$
+  at its midpoint, and accelerates to $10\times$ at the right edge.
 
   The true sine process is hidden at first so it does not compete with the learned
   tree. Reveal its mean and probability bands only when you want to compare the
@@ -140,6 +141,12 @@ import BaggingPlayground from "../../../components/BaggingPlayground.astro";
   allowed to change because its finite training sample changes. A tight histogram
   would mean the training procedure is stable there. A wide histogram means that
   another plausible dataset can change the answer substantially.
+
+  The dashed mean marker averages every completed prediction. Early observations
+  can move it sharply; later observations have less influence, so the marker tends
+  to settle. Meanwhile, the histogram uses progressively narrower bins as evidence
+  accumulates. Its axis stays aligned with the prediction plot, but its growing
+  resolution reveals the distribution in more detail.
 
   Moving $x_0$ would show how one fitted function changes across the input space.
   That is useful, but it is a different question. Model variance asks how repeated

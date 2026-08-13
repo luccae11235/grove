@@ -55,7 +55,7 @@
 .experimentHeader p,
 .stageLine,
 .treeCountControl > span,
-.speedControls > span {
+.speedHeading {
   color: var(--bagging-green);
   font: 780 0.66rem/1.3 Inter, ui-sans-serif, system-ui, sans-serif;
   letter-spacing: 0.09em;
@@ -79,8 +79,7 @@
 
 .treeCountControl,
 .experimentControls,
-.playControls,
-.speedControls {
+.playControls {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -95,9 +94,78 @@
 }
 
 .treeCountControl > span,
-.speedControls > span {
+.speedHeading {
   margin-right: 3px;
   color: var(--text-muted);
+}
+
+.speedControl {
+  display: grid;
+  width: min(205px, 100%);
+  gap: 5px;
+}
+
+.speedHeading {
+  display: flex;
+  justify-content: space-between;
+}
+
+.speedHeading strong {
+  color: var(--bagging-green);
+  font-size: 0.72rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.speedControl input[type="range"] {
+  width: 100%;
+  height: 6px;
+  margin: 5px 0 2px;
+  appearance: none;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--bagging-green) 0 var(--speed-position),
+    #cbd7d0 var(--speed-position) 100%
+  );
+  cursor: pointer;
+}
+
+.speedControl input[type="range"]::-webkit-slider-thumb {
+  width: 19px;
+  height: 19px;
+  appearance: none;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: var(--bagging-green);
+  box-shadow: 0 0 0 1px var(--bagging-green), 0 2px 6px rgb(17 45 34 / 20%);
+}
+
+.speedControl input[type="range"]::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: var(--bagging-green);
+  box-shadow: 0 0 0 1px var(--bagging-green), 0 2px 6px rgb(17 45 34 / 20%);
+}
+
+.speedControl input[type="range"]:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 5px;
+}
+
+.speedControl input[type="range"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.speedScale {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-muted);
+  font-size: 0.58rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .stageLine {
@@ -241,6 +309,26 @@
   opacity: 0.65;
 }
 
+.meanLine {
+  stroke: var(--bagging-green);
+  stroke-dasharray: 3 3;
+  stroke-width: 1.7;
+}
+
+.meanMarker {
+  fill: var(--bagging-green);
+}
+
+.meanLabel {
+  fill: var(--bagging-green);
+  stroke: #fcfdfc;
+  stroke-width: 4px;
+  paint-order: stroke;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+}
+
 .predictionMarker,
 .transferMarker,
 .reducedTransferMarker {
@@ -250,7 +338,7 @@
 }
 
 .transferMarker {
-  animation: transfer-prediction 210ms ease-in-out forwards;
+  animation: transfer-prediction var(--transfer-duration) ease-in-out forwards;
 }
 
 .reducedTransferMarker {
@@ -426,12 +514,11 @@
 }
 
 @media (max-width: 430px) {
-  .speedControls,
+  .speedControl,
   .processButton {
     width: 100%;
   }
 
-  .speedControls button,
   .processButton {
     flex: 1 1 auto;
   }

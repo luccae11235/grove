@@ -104,14 +104,19 @@ predicts at `x_0`, and transfers the prediction horizontally into a histogram th
 uses the plot's exact y-scale. Repeated episodes change only the outer dataset.
 
 The process starts paused at 0.25 episodes per second. Play/pause, one-episode,
-reset, and 0.25/0.5/1 speed controls provide only the agency needed to inspect and
-then accumulate the loop. The true sine mean and nested noise bands are optional.
+reset, and a nonlinear speed slider provide only the agency needed to inspect and
+then accumulate the loop. The slider maps 0.25× at the left, 1× at its midpoint,
+and 10× at the right. High speed skips only intermediate display frames; the final
+fitted model and recorded prediction remain exact. The true sine mean and nested
+noise bands are optional.
 Tree-leaf segments and their supporting observations are linked by pointer and
 keyboard inspection.
 
 The right-side metrics and explanatory cards from the first implementation are
 removed. Phase, curve, points, transferred prediction, and growing histogram carry
-the story directly.
+the story directly. A dashed marker tracks the exact mean of all completed
+predictions. Histogram bins become progressively narrower with sample count while
+the plot and histogram preserve one shared y-domain.
 
 ### 2. Bootstrap sampling with replacement — implemented static figure
 
@@ -157,7 +162,8 @@ variance reduction.
   one-episode playback preserves the causal sequence.
 - Fixed seeds reproduce datasets, tree traces, bootstrap membership, exact means,
   histogram bins, and empirical variances outside the view.
-- Browser checks cover KaTeX, episode state, tree-count histories, 720-pixel
+- Browser checks cover KaTeX, episode state, the 0.25×–10× slider, high-speed
+  accumulation, running means, adaptive bins, tree-count histories, 720-pixel
   containment, mobile overflow, and reduced motion.
 
 ## Mathematics and truth checks
