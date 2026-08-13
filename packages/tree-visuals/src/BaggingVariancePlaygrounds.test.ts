@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   adaptiveHistogramBinCount,
   bootstrapSample,
+  computeStandardDeviationComparison,
   createBaggingEpisode,
   fitRegressionTree,
   fittingFrameStride,
@@ -10,6 +11,7 @@ import {
   histogramBins,
   predictTree,
   predictionMean,
+  predictionStandardDeviation,
   runBaggingExperiment,
   sampleVariance,
   speedFromSliderPosition,
@@ -83,6 +85,12 @@ describe("bagging variance playground calculations", () => {
     expect(predictionMean([0.5, 0.7, 1.2])).toBeCloseTo(0.8, 12);
   });
 
+  it("computes prediction standard deviation from the same completed history", () => {
+    expect(predictionStandardDeviation([])).toBeUndefined();
+    expect(predictionStandardDeviation([0.5])).toBeUndefined();
+    expect(predictionStandardDeviation([1, 2, 3])).toBeCloseTo(Math.sqrt(2 / 3), 12);
+  });
+
   it("places every committed prediction into exactly one aligned histogram bin", () => {
     const values = [-1.55, -0.4, 0, 0.2, 1.55];
     const bins = histogramBins(values);
@@ -137,5 +145,25 @@ describe("bagging variance playground calculations", () => {
     expect(variances[1]).toBeLessThan(variances[0]);
     expect(variances[2]).toBeLessThan(variances[1]);
     expect(variances[3]).toBeLessThan(variances[2]);
+  });
+
+  it("computes a deterministic standard-deviation comparison from real bagging episodes", () => {
+    const first = computeStandardDeviationComparison(120, [1, 2, 3, 4, 5, 10, 25]);
+    const second = computeStandardDeviationComparison(120, [1, 2, 3, 4, 5, 10, 25]);
+
+    expect(first).toEqual(second);
+    expect(first.every((point) => Number.isFinite(point.standardDeviation))).toBe(true);
+    expect(first.at(-1)!.standardDeviation).toBeLessThan(first[0].standardDeviation);
+    expect(first.at(-1)!.standardDeviation).toBeLessThan(first[0].standardDeviation * 0.8);
+  });
+
+  it("makes the displayed 240-episode comparison visibly decline from one through five trees", () => {
+    const comparison = computeStandardDeviationComparison();
+
+    expect(comparison).toHaveLength(25);
+    for (let index = 1; index < 5; index += 1) {
+      expect(comparison[index].standardDeviation).toBeLessThan(comparison[index - 1].standardDeviation);
+    }
+    expect(comparison.at(-1)!.standardDeviation).toBeLessThan(comparison[0].standardDeviation * 0.7);
   });
 });

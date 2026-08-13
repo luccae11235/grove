@@ -38,10 +38,11 @@ references for longer-term editorial direction.
   - Use one noisy sine-curve regression example and one fixed input to make
     pointwise model variance, bootstrap sampling, and averaging visible.
   - Two matched computed experiments show the single-tree and bagged-ensemble
-    episodes; two restrained static visuals explain replacement and averaging.
+    episodes; three restrained static visuals explain replacement, averaging,
+    and measured prediction spread across ensemble sizes.
   - Deterministic tests and desktop/mobile interaction coverage keep the episode
-    calculations, 0.25×–10× playback, running means, adaptive aligned histograms,
-    responsive layout, and math rendering honest.
+    calculations, 0.25×–10× playback, running means, prediction standard deviations,
+    adaptive aligned histograms, responsive layout, and math rendering honest.
   - Keep the article in draft through its pull request into `develop`; do not
     publish it before 2026-08-26 or couple it to this week's article release.
   - Reserve correlated trees, the variance floor, random-forest feature

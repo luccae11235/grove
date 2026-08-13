@@ -124,6 +124,10 @@ export function predictionMean(values: number[]): number | undefined {
   return values.length ? average(values) : undefined;
 }
 
+export function predictionStandardDeviation(values: number[]): number | undefined {
+  return values.length > 1 ? Math.sqrt(sampleVariance(values)) : undefined;
+}
+
 export function speedFromSliderPosition(position: number): number {
   const bounded = Math.max(0, Math.min(100, position));
   if (bounded <= SPEED_SLIDER_MIDPOINT) {
@@ -327,6 +331,10 @@ function formatSpeed(value: number): string {
   return format(value, value < 1 ? 2 : 1);
 }
 
+function formatSpread(value: number | undefined): string {
+  return value === undefined ? "—" : format(value, 3);
+}
+
 function useReducedMotion(): boolean {
   const [reduced, setReduced] = useState(false);
   useEffect(() => {
@@ -468,6 +476,7 @@ function ExperimentChart({
   const bins = histogramBins(history, binCount);
   const maximumBin = Math.max(1, ...bins.map((bin) => bin.count));
   const historyMean = predictionMean(history);
+  const historyStandardDeviation = predictionStandardDeviation(history);
   const process = Array.from({ length: 121 }, (_, index) => {
     const x = X_MIN + (index / 120) * (X_MAX - X_MIN);
     return { x, y: Math.sin(x) };
@@ -513,8 +522,9 @@ function ExperimentChart({
       </title>
       <desc id={`${mode}-chart-desc`}>
         The input x zero and chart scales stay fixed. Each completed episode adds one prediction at the same
-        vertical position to the histogram. A dashed marker tracks their running mean, and narrower bins reveal
-        more detail as episodes accumulate. Use the left and right arrow keys to inspect learned leaves.
+        vertical position to the histogram. A dashed marker tracks their running mean. A shaded interval spans
+        one standard deviation on either side of that mean once two episodes exist. Narrower bins reveal more
+        detail as episodes accumulate. Use the left and right arrow keys to inspect learned leaves.
       </desc>
 
       {[Y_MIN, -1, 0, 1, Y_MAX].map((tick) => (
@@ -580,6 +590,16 @@ function ExperimentChart({
 
       <text className={styles.histogramTitle} x={(CHART.histogramLeft + CHART.histogramRight) / 2} y="19" textAnchor="middle">predictions at x₀</text>
       <line className={styles.histogramAxis} x1={CHART.histogramLeft} x2={CHART.histogramLeft} y1={CHART.top} y2={CHART.bottom} />
+      {historyMean !== undefined && historyStandardDeviation !== undefined && (
+        <rect
+          className={styles.standardDeviationBand}
+          data-standard-deviation={format(historyStandardDeviation)}
+          x={CHART.histogramLeft}
+          y={yScale(Math.min(Y_MAX, historyMean + historyStandardDeviation))}
+          width={CHART.histogramRight - CHART.histogramLeft}
+          height={Math.max(1, yScale(Math.max(Y_MIN, historyMean - historyStandardDeviation)) - yScale(Math.min(Y_MAX, historyMean + historyStandardDeviation)))}
+        />
+      )}
       {bins.map((bin, index) => {
         const top = yScale(bin.upper);
         const bottom = yScale(bin.lower);
@@ -619,8 +639,8 @@ function ExperimentChart({
           </text>
         </g>
       )}
-      <text className={styles.histogramCount} x={CHART.histogramLeft} y={CHART.bottom + 22}>
-        {history.length} {history.length === 1 ? "episode" : "episodes"}
+      <text className={styles.histogramCount} x={CHART.histogramRight} y={CHART.bottom + 22} textAnchor="end">
+        sd {formatSpread(historyStandardDeviation)} · n={history.length}
       </text>
 
       {predictionVisible && phase !== "transferring" && (
@@ -661,6 +681,7 @@ function VarianceExperiment({ mode }: { mode: ExperimentMode }) {
   const fitSteps = mode === "single" ? episode.treeFrames.length : treeCount;
   const prediction = mode === "single" ? episode.singlePrediction : episode.ensemblePredictions[treeCount];
   const speed = speedFromSliderPosition(speedPosition);
+  const historyStandardDeviation = predictionStandardDeviation(history);
 
   useEffect(() => {
     if (!running) return undefined;
@@ -754,6 +775,7 @@ function VarianceExperiment({ mode }: { mode: ExperimentMode }) {
       data-history-count={visibleCount}
       data-histogram-bins={adaptiveHistogramBinCount(visibleCount)}
       data-prediction-mean={predictionMean(history) === undefined ? undefined : format(predictionMean(history)!)}
+      data-prediction-standard-deviation={historyStandardDeviation === undefined ? undefined : format(historyStandardDeviation)}
       data-speed={formatSpeed(speed)}
     >
       <header className={styles.experimentHeader}>
@@ -764,9 +786,19 @@ function VarianceExperiment({ mode }: { mode: ExperimentMode }) {
 
       {mode === "ensemble" && (
         <div className={styles.treeCountControl} aria-label="Trees in each ensemble">
-          <span>Trees</span>
+          <span>Trees<br /><small>prediction sd</small></span>
           {TREE_COUNTS.map((count) => (
-            <button type="button" aria-pressed={treeCount === count} onClick={() => selectTreeCount(count)} key={count}>{count}</button>
+            <button
+              type="button"
+              aria-label={`${count} ${count === 1 ? "tree" : "trees"}, prediction standard deviation ${formatSpread(predictionStandardDeviation(ensembleHistories[count]))}`}
+              aria-pressed={treeCount === count}
+              data-tree-standard-deviation={formatSpread(predictionStandardDeviation(ensembleHistories[count]))}
+              onClick={() => selectTreeCount(count)}
+              key={count}
+            >
+              <strong>{count}</strong>
+              <small>sd {formatSpread(predictionStandardDeviation(ensembleHistories[count]))}</small>
+            </button>
           ))}
         </div>
       )}
@@ -821,10 +853,106 @@ function VarianceExperiment({ mode }: { mode: ExperimentMode }) {
       {reducedMotion && <p className={styles.motionNote}>Autoplay is off because reduced motion is enabled. Run one episode to step through the same sequence.</p>}
       <p className={styles.liveStatus} aria-live="polite">
         {phase === "committed"
-          ? `Episode ${episodeIndex + 1} added ${format(prediction, 2)}. ${visibleCount} completed ${visibleCount === 1 ? "episode" : "episodes"}; mean ${format(predictionMean(history)!, 2)}; empirical variance ${visibleCount > 1 ? format(sampleVariance(history)) : "needs two episodes"}.`
+          ? `Episode ${episodeIndex + 1} added ${format(prediction, 2)}. ${visibleCount} completed ${visibleCount === 1 ? "episode" : "episodes"}; mean ${format(predictionMean(history)!, 2)}; prediction standard deviation ${formatSpread(historyStandardDeviation)}.`
           : stage}
       </p>
     </section>
+  );
+}
+
+const COMPARISON_TREE_COUNTS = Array.from({ length: 25 }, (_, index) => index + 1);
+const COMPARISON_EPISODES = 240;
+const COMPARISON_CHART = {
+  width: 720,
+  height: 330,
+  left: 64,
+  right: 694,
+  top: 42,
+  bottom: 265,
+};
+
+export function computeStandardDeviationComparison(
+  episodeCount = COMPARISON_EPISODES,
+  treeCounts = COMPARISON_TREE_COUNTS,
+): Array<{ treeCount: number; standardDeviation: number }> {
+  const experiment = runBaggingExperiment(episodeCount, treeCounts);
+  return treeCounts.map((treeCount) => ({
+    treeCount,
+    standardDeviation: predictionStandardDeviation(experiment.distributions[treeCount]) ?? 0,
+  }));
+}
+
+export function BaggingStandardDeviationComparison() {
+  const comparison = computeStandardDeviationComparison();
+  const maximum = Math.max(...comparison.map((point) => point.standardDeviation)) * 1.08;
+  const x = (treeCount: number) => COMPARISON_CHART.left
+    + ((treeCount - 1) / (COMPARISON_TREE_COUNTS.length - 1))
+    * (COMPARISON_CHART.right - COMPARISON_CHART.left);
+  const y = (standardDeviation: number) => COMPARISON_CHART.bottom
+    - (standardDeviation / maximum) * (COMPARISON_CHART.bottom - COMPARISON_CHART.top);
+  const path = comparison.map((point, index) =>
+    `${index === 0 ? "M" : "L"}${x(point.treeCount).toFixed(2)},${y(point.standardDeviation).toFixed(2)}`,
+  ).join(" ");
+  const first = comparison[0];
+  const five = comparison[4];
+  const last = comparison[comparison.length - 1];
+  const yTicks = [0, maximum / 2, maximum];
+
+  return (
+    <figure className={styles.comparisonFigure} data-bagging-visual="standard-deviation-comparison" data-comparison-episodes={COMPARISON_EPISODES}>
+      <svg viewBox={`0 0 ${COMPARISON_CHART.width} ${COMPARISON_CHART.height}`} role="img" aria-labelledby="bagging-sd-title bagging-sd-desc">
+        <title id="bagging-sd-title">Prediction standard deviation by number of averaged trees</title>
+        <desc id="bagging-sd-desc">
+          A computed experiment of {COMPARISON_EPISODES} repeated training datasets. Prediction standard deviation
+          at x zero is {format(first.standardDeviation)} for one tree, {format(five.standardDeviation)} for five trees,
+          and {format(last.standardDeviation)} for twenty-five trees. The overall curve falls as more trees are averaged.
+        </desc>
+        <text className={styles.comparisonTitle} x={COMPARISON_CHART.left} y="22">Measured prediction spread at x₀</text>
+        {yTicks.map((tick, index) => (
+          <g key={`comparison-y-${index}`}>
+            <line className={styles.comparisonGridline} x1={COMPARISON_CHART.left} x2={COMPARISON_CHART.right} y1={y(tick)} y2={y(tick)} />
+            <text className={styles.comparisonTick} x={COMPARISON_CHART.left - 10} y={y(tick) + 5} textAnchor="end">{format(tick, 2)}</text>
+          </g>
+        ))}
+        <line className={styles.comparisonAxis} x1={COMPARISON_CHART.left} x2={COMPARISON_CHART.left} y1={COMPARISON_CHART.top} y2={COMPARISON_CHART.bottom} />
+        <line className={styles.comparisonAxis} x1={COMPARISON_CHART.left} x2={COMPARISON_CHART.right} y1={COMPARISON_CHART.bottom} y2={COMPARISON_CHART.bottom} />
+        <path className={styles.comparisonLine} d={path} />
+        {comparison.map((point) => (
+          <circle
+            className={styles.comparisonPoint}
+            data-tree-count={point.treeCount}
+            data-standard-deviation={format(point.standardDeviation)}
+            cx={x(point.treeCount)}
+            cy={y(point.standardDeviation)}
+            r={point.treeCount === 1 || point.treeCount === 5 || point.treeCount === 25 ? 5 : 2.7}
+            key={`comparison-point-${point.treeCount}`}
+          />
+        ))}
+        {[1, 5, 10, 15, 20, 25].map((tick) => (
+          <g key={`comparison-x-${tick}`}>
+            <line className={styles.comparisonAxis} x1={x(tick)} x2={x(tick)} y1={COMPARISON_CHART.bottom} y2={COMPARISON_CHART.bottom + 6} />
+            <text className={styles.comparisonTick} x={x(tick)} y={COMPARISON_CHART.bottom + 24} textAnchor="middle">{tick}</text>
+          </g>
+        ))}
+        <text className={styles.comparisonAxisLabel} x={(COMPARISON_CHART.left + COMPARISON_CHART.right) / 2} y="319" textAnchor="middle">trees averaged in each model (B)</text>
+        <text className={styles.comparisonAxisLabel} transform="rotate(-90 17 153)" x="17" y="153" textAnchor="middle">prediction standard deviation</text>
+        {[first, five, last].map((point) => (
+          <text
+            className={styles.comparisonDirectLabel}
+            x={x(point.treeCount) + (point.treeCount === 25 ? -8 : 8)}
+            y={y(point.standardDeviation) - 11}
+            textAnchor={point.treeCount === 25 ? "end" : "start"}
+            key={`comparison-label-${point.treeCount}`}
+          >
+            B={point.treeCount} · {format(point.standardDeviation)}
+          </text>
+        ))}
+      </svg>
+      <figcaption>
+        Computed from {COMPARISON_EPISODES} repeated noisy-sine datasets with the same tree learner and fixed x₀.
+        Every point uses the final prediction from a bagged model of that size.
+      </figcaption>
+    </figure>
   );
 }
 

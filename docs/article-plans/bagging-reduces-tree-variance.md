@@ -90,7 +90,7 @@ Simplifications and limits: synthetic regression, one fixed input, equal tree
 
 ## Visual and interactive plan
 
-All four visual scenes remain within the 720-pixel article measure. The two
+All five visual scenes remain within the 720-pixel article measure. The two
 computed experiments share one episode shell, axes, fixed input, data generator,
 phase language, controls, and aligned horizontal histogram.
 
@@ -115,8 +115,10 @@ keyboard inspection.
 The right-side metrics and explanatory cards from the first implementation are
 removed. Phase, curve, points, transferred prediction, and growing histogram carry
 the story directly. A dashed marker tracks the exact mean of all completed
-predictions. Histogram bins become progressively narrower with sample count while
-the plot and histogram preserve one shared y-domain.
+predictions. A shaded interval spans one empirical prediction standard deviation
+on either side of that center once two episodes exist. Histogram bins become
+progressively narrower with sample count while the plot and histogram preserve
+one shared y-domain.
 
 ### 2. Bootstrap sampling with replacement — implemented static figure
 
@@ -150,7 +152,20 @@ all five nested ensemble sizes from the same bootstrap-tree sequence, so changin
 `B` preserves a fair history instead of mixing unrelated trials. The article
 distinguishes the within-episode average settling from the across-episode
 distribution narrowing; accumulating more trials alone is not described as
-variance reduction.
+variance reduction. Each tree-count button reports its own history's standard
+deviation so the learner can compare the five spreads directly.
+
+### 5. Prediction spread across ensemble sizes — implemented computed static figure
+
+Learning question: Does the same experiment actually produce more stable
+predictions as more trees are averaged?
+
+A restrained line plot computes 240 repeated outer datasets for every integer
+`B` from 1 through 25 using the same noisy-sine generator, tree learner, bootstrap
+logic, and fixed `x_0` as the playgrounds. Each point is the empirical standard
+deviation of final ensemble predictions. The chart preserves small finite-sample
+wiggles rather than replacing the measurements with an idealized curve, while
+direct labels at 1, 5, and 25 trees expose the large overall reduction.
 
 ### Shared accessibility and truth contract
 
@@ -161,10 +176,12 @@ variance reduction.
 - Reduced motion disables autoplay and replaces travel with a stepped transfer;
   one-episode playback preserves the causal sequence.
 - Fixed seeds reproduce datasets, tree traces, bootstrap membership, exact means,
-  histogram bins, and empirical variances outside the view.
+  prediction standard deviations, histogram bins, and empirical variances outside
+  the view.
 - Browser checks cover KaTeX, episode state, the 0.25×–10× slider, high-speed
-  accumulation, running means, adaptive bins, tree-count histories, 720-pixel
-  containment, mobile overflow, and reduced motion.
+  accumulation, running means, standard-deviation bands and comparisons, adaptive
+  bins, tree-count histories, 720-pixel containment, mobile overflow, and reduced
+  motion.
 
 ## Mathematics and truth checks
 

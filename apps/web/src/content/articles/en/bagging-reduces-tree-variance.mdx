@@ -13,7 +13,7 @@ summary: Keep one input fixed, watch tree predictions move as the data changes, 
 status: draft
 readingTime: 20–25 min
 interactiveCount: 2
-staticVisualCount: 2
+staticVisualCount: 3
 difficulty: intermediate
 series: tree-based-machine-learning
 access: public
@@ -144,9 +144,11 @@ import BaggingPlayground from "../../../components/BaggingPlayground.astro";
 
   The dashed mean marker averages every completed prediction. Early observations
   can move it sharply; later observations have less influence, so the marker tends
-  to settle. Meanwhile, the histogram uses progressively narrower bins as evidence
-  accumulates. Its axis stays aligned with the prediction plot, but its growing
-  resolution reveals the distribution in more detail.
+  to settle. The shaded interval spans one empirical standard deviation on either
+  side of that mean. It is a direct measure of how far the predictions typically
+  sit from their current center. Meanwhile, the histogram uses progressively
+  narrower bins as evidence accumulates. Its axis stays aligned with the prediction
+  plot, but its growing resolution reveals the distribution in more detail.
 
   Moving $x_0$ would show how one fitted function changes across the input space.
   That is useful, but it is a different question. Model variance asks how repeated
@@ -227,7 +229,9 @@ import BaggingPlayground from "../../../components/BaggingPlayground.astro";
   number of trees, run an episode, and watch the dark average curve update as each
   bootstrap tree joins it. Only the final ensemble prediction moves into the
   histogram. Because histories for every value of $B$ reuse the same episode
-  datasets, you can change the tree count without changing the comparison.
+  datasets, you can change the tree count without changing the comparison. Every
+  tree-count button reports the standard deviation of its own prediction history,
+  so you can compare spreads without resetting or mixing the evidence.
 </article>
 
 <div className="interactive-breakout article-interactive bagging-interactive">
@@ -242,7 +246,24 @@ import BaggingPlayground from "../../../components/BaggingPlayground.astro";
   Do not confuse the histogram becoming fuller with variance reduction. More
   episodes only reveal a distribution more clearly. The evidence for lower
   variance is that the ensemble's completed predictions occupy a narrower range
-  on the same fixed scale.
+  on the same fixed scale—and therefore have a smaller standard deviation. At
+  $10\times$ speed, let roughly one hundred episodes accumulate, then compare the
+  values beneath the tree counts. The histories share outer datasets, so the
+  comparison changes only how many bootstrap-tree predictions are averaged inside
+  each model.
+
+  The live values will move while evidence accumulates. The fixed graph below runs
+  the same experiment for 240 outer datasets and every ensemble size from one to
+  twenty-five trees. These are computed model predictions, not an ideal $1/\sqrt B$
+  curve and not hand-authored values.
+
+  <BaggingPlayground kind="comparison" />
+
+  The overall decline is the empirical result we needed to see: on this noisy-sine
+  problem, larger bagged models produce a tighter distribution of predictions at
+  the fixed $x_0$. Small local wiggles can remain because this is a finite experiment
+  and the bootstrap trees are not independent. The simplified mathematics below
+  gives the benchmark for the idealized independent case.
 
   <p className="lesson-stage">The mathematical benchmark</p>
   <h2 id="variance-derivation">Why does averaging shrink variance?</h2>

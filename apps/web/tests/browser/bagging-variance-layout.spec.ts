@@ -11,11 +11,12 @@ test("the revised article uses two matched experiments and places static explana
   })).toBeVisible();
 
   const visuals = page.locator("[data-bagging-visual]");
-  await expect(visuals).toHaveCount(4);
+  await expect(visuals).toHaveCount(5);
   await expect(page.locator('[data-bagging-visual="variance"]')).toHaveCount(1);
   await expect(page.locator('[data-bagging-visual="ensemble"]')).toHaveCount(1);
   await expect(page.getByRole("img", { name: "Sampling six observations with replacement" })).toBeVisible();
   await expect(page.getByRole("img", { name: "Three tree predictions become one ensemble prediction" })).toBeVisible();
+  await expect(page.getByRole("img", { name: "Prediction standard deviation by number of averaged trees" })).toBeVisible();
 
   const overviewFollowsBagging = await page.evaluate(() => {
     const heading = document.querySelector("#bagging");
@@ -66,6 +67,7 @@ test("one-tree episodes learn, predict, and feed the histogram", async ({ page }
   const firstMean = await experiment.getAttribute("data-prediction-mean");
   expect(Number.isFinite(Number(firstMean))).toBe(true);
   await expect(experiment.locator("[data-running-mean]")).toHaveAttribute("data-running-mean", firstMean!);
+  await expect(experiment).not.toHaveAttribute("data-prediction-standard-deviation", /.+/);
 
   await experiment.getByRole("button", { name: "Show data process" }).click();
   await expect(experiment.locator("[data-process-layer]")).toBeVisible();
@@ -95,6 +97,8 @@ test("one-tree episodes learn, predict, and feed the histogram", async ({ page }
   expect(adaptiveBins).toBeGreaterThan(10);
   await expect(experiment.locator("[data-histogram-bin]")).toHaveCount(adaptiveBins);
   expect(Number.isFinite(Number(await experiment.getAttribute("data-prediction-mean")))).toBe(true);
+  expect(Number.isFinite(Number(await experiment.getAttribute("data-prediction-standard-deviation")))).toBe(true);
+  await expect(experiment.locator("[data-standard-deviation]")).toHaveCount(1);
   await page.waitForTimeout(500);
   await expect(experiment).toHaveAttribute("data-history-count", pausedCount!);
 });
@@ -102,19 +106,55 @@ test("one-tree episodes learn, predict, and feed the histogram", async ({ page }
 test("the bagged experiment keeps fair histories for each selected tree count", async ({ page }) => {
   await page.goto(articlePath);
   const experiment = page.locator('[data-bagging-visual="ensemble"]');
+  await expect.poll(() => experiment.evaluate((element) =>
+    element.closest("astro-island")?.hasAttribute("ssr") ?? false,
+  )).toBe(false);
 
-  await experiment.getByRole("button", { name: "2", exact: true }).click();
+  await experiment.getByRole("button", { name: /^2 trees,/ }).click();
   await expect(experiment).toHaveAttribute("data-tree-count", "2");
   await experiment.getByRole("button", { name: "Run one episode" }).click();
   await expect(experiment).toHaveAttribute("data-phase", "committed", { timeout: 7_000 });
   await expect(experiment).toHaveAttribute("data-history-count", "1");
 
-  await experiment.getByRole("button", { name: "5", exact: true }).click();
+  await experiment.getByRole("button", { name: /^5 trees,/ }).click();
   await expect(experiment).toHaveAttribute("data-tree-count", "5");
   await expect(experiment).toHaveAttribute("data-history-count", "1");
-  await experiment.getByRole("button", { name: "25", exact: true }).click();
+  await experiment.getByRole("button", { name: /^25 trees,/ }).click();
   await expect(experiment).toHaveAttribute("data-tree-count", "25");
   await expect(experiment).toHaveAttribute("data-history-count", "1");
+
+  const speedSlider = experiment.getByRole("slider", { name: "Episode speed" });
+  await speedSlider.evaluate((element) => {
+    const input = element as HTMLInputElement;
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, "100");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  await experiment.getByRole("button", { name: "Play" }).click();
+  await expect.poll(async () => Number(await experiment.getAttribute("data-history-count")), {
+    timeout: 5_000,
+  }).toBeGreaterThanOrEqual(25);
+  await experiment.getByRole("button", { name: "Pause" }).click();
+
+  const oneTreeSd = Number(await experiment.getByRole("button", { name: /^1 tree,/ }).getAttribute("data-tree-standard-deviation"));
+  const twentyFiveTreeSd = Number(await experiment.getByRole("button", { name: /^25 trees,/ }).getAttribute("data-tree-standard-deviation"));
+  expect(Number.isFinite(oneTreeSd)).toBe(true);
+  expect(Number.isFinite(twentyFiveTreeSd)).toBe(true);
+  expect(twentyFiveTreeSd).toBeLessThan(oneTreeSd);
+});
+
+test("the static comparison uses computed predictions and shows lower spread for larger ensembles", async ({ page }) => {
+  await page.goto(articlePath);
+  const comparison = page.locator('[data-bagging-visual="standard-deviation-comparison"]');
+
+  await expect(comparison).toHaveAttribute("data-comparison-episodes", "240");
+  const points = comparison.locator("[data-tree-count][data-standard-deviation]");
+  await expect(points).toHaveCount(25);
+  const first = Number(await comparison.locator('[data-tree-count="1"]').getAttribute("data-standard-deviation"));
+  const last = Number(await comparison.locator('[data-tree-count="25"]').getAttribute("data-standard-deviation"));
+  expect(Number.isFinite(first)).toBe(true);
+  expect(Number.isFinite(last)).toBe(true);
+  expect(last).toBeLessThan(first);
 });
 
 test("both experiments stay within the article measure on desktop and mobile", async ({ page }) => {
