@@ -524,6 +524,11 @@
   text-align: center;
 }
 
+.localizedCaptionDetail {
+  display: block;
+  margin-top: 2px;
+}
+
 .learningCheckpointGuide {
   display: grid;
   gap: 3px;
@@ -1118,6 +1123,10 @@
   grid-template-columns: repeat(3, 1fr);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
+}
+
+.trafficLearningLab[data-locale="pt-BR"] .trafficLearningMetrics {
+  grid-template-columns: 0.75fr 1.6fr 0.65fr;
 }
 
 .trafficLearningLab .learningStage {

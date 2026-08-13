@@ -21,6 +21,7 @@ import {
   type Position,
 } from "./checkpointMdp";
 import type { RewardMode, Trainer } from "./engine";
+import { isPt, type RhLocale } from "./shared";
 
 const MAX_TRAINING_EPISODES = 5_000;
 const TRAINING_TICK_MS = 80;
@@ -49,8 +50,8 @@ interface PolicyFrame {
   event: CheckpointEvent;
 }
 
-function compactReward(value: number) {
-  return value.toLocaleString("en-US", {
+function compactReward(value: number, locale: RhLocale = "en") {
+  return value.toLocaleString(locale === "pt-BR" ? "pt-BR" : "en-US", {
     maximumFractionDigits: 2,
     minimumFractionDigits: 0,
   });
@@ -138,10 +139,13 @@ function routeValueMap(
 function RewardHistory({
   samples,
   rewardMode,
+  locale,
 }: {
   samples: LearningSample[];
   rewardMode: RewardMode;
+  locale: RhLocale;
 }) {
+  const pt = isPt(locale);
   const width = 260;
   const height = 112;
   const inset = { top: 12, right: 10, bottom: 24, left: 34 };
@@ -167,13 +171,13 @@ function RewardHistory({
   return (
     <figure className={styles.learningChart}>
       <div className={styles.learningChartHeading}>
-        <strong>Reward over training</strong>
+        <strong>{pt ? "Recompensa durante o treino" : "Reward over training"}</strong>
         <span
           className={
             rewardMode === "aligned" ? styles.learningChartValueAligned : ""
           }
         >
-          {latest ? compactReward(latest.evaluation.reward) : "—"}
+          {latest ? compactReward(latest.evaluation.reward, locale) : "—"}
         </span>
       </div>
       <svg
@@ -181,8 +185,12 @@ function RewardHistory({
         role="img"
         aria-label={
           latest
-            ? `Greedy policy reward is ${compactReward(latest.evaluation.reward)} after ${latest.episode.toLocaleString("en-US")} episodes.`
-            : "No reward history yet."
+            ? pt
+              ? `A recompensa da política gulosa é ${compactReward(latest.evaluation.reward, locale)} após ${latest.episode.toLocaleString("pt-BR")} episódios.`
+              : `Greedy policy reward is ${compactReward(latest.evaluation.reward)} after ${latest.episode.toLocaleString("en-US")} episodes.`
+            : pt
+              ? "Ainda não há histórico de recompensa."
+              : "No reward history yet."
         }
       >
         <line
@@ -226,7 +234,7 @@ function RewardHistory({
           y={height - 6}
           textAnchor="end"
         >
-          {domainMaximum.toLocaleString("en-US")} episodes
+          {domainMaximum.toLocaleString(pt ? "pt-BR" : "en-US")} {pt ? "episódios" : "episodes"}
         </text>
         <text
           className={styles.chartLabel}
@@ -245,7 +253,11 @@ function RewardHistory({
           {Math.floor(minimum)}
         </text>
       </svg>
-      <figcaption>Current greedy-policy reward, sampled every 25 episodes.</figcaption>
+      <figcaption>
+        {pt
+          ? "Recompensa atual da política gulosa, amostrada a cada 25 episódios."
+          : "Current greedy-policy reward, sampled every 25 episodes."}
+      </figcaption>
     </figure>
   );
 }
@@ -267,10 +279,14 @@ function policyIsOptimal(
 
 function CheckpointLearningPlayground({
   rewardMode,
+  locale,
 }: {
   rewardMode: RewardMode;
+  locale: RhLocale;
 }) {
   const aligned = rewardMode === "aligned";
+  const pt = isPt(locale);
+  const numberLocale = pt ? "pt-BR" : "en-US";
   const [checkpoints, setCheckpoints] = useState<Position[]>(() =>
     CHECKPOINT_LAYOUT.checkpoints.map((checkpoint) => ({ ...checkpoint })),
   );
@@ -681,51 +697,87 @@ function CheckpointLearningPlayground({
 
   const status =
     mode === "idle"
-      ? "Ready to learn"
+      ? pt
+        ? "Pronto para aprender"
+        : "Ready to learn"
       : mode === "training"
-        ? "Exploring and updating Q-values…"
+        ? pt
+          ? "Explorando e atualizando os valores Q…"
+          : "Exploring and updating Q-values…"
         : mode === "paused"
-          ? `Paused after ${episodes.toLocaleString("en-US")} episodes`
+          ? pt
+            ? `Pausado após ${episodes.toLocaleString(numberLocale)} episódios`
+            : `Paused after ${episodes.toLocaleString(numberLocale)} episodes`
           : mode === "replaying"
-            ? `Running learned policy · step ${playbackStep} of ${policyFrames.length}`
+            ? pt
+              ? `Executando a política aprendida · passo ${playbackStep} de ${policyFrames.length}`
+              : `Running learned policy · step ${playbackStep} of ${policyFrames.length}`
             : mode === "limit"
-              ? "Training limit reached"
+              ? pt
+                ? "Limite de treino atingido"
+                : "Training limit reached"
               : aligned
-                ? "Optimal route found"
-                : "Optimal reward policy found";
+                ? pt
+                  ? "Rota ótima encontrada"
+                  : "Optimal route found"
+                : pt
+                  ? "Política de recompensa ótima encontrada"
+                  : "Optimal reward policy found";
 
   const eventText =
     mode === "training" && trainingStep
-      ? `Episode ${trainingStep.episode.toLocaleString("en-US")}, step ${trainingStep.step}: ${
-          trainingStep.exploring ? "explored" : "followed current values"
-        } ${CHECKPOINT_ACTIONS[trainingStep.action].label}. Q changed from ${trainingStep.qBefore.toFixed(2)} to ${trainingStep.qAfter.toFixed(2)}.`
+      ? pt
+        ? `Episódio ${trainingStep.episode.toLocaleString(numberLocale)}, passo ${trainingStep.step}: ${
+            trainingStep.exploring ? "explorou" : "seguiu os valores atuais"
+          } na direção ${CHECKPOINT_ACTIONS[trainingStep.action].label}. Q mudou de ${trainingStep.qBefore.toFixed(2).replace(".", ",")} para ${trainingStep.qAfter.toFixed(2).replace(".", ",")}.`
+        : `Episode ${trainingStep.episode.toLocaleString(numberLocale)}, step ${trainingStep.step}: ${
+            trainingStep.exploring ? "explored" : "followed current values"
+          } ${CHECKPOINT_ACTIONS[trainingStep.action].label}. Q changed from ${trainingStep.qBefore.toFixed(2)} to ${trainingStep.qAfter.toFixed(2)}.`
       : mode === "replaying" && replayFrame
-        ? `Step ${playbackStep} of ${policyFrames.length}: chose ${CHECKPOINT_ACTIONS[replayFrame.action].label}.`
+        ? pt
+          ? `Passo ${playbackStep} de ${policyFrames.length}: escolheu ${CHECKPOINT_ACTIONS[replayFrame.action].label}.`
+          : `Step ${playbackStep} of ${policyFrames.length}: chose ${CHECKPOINT_ACTIONS[replayFrame.action].label}.`
         : mode === "complete" && evaluation
           ? aligned
-            ? `Shortest ordered lap: ${evaluation.steps} steps.`
-            : `Repeated a visited checkpoint ${evaluation.repeatedEntries} times and completed 0 laps.`
+            ? pt
+              ? `Volta ordenada mais curta: ${evaluation.steps} passos.`
+              : `Shortest ordered lap: ${evaluation.steps} steps.`
+            : pt
+              ? `Reentrou em um checkpoint já visitado ${evaluation.repeatedEntries} vezes e completou 0 voltas.`
+              : `Repeated a visited checkpoint ${evaluation.repeatedEntries} times and completed 0 laps.`
           : mode === "limit"
-            ? `Stopped after ${MAX_TRAINING_EPISODES.toLocaleString("en-US")} episodes without a stable optimum.`
-            : "Start learning to watch exploration, Q-values, and the greedy route change.";
+            ? pt
+              ? `O treino parou após ${MAX_TRAINING_EPISODES.toLocaleString(numberLocale)} episódios sem encontrar um ótimo estável.`
+              : `Stopped after ${MAX_TRAINING_EPISODES.toLocaleString(numberLocale)} episodes without a stable optimum.`
+            : pt
+              ? "Inicie o aprendizado para observar a exploração, os valores Q e as mudanças na rota gulosa."
+              : "Start learning to watch exploration, Q-values, and the greedy route change.";
 
   return (
     <section
       className={`${styles.lab} ${styles.learningLab}`}
-      aria-label={`Checkpoint ${aligned ? "aligned" : "proxy"}-reward learning playground`}
+      aria-label={
+        pt
+          ? `Playground de aprendizado com recompensa ${aligned ? "alinhada" : "proxy"} nos checkpoints`
+          : `Checkpoint ${aligned ? "aligned" : "proxy"}-reward learning playground`
+      }
       data-training-model="live-q-learning"
     >
       <header className={styles.learningHeader}>
         <div>
           <p className={styles.kicker}>GridWorld · MDP 1</p>
-          <h3>What route will this reward teach?</h3>
+          <h3>{pt ? "Qual rota esta recompensa vai ensinar?" : "What route will this reward teach?"}</h3>
         </div>
         <p className={styles.learningReward}>
-          Reward seen by the agent
+          {pt ? "Recompensa vista pelo agente" : "Reward seen by the agent"}
           <strong>
             {aligned
-              ? "+1 next checkpoint · +10 completed lap"
-              : "+1 when entering any checkpoint"}
+              ? pt
+                ? "+1 próximo checkpoint · +10 volta completa"
+                : "+1 next checkpoint · +10 completed lap"
+              : pt
+                ? "+1 ao entrar em qualquer checkpoint"
+                : "+1 when entering any checkpoint"}
           </strong>
         </p>
       </header>
@@ -736,9 +788,15 @@ function CheckpointLearningPlayground({
             <p>
               {valuesVisible
                 ? qValueView.route.size > 0
-                  ? `Min–max Q-values · ${qValueView.route.size} route actions`
-                  : "No learned route values yet."
-                : "Learned route Q-values are hidden."}
+                  ? pt
+                    ? `Valores Q mín.–máx. · ${qValueView.route.size} ações da rota`
+                    : `Min–max Q-values · ${qValueView.route.size} route actions`
+                  : pt
+                    ? "Ainda não há valores aprendidos para a rota."
+                    : "No learned route values yet."
+                : pt
+                  ? "Os valores Q aprendidos para a rota estão ocultos."
+                  : "Learned route Q-values are hidden."}
             </p>
             <button
               type="button"
@@ -747,7 +805,13 @@ function CheckpointLearningPlayground({
               onClick={() => setValuesVisible((visible) => !visible)}
               disabled={mode === "replaying"}
             >
-              {valuesVisible ? "Hide route values" : "Show route values"}
+              {valuesVisible
+                ? pt
+                  ? "Ocultar valores da rota"
+                  : "Hide route values"
+                : pt
+                  ? "Mostrar valores da rota"
+                  : "Show route values"}
             </button>
           </div>
           <div
@@ -755,7 +819,11 @@ function CheckpointLearningPlayground({
               valuesVisible ? styles.learningBoardValues : ""
             }`}
             role="grid"
-            aria-label={`Seven by seven checkpoint track with movable checkpoints during ${aligned ? "aligned" : "proxy"}-reward learning`}
+            aria-label={
+              pt
+                ? `Pista de checkpoints sete por sete com checkpoints móveis durante o aprendizado com recompensa ${aligned ? "alinhada" : "proxy"}`
+                : `Seven by seven checkpoint track with movable checkpoints during ${aligned ? "aligned" : "proxy"}-reward learning`
+            }
           >
             {Array.from({ length: environment.height }, (_, y) =>
               Array.from({ length: environment.width }, (_, x) => {
@@ -793,10 +861,16 @@ function CheckpointLearningPlayground({
                     role="gridcell"
                     aria-label={
                       isWall
-                        ? `Wall at column ${x + 1}, row ${y + 1}`
+                        ? pt
+                          ? `Parede na coluna ${x + 1}, linha ${y + 1}`
+                          : `Wall at column ${x + 1}, row ${y + 1}`
                         : label
-                          ? `${label} at column ${x + 1}, row ${y + 1}`
-                          : `Open cell at column ${x + 1}, row ${y + 1}`
+                          ? pt
+                            ? `${label} na coluna ${x + 1}, linha ${y + 1}`
+                            : `${label} at column ${x + 1}, row ${y + 1}`
+                          : pt
+                            ? `Célula livre na coluna ${x + 1}, linha ${y + 1}`
+                            : `Open cell at column ${x + 1}, row ${y + 1}`
                     }
                     data-grid-position={key}
                     onClick={() => placeSelectedCheckpoint(position)}
@@ -807,7 +881,11 @@ function CheckpointLearningPlayground({
                         <button
                           type="button"
                           className={`${styles.optimalCellLabel} ${styles.learningCheckpointHandle}`}
-                          aria-label={`Move checkpoint ${label}. Drag it, tap it then an open cell, or use the arrow keys.`}
+                          aria-label={
+                            pt
+                              ? `Mover o checkpoint ${label}. Arraste-o, toque nele e depois em uma célula livre, ou use as setas do teclado.`
+                              : `Move checkpoint ${label}. Drag it, tap it then an open cell, or use the arrow keys.`
+                          }
                           aria-keyshortcuts="ArrowUp ArrowRight ArrowDown ArrowLeft"
                           aria-pressed={selectedCheckpoint === checkpointIndex}
                           onClick={(event) =>
@@ -896,46 +974,50 @@ function CheckpointLearningPlayground({
             )}
           </div>
           <p className={styles.learningBoardCaption}>
-            Intended: S → C1 → C2 → C3 → C4 → S
+            {pt ? "Ordem pretendida" : "Intended"}: S → C1 → C2 → C3 → C4 → S
           </p>
           <aside className={styles.learningCheckpointGuide}>
-            <strong>Try changing the route</strong>
+            <strong>{pt ? "Experimente mudar a rota" : "Try changing the route"}</strong>
             <span>
-              Drag any checkpoint—or tap it, then an open cell. Learning resets
-              automatically so you can watch the model adapt to the new
-              positions.
+              {pt
+                ? "Arraste qualquer checkpoint — ou toque nele e depois em uma célula livre. O aprendizado reinicia automaticamente para você observar como o modelo se adapta às novas posições."
+                : "Drag any checkpoint—or tap it, then an open cell. Learning resets automatically so you can watch the model adapt to the new positions."}
             </span>
           </aside>
         </div>
 
         <aside
           className={styles.learningPanel}
-          aria-label="Learning controls and progress"
+          aria-label={pt ? "Controles e progresso do aprendizado" : "Learning controls and progress"}
         >
           <div className={styles.learningStatus} aria-live="polite">
             <span>{status}</span>
-            <strong>{episodes.toLocaleString("en-US")} episodes</strong>
+            <strong>{episodes.toLocaleString(numberLocale)} {pt ? "episódios" : "episodes"}</strong>
           </div>
 
           <div className={styles.learningMetrics}>
             <div>
-              <span>Exploration ε</span>
-              <strong>{currentEpsilon.toFixed(2)}</strong>
+              <span>{pt ? "Exploração ε" : "Exploration ε"}</span>
+              <strong>{pt ? currentEpsilon.toFixed(2).replace(".", ",") : currentEpsilon.toFixed(2)}</strong>
             </div>
             <div>
-              <span>Greedy reward</span>
+              <span>{pt ? "Recompensa gulosa" : "Greedy reward"}</span>
               <strong>
-                {evaluation ? compactReward(evaluation.reward) : "—"}
+                {evaluation ? compactReward(evaluation.reward, locale) : "—"}
               </strong>
             </div>
             <div>
-              <span>Lap completed?</span>
+              <span>{pt ? "Completou a volta?" : "Lap completed?"}</span>
               <strong>
-                {evaluation ? (evaluation.completedLap ? "Yes" : "No") : "—"}
+                {evaluation
+                  ? evaluation.completedLap
+                    ? pt ? "Sim" : "Yes"
+                    : pt ? "Não" : "No"
+                  : "—"}
               </strong>
             </div>
             <div>
-              <span>Repeated entries</span>
+              <span>{pt ? "Reentradas" : "Repeated entries"}</span>
               <strong>{evaluation?.repeatedEntries ?? "—"}</strong>
             </div>
           </div>
@@ -944,13 +1026,13 @@ function CheckpointLearningPlayground({
             {eventText}
           </p>
 
-          <RewardHistory samples={samples} rewardMode={rewardMode} />
+          <RewardHistory samples={samples} rewardMode={rewardMode} locale={locale} />
 
           <div className={styles.learningControls}>
             <label className={styles.learningSpeedSlider}>
               <span>
-                Training speed
-                <output>{speed} episodes/s</output>
+                {pt ? "Velocidade do treino" : "Training speed"}
+                <output>{speed} {pt ? "episódios/s" : "episodes/s"}</output>
               </span>
               <input
                 type="range"
@@ -969,12 +1051,12 @@ function CheckpointLearningPlayground({
               disabled={mode === "replaying"}
             >
               {mode === "training"
-                ? "Pause training"
+                ? pt ? "Pausar treino" : "Pause training"
                 : mode === "paused"
-                  ? "Continue training"
+                  ? pt ? "Continuar treino" : "Continue training"
                   : mode === "complete" || mode === "limit"
-                    ? "Train again"
-                    : "Train until optimal"}
+                    ? pt ? "Treinar novamente" : "Train again"
+                    : pt ? "Treinar até o ótimo" : "Train until optimal"}
             </button>
             <button
               type="button"
@@ -987,7 +1069,7 @@ function CheckpointLearningPlayground({
                 mode === "idle"
               }
             >
-              Run learned agent
+              {pt ? "Executar agente treinado" : "Run learned agent"}
             </button>
             <button
               type="button"
@@ -995,7 +1077,7 @@ function CheckpointLearningPlayground({
               onClick={() => resetExperience()}
               disabled={mode === "replaying"}
             >
-              Reset learning
+              {pt ? "Reiniciar aprendizado" : "Reset learning"}
             </button>
           </div>
         </aside>
@@ -1004,32 +1086,52 @@ function CheckpointLearningPlayground({
       <p className={styles.learningTakeaway}>
         {mode === "complete" && evaluation ? (
           aligned ? (
-            <>
-              The agent explored before converging. Its greedy policy now earns{" "}
-              <strong>{compactReward(evaluation.reward)}</strong> and completes
-              the shortest ordered lap in{" "}
-              <strong>{evaluation.steps} steps</strong>.
-            </>
+            pt ? (
+              <>
+                O agente explorou antes de convergir. Sua política gulosa agora
+                obtém <strong>{compactReward(evaluation.reward, locale)}</strong> e
+                completa a volta ordenada mais curta em{" "}
+                <strong>{evaluation.steps} passos</strong>.
+              </>
+            ) : (
+              <>
+                The agent explored before converging. Its greedy policy now earns{" "}
+                <strong>{compactReward(evaluation.reward, locale)}</strong> and completes
+                the shortest ordered lap in{" "}
+                <strong>{evaluation.steps} steps</strong>.
+              </>
+            )
           ) : (
-            <>
-              The agent explored before converging. Reward rose to{" "}
-              <strong>{compactReward(evaluation.reward)}</strong>, but the
-              greedy policy completed <strong>0 laps</strong> and learned to
-              re-enter C1.
-            </>
+            pt ? (
+              <>
+                O agente explorou antes de convergir. A recompensa subiu para{" "}
+                <strong>{compactReward(evaluation.reward, locale)}</strong>, mas a
+                política gulosa completou <strong>0 voltas</strong> e aprendeu a
+                reentrar em C1.
+              </>
+            ) : (
+              <>
+                The agent explored before converging. Reward rose to{" "}
+                <strong>{compactReward(evaluation.reward, locale)}</strong>, but the
+                greedy policy completed <strong>0 laps</strong> and learned to
+                re-enter C1.
+              </>
+            )
           )
         ) : (
-          "Watch exploratory actions update the Q-values, then compare rising reward with lap completion."
+          pt
+            ? "Observe as ações exploratórias atualizarem os valores Q e depois compare o aumento da recompensa com a conclusão da volta."
+            : "Watch exploratory actions update the Q-values, then compare rising reward with lap completion."
         )}
       </p>
     </section>
   );
 }
 
-export function CheckpointProxyPlayground() {
-  return <CheckpointLearningPlayground rewardMode="proxy" />;
+export function CheckpointProxyPlayground({ locale = "en" }: { locale?: RhLocale }) {
+  return <CheckpointLearningPlayground rewardMode="proxy" locale={locale} />;
 }
 
-export function CheckpointAlignedPlayground() {
-  return <CheckpointLearningPlayground rewardMode="aligned" />;
+export function CheckpointAlignedPlayground({ locale = "en" }: { locale?: RhLocale }) {
+  return <CheckpointLearningPlayground rewardMode="aligned" locale={locale} />;
 }
