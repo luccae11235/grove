@@ -50,6 +50,28 @@ test("math renders once with KaTeX and remains contained", async ({ page }) => {
   expect(styles.mathmlWidth).toBe("1px");
   expect(styles.mathmlHeight).toBe("1px");
   expect(styles.mathmlOverflow).toBe("hidden");
+
+  const notationGeometry = await page.locator(".katex-display").evaluateAll((equations) => {
+    const equationFor = (source: string) => equations.find((equation) =>
+      equation.querySelector("annotation")?.textContent?.includes(source),
+    );
+    const derivation = equationFor("\\begin{aligned}");
+    const boxedResult = equationFor("\\boxed{");
+    const accentBody = derivation?.querySelector<HTMLElement>(".accent-body");
+    const box = boxedResult?.querySelector<HTMLElement>(".fbox");
+    if (!accentBody || !box) throw new Error("Expected the overbar and boxed-result geometry.");
+
+    return {
+      accentPosition: getComputedStyle(accentBody).position,
+      accentWidth: accentBody.getBoundingClientRect().width,
+      boxWidth: box.getBoundingClientRect().width,
+      boxHeight: box.getBoundingClientRect().height,
+    };
+  });
+  expect(notationGeometry.accentPosition).toBe("relative");
+  expect(notationGeometry.accentWidth).toBeLessThan(1);
+  expect(notationGeometry.boxWidth).toBeGreaterThan(150);
+  expect(notationGeometry.boxHeight).toBeGreaterThan(30);
 });
 
 test("one-tree episodes learn, predict, and feed the histogram", async ({ page }) => {
