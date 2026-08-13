@@ -34,26 +34,6 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
-- [ ] **Draft the bagging variance article — issue #120**
-  - Motivate instability through a fictitious hospital whose unchanged patient
-    record receives different risk estimates after scheduled model retraining;
-    use the sine curve only as the controlled laboratory for that problem.
-  - Use one noisy sine-curve regression example and one fixed input to make
-    pointwise model variance, bootstrap sampling, and averaging visible.
-  - Two matched computed experiments show the single-tree and bagged-ensemble
-    episodes; three restrained static visuals explain replacement, averaging,
-    and measured prediction spread across ensemble sizes.
-  - Deterministic tests and desktop/mobile interaction coverage keep the episode
-    calculations, 0.25×–10× playback, running means, prediction standard deviations,
-    adaptive aligned histograms, responsive layout, and math rendering honest.
-  - Keep the article in draft through its pull request into `develop`; do not
-    publish it before 2026-08-26 or couple it to this week's article release.
-  - Explain the observed variance floor intuitively as uncertainty shared through
-    the original dataset; reserve its covariance formula, random-forest feature
-    sampling, and boosting for later articles.
-  - Completion check: the editorial draft and its accessible visual evidence
-    pass the full repository gate and the exact revision is reviewed in staging.
-
 - [ ] **Draft and test Issue 002 about classification and regression trees — issue #92**
   - Keep the newsletter issue in draft while reviewing its web, HTML email,
     and plain-text forms.
@@ -210,6 +190,17 @@ references for longer-term editorial direction.
     production verification passed on `8b2b127` and `891b7da`, respectively.
 
 ### Publishing and content
+
+- [x] **Draft the bagging variance article — issue #120** — 2026-08-13
+  - Used one fixed patient question and a noisy sine-curve laboratory to explain
+    pointwise model variance, bootstrap sampling, aggregation, and the correlated-tree floor.
+  - Added two computed experiments and three restrained visuals with accessible,
+    responsive, keyboard, and reduced-motion behavior.
+  - Incorporated beta-reader feedback and kept draft-only browser checks active in
+    staging while published-only builds continue to exclude the article.
+  - Completion check: the full local and GitHub gates passed; staging verification
+    run `31752958060` confirmed exact revision `e79a0bec9a2d669911eb040e150af1376dfde0ed`,
+    and production continued to return 404 for the draft route.
 
 - [x] **Establish the weekly article publishing guideline — issue #121** — 2026-08-13
   - Separated draft intake into `develop`/staging from the Friday publication
