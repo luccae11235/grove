@@ -181,6 +181,15 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Establish the weekly article publishing guideline — issue #121** — 2026-08-13
+  - Separated draft intake into `develop`/staging from the Friday publication
+    of exactly one queued article.
+  - Made website promotion, provider-draft review, inbox testing, subscriber
+    delivery, and reporting explicit checklist gates.
+  - Preserved separate approval for production deployment and newsletter send.
+  - Completion check: the short writer-facing guide matches the repository's
+    real workflows, and the full local and GitHub checks passed.
+
 - [x] **Translate the article library to Brazilian Portuguese — issue #112** — 2026-08-10
   - Added a complete Portuguese homepage and about page, plus reviewed `pt-BR`
     versions of both published articles while preserving their English counterparts.
