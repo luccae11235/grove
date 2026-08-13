@@ -1,0 +1,4 @@
+interface:
+  display_name: "Beta Reader"
+  short_description: "Simulate fresh-eye feedback from bounded readers"
+  default_prompt: "Use $beta-reader to review this article draft with a small, varied panel of fresh-eye readers."
