@@ -29,6 +29,28 @@ test("the revised article uses two matched experiments and places static explana
     name: "Can you diagnose stability from a new chart?",
   })).toHaveCount(0);
 
+  const toyExampleFollowsItsIntroduction = await page.evaluate(() => {
+    const sectionText = (heading: Element | null) => {
+      const parts: string[] = [];
+      let current = heading?.nextElementSibling;
+      while (current && current.tagName !== "H2") {
+        parts.push(current.textContent ?? "");
+        current = current.nextElementSibling;
+      }
+      return parts.join(" ");
+    };
+    const opening = sectionText(document.querySelector("#same-question-different-tree"));
+    const modelVariance = sectionText(document.querySelector("#model-variance"));
+    return Boolean(
+      opening
+      && modelVariance
+      && !opening.includes("sine curve")
+      && modelVariance.includes("simple toy example")
+      && modelVariance.includes("sine curve"),
+    );
+  });
+  expect(toyExampleFollowsItsIntroduction).toBe(true);
+
   const visuals = page.locator("[data-bagging-visual]");
   await expect(visuals).toHaveCount(5);
   await expect(page.locator('[data-bagging-visual="variance"]')).toHaveCount(1);

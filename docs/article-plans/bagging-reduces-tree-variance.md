@@ -60,9 +60,10 @@ Simplifications and limits: synthetic regression, one fixed input, equal tree
   estimates from scheduled retrainings of the same fictitious hospital model.
 - State why instability matters before introducing terminology. Do not present a
   single decision tree as a medical deployment recommendation.
-- Treat the sine process as a controlled laboratory where alternate training
-  datasets can be generated and the fitted tree can be watched. Explicitly map
-  the fixed input back to the unchanged patient record once, then retire the analogy.
+- Introduce the sine process only in the model-variance section, as a controlled
+  toy laboratory where alternate training datasets can be generated and the fitted
+  tree can be watched. Keep the hospital analogy active at the major conceptual
+  turns: fixed input, bootstrap cohorts, averaging, shared uncertainty, and conclusion.
 - Preserve the article's section order, five visual scenes, two experiment shells,
   computed results, notation, and mathematical derivation.
 - Make each transition answer pressure created by the preceding section: observe
