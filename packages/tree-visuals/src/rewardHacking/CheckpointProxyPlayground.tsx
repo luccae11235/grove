@@ -897,11 +897,15 @@ function CheckpointLearningPlayground({
           </div>
           <p className={styles.learningBoardCaption}>
             Intended: S → C1 → C2 → C3 → C4 → S
-            <span>
-              Drag a checkpoint—or tap it, then an open cell. Moving it resets
-              learning.
-            </span>
           </p>
+          <aside className={styles.learningCheckpointGuide}>
+            <strong>Try changing the route</strong>
+            <span>
+              Drag any checkpoint—or tap it, then an open cell. Learning resets
+              automatically so you can watch the model adapt to the new
+              positions.
+            </span>
+          </aside>
         </div>
 
         <aside
