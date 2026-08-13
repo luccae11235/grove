@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import styles from "./RewardHacking.module.css";
+import { isPt, type RhLocale } from "./shared";
 import {
   CHECKPOINT_LAYOUT,
   createEnvironment,
@@ -9,7 +10,12 @@ import {
 
 const PLAYBACK_MS = 240;
 
-export function OptimalCheckpointTrajectory() {
+export function OptimalCheckpointTrajectory({
+  locale = "en",
+}: {
+  locale?: RhLocale;
+}) {
+  const pt = isPt(locale);
   const environment = useMemo(
     () => createEnvironment({ ...CHECKPOINT_LAYOUT }),
     [],
@@ -49,12 +55,20 @@ export function OptimalCheckpointTrajectory() {
     }) + 1;
 
   const status = completed
-    ? `Lap complete · C1 → C2 → C3 → C4 → S in ${trajectory.length - 1} steps.`
+    ? pt
+      ? `Volta completa · C1 → C2 → C3 → C4 → S em ${trajectory.length - 1} passos.`
+      : `Lap complete · C1 → C2 → C3 → C4 → S in ${trajectory.length - 1} steps.`
     : running
-      ? `Step ${step} of ${trajectory.length - 1} · ${
-          nextCheckpoint > 0 ? `heading to C${nextCheckpoint}` : "returning to S"
-        }.`
-      : "Run the reference route to see the intended ordered lap.";
+      ? pt
+        ? `Passo ${step} de ${trajectory.length - 1} · ${
+            nextCheckpoint > 0 ? `a caminho de C${nextCheckpoint}` : "voltando para S"
+          }.`
+        : `Step ${step} of ${trajectory.length - 1} · ${
+            nextCheckpoint > 0 ? `heading to C${nextCheckpoint}` : "returning to S"
+          }.`
+      : pt
+        ? "Execute a rota de referência para ver a volta na ordem pretendida."
+        : "Run the reference route to see the intended ordered lap.";
 
   function runTrajectory() {
     const reducedMotion = window.matchMedia(
@@ -67,15 +81,15 @@ export function OptimalCheckpointTrajectory() {
   return (
     <section
       className={`${styles.lab} ${styles.optimalLab}`}
-      aria-label="Optimal checkpoint trajectory"
+      aria-label={pt ? "Trajetória ótima pelos checkpoints" : "Optimal checkpoint trajectory"}
     >
       <header className={styles.header}>
         <div>
           <p className={styles.kicker}>GridWorld · MDP 1</p>
-          <h3>What route should the agent follow?</h3>
+          <h3>{pt ? "Qual rota o agente deve seguir?" : "What route should the agent follow?"}</h3>
         </div>
         <p className={styles.optimalObjective}>
-          Intended lap
+          {pt ? "Volta pretendida" : "Intended lap"}
           <strong>S → C1 → C2 → C3 → C4 → S</strong>
         </p>
       </header>
@@ -88,10 +102,16 @@ export function OptimalCheckpointTrajectory() {
           disabled={running}
         >
           {running
-            ? "Showing optimal trajectory…"
+            ? pt
+              ? "Mostrando a trajetória ótima…"
+              : "Showing optimal trajectory…"
             : completed
-              ? "Run optimal trajectory again"
-              : "Run optimal trajectory"}
+              ? pt
+                ? "Executar a trajetória ótima novamente"
+                : "Run optimal trajectory again"
+              : pt
+                ? "Executar a trajetória ótima"
+                : "Run optimal trajectory"}
         </button>
         <span className={styles.stepReadout} aria-live="polite">
           {status}
@@ -102,7 +122,11 @@ export function OptimalCheckpointTrajectory() {
         <div
           className={styles.optimalBoard}
           role="grid"
-          aria-label="Seven by seven track with a start, four ordered checkpoints, and three wall cells"
+          aria-label={
+            pt
+              ? "Pista de sete por sete com início, quatro checkpoints ordenados e três células de parede"
+              : "Seven by seven track with a start, four ordered checkpoints, and three wall cells"
+          }
         >
           {Array.from({ length: environment.height }, (_, y) =>
             Array.from({ length: environment.width }, (_, x) => {
@@ -121,10 +145,16 @@ export function OptimalCheckpointTrajectory() {
                   ? `C${checkpointIndex + 1}`
                   : "";
               const accessibleLabel = isWall
-                ? `Wall at column ${x + 1}, row ${y + 1}`
+                ? pt
+                  ? `Parede na coluna ${x + 1}, linha ${y + 1}`
+                  : `Wall at column ${x + 1}, row ${y + 1}`
                 : label
-                  ? `${label} at column ${x + 1}, row ${y + 1}`
-                  : `Open cell at column ${x + 1}, row ${y + 1}`;
+                  ? pt
+                    ? `${label} na coluna ${x + 1}, linha ${y + 1}`
+                    : `${label} at column ${x + 1}, row ${y + 1}`
+                  : pt
+                    ? `Célula livre na coluna ${x + 1}, linha ${y + 1}`
+                    : `Open cell at column ${x + 1}, row ${y + 1}`;
 
               return (
                 <div
@@ -155,8 +185,8 @@ export function OptimalCheckpointTrajectory() {
           )}
         </div>
         <p className={styles.optimalSummary}>
-          The reference route visits each checkpoint in order and returns to the
-          start in <strong>{trajectory.length - 1} steps</strong>.
+          {pt ? "A rota de referência passa por cada checkpoint na ordem e volta ao início em " : "The reference route visits each checkpoint in order and returns to the start in "}
+          <strong>{trajectory.length - 1} {pt ? "passos" : "steps"}</strong>.
         </p>
       </div>
     </section>

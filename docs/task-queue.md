@@ -55,6 +55,16 @@ references for longer-term editorial direction.
 
 ### Learning experience
 
+- [ ] **Prepare the Reward Hacking article for release — issue #123**
+  - Make the first checkpoint playground clearly explain that readers can move
+    checkpoints and watch the model learn the changed route.
+  - Add and review the complete Brazilian Portuguese article on the same
+    isolated branch before release.
+  - Keep production deploys, merges, and newsletter delivery out of scope until
+    separately reviewed and authorized.
+  - Completion check: focused checks and desktop/mobile rendered review pass,
+    followed by staging review of the complete English and Portuguese article.
+
 - [x] **Add minimal anonymous article feedback — issue #96**
   - Let readers rate whether an article was useful without an account,
     newsletter subscription, or analytics consent.

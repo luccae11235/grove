@@ -13,6 +13,7 @@ import {
   type SensorTrainingStep,
 } from "./sensorMdp";
 import type { RewardMode } from "./engine";
+import { isPt, type RhLocale } from "./shared";
 
 const MAX_TRAINING_EPISODES = 7_000;
 const TRAINING_TICK_MS = 55;
@@ -48,8 +49,8 @@ const positionKey = (position: { x: number; y: number }) =>
   `${position.x},${position.y}`;
 const walkable = new Set(SENSOR_LAYOUT.walkable.map(positionKey));
 
-function compactReward(value: number) {
-  return value.toLocaleString("en-US", {
+function compactReward(value: number, locale: RhLocale = "en") {
+  return value.toLocaleString(locale === "pt-BR" ? "pt-BR" : "en-US", {
     maximumFractionDigits: 2,
     minimumFractionDigits: 0,
   });
@@ -98,10 +99,13 @@ function policyIsOptimal(
 function RewardHistory({
   samples,
   rewardMode,
+  locale,
 }: {
   samples: LearningSample[];
   rewardMode: RewardMode;
+  locale: RhLocale;
 }) {
+  const pt = isPt(locale);
   const width = 260;
   const height = 112;
   const inset = { top: 12, right: 10, bottom: 24, left: 34 };
@@ -127,7 +131,7 @@ function RewardHistory({
   return (
     <figure className={styles.learningChart}>
       <div className={styles.learningChartHeading}>
-        <strong>Reward over training</strong>
+        <strong>{pt ? "Recompensa durante o treino" : "Reward over training"}</strong>
         <span
           className={
             rewardMode === "aligned"
@@ -135,7 +139,7 @@ function RewardHistory({
               : undefined
           }
         >
-          {latest ? compactReward(latest.evaluation.reward) : "—"}
+          {latest ? compactReward(latest.evaluation.reward, locale) : "—"}
         </span>
       </div>
       <svg
@@ -143,8 +147,12 @@ function RewardHistory({
         role="img"
         aria-label={
           latest
-            ? `Greedy-policy reward reached ${compactReward(latest.evaluation.reward)} after ${latest.episode} episodes.`
-            : "Reward history is empty before training begins."
+            ? pt
+              ? `A recompensa da política gulosa chegou a ${compactReward(latest.evaluation.reward, locale)} após ${latest.episode} episódios.`
+              : `Greedy-policy reward reached ${compactReward(latest.evaluation.reward)} after ${latest.episode} episodes.`
+            : pt
+              ? "O histórico de recompensa está vazio antes do início do treino."
+              : "Reward history is empty before training begins."
         }
       >
         <line
@@ -178,20 +186,24 @@ function RewardHistory({
           y={height - 7}
           textAnchor="end"
         >
-          {domainMaximum} episodes
+          {domainMaximum} {pt ? "episódios" : "episodes"}
         </text>
       </svg>
-      <figcaption>Evaluation of the current greedy policy.</figcaption>
+      <figcaption>{pt ? "Avaliação da política gulosa atual." : "Evaluation of the current greedy policy."}</figcaption>
     </figure>
   );
 }
 
 function SensorLearningPlayground({
   rewardMode,
+  locale,
 }: {
   rewardMode: RewardMode;
+  locale: RhLocale;
 }) {
   const aligned = rewardMode === "aligned";
+  const pt = isPt(locale);
+  const numberLocale = pt ? "pt-BR" : "en-US";
   const [mode, setMode] = useState<PlaybackMode>("idle");
   const [episodes, setEpisodes] = useState(0);
   const [evaluation, setEvaluation] = useState<SensorEvaluation | null>(null);
@@ -410,59 +422,59 @@ function SensorLearningPlayground({
 
   const status =
     mode === "idle"
-      ? "Ready to learn"
+      ? pt ? "Pronto para aprender" : "Ready to learn"
       : mode === "training"
-        ? "Exploring and updating Q-values…"
+        ? pt ? "Explorando e atualizando os valores Q…" : "Exploring and updating Q-values…"
         : mode === "paused"
-          ? `Paused after ${episodes.toLocaleString("en-US")} episodes`
+          ? pt ? `Pausado após ${episodes.toLocaleString(numberLocale)} episódios` : `Paused after ${episodes.toLocaleString(numberLocale)} episodes`
           : mode === "replaying"
-            ? `Running learned policy · step ${playbackStep} of ${policyFrames.length}`
+            ? pt ? `Executando a política aprendida · passo ${playbackStep} de ${policyFrames.length}` : `Running learned policy · step ${playbackStep} of ${policyFrames.length}`
             : mode === "limit"
-              ? "Training limit reached"
+              ? pt ? "Limite de treino atingido" : "Training limit reached"
               : aligned
-                ? "Optimal safe route found"
-                : "Optimal measured-reward policy found";
+                ? pt ? "Rota segura ótima encontrada" : "Optimal safe route found"
+                : pt ? "Política ótima para a recompensa medida encontrada" : "Optimal measured-reward policy found";
 
   const eventText =
     mode === "training" && trainingStep
-      ? `Episode ${trainingStep.episode.toLocaleString("en-US")}, step ${trainingStep.step}: ${
-          trainingStep.exploring ? "explored" : "followed current values"
-        } ${SENSOR_ACTIONS[trainingStep.action].name === "toggle" ? "camera toggle" : SENSOR_ACTIONS[trainingStep.action].label}.`
+      ? pt
+        ? `Episódio ${trainingStep.episode.toLocaleString(numberLocale)}, passo ${trainingStep.step}: ${trainingStep.exploring ? "explorou" : "seguiu os valores atuais"} ${SENSOR_ACTIONS[trainingStep.action].name === "toggle" ? "alternar câmera" : SENSOR_ACTIONS[trainingStep.action].label}.`
+        : `Episode ${trainingStep.episode.toLocaleString(numberLocale)}, step ${trainingStep.step}: ${trainingStep.exploring ? "explored" : "followed current values"} ${SENSOR_ACTIONS[trainingStep.action].name === "toggle" ? "camera toggle" : SENSOR_ACTIONS[trainingStep.action].label}.`
       : mode === "replaying" && replayFrame
         ? replayFrame.event.cameraToggled
-          ? `Step ${playbackStep} of ${policyFrames.length}: turned the camera ${replayFrame.state.cameraActive ? "on" : "off"}.`
+          ? pt ? `Passo ${playbackStep} de ${policyFrames.length}: ${replayFrame.state.cameraActive ? "ligou" : "desligou"} a câmera.` : `Step ${playbackStep} of ${policyFrames.length}: turned the camera ${replayFrame.state.cameraActive ? "on" : "off"}.`
           : replayFrame.event.fragileCrossed
-            ? `Step ${playbackStep} of ${policyFrames.length}: crossed the fragile floor${replayFrame.event.detectedViolation ? "; the camera detected it" : " unseen"}.`
+            ? pt ? `Passo ${playbackStep} de ${policyFrames.length}: atravessou o piso frágil${replayFrame.event.detectedViolation ? "; a câmera detectou" : " sem ser visto"}.` : `Step ${playbackStep} of ${policyFrames.length}: crossed the fragile floor${replayFrame.event.detectedViolation ? "; the camera detected it" : " unseen"}.`
             : replayFrame.event.delivered
-              ? `Step ${playbackStep} of ${policyFrames.length}: package delivered.`
-              : `Step ${playbackStep} of ${policyFrames.length}: moved ${SENSOR_ACTIONS[replayFrame.action].label}.`
+              ? pt ? `Passo ${playbackStep} de ${policyFrames.length}: pacote entregue.` : `Step ${playbackStep} of ${policyFrames.length}: package delivered.`
+              : pt ? `Passo ${playbackStep} de ${policyFrames.length}: moveu-se ${SENSOR_ACTIONS[replayFrame.action].label}.` : `Step ${playbackStep} of ${policyFrames.length}: moved ${SENSOR_ACTIONS[replayFrame.action].label}.`
         : mode === "complete" && evaluation
           ? aligned
-            ? "Camera on · 0 physical violations · package delivered safely."
-            : "Camera off · 1 physical violation · 0 detected violations."
+            ? pt ? "Câmera ligada · 0 violações físicas · pacote entregue com segurança." : "Camera on · 0 physical violations · package delivered safely."
+            : pt ? "Câmera desligada · 1 violação física · 0 violações detectadas." : "Camera off · 1 physical violation · 0 detected violations."
           : mode === "limit"
-            ? `Stopped after ${MAX_TRAINING_EPISODES.toLocaleString("en-US")} episodes without a stable optimum.`
+            ? pt ? `O treino parou após ${MAX_TRAINING_EPISODES.toLocaleString(numberLocale)} episódios sem encontrar um ótimo estável.` : `Stopped after ${MAX_TRAINING_EPISODES.toLocaleString(numberLocale)} episodes without a stable optimum.`
             : aligned
-              ? "Start learning, then replay the greedy route around the fragile floor."
-              : "Start learning, then replay the greedy route from the camera switch across the fragile floor.";
+              ? pt ? "Inicie o aprendizado e depois reproduza a rota gulosa que contorna o piso frágil." : "Start learning, then replay the greedy route around the fragile floor."
+              : pt ? "Inicie o aprendizado e depois reproduza a rota gulosa que passa pelo interruptor da câmera e atravessa o piso frágil." : "Start learning, then replay the greedy route from the camera switch across the fragile floor.";
 
   return (
     <section
       className={`${styles.lab} ${styles.learningLab}`}
-      aria-label={`${aligned ? "Physical-violation" : "Camera proxy-reward"} learning playground`}
+      aria-label={pt ? `Playground de aprendizado com ${aligned ? "penalidade por violação física" : "recompensa proxy da câmera"}` : `${aligned ? "Physical-violation" : "Camera proxy-reward"} learning playground`}
       data-training-model="live-q-learning"
     >
       <header className={styles.learningHeader}>
         <div>
           <p className={styles.kicker}>GridWorld · MDP 2</p>
-          <h3>What route will this reward teach?</h3>
+          <h3>{pt ? "Qual rota esta recompensa vai ensinar?" : "What route will this reward teach?"}</h3>
         </div>
         <p className={styles.learningReward}>
-          Reward seen by the agent
+          {pt ? "Recompensa vista pelo agente" : "Reward seen by the agent"}
           <strong>
             {aligned
-              ? "+10 delivery · −12 physical damage"
-              : "+10 delivery · −12 detected damage"}
+              ? pt ? "+10 entrega · −12 dano físico" : "+10 delivery · −12 physical damage"
+              : pt ? "+10 entrega · −12 dano detectado" : "+10 delivery · −12 detected damage"}
           </strong>
         </p>
       </header>
@@ -470,18 +482,18 @@ function SensorLearningPlayground({
       <div className={styles.learningStage}>
         <div className={styles.learningBoardColumn}>
           <div className={styles.sensorStatusBar}>
-            <span>Package-delivery room</span>
+            <span>{pt ? "Sala de entrega de pacotes" : "Package-delivery room"}</span>
             <strong data-camera-active={currentState.cameraActive}>
               <span aria-hidden="true">
                 {currentState.cameraActive ? "●" : "○"}
               </span>{" "}
-              Camera {currentState.cameraActive ? "on" : "off"}
+              {pt ? "Câmera" : "Camera"} {currentState.cameraActive ? (pt ? "ligada" : "on") : (pt ? "desligada" : "off")}
             </strong>
           </div>
           <div
             className={styles.sensorLearningBoard}
             role="grid"
-            aria-label="Seven by four package-delivery room with a safe upper route, fragile short route, camera switch, start, and destination"
+            aria-label={pt ? "Sala de entrega de pacotes de sete por quatro com rota segura superior, atalho frágil, interruptor da câmera, início e destino" : "Seven by four package-delivery room with a safe upper route, fragile short route, camera switch, start, and destination"}
           >
             {Array.from({ length: SENSOR_LAYOUT.height }, (_, y) =>
               Array.from({ length: SENSOR_LAYOUT.width }, (_, x) => {
@@ -505,11 +517,11 @@ function SensorLearningPlayground({
                   : isDestination
                     ? "D"
                     : isFragile
-                      ? "FRAGILE"
+                      ? pt ? "FRÁGIL" : "FRAGILE"
                       : isSwitch
                         ? "CAM"
                         : isSafeLabel
-                          ? "SAFE"
+                          ? pt ? "SEGURA" : "SAFE"
                           : "";
                 return (
                   <div
@@ -529,8 +541,8 @@ function SensorLearningPlayground({
                     role="gridcell"
                     aria-label={
                       !isWalkable && !isSwitch
-                        ? `Blocked space at column ${x + 1}, row ${y + 1}`
-                        : `${label || "Open floor"} at column ${x + 1}, row ${y + 1}`
+                        ? pt ? `Espaço bloqueado na coluna ${x + 1}, linha ${y + 1}` : `Blocked space at column ${x + 1}, row ${y + 1}`
+                        : pt ? `${label || "Piso livre"} na coluna ${x + 1}, linha ${y + 1}` : `${label || "Open floor"} at column ${x + 1}, row ${y + 1}`
                     }
                     key={key}
                   >
@@ -555,37 +567,37 @@ function SensorLearningPlayground({
             )}
           </div>
           <p className={styles.learningBoardCaption}>
-            Safe route: 10 steps · fragile shortcut: 6 movement steps
-            <span>The camera switch is available from the cell above it.</span>
+            {pt ? "Rota segura: 10 passos · atalho frágil: 6 passos de movimento" : "Safe route: 10 steps · fragile shortcut: 6 movement steps"}
+            <span className={pt ? styles.localizedCaptionDetail : undefined}>{pt ? "O interruptor da câmera pode ser acionado a partir da célula acima dele." : "The camera switch is available from the cell above it."}</span>
           </p>
         </div>
 
         <aside
           className={styles.learningPanel}
-          aria-label="Learning controls and progress"
+          aria-label={pt ? "Controles e progresso do aprendizado" : "Learning controls and progress"}
         >
           <div className={styles.learningStatus} aria-live="polite">
             <span>{status}</span>
-            <strong>{episodes.toLocaleString("en-US")} episodes</strong>
+            <strong>{episodes.toLocaleString(numberLocale)} {pt ? "episódios" : "episodes"}</strong>
           </div>
 
           <div className={styles.learningMetrics}>
             <div>
-              <span>Exploration ε</span>
-              <strong>{currentEpsilon.toFixed(2)}</strong>
+              <span>{pt ? "Exploração ε" : "Exploration ε"}</span>
+              <strong>{pt ? currentEpsilon.toFixed(2).replace(".", ",") : currentEpsilon.toFixed(2)}</strong>
             </div>
             <div>
-              <span>Greedy reward</span>
+              <span>{pt ? "Recompensa gulosa" : "Greedy reward"}</span>
               <strong>
-                {evaluation ? compactReward(evaluation.reward) : "—"}
+                {evaluation ? compactReward(evaluation.reward, locale) : "—"}
               </strong>
             </div>
             <div>
-              <span>Physical violations</span>
+              <span>{pt ? "Violações físicas" : "Physical violations"}</span>
               <strong>{evaluation?.realViolations ?? "—"}</strong>
             </div>
             <div>
-              <span>Detected violations</span>
+              <span>{pt ? "Violações detectadas" : "Detected violations"}</span>
               <strong>{evaluation?.detectedViolations ?? "—"}</strong>
             </div>
           </div>
@@ -594,13 +606,13 @@ function SensorLearningPlayground({
             {eventText}
           </p>
 
-          <RewardHistory samples={samples} rewardMode={rewardMode} />
+          <RewardHistory samples={samples} rewardMode={rewardMode} locale={locale} />
 
           <div className={styles.learningControls}>
             <label className={styles.learningSpeedSlider}>
               <span>
-                Training speed
-                <output>{speed} episodes/s</output>
+                {pt ? "Velocidade do treino" : "Training speed"}
+                <output>{speed} {pt ? "episódios/s" : "episodes/s"}</output>
               </span>
               <input
                 type="range"
@@ -619,12 +631,12 @@ function SensorLearningPlayground({
               disabled={mode === "replaying"}
             >
               {mode === "training"
-                ? "Pause training"
+                ? pt ? "Pausar treino" : "Pause training"
                 : mode === "paused"
-                  ? "Continue training"
+                  ? pt ? "Continuar treino" : "Continue training"
                   : mode === "complete" || mode === "limit"
-                    ? "Train again"
-                    : "Train until optimal"}
+                    ? pt ? "Treinar novamente" : "Train again"
+                    : pt ? "Treinar até o ótimo" : "Train until optimal"}
             </button>
             <button
               type="button"
@@ -637,7 +649,7 @@ function SensorLearningPlayground({
                 mode === "idle"
               }
             >
-              Run learned agent
+              {pt ? "Executar agente treinado" : "Run learned agent"}
             </button>
             <button
               type="button"
@@ -645,7 +657,7 @@ function SensorLearningPlayground({
               onClick={() => resetExperience()}
               disabled={mode === "replaying"}
             >
-              Reset learning
+              {pt ? "Reiniciar aprendizado" : "Reset learning"}
             </button>
           </div>
         </aside>
@@ -654,14 +666,24 @@ function SensorLearningPlayground({
       <p className={styles.learningTakeaway}>
         {mode === "complete" && evaluation ? (
           aligned ? (
-            <>
+            pt ? <>
+              O agente manteve a câmera ligada e seguiu a rota segura mais longa.
+              Entregou em <strong>{evaluation.steps} passos</strong>, com{" "}
+              <strong>0 violações físicas</strong>. Desligar a câmera não trouxe
+              nenhuma vantagem na recompensa.
+            </> : <>
               The agent kept the camera on and followed the longer safe route.
               It delivered in <strong>{evaluation.steps} steps</strong> with{" "}
               <strong>0 physical violations</strong>. Disabling the camera
               offered no reward advantage.
             </>
           ) : (
-            <>
+            pt ? <>
+              O agente aprendeu a desligar a câmera, atravessar o mesmo piso
+              frágil e entregar em <strong>{evaluation.steps} passos</strong>.
+              Causou <strong>1 violação física</strong>, mas a recompensa registrou{" "}
+              <strong>0 violações detectadas</strong>.
+            </> : <>
               The agent learned to switch the camera off, cross the unchanged
               fragile floor, and deliver in{" "}
               <strong>{evaluation.steps} steps</strong>. It caused{" "}
@@ -671,18 +693,18 @@ function SensorLearningPlayground({
           )
         ) : (
           aligned
-            ? "Watch whether the robot still benefits from changing the camera when physical damage is penalized directly."
-            : "Watch the camera status change while the fragile floor—and the physical violation—stay the same."
+            ? pt ? "Observe se o robô ainda se beneficia ao mudar a câmera quando o dano físico é penalizado diretamente." : "Watch whether the robot still benefits from changing the camera when physical damage is penalized directly."
+            : pt ? "Observe o estado da câmera mudar enquanto o piso frágil — e a violação física — permanecem iguais." : "Watch the camera status change while the fragile floor—and the physical violation—stay the same."
         )}
       </p>
     </section>
   );
 }
 
-export function SensorProxyPlayground() {
-  return <SensorLearningPlayground rewardMode="proxy" />;
+export function SensorProxyPlayground({ locale = "en" }: { locale?: RhLocale }) {
+  return <SensorLearningPlayground rewardMode="proxy" locale={locale} />;
 }
 
-export function SensorAlignedPlayground() {
-  return <SensorLearningPlayground rewardMode="aligned" />;
+export function SensorAlignedPlayground({ locale = "en" }: { locale?: RhLocale }) {
+  return <SensorLearningPlayground rewardMode="aligned" locale={locale} />;
 }

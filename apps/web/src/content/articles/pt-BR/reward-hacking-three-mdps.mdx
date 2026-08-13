@@ -1,0 +1,641 @@
+---
+articleId: reward-hacking-three-mdps
+locale: pt-BR
+routeSlug: reward-hacking
+href: /pt-br/learn/reward-hacking
+title: Reward hacking no aprendizado por reforço
+navTitle: Reward hacking em RL
+description: "Por que agentes de aprendizado por reforço podem maximizar suas recompensas e, ainda assim, não fazer o que pretendíamos."
+eyebrow: Aprendizado por reforço · Design de recompensas
+area: Aprendizado por reforço
+topic: Reward hacking
+summary: Três MDPs pequenos mostram como um agente pode explorar uma restrição ausente, manipular um processo de medição ou otimizar um objetivo incompleto.
+status: draft
+readingTime: 20–25 min
+interactiveCount: 7
+staticVisualCount: 0
+difficulty: intermediate
+series: reinforcement-learning
+access: public
+prerequisites: []
+related: []
+implementation: mdx
+learning:
+  priorKnowledge:
+    - Entender os componentes básicos de um processo de decisão de Markov.
+    - Entender que um agente de aprendizado por reforço maximiza a recompensa acumulada.
+  likelyMisconception: Se um agente obtém uma recompensa alta, ele deve ter aprendido o comportamento que pretendíamos.
+  transferOutcome: Dada uma função de recompensa, identificar uma restrição ausente, um processo de medição manipulável ou um resultado importante que ficou fora do objetivo.
+  motivatingQuestion: Por que maximizar uma recompensa escalar garantiria que o agente resolvesse o problema que realmente nos importa?
+  conceptualBottleneck: A função de recompensa é apenas uma especificação do objetivo, e as duas coisas podem divergir.
+  evidenceOfUnderstanding:
+    - Explicar por que reentrar repetidamente no primeiro checkpoint é racional sob a recompensa proxy.
+    - Explicar por que desligar a câmera muda a medição, mas não a violação física.
+    - Explicar por que a velocidade da rodovia pode melhorar enquanto o sistema de transporte piora.
+    - Distinguir uma restrição ausente, a manipulação de uma medição e um objetivo incompleto.
+---
+
+import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import RewardHackingLab from "../../../components/RewardHackingLab.astro";
+
+<header className="page-header lesson-header article-hero">
+  <p className="eyebrow">Aprendizado por reforço · Design de recompensas</p>
+  <h1>Reward hacking no aprendizado por reforço</h1>
+  <p className="lede">Um agente pode maximizar sua recompensa com sucesso e, ainda assim, não fazer o que pretendíamos — ou até tomar decisões surpreendentemente ardilosas.</p>
+  <div className="article-meta" aria-label="Informações sobre o artigo">
+    <DifficultyBadge difficulty="intermediate" locale="pt-BR" />
+  </div>
+</header>
+
+<article className="lesson-body deep-article reward-hacking-article">
+
+## Introdução
+
+Já deve estar claro que uma boa solução de aprendizado de máquina depende de muitas
+decisões de design: quais características manter, como limpar continuamente os dados
+recebidos, qual registro de modelos usar, quantas camadas uma rede precisa ter,
+se o modelo deve ser quantizado e assim por diante. Problemas que vão de MLOps a
+ciência de dados exigem decisões cuidadosas.
+
+No aprendizado por reforço, essa dependência é ainda mais acentuada. Como breve
+recapitulação, todo problema de aprendizado por reforço precisa ser expresso como
+um processo de decisão de Markov, ou MDP:
+
+<div className="formula" aria-label="M é igual à tupla S, A, P, R, gama">
+  𝓜 = (𝓢, 𝓐, P, R, γ)
+</div>
+
+em que:
+
+- 𝓢 é o conjunto de estados possíveis do ambiente;
+- 𝓐 é o conjunto de ações disponíveis para o agente;
+- P(s′ | s, a) descreve a probabilidade de chegar ao estado s′ após executar a
+  ação a no estado s;
+- R(s, a, s′) define a recompensa escalar recebida depois dessa transição;
+- γ ∈ [0, 1] é o fator de desconto, que determina quanto as recompensas futuras
+  influenciam as decisões atuais.
+
+O objetivo do agente é encontrar uma política π que maximize a recompensa
+acumulada descontada esperada:
+
+<div className="formula" aria-label="J de pi é igual à soma descontada esperada das recompensas">
+  J(π) = 𝔼<sub>π</sub> [ Σ<sub>t=0</sub><sup>H−1</sup> γ<sup>t</sup> R<sub>t+1</sub> ]
+</div>
+
+O valor esperado é necessário porque uma mesma política pode produzir trajetórias
+diferentes. As ações podem ter resultados incertos, os ambientes podem ser
+estocásticos e o estado inicial pode variar. Portanto, o objetivo considera o
+retorno médio de todas as trajetórias que a política pode gerar.
+
+Nenhum componente de um MDP é necessariamente óbvio de definir. O espaço de
+ações precisa incluir tudo o que o agente pode fazer, enquanto o estado precisa
+conter informação suficiente para que ele tome decisões úteis.
+
+Até um mesmo problema pode ter várias representações válidas. O estado de um
+robô de limpeza poderia conter apenas sua posição atual, ou também o nível da
+bateria, o mapa de sujeira do cômodo e obstáculos próximos. Suas ações poderiam
+ser comandos primitivos, como avançar e virar à esquerda, ou comandos de nível
+mais alto, como ir até a cozinha. Da mesma forma, um agente que joga poderia
+receber o estado completo do tabuleiro ou uma representação comprimida de suas
+características. Todas essas formulações podem descrever a mesma tarefa, mas levar a
+problemas de aprendizado muito diferentes.
+
+Este artigo pressupõe que você já tenha conhecimentos básicos de aprendizado
+por reforço. Ainda assim, vale refletir sobre o que significa reduzir toda
+tarefa à maximização de um valor esperado.
+
+Todo problema de aprendizado por reforço acaba se resumindo a maximizar:
+
+<div className="formula" aria-label="Valor esperado de R um mais gama R dois mais gama ao quadrado R três e assim por diante">
+  𝔼<sub>π</sub> [ R<sub>1</sub> + γR<sub>2</sub> + γ<sup>2</sup>R<sub>3</sub> + ⋯ ]
+</div>
+
+Isso vale tanto para um robô que limpa um cômodo quanto para um jogador de
+futebol no FIFA, um agente de Atari ou um sistema que joga Go ou xadrez.
+
+Mas não é perigoso supor que um único problema de maximização possa representar
+qualquer tarefa? Por que maximizar uma recompensa escalar garantiria que o
+agente resolvesse o problema que realmente nos importa?
+
+Não garante.
+
+Toda a estrutura do aprendizado por reforço depende do que se conhece como
+**hipótese da recompensa**: a afirmação de que qualquer objetivo pode ser
+representado pela maximização da soma acumulada esperada de uma recompensa
+escalar.
+
+Essa é uma afirmação ousada, e não é evidente que seja verdadeira em toda
+situação. Pode não estar claro como um único número deveria representar
+objetivos conflitantes, como velocidade e segurança, eficiência e justiça,
+desempenho no curto prazo e consequências no longo prazo, ou as preferências de
+várias pessoas que discordam entre si.
+
+Além de ser difícil projetar uma recompensa, maximizá-la ainda pode não produzir
+o comportamento pretendido.
+
+> “Quando uma medida se torna uma meta, ela deixa de ser uma boa medida.”
+
+A lei de Goodhart captura esse problema. Imagine que uma empresa queira reduzir
+a duração das chamadas de suporte. Se a duração virar a meta, os funcionários
+podem começar a encerrar as chamadas o mais rápido possível, mesmo quando o
+problema do cliente não foi resolvido. A métrica melhora, mas o objetivo real da
+empresa não.
+
+A mesma falha pode ocorrer no aprendizado por reforço. Se a função de recompensa
+for mal projetada, o agente poderá descobrir um comportamento que rende uma
+recompensa alta sem cumprir a tarefa pretendida. Esse fenômeno é chamado de
+**reward hacking**.
+
+Nos exemplos a seguir, o ambiente e o algoritmo de aprendizado permanecem
+iguais dentro de cada comparação. Apenas a função de recompensa muda entre a
+versão mal especificada e a versão alinhada. Assim, podemos observar como a
+definição da recompensa, sozinha, transforma o comportamento aprendido.
+
+Veremos agentes maximizarem suas recompensas com sucesso e, ainda assim, não
+fazerem o que pretendíamos — ou até tomarem decisões surpreendentemente
+ardilosas.
+
+## Alcançando checkpoints
+
+Vamos começar com um problema simples. Um agente precisa atravessar um
+gridworld, visitar quatro checkpoints na ordem e depois voltar ao ponto inicial:
+
+<div className="formula" aria-label="Início, checkpoints de um a quatro e início novamente">
+  S → C<sub>1</sub> → C<sub>2</sub> → C<sub>3</sub> → C<sub>4</sub> → S
+</div>
+
+Pode parecer estranho treinar um agente para resolver uma tarefa tão simples
+quando um script curto encontraria imediatamente o melhor caminho. Mas
+gridworlds são úteis justamente porque tornam o aprendizado visível. Podemos
+observar como o agente explora, coleta recompensas e muda suas decisões aos
+poucos.
+
+Este é o problema dos checkpoints expresso como um MDP:
+
+- **Estados 𝓢:** o ambiente é uma grade 7 × 7 com células livres, paredes, uma
+  posição inicial e quatro checkpoints. Um estado contém tanto a posição atual
+  x<sub>t</sub> do agente quanto o próximo checkpoint que ele deve alcançar:
+
+  <span className="inline-formula">s<sub>t</sub> = (x<sub>t</sub>, k<sub>t</sub>), &nbsp; k<sub>t</sub> ∈ {"{0, 1, 2, 3, 4}"}</span>
+
+- **Ações 𝓐:** o agente pode se mover em uma das quatro direções cardeais:
+
+  <span className="inline-formula">𝓐 = {"{ ↑, →, ↓, ← }"}</span>
+
+- **Transições P:** o movimento é determinístico. O agente avança uma célula, a
+  menos que o movimento escolhido saia da grade ou entre em uma parede. Nesses
+  casos, ele permanece na posição atual.
+
+- **Recompensa R:** a recompensa depende do checkpoint em que o agente entra e
+  de a volta ordenada ter sido concluída ou não.
+
+- **Fator de desconto γ:** γ = 0,97. Com isso, recompensas futuras valem um
+  pouco menos que recompensas imediatas, mas o agente ainda consegue planejar a
+  volta inteira.
+
+- **Fim do episódio:** o episódio termina quando o agente visita os quatro
+  checkpoints na ordem e volta à posição inicial. Caso contrário, ele é
+  interrompido depois de 90 passos.
+
+Como visualizações e interações são parte central dos artigos da Aflora, vamos
+primeiro conhecer o cenário e o comportamento que queremos que o agente aprenda.
+
+<RewardHackingLab kind="checkpoint-optimal" locale="pt-BR" />
+
+Você acabou de ver o agente seguir a trajetória ideal. Antes de agir de maneira
+ótima, porém, ele precisa explorar. No início, seus movimentos são em grande
+parte aleatórios; aos poucos, ele aprende quais combinações de estado e ação
+levam a recompensas maiores.
+
+No próximo playground, você poderá controlar a velocidade de aprendizado do
+agente. Como queremos que ele visite os checkpoints antes de voltar ao início,
+vamos começar com uma função de recompensa simples.
+
+Suponha que toda entrada em um checkpoint dê um ponto ao agente:
+
+<div className="formula" aria-label="Recompensa proxy é igual a menos zero vírgula zero um mais um indicador de entrada em qualquer checkpoint">
+  R<sub>proxy</sub> = −0,01 + 𝟙[agente entra em qualquer checkpoint]
+</div>
+
+O agente paga um pequeno custo de 0,01 a cada passo, o que o incentiva a evitar
+trajetórias desnecessariamente longas. Mas, sempre que entra em qualquer
+checkpoint, recebe +1.
+
+À primeira vista, isso parece razoável. Queremos que o agente visite os
+checkpoints, então o recompensamos sempre que ele chega a um deles.
+
+O problema é que a função não distingue chegar a um checkpoint novo de reentrar
+repetidamente no mesmo checkpoint. Sair de C<sub>1</sub> e voltar imediatamente
+produz outro ponto toda vez.
+
+A recompensa descreve tocar em checkpoints, não completar a volta na ordem. No
+playground abaixo, você também pode reposicionar os checkpoints para observar
+como o modelo aprende quando a rota muda.
+
+**Observação:** você não precisa conhecer os detalhes do algoritmo, mas, para
+quem tiver curiosidade, o experimento usa Q-learning tabular com quatro ações de
+movimento disponíveis.
+
+<RewardHackingLab kind="checkpoint-proxy" locale="pt-BR" />
+
+Espere — o que aconteceu?
+
+Em vez de seguir pela rota completa, o agente permanece perto do primeiro
+checkpoint. Ele sai de C<sub>1</sub>, entra novamente, recebe outro ponto e
+repete o processo.
+
+Esse comportamento claramente não é o que pretendíamos, mas é perfeitamente
+racional sob a recompensa especificada. Coletar +1 repetidamente perto do
+primeiro checkpoint é mais fácil e lucrativo do que completar a volta inteira.
+
+O agente não entendeu a função de recompensa errado. Ele a entendeu bem demais.
+
+O objetivo real era alcançar os checkpoints na ordem, mas a recompensa não
+representava essa exigência. Por isso, o agente explorou a diferença entre o
+objetivo pretendido e a recompensa especificada.
+
+Vamos corrigir a recompensa.
+
+Defina k<sub>t</sub> como o índice do próximo checkpoint esperado e
+e<sub>t</sub> como o checkpoint em que o agente entrou durante a transição
+atual. Agora, o agente só recebe a recompensa do checkpoint quando:
+
+<div className="formula" aria-label="e subscrito t é igual a k subscrito t">
+  e<sub>t</sub> = k<sub>t</sub>
+</div>
+
+A recompensa alinhada passa a ser:
+
+<div className="formula" aria-label="Recompensa alinhada é igual a menos zero vírgula zero um mais um indicador do checkpoint esperado mais dez vezes um indicador de conclusão da volta">
+  R<sub>alinhada</sub> = −0,01 + 𝟙[e<sub>t</sub> = k<sub>t</sub>] + 10𝟙[volta completa]
+</div>
+
+O agente ainda paga 0,01 por passo. Ele recebe +1 apenas quando entra no próximo
+checkpoint da sequência exigida e recebe mais +10 quando completa a volta e
+retorna à posição inicial.
+
+Reentrar repetidamente no mesmo checkpoint deixa de produzir recompensa extra.
+Para continuar ganhando pontos, o agente precisa avançar pela sequência
+ordenada.
+
+Agora vamos observar o agente aprender novamente.
+
+<RewardHackingLab kind="checkpoint-aligned" locale="pt-BR" />
+
+Agora está funcionando melhor.
+
+Neste caso, o objetivo pretendido estava claramente definido, mas a função de
+recompensa original não conseguia representá-lo. Queríamos que o agente
+completasse uma rota ordenada, enquanto a recompensa apenas o incentivava a
+entrar em células recompensadoras.
+
+Quando passamos a distinguir reentradas em checkpoints do progresso real na
+tarefa, o comportamento aprendido se alinhou ao objetivo pretendido.
+
+## O robô ardiloso
+
+Neste exemplo, temos outro gridworld. Mas, em vez de visitar checkpoints, um
+robô precisa atravessar uma sala e entregar um pacote.
+
+Há dois caminhos óbvios até o destino. O mais curto atravessa uma parte frágil
+do piso, que o robô não pode usar. Uma rota mais longa contorna a área frágil e
+conclui a entrega com segurança.
+
+Para penalizar o robô por atravessar o piso frágil, seu responsável considera
+dois sistemas possíveis:
+
+1. Instalar uma câmera externa que detecte se o robô atravessa o piso frágil.
+2. Instalar um detector embarcado que registre se o robô entra fisicamente na
+   área frágil.
+
+Para este exemplo, suponha que instalar a câmera seja mais fácil e barato.
+Talvez modificar o sistema interno do robô seja caro, enquanto uma câmera
+externa possa fornecer sinais de punição sem alterar o próprio robô.
+
+O estado contém a posição do robô e o estado atual da câmera:
+
+<div className="formula" aria-label="s subscrito t é igual a x subscrito t e z subscrito t">
+  s<sub>t</sub> = (x<sub>t</sub>, z<sub>t</sub>)
+</div>
+
+em que:
+
+<div className="formula">
+  z<sub>t</sub> = 1 se a câmera estiver ligada, e z<sub>t</sub> = 0 se estiver desligada.
+</div>
+
+O robô pode se mover em quatro direções ou usar a ação de alternar quando está
+ao lado do interruptor da câmera:
+
+<div className="formula" aria-label="O conjunto de ações contém cima, direita, baixo, esquerda e alternar">
+  𝓐 = {"{ ↑, →, ↓, ←, alternar }"}
+</div>
+
+Para demonstrar como a recompensa pode ser explorada, permitimos que o robô
+desligue a câmera ao chegar a uma posição específica da grade.
+
+É claro que um sistema real raramente teria um interruptor tão conveniente. A
+ideia importante é que, por meio da experimentação, um agente pode descobrir
+uma forma de manipular ou desativar o mecanismo responsável por medir seu
+comportamento.
+
+Defina:
+
+<div className="formula" aria-label="v subscrito t é um indicador de que o robô entrou fisicamente no piso frágil">
+  v<sub>t</sub> = 𝟙[o robô entra fisicamente no piso frágil]
+</div>
+
+para representar uma violação real de segurança.
+
+A câmera só detecta essa violação quando está ligada:
+
+<div className="formula" aria-label="d subscrito t é igual a v subscrito t vezes z subscrito t mais um">
+  d<sub>t</sub> = v<sub>t</sub> z<sub>t+1</sub>
+</div>
+
+O robô recebe +10 por concluir a entrega e paga 0,1 a cada passo. Sob a
+recompensa inicial, ele recebe uma penalidade de 12 somente quando a câmera
+detecta a violação do piso frágil:
+
+<div className="formula" aria-label="Recompensa proxy é igual a menos zero vírgula um mais dez pela entrega menos doze vezes as violações detectadas">
+  R<sub>proxy</sub> = −0,1 + 10𝟙[entrega] − 12d<sub>t</sub>
+</div>
+
+Quando a câmera está ligada, atravessar o piso frágil produz d<sub>t</sub> = 1,
+e o robô é penalizado.
+
+Mas, quando a câmera está desligada:
+
+<div className="formula" aria-label="z subscrito t mais um igual a zero implica d subscrito t igual a zero">
+  z<sub>t+1</sub> = 0 &nbsp; ⟹ &nbsp; d<sub>t</sub> = 0
+</div>
+
+Mesmo que o robô atravesse o piso frágil, nenhuma violação é detectada e nenhuma
+penalidade é aplicada.
+
+Portanto, a função de recompensa mede se o dano foi observado, não se ele
+realmente ocorreu.
+
+<RewardHackingLab kind="sensor-proxy" locale="pt-BR" />
+
+Como mostra a simulação, o agente treinado aprende a desligar a câmera antes de
+atravessar o piso frágil.
+
+Numericamente, essa é a melhor estratégia. O robô ainda recebe a recompensa da
+entrega, segue pelo caminho mais curto e evita a penalidade de segurança. Sua
+recompensa acumulada aumenta, embora seu comportamento físico se torne menos
+seguro.
+
+Mais uma vez, o agente não deixou de otimizar a recompensa. Ele descobriu uma
+forma melhor de otimizar exatamente o que foi especificado.
+
+A solução conceitual é simples: penalizar a violação física independentemente
+de a câmera observá-la ou não.
+
+A recompensa alinhada é:
+
+<div className="formula" aria-label="Recompensa alinhada é igual a menos zero vírgula um mais dez pela entrega menos doze vezes as violações físicas">
+  R<sub>alinhada</sub> = −0,1 + 10𝟙[entrega] − 12v<sub>t</sub>
+</div>
+
+Agora, a penalidade depende diretamente de o robô entrar no piso frágil.
+Desligar a câmera deixa de mudar as consequências da ação:
+
+<div className="formula" aria-label="v subscrito t igual a um implica uma penalidade de menos doze independentemente de z subscrito t">
+  v<sub>t</sub> = 1 &nbsp; ⟹ &nbsp; −12, independentemente de z<sub>t</sub>
+</div>
+
+Com essa recompensa, desativar o sensor não traz vantagem. O robô precisa seguir
+pela rota segura mais longa para evitar a violação física e maximizar sua
+recompensa acumulada.
+
+Vamos treinar novamente o mesmo agente. A grade, as ações, as regras de
+transição, o algoritmo de aprendizado e os hiperparâmetros continuam iguais.
+Mudaremos apenas a função de recompensa.
+
+<RewardHackingLab kind="sensor-aligned" locale="pt-BR" />
+
+Agora o comportamento muda por completo. O agente ainda pode descobrir o
+interruptor da câmera enquanto explora, mas desligá-la não melhora seu retorno.
+O piso frágil continua custoso, seja a violação observada ou não; portanto, o
+atalho deixa de ser atraente.
+
+Em vez disso, o agente aprende a seguir a rota mais longa ao redor do piso
+frágil. Essa trajetória exige mais passos e, por isso, gera um custo de movimento
+um pouco maior, mas evita a penalidade muito mais alta associada ao dano no
+piso. Sob a recompensa alinhada, o caminho seguro também é o mais recompensador.
+
+Este exemplo é mais sutil que o loop dos checkpoints. No primeiro problema, a
+recompensa simplesmente omitia a exigência de visitar os checkpoints na ordem.
+Aqui, a recompensa incluía uma penalidade de segurança — mas vinculava essa
+penalidade à medição da violação, não à violação física em si.
+
+Essa pequena diferença mudou o problema que o agente estava resolvendo.
+Queríamos ensiná-lo a não danificar o piso. Em vez disso, inicialmente o
+ensinamos a não ser pego danificando o piso.
+
+Uma recompensa baseada em uma métrica proxy não necessariamente faz o agente
+melhorar o resultado subjacente. Ela pode, em vez disso, incentivá-lo a manipular
+a própria métrica.
+
+Quando vinculamos a recompensa diretamente ao evento que nos importava, o
+exploit desapareceu. A lição não é apenas que câmeras podem ser desligadas. É
+que qualquer canal de medição pode se tornar parte do ambiente que um
+otimizador aprende a influenciar.
+
+## O problema do semáforo
+
+Para nosso último exemplo, imagine uma rodovia com uma rampa de acesso
+controlada por um semáforo. Os carros que já estão na rodovia querem continuar
+avançando rapidamente, enquanto os que chegam à rampa precisam esperar que o
+sinal os libere para entrar no tráfego.
+
+O controlador pode tomar uma de duas decisões a cada passo:
+
+- **Reter:** manter o sinal da rampa vermelho e impedir que os carros da fila
+  entrem na rodovia.
+- **Liberar:** permitir que até dois carros da fila entrem na rodovia.
+
+Liberar carros ajuda quem espera na rampa, mas a confluência aumenta
+temporariamente o congestionamento e reduz a velocidade da rodovia. Reter os
+carros mantém a rodovia livre, mas a fila da rampa continua crescendo. Portanto,
+o objetivo pretendido não é apenas maximizar a velocidade da rodovia. É
+minimizar o atraso total dos dois grupos de motoristas.
+
+O estado contém duas quantidades:
+
+<div className="formula" aria-label="s subscrito t é igual a q subscrito t e c subscrito t">
+  s<sub>t</sub> = (q<sub>t</sub>, c<sub>t</sub>)
+</div>
+
+Aqui, q<sub>t</sub> é o número de carros esperando na rampa, entre 0 e 8, e
+c<sub>t</sub> é o nível atual de congestionamento da rodovia, entre 0 e 3. A
+simulação começa com a rampa vazia e sem congestionamento:
+
+<div className="formula" aria-label="s zero é igual a zero vírgula zero">
+  s<sub>0</sub> = (0, 0)
+</div>
+
+A cada passo, um carro novo chega à rampa com probabilidade 0,35:
+
+<div className="formula" aria-label="B subscrito t segue uma distribuição de Bernoulli com probabilidade zero vírgula três cinco">
+  B<sub>t</sub> ∼ Bernoulli(0,35)
+</div>
+
+Se o controlador escolher liberar, ele permite que no máximo dois carros da
+fila entrem na rodovia:
+
+<div className="formula">
+  L<sub>t</sub> = 0 se a<sub>t</sub> = reter, e L<sub>t</sub> = min(2, q<sub>t</sub>) se a<sub>t</sub> = liberar
+</div>
+
+Reter os carros permite que o congestionamento diminua gradualmente. Liberá-los
+leva o nível de congestionamento ao máximo neste ambiente simplificado,
+representando a perturbação temporária causada pela confluência. A fila é
+limitada a oito carros para manter pequeno o espaço de estados tabular.
+
+Como devemos recompensar o controlador? Uma primeira ideia natural é focar
+diretamente na velocidade da rodovia. Afinal, um controlador de tráfego deveria
+manter os veículos em movimento, não permitir que o congestionamento cresça.
+
+Defina a velocidade normalizada da rodovia como:
+
+<div className="formula" aria-label="V de c subscrito t mais um é igual a um menos zero vírgula doze vezes c subscrito t mais um">
+  V(c<sub>t+1</sub>) = 1 − 0,12c<sub>t+1</sub>
+</div>
+
+Quando o congestionamento é zero, a velocidade da rodovia recebe o valor máximo,
+igual a 1. À medida que o congestionamento aumenta, o valor diminui. Podemos então
+definir a recompensa como a velocidade observada depois da ação do controlador:
+
+<div className="formula" aria-label="Recompensa proxy é igual a V de c subscrito t mais um">
+  R<sub>proxy</sub> = V(c<sub>t+1</sub>)
+</div>
+
+Essa recompensa parece descrever diretamente o trabalho do controlador. Tráfego
+em alta velocidade gera recompensa maior, enquanto ações que criam
+congestionamento a reduzem. Logo, um controlador que maximiza a recompensa
+acumulada deveria aprender a manter a rodovia fluindo bem.
+
+<RewardHackingLab kind="traffic-proxy" locale="pt-BR" />
+
+A rodovia realmente flui bem — mas apenas porque o controlador nunca libera a
+fila da rampa.
+
+Toda ação de liberar produz congestionamento e reduz imediatamente a recompensa.
+Reter, por outro lado, deixa o congestionamento desaparecer e mantém a
+velocidade da rodovia no valor máximo. Como a recompensa não contém informação
+sobre a fila da rampa, o controlador não tem motivo para se importar com quantos
+motoristas esperam ali.
+
+A estratégia aprendida é simples: reter para sempre. A fila cresce até atingir
+o limite da simulação, novas chegadas excedem sua capacidade e a rodovia continua
+fluindo em velocidade máxima.
+
+Segundo a recompensa especificada, esse comportamento é excelente. Segundo o
+objetivo real do sistema de transporte, é uma falha. Um grupo de motoristas
+recebe um serviço quase perfeito porque o atraso imposto ao outro grupo ficou
+fora da medição.
+
+Ao contrário do robô, o controlador de tráfego não desativa nem manipula um
+sensor. A recompensa mede corretamente a velocidade da rodovia. O problema é
+que essa velocidade representa apenas uma parte do resultado que nos importa.
+
+Para alinhar a recompensa à tarefa pretendida, precisamos incluir as duas fontes
+de atraso. Primeiro, defina o atraso da rodovia associado ao novo nível de
+congestionamento:
+
+<div className="formula" aria-label="Atraso da rodovia em t mais um é igual a vinte vezes um menos V de c subscrito t mais um">
+  D<sub>t+1</sub><sup>rodovia</sup> = 20(1 − V(c<sub>t+1</sub>))
+</div>
+
+A recompensa alinhada penaliza o número de carros esperando na rampa junto com
+uma versão ponderada do atraso da rodovia:
+
+<div className="formula" aria-label="Recompensa alinhada é igual ao negativo da fila da rampa mais zero vírgula cinco vezes o atraso da rodovia">
+  R<sub>alinhada</sub> = −(q<sub>t+1</sub> + 0,5D<sub>t+1</sub><sup>rodovia</sup>)
+</div>
+
+Como a recompensa é o negativo do atraso total, maximizá-la significa tornar o
+custo combinado o menor possível. Agora, cada carro que continua esperando na
+rampa reduz a recompensa, e o congestionamento da rodovia também permanece
+custoso.
+
+O controlador deixa de conseguir um retorno alto protegendo apenas a velocidade
+da rodovia. Reter evita o congestionamento imediato, mas a fila crescente fica
+cada vez mais cara. Liberar cria um custo temporário na rodovia, mas impede que o
+atraso na rampa se acumule sem limite.
+
+Agora vamos treinar novamente o mesmo controlador. Os estados, as ações, a
+dinâmica do tráfego, as chegadas, o algoritmo de aprendizado e os
+hiperparâmetros permanecem iguais. Apenas a função de recompensa muda.
+
+<RewardHackingLab kind="traffic-aligned" locale="pt-BR" />
+
+O controlador alinhado aprende a alternar entre reter e liberar. Às vezes, ele
+aceita uma redução temporária na velocidade da rodovia porque permitir a entrada
+dos carros evita a formação de uma fila muito maior. Nenhum grupo recebe
+condições perfeitas o tempo todo, mas o atraso combinado cai bastante.
+
+Este último exemplo ilustra reward hacking por omissão. O agente dos checkpoints
+explorou créditos repetidos. O robô manipulou o mecanismo que detectava
+comportamentos inseguros. O controlador de tráfego simplesmente abandonou as
+pessoas cujo atraso não fazia parte de sua recompensa.
+
+Nos três casos, os agentes fizeram exatamente o que o aprendizado por reforço
+pediu: maximizar a recompensa acumulada esperada. As falhas surgiram da distância
+entre a quantidade otimizada e o resultado que os humanos realmente pretendiam.
+
+## Conclusão
+
+Ao longo destes três exemplos, os agentes falharam de maneiras diferentes,
+embora todos tenham otimizado com sucesso a recompensa recebida.
+
+No problema dos checkpoints, a função de recompensa deixou de fora uma restrição
+explícita da tarefa. Queríamos que os checkpoints fossem visitados na ordem, mas
+a recompensa original dava um ponto pela entrada em qualquer checkpoint. Como a
+sequência não estava representada, reentrar repetidamente no primeiro checkpoint
+virou uma estratégia válida e muito lucrativa. A recompensa descrevia apenas
+parte da tarefa pretendida.
+
+O problema do robô era diferente. A recompensa incluía os dois lados do
+objetivo: entregar o pacote e evitar danos ao piso frágil. Porém, a penalidade
+dependia de a câmera detectar a violação. Assim, o robô podia manipular o
+mecanismo que produzia o sinal de recompensa. Ao desligar a câmera, ele não
+eliminava o dano; eliminava apenas a evidência usada pela função de recompensa
+para reconhecê-lo.
+
+No problema do semáforo, a quantidade otimizada não era falsa nem estava sendo
+medida incorretamente. Manter a rodovia fluindo rápido realmente era um de nossos
+objetivos. O problema é que não era o único. Quando o atraso da rampa ficou fora
+da recompensa, o controlador conseguiu melhorar a velocidade da rodovia
+sacrificando permanentemente os motoristas que esperavam para entrar. A métrica
+era válida, mas o objetivo estava incompleto.
+
+Estes exemplos mostram que reward hacking não tem uma única forma. Um agente
+pode explorar uma restrição ausente, manipular o processo que mede seu
+comportamento ou otimizar um objetivo legítimo ignorando outros resultados
+importantes. Essa não é uma classificação exaustiva. O design de recompensas e
+a manipulação de especificações (*specification gaming*) formam um campo muito
+mais amplo e complexo do que esses ambientes didáticos conseguem representar.
+
+A lição central é mais simples: um agente de RL não otimiza o que quisemos dizer.
+Ele otimiza aquilo que a função de recompensa torna valioso. Qualquer diferença
+entre essas duas coisas pode fazer parte da estratégia aprendida, especialmente
+à medida que o agente se torna melhor em buscar comportamentos de recompensa
+alta.
+
+Projetar uma função de recompensa, portanto, exige mais do que perguntar se uma
+recompensa maior parece estar correlacionada a um comportamento melhor. Também
+precisamos perguntar quais restrições ficaram de fora, se o processo de medição
+pode ser influenciado e quais resultados importantes estão ausentes do objetivo.
+As recompensas alinhadas destes exemplos resolveram seus exploits específicos,
+mas ambientes reais raramente tornam todas as consequências relevantes tão
+fáceis de identificar.
+
+Reward hacking não é evidência de que o agente se recusou a seguir o objetivo.
+Em todos os casos, ele o seguiu com precisão. A dificuldade está em garantir que
+o objetivo especificado continue sendo uma representação útil do problema que
+realmente queremos resolver.
+
+</article>
