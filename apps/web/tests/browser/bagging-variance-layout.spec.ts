@@ -9,6 +9,25 @@ test("the revised article uses two matched experiments and places static explana
     level: 1,
     name: "Why averaging trees makes predictions more stable",
   })).toBeVisible();
+  await expect(page.getByText("No coding required", { exact: true })).toBeVisible();
+  await expect(page.getByText("2 guided experiments", { exact: true })).toBeVisible();
+  await expect(page.getByText(/recurring sine curve/i)).toHaveCount(0);
+  await expect(page.getByRole("heading", {
+    level: 2,
+    name: "The patient did not change. The prediction did.",
+  })).toBeVisible();
+  await expect(page.getByRole("heading", {
+    level: 2,
+    name: "Why did the standard deviation stop near 0.17?",
+  })).toBeVisible();
+  await expect(page.getByRole("heading", {
+    level: 2,
+    name: "What has the hospital gained?",
+  })).toBeVisible();
+  await expect(page.getByRole("heading", {
+    level: 2,
+    name: "Can you diagnose stability from a new chart?",
+  })).toHaveCount(0);
 
   const visuals = page.locator("[data-bagging-visual]");
   await expect(visuals).toHaveCount(5);

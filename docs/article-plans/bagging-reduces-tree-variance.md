@@ -5,14 +5,14 @@ Status: revised interactive draft implemented
 GitHub issue: #120
 Article source: apps/web/src/content/articles/en/bagging-reduces-tree-variance.mdx
 Plan owner: Aflora editorial
-Last reviewed: 2026-08-13
+Last reviewed: 2026-08-13 (narrative revision)
 Earliest publication date: 2026-08-26
 
 ## Lesson brief
 
 ```text
-Learner: a reader who understands supervised learning and the basic behavior of
-  a regression tree, but has not studied ensemble methods
+Learner: a reader who understands the basic behavior of a decision tree, but has
+  not studied model variance or ensemble methods
 Prior knowledge: fitted models depend on training data; averages combine numbers;
   variance describes spread
 Likely misconception: many trees are more stable merely because the ensemble is
@@ -20,8 +20,9 @@ Likely misconception: many trees are more stable merely because the ensemble is
 Transfer outcome: explain, from a new prediction distribution at a fixed input,
   why averaging varied tree predictions narrows that distribution and identify
   the independence assumption behind the sigma-squared-over-B result
-Motivating question: if one tree changes when its training data changes, can we
-  build a prediction that changes less?
+Motivating question: if a hospital retrains the same tree and an unchanged patient
+  record receives a different risk estimate, can we build a prediction that
+  changes less?
 Smallest faithful example: deep regression trees fitted to small noisy samples
   from one sine curve, with every prediction inspected at the same input x_0
 Conceptual bottleneck: the unstable objects remain unstable; it is the average
@@ -41,8 +42,8 @@ Prediction points: predict the next tree's value after resampling; identify why
 Worked-to-independent progression: inspect resampled trees → trace three bootstrap
   samples → average two and five concrete predictions → interpret the general
   variance formula → diagnose a correlated-tree limit
-Application or failure case: trees that fluctuate together leave a variance
-  floor, motivating the later random-forest article
+Application or failure case: return to the hospital and distinguish instability
+  reduced by averaging from uncertainty shared through one original cohort
 Evidence of understanding: explain what is fixed in pointwise variance; explain
   why replacement creates different trees; translate the factor 1/B into a
   distributional prediction; state why the result is an idealized benchmark
@@ -50,6 +51,33 @@ Simplifications and limits: synthetic regression, one fixed input, equal tree
   variances, independent predictions for the displayed derivation, no covariance
   formula, random-feature sampling, classification, OOB error, or boosting
 ```
+
+## Narrative revision guide
+
+- The hero contains only useful reader guidance: difficulty, no coding required,
+  and two guided experiments. The synthetic curve is not product metadata.
+- Open with one unchanged patient record receiving 18%, 29%, and 21% mortality-risk
+  estimates from scheduled retrainings of the same fictitious hospital model.
+- State why instability matters before introducing terminology. Do not present a
+  single decision tree as a medical deployment recommendation.
+- Treat the sine process as a controlled laboratory where alternate training
+  datasets can be generated and the fitted tree can be watched. Explicitly map
+  the fixed input back to the unchanged patient record once, then retire the analogy.
+- Preserve the article's section order, five visual scenes, two experiment shells,
+  computed results, notation, and mathematical derivation.
+- Make each transition answer pressure created by the preceding section: observe
+  changing predictions → define their spread → create useful tree differences from
+  one dataset → average them → compare distributions → explain the ideal benchmark
+  → explain why the measured curve has a floor.
+- Explain the floor with two layers of variation. More trees average away which
+  rows each bootstrap sample happened to repeat or omit. They cannot average away
+  which observations were absent from the original dataset shared by every tree.
+- Replace the generic new-chart transfer exercise with a return to the hospital.
+  Ask what evidence the team has gained, what bagging cannot promise, and what
+  would still need monitoring in a consequential setting.
+- Prefer concrete nouns, causal transitions, and complete sentences. Define a
+  symbol next to the object it represents and translate every formula back into
+  visible behavior.
 
 ## Editorial decisions from the initial sketch
 
@@ -70,8 +98,8 @@ Simplifications and limits: synthetic regression, one fixed input, equal tree
 
 ## Discovery sequence
 
-1. Encounter two trees trained by the same procedure on two samples from the
-   same sine process; their predictions disagree at one fixed input.
+1. Encounter an unchanged patient record whose risk estimate moves across three
+   scheduled retrainings of the same fictitious hospital model.
 2. Hold the process, algorithm, and input fixed. Name the spread across possible
    training datasets as pointwise model variance.
 3. Explain why an early split change can propagate through a deep tree.
@@ -82,11 +110,11 @@ Simplifications and limits: synthetic regression, one fixed input, equal tree
 7. Reveal the narrowing distributions for B = 1, 2, 5, and 25.
 8. Derive `Var(T-bar_B(x_0)) = sigma^2(x_0) / B` under independence and equal
    variance, translating every algebraic step back to the visual.
-9. Stress the independence assumption and use the remaining shared movement to
-   motivate correlation and random forests without teaching them here.
-10. End with an unfamiliar distribution comparison and ask the learner to explain
-    which ensemble is more stable, what evidence supports the claim, and which
-    assumption they cannot infer from the chart alone.
+9. Stress the independence assumption and split the measured movement into
+   bootstrap-specific variation and original-dataset variation shared by all trees.
+10. Return to the hospital and ask what a narrower prediction distribution proves,
+    what it does not prove, and how the team could compare retraining stability
+    without treating stability as permission to deploy the model.
 
 ## Visual and interactive plan
 

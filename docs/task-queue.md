@@ -35,6 +35,9 @@ references for longer-term editorial direction.
 ### Publishing and content
 
 - [ ] **Draft the bagging variance article — issue #120**
+  - Motivate instability through a fictitious hospital whose unchanged patient
+    record receives different risk estimates after scheduled model retraining;
+    use the sine curve only as the controlled laboratory for that problem.
   - Use one noisy sine-curve regression example and one fixed input to make
     pointwise model variance, bootstrap sampling, and averaging visible.
   - Two matched computed experiments show the single-tree and bagged-ensemble
@@ -45,7 +48,8 @@ references for longer-term editorial direction.
     adaptive aligned histograms, responsive layout, and math rendering honest.
   - Keep the article in draft through its pull request into `develop`; do not
     publish it before 2026-08-26 or couple it to this week's article release.
-  - Reserve correlated trees, the variance floor, random-forest feature
+  - Explain the observed variance floor intuitively as uncertainty shared through
+    the original dataset; reserve its covariance formula, random-forest feature
     sampling, and boosting for later articles.
   - Completion check: the editorial draft and its accessible visual evidence
     pass the full repository gate and the exact revision is reviewed in staging.
