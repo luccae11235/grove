@@ -109,6 +109,10 @@ import BaggingPlayground from "../../../components/BaggingPlayground.astro";
   around the curve instead of landing exactly on it. From all the points this
   process could produce, a training run sees only one finite dataset, $D$.
 
+  In plain language, **model variance asks how much the prediction would move if
+  we repeated the entire training process with another plausible dataset**. The
+  patient or input stays the same; only the training evidence changes.
+
   A training algorithm $\mathcal A$ turns that dataset into a fitted model:
 
   $$
@@ -154,6 +158,9 @@ import BaggingPlayground from "../../../components/BaggingPlayground.astro";
   tree. Reveal its mean and probability bands only when you want to compare the
   fitted evidence with the process that produced the data. Hover a tree segment
   or a training point to inspect which observations support the same learned leaf.
+
+  **Before you run it, predict the shape:** repeated tree predictions should land
+  at several different values rather than pile up at one value.
 </article>
 
 <div className="interactive-breakout article-interactive bagging-interactive">
@@ -225,6 +232,11 @@ import BaggingPlayground from "../../../components/BaggingPlayground.astro";
   Bootstrap sampling supplies **variation**. It does not yet reduce variance.
   The reduction comes from what we do with those varied predictions.
 
+  From here on, keep two levels of repetition separate. Inside one episode, we
+  will fit several bootstrap trees from one original dataset and combine their
+  predictions. Across episodes, we will replace that original dataset and watch
+  how the combined prediction changes.
+
   <p className="lesson-stage">Average the predictions</p>
   <h2 id="bagging">Let the trees disagree, then combine them</h2>
 
@@ -269,6 +281,10 @@ import BaggingPlayground from "../../../components/BaggingPlayground.astro";
   datasets, you can change the tree count without changing the comparison. Every
   tree-count button reports the standard deviation of its own prediction history,
   so you can compare spreads without resetting or mixing the evidence.
+
+  **Before you run the experiment, predict the comparison:** on the same fixed
+  scale, the completed predictions should form a narrower distribution as more
+  trees are averaged inside each episode.
 </article>
 
 <div className="interactive-breakout article-interactive bagging-interactive">
@@ -312,8 +328,17 @@ import BaggingPlayground from "../../../components/BaggingPlayground.astro";
   <h2 id="variance-derivation">Why does averaging shrink variance?</h2>
 
   The experiment gives us visible evidence. Now consider a deliberately simplified
-  model. At the fixed input $x_0$, suppose every tree prediction has variance
-  $\sigma^2(x_0)$ and the tree predictions are independent.
+  model. Unlike the earlier $\operatorname{Var}_D$, the unqualified variance below
+  ranges over both sources of randomness in a repeated complete experiment: the
+  original dataset changes across episodes, and the bootstrap draws change within
+  each dataset. At the fixed input $x_0$, suppose every tree prediction has variance
+  $\sigma^2(x_0)$.
+
+  Now impose an artificial independence benchmark. Independence means that knowing
+  one tree predicted unusually high would tell us nothing about whether another
+  tree predicted high or low. Real bootstrap trees do not behave this way, because
+  the trees inside an episode share the same original dataset. The benchmark asks
+  what averaging would achieve if they did.
 
   Starting from the bagged prediction,
 
@@ -373,10 +398,11 @@ import BaggingPlayground from "../../../components/BaggingPlayground.astro";
   <h2 id="correlation-limit">Why did the standard deviation stop near 0.17?</h2>
 
   The formula $\sigma^2(x_0)/B$ assumes independent tree predictions. Our
-  bootstrap trees do not satisfy that assumption. Every tree inside an episode
-  traces back to the same original dataset, and their bootstrap samples overlap.
-  They therefore inherit some of the same gaps, unusual observations, and local
-  imbalances. Their predictions tend to move together.
+  bootstrap trees do not satisfy that assumption. The fundamental reason is that
+  every tree inside an episode traces back to the same finite original dataset.
+  Their bootstrap samples often overlap too, but even different resamples inherit
+  the original dataset's same gaps, unusual observations, and local imbalances.
+  Their predictions therefore tend to move together.
 
   It helps to separate two sources of movement.
 
@@ -406,10 +432,11 @@ import BaggingPlayground from "../../../components/BaggingPlayground.astro";
   > exactly the same way.**
 
   The more differently trees fluctuate, the more their highs and lows cancel. The
-  more they move together, the sooner the improvement levels off. A later article
-  will make that correlation visible, derive the variance-floor formula, and show
-  why random forests vary the available features as well as the rows. Boosting
-  answers a different question and deserves a separate comparison.
+  more they move together, the sooner the improvement levels off. We keep that
+  correlation floor qualitative here; its exact formula belongs to the follow-up.
+  That later article will make the correlation visible and show why random forests
+  vary the available features as well as the rows. Boosting answers a different
+  question and deserves a separate comparison.
 
   <p className="lesson-stage">Return to the decision</p>
   <h2 id="explain-a-new-ensemble">What has the hospital gained?</h2>
@@ -424,7 +451,13 @@ import BaggingPlayground from "../../../components/BaggingPlayground.astro";
   retraining windows, it can keep the patient profile or another fixed evaluation
   set unchanged, record each model's predictions, and compare their standard
   deviations. The single-tree and bagged systems must face the same windows. A
-  narrower bagged distribution is direct evidence of greater pointwise stability.
+  narrower bagged distribution is direct evidence of greater **operational
+  pointwise stability** across those retrainings.
+
+  That operational comparison can contain more than sampling instability. Patient
+  populations, clinical practice, or measurement may also change between windows.
+  Interpreting the spread purely as model variance from finite sampling requires
+  the team to control for those shifts or account for them separately.
 
   That evidence still has boundaries. It does not prove that the average risk is
   correct. It does not show equal stability for every kind of patient. And it does

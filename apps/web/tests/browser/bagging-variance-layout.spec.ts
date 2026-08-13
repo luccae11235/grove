@@ -59,6 +59,27 @@ test("the revised article uses two matched experiments and places static explana
   await expect(page.getByRole("img", { name: "Three tree predictions become one ensemble prediction" })).toBeVisible();
   await expect(page.getByRole("img", { name: "Prediction standard deviation by number of averaged trees" })).toBeVisible();
 
+  const guidancePrecedesExperiments = await page.evaluate(() => {
+    const firstPrediction = Array.from(document.querySelectorAll("p")).find((element) =>
+      element.textContent?.includes("Before you run it, predict the shape"),
+    );
+    const ensemblePrediction = Array.from(document.querySelectorAll("p")).find((element) =>
+      element.textContent?.includes("Before you run the experiment, predict the comparison"),
+    );
+    const singleTreeExperiment = document.querySelector('[data-bagging-visual="variance"]');
+    const ensembleExperiment = document.querySelector('[data-bagging-visual="ensemble"]');
+
+    return Boolean(
+      firstPrediction
+      && ensemblePrediction
+      && singleTreeExperiment
+      && ensembleExperiment
+      && (firstPrediction.compareDocumentPosition(singleTreeExperiment) & Node.DOCUMENT_POSITION_FOLLOWING)
+      && (ensemblePrediction.compareDocumentPosition(ensembleExperiment) & Node.DOCUMENT_POSITION_FOLLOWING),
+    );
+  });
+  expect(guidancePrecedesExperiments).toBe(true);
+
   const overviewFollowsBagging = await page.evaluate(() => {
     const heading = document.querySelector("#bagging");
     const overview = document.querySelector('[data-bagging-visual="overview"]');
