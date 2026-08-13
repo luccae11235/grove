@@ -2,9 +2,15 @@ import { expect, test } from "@playwright/test";
 
 const articlePath = "/learn/bagging-reduces-tree-variance/";
 
-test("the revised article uses two matched experiments and places static explanations where needed", async ({ page }) => {
-  await page.goto(articlePath);
+test.beforeEach(async ({ page }) => {
+  const response = await page.goto(articlePath);
+  test.skip(
+    response?.status() === 404,
+    "The bagging article is a staging-only draft in published-only builds.",
+  );
+});
 
+test("the revised article uses two matched experiments and places static explanations where needed", async ({ page }) => {
   await expect(page.getByRole("heading", {
     level: 1,
     name: "Why averaging trees makes predictions more stable",
@@ -89,8 +95,6 @@ test("the revised article uses two matched experiments and places static explana
 });
 
 test("math renders once with KaTeX and remains contained", async ({ page }) => {
-  await page.goto(articlePath);
-
   await expect(page.locator(".katex-error")).toHaveCount(0);
   const math = page.locator(".katex").first();
   await expect(math).toBeVisible();
@@ -137,7 +141,6 @@ test("math renders once with KaTeX and remains contained", async ({ page }) => {
 });
 
 test("one-tree episodes learn, predict, and feed the histogram", async ({ page }) => {
-  await page.goto(articlePath);
   const experiment = page.locator('[data-bagging-visual="variance"]');
 
   await expect(experiment).toHaveAttribute("data-phase", "idle");
@@ -188,7 +191,6 @@ test("one-tree episodes learn, predict, and feed the histogram", async ({ page }
 });
 
 test("the bagged experiment keeps fair histories for each selected tree count", async ({ page }) => {
-  await page.goto(articlePath);
   const experiment = page.locator('[data-bagging-visual="ensemble"]');
   await expect.poll(() => experiment.evaluate((element) =>
     element.closest("astro-island")?.hasAttribute("ssr") ?? false,
@@ -228,7 +230,6 @@ test("the bagged experiment keeps fair histories for each selected tree count", 
 });
 
 test("the static comparison uses computed predictions and shows lower spread for larger ensembles", async ({ page }) => {
-  await page.goto(articlePath);
   const comparison = page.locator('[data-bagging-visual="standard-deviation-comparison"]');
 
   await expect(comparison).toHaveAttribute("data-comparison-episodes", "240");
@@ -243,7 +244,6 @@ test("the static comparison uses computed predictions and shows lower spread for
 
 test("both experiments stay within the article measure on desktop and mobile", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 960 });
-  await page.goto(articlePath);
 
   const desktop = await page.evaluate(() => {
     const articleWidth = document.querySelector<HTMLElement>(".lesson-body")!.getBoundingClientRect().width;
@@ -273,7 +273,7 @@ test("both experiments stay within the article measure on desktop and mobile", a
 
 test("reduced motion disables autoplay but preserves a stepped episode", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto(articlePath);
+  await page.reload();
   const experiment = page.locator('[data-bagging-visual="variance"]');
 
   await expect(experiment.getByRole("button", { name: "Play" })).toBeDisabled();
