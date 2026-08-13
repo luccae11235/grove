@@ -34,6 +34,15 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Establish the weekly article publishing guideline — issue #121**
+  - Separate draft intake into `develop`/staging from the Friday publication of
+    exactly one queued article.
+  - Make website promotion, provider-draft review, inbox testing, subscriber
+    delivery, and reporting explicit checklist gates.
+  - Preserve separate approval for production deployment and newsletter send.
+  - Completion check: the short writer-facing guide matches the repository's
+    real workflows and passes applicable documentation checks.
+
 - [ ] **Draft and test Issue 002 about classification and regression trees — issue #92**
   - Keep the newsletter issue in draft while reviewing its web, HTML email,
     and plain-text forms.
