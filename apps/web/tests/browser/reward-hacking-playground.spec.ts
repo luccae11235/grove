@@ -8,9 +8,10 @@ for (const viewport of [
     page,
   }) => {
     await page.setViewportSize(viewport);
-    await page.goto("/learn/reward-hacking/");
+    const response = await page.goto("/learn/reward-hacking/");
     test.skip(
-      (await page.locator('meta[http-equiv="refresh"]').count()) > 0,
+      response?.status() === 404 ||
+        (await page.locator('meta[http-equiv="refresh"]').count()) > 0,
       "Draft article is excluded from production builds.",
     );
 
