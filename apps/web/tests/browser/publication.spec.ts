@@ -9,9 +9,12 @@ test("the production article library excludes drafts", async ({ page }) => {
   })).toBeVisible();
   await expect(page.getByRole("link", {
     name: /Reward Hacking in Reinforcement Learning/,
-  })).toHaveCount(0);
+  })).toBeVisible();
   await expect(page.getByRole("link", {
     name: /Why averaging trees makes predictions more stable/,
+  })).toHaveCount(0);
+  await expect(page.getByRole("link", {
+    name: /How the Past Echoes: Understanding ACF and PACF/,
   })).toHaveCount(0);
 
   await page.goto("/learn/regression-trees/");
@@ -21,7 +24,10 @@ test("the production article library excludes drafts", async ({ page }) => {
   })).toBeVisible();
 
   await page.goto("/learn/reward-hacking/");
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("heading", {
+    level: 1,
+    name: "Reward Hacking in Reinforcement Learning",
+  })).toBeVisible();
 
   await page.goto("/learn/bagging-reduces-tree-variance/");
   await expect(page).toHaveURL(/\/$/);
