@@ -31,6 +31,18 @@ test("the complete Reward Hacking lesson is available in Brazilian Portuguese", 
   expect(text).not.toContain("Q(state,");
 });
 
+test("the English lesson exposes its Brazilian Portuguese translation", async ({ page }) => {
+  await page.goto("/learn/reward-hacking/");
+
+  await expect(
+    page.getByRole("link", { name: "Português (Brasil)", exact: true }).first(),
+  ).toBeVisible();
+  await expect(page.locator('link[rel="alternate"][hreflang="pt-BR"]')).toHaveAttribute(
+    "href",
+    /\/pt-br\/learn\/reward-hacking\/$/,
+  );
+});
+
 test("the Portuguese lesson and playgrounds remain contained on mobile", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/pt-br/learn/reward-hacking/");

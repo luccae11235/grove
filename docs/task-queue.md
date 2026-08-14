@@ -34,6 +34,17 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
+  - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
+    while keeping Bagging and ACF/PACF in draft.
+  - Review the short Issue 003 web, HTML email, and plain-text forms before the
+    production promotion.
+  - Treat the production merge, provider draft, test email, and subscriber send
+    as separate gates with explicit approval for production and delivery.
+  - Completion check: exact-SHA staging and production verification pass, the
+    test email is approved, and the Issue 003 report confirms delivery without
+    a duplicate send.
+
 - [ ] **Draft and test Issue 002 about classification and regression trees — issue #92**
   - Keep the newsletter issue in draft while reviewing its web, HTML email,
     and plain-text forms.
