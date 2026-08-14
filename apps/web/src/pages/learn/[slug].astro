@@ -1,5 +1,6 @@
 ---
 import { getCollection, render, type CollectionEntry } from "astro:content";
+import "katex/dist/katex.min.css";
 import ArticleConnections from "../../components/ArticleConnections.astro";
 import NewsletterSignup from "../../components/NewsletterSignup.astro";
 import { articles } from "../../content/articles";
@@ -8,13 +9,17 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 type ArticleEntry = CollectionEntry<"articles">;
 
 export async function getStaticPaths() {
+  const genericMdxArticleIds = new Set([
+    "reward-hacking-three-mdps",
+    "bagging-reduces-tree-variance",
+  ]);
   const includeDrafts =
     import.meta.env.DEV || import.meta.env.SHOW_DRAFTS === "true";
 
   const entries = await getCollection(
     "articles",
     ({ data }) =>
-      data.articleId === "reward-hacking-three-mdps" &&
+      genericMdxArticleIds.has(data.articleId) &&
       data.locale === "en" &&
       (data.status === "published" || includeDrafts),
   );
@@ -32,12 +37,17 @@ interface Props {
 const { entry } = Astro.props;
 const { Content } = await render(entry);
 const inCatalog = articles.some((article) => article.id === entry.data.articleId);
+const newsletterSource = `${entry.data.articleId}-article`;
+const translations = entry.data.articleId === "reward-hacking-three-mdps"
+  ? { en: "/learn/reward-hacking/", "pt-BR": "/pt-br/learn/reward-hacking/" }
+  : undefined;
 ---
 
 <BaseLayout
   title={entry.data.title}
   description={entry.data.description}
   canonicalPath={entry.data.href}
+  translations={translations}
   pageType="article"
   analyticsContentId={entry.data.articleId}
   publishedAt={entry.data.publishedAt}
@@ -47,7 +57,7 @@ const inCatalog = articles.some((article) => article.id === entry.data.articleId
 >
   <Content />
   {inCatalog && <ArticleConnections articleId={entry.data.articleId} />}
-  <NewsletterSignup source="reward-hacking-article" compact />
+  <NewsletterSignup source={newsletterSource} compact />
 </BaseLayout>
 
 <style is:global>
@@ -86,5 +96,40 @@ const inCatalog = articles.some((article) => article.id === entry.data.articleId
     color: inherit;
     font: inherit;
     line-height: 1.65;
+  }
+
+  .bagging-article .katex {
+    color: var(--text);
+    font-size: 1.06em;
+  }
+
+  .bagging-article .katex-display {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    margin: 28px 0 32px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 4px 8px;
+    text-align: center;
+    scrollbar-color: var(--border-strong) transparent;
+    scrollbar-width: thin;
+  }
+
+  .bagging-article .katex-display > .katex {
+    display: inline-block;
+    min-width: max-content;
+    font-size: clamp(1.03rem, 2.4vw, 1.26rem);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 520px) {
+    .bagging-article .katex-display {
+      margin-right: -8px;
+      margin-left: -8px;
+      padding-right: 8px;
+      padding-left: 8px;
+      text-align: left;
+    }
   }
 </style>

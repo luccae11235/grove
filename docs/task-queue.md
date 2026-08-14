@@ -34,6 +34,17 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
+  - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
+    while keeping Bagging and ACF/PACF in draft.
+  - Review the short Issue 003 web, HTML email, and plain-text forms before the
+    production promotion.
+  - Treat the production merge, provider draft, test email, and subscriber send
+    as separate gates with explicit approval for production and delivery.
+  - Completion check: exact-SHA staging and production verification pass, the
+    test email is approved, and the Issue 003 report confirms delivery without
+    a duplicate send.
+
 - [ ] **Draft and test Issue 002 about classification and regression trees — issue #92**
   - Keep the newsletter issue in draft while reviewing its web, HTML email,
     and plain-text forms.
@@ -54,6 +65,16 @@ references for longer-term editorial direction.
     two decision-tree articles, with exact-SHA deployment verification passing.
 
 ### Learning experience
+
+- [ ] **Prepare the Reward Hacking article for release — issue #123**
+  - Make the first checkpoint playground clearly explain that readers can move
+    checkpoints and watch the model learn the changed route.
+  - Add and review the complete Brazilian Portuguese article on the same
+    isolated branch before release.
+  - Keep production deploys, merges, and newsletter delivery out of scope until
+    separately reviewed and authorized.
+  - Completion check: focused checks and desktop/mobile rendered review pass,
+    followed by staging review of the complete English and Portuguese article.
 
 - [x] **Add minimal anonymous article feedback — issue #96**
   - Let readers rate whether an article was useful without an account,
@@ -180,6 +201,26 @@ references for longer-term editorial direction.
     production verification passed on `8b2b127` and `891b7da`, respectively.
 
 ### Publishing and content
+
+- [x] **Draft the bagging variance article — issue #120** — 2026-08-13
+  - Used one fixed patient question and a noisy sine-curve laboratory to explain
+    pointwise model variance, bootstrap sampling, aggregation, and the correlated-tree floor.
+  - Added two computed experiments and three restrained visuals with accessible,
+    responsive, keyboard, and reduced-motion behavior.
+  - Incorporated beta-reader feedback and kept draft-only browser checks active in
+    staging while published-only builds continue to exclude the article.
+  - Completion check: the full local and GitHub gates passed; staging verification
+    run `31752958060` confirmed exact revision `e79a0bec9a2d669911eb040e150af1376dfde0ed`,
+    and production continued to return 404 for the draft route.
+
+- [x] **Establish the weekly article publishing guideline — issue #121** — 2026-08-13
+  - Separated draft intake into `develop`/staging from the Friday publication
+    of exactly one queued article.
+  - Made website promotion, provider-draft review, inbox testing, subscriber
+    delivery, and reporting explicit checklist gates.
+  - Preserved separate approval for production deployment and newsletter send.
+  - Completion check: the short writer-facing guide matches the repository's
+    real workflows, and the full local and GitHub checks passed.
 
 - [x] **Translate the article library to Brazilian Portuguese — issue #112** — 2026-08-10
   - Added a complete Portuguese homepage and about page, plus reviewed `pt-BR`

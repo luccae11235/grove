@@ -22,6 +22,31 @@ export {
   MultiFeatureRegressionPlayground,
   multiFeatureRegressionSummary,
 } from "./MultiFeatureRegressionPlayground";
+export {
+  adaptiveHistogramBinCount,
+  BaggingDistributionPlayground,
+  BaggingEnsembleOverview,
+  BaggingStandardDeviationComparison,
+  BootstrapSamplesPlayground,
+  bootstrapSample,
+  computeStandardDeviationComparison,
+  fitRegressionTree,
+  fittingFrameStride,
+  generateSineSample,
+  predictTree,
+  predictionMean,
+  predictionStandardDeviation,
+  runBaggingExperiment,
+  sampleVariance,
+  speedFromSliderPosition,
+  TreeVariancePlayground,
+} from "./BaggingVariancePlaygrounds";
+export type {
+  BaggingExperiment,
+  BaggingTrial,
+  RegressionTree,
+  SinePoint,
+} from "./BaggingVariancePlaygrounds";
 export { CheckpointLab } from "./rewardHacking/CheckpointLab";
 export {
   CheckpointAlignedPlayground,
