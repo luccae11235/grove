@@ -202,6 +202,14 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Draft a quick deep dive on gradient boosting — issue #136** — 2026-08-20
+  - Preserved the supplied manuscript while adding article metadata and a real
+    Markdown heading hierarchy.
+  - Kept all 18 image, 2 animation, and 4 playground specifications as
+    placeholders with their implementations explicitly deferred.
+  - Completion check: web typecheck, the published-only build, and the explicit
+    draft-preview build passed; the draft route rendered with every placeholder.
+
 - [x] **Draft the bagging variance article — issue #120** — 2026-08-13
   - Used one fixed patient question and a noisy sine-curve laboratory to explain
     pointwise model variance, bootstrap sampling, aggregation, and the correlated-tree floor.

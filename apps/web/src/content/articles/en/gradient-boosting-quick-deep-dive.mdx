@@ -1,0 +1,975 @@
+---
+articleId: gradient-boosting-quick-deep-dive
+locale: en
+routeSlug: gradient-boosting-quick-deep-dive
+href: /learn/gradient-boosting-quick-deep-dive
+title: "Gradient Boosting: A Quick Deep Dive"
+navTitle: A quick deep dive on gradient boosting
+description: "Build gradient boosting from residual corrections, then connect the same additive procedure to classification and optimization in function space."
+eyebrow: Decision trees · Gradient boosting
+area: Supervised learning
+topic: Gradient boosted decision trees
+summary: Start from one constant prediction, fit small trees to the corrections that remain, and discover how a chosen loss turns boosting into gradient descent in function space.
+status: draft
+readingTime: 30–35 min
+interactiveCount: 0
+staticVisualCount: 0
+difficulty: intermediate
+series: tree-based-machine-learning
+access: public
+prerequisites:
+  - regression-trees-from-scratch
+related:
+  - bagging-reduces-tree-variance
+implementation: mdx
+learning:
+  priorKnowledge:
+    - Recognize the piecewise-constant prediction made by a regression tree.
+    - Interpret a residual as the difference between a target and a prediction.
+    - Follow a derivative as a local direction of change for a loss.
+  likelyMisconception: Gradient boosting differentiates through each decision tree or trains every tree independently on the original target.
+  transferOutcome: Explain how a gradient boosted decision-tree model turns loss gradients into a sequence of small predictive corrections for regression or classification.
+  motivatingQuestion: How can many small trees cooperate to improve one prediction without any tree solving the complete problem alone?
+  conceptualBottleneck: The loss defines a desired correction at each training prediction, while a new tree generalizes that correction as a function of the input features.
+  evidenceOfUnderstanding:
+    - Trace one squared-error boosting round from the baseline through residual fitting to the updated prediction.
+    - Predict how learning rate and tree count change the trajectory of the ensemble.
+    - Explain why binary classification performs additive updates in logit space.
+    - Distinguish gradients with respect to current predictions from gradients with respect to tree split parameters.
+---
+
+## Introduction
+
+Over the last decade, machine learning has increasingly been associated with neural networks. In computer vision, language modeling, speech, and generative AI, much of the progress has come from architectures that learn continuous representations through gradient-based optimization.
+
+Tabular data has followed a somewhat different path.
+
+When the inputs are columns such as age, income, account balance, product category, transaction count, or time since the last purchase, tree-based models remain remarkably competitive. Their inductive bias is naturally suited to this type of data: a useful pattern can often be expressed through relatively simple questions such as whether a feature is above a threshold, whether another feature falls inside a particular range, or whether two conditions occur together.
+
+Gradient Boosted Decision Trees, or GBDTs, combine this strength of decision trees with an idea that feels much closer to classical numerical optimization.
+
+Instead of training one large tree to solve the entire problem, we build a model sequentially. We begin with a crude prediction, inspect how that prediction should change to reduce the loss, train a small model to generalize those corrections across the input space, and then add that model to what we already have.
+
+The result is an additive model:
+
+$$
+F_M(x)
+=
+F_0(x)
++
+\eta h_1(x)
++
+\eta h_2(x)
++\cdots+
+\eta h_M(x)
+$$
+
+where $F_0$ is the initial prediction, each $h_m$ is a new learner, and $\eta$ controls how much each learner is allowed to modify the current model.
+
+This creates an interesting bridge between decision trees and gradient descent. In a neural network, we normally define a parameterized function $f(x;\theta)$ and repeatedly modify its parameters $\theta$ to reduce a loss. In gradient boosting, the current predictor itself is gradually modified by adding new functions to it.
+
+Another way to think about this is that we stop asking a single model to learn the complete mapping from $X$ to $y$ at once. Instead, at every iteration, we study the pattern of corrections that the current model still needs. A weak learner generalizes that correction, we add it to the model, and then we inspect what remains.
+
+With enough iterations, surprisingly complex functions can emerge from many individually simple trees.
+
+[IMAGEM: Ilustração indicando múltiplas árvores sendo treinadas de forma sequencial, corrigindo os erros uma das outras]
+
+## Intuition
+
+### Starting Simple
+
+Complex algorithms are often much easier to understand when we first strip away everything that is not essential. So let us begin with an intentionally simple regression problem.
+
+Suppose our dataset contains only one input feature $x$, and the target roughly follows a sine curve with some random noise:
+
+$$
+y \approx \sin(x) + \epsilon
+$$
+
+This is useful because both the data and the model's predictions can be visualized directly in two dimensions.
+
+If we trained a regression tree on this dataset, its prediction would be piecewise constant. Different intervals of the $x$-axis would fall into different leaves, and every point inside a leaf would receive the same prediction.
+
+[IMAGEM: Apresentar o problema e como as previsões de uma árvore de regressão parecem. CONTEXTO: Demonstrar como vamos representar as previsões finais de um modelo com uma linha que muda de nível ao longo do eixo X.]
+
+The underlying dataset itself is almost embarrassingly simple.
+
+[IMAGEM: Mostar uma tabela com duas colunas apenas: X e y]
+
+Now we are going to change how we think about the problem.
+
+Rather than asking how to build one regression tree that predicts $y$, suppose we decide in advance that we are going to train several models sequentially. Each new model will focus only on correcting what the previous model has not captured yet.
+
+Before training any tree, we need some initial prediction.
+
+For squared-error regression, a natural starting point is the mean target value:
+
+$$
+F_0(x)=\bar y
+$$
+
+Every input therefore receives exactly the same prediction at the beginning. Graphically, the model is simply a horizontal line.
+
+For each observation, we can now measure how far the true target is from this baseline:
+
+$$
+r_i = y_i - F_0(x_i)
+$$
+
+[IMAGEM: Mesma imagem anteriormente, mas ao invés de termos uma previsão final, teremos uma linha horizontal, onde o eixo y é a média de valores que queremos prever. Perpendicular a esta linha, iremos projetar cada ponto no plano verticalmente até a linha base.
+
+The vertical red segments represent exactly these differences. If a point lies above the baseline, its residual is positive; if it lies below it, its residual is negative.
+
+At this point, those residuals become the new prediction problem.
+
+Instead of keeping the original $y$ values as our target, we temporarily replace them with the amount by which the current model needs to move at every training observation.
+
+Because this toy problem has only one feature, we can visualize those residuals as another dataset.
+
+[IMAGEM: eixo x continua o mesmo, mas y agora são os resíduos. Objetivo é deixar claro que resíduos apresentam padrões também]
+
+The important observation is that the residuals are not necessarily random.
+
+If the baseline systematically underestimates one region of the curve and overestimates another, the residuals themselves contain structure. A decision tree can learn some of that structure.
+
+So we train a regression tree $h_1(x)$, but its target is now the residual:
+
+$$
+h_1(x) \approx y-F_0(x)
+$$
+
+[IMAGEM: mesma imagem anterior, mas agora com previsões para os resíduos]
+
+Once this tree has learned a useful approximation of the correction, we add it to the baseline:
+
+$$
+F_1(x)=F_0(x)+h_1(x)
+$$
+
+A prediction is therefore no longer coming from one tree. It is the composition of an initial value and a learned correction.
+
+[IMAGEM: Previsão base + correção do erro]
+
+Even this one step already contains most of the intuition behind boosting. The first model does not need to solve the entire problem. It only gives us somewhere to start. The next model studies what is still wrong and learns a function that moves the predictions in a better direction.
+
+### Nothing Is That Simple
+
+There is one problem with applying the full correction immediately.
+
+A regression tree is itself an approximation. It does not know the true correction function; it only estimates it from a finite training set. If we completely trust every tree and add its predictions at full magnitude, the ensemble can react too aggressively to patterns that happen to exist only in the training data.
+
+Consider points from a test set that were never used to train the tree. The tree may estimate the corrections well in some regions while producing unnecessarily large corrections in others.
+
+[IMAGEM: imagem separada em esquerda e direita. Na esquerda, o mesmo gráfico anteriormente, mas agora com alguns pontos de teste. Mostrar a diferença entre previsão e ponto de teste a partir de um linha vertical que conecta o ponto até a linha de previsão, a direita, mostrar um histograma representando a distribuição de erros ]
+
+A simple way to make the process more conservative is to shrink every correction before adding it.
+
+Instead of
+
+$$
+F_1(x)=F_0(x)+h_1(x),
+$$
+
+we use
+
+$$
+F_1(x)=F_0(x)+\eta h_1(x),
+$$
+
+where $\eta$ is the **\*\*learning rate\*\***, usually chosen somewhere between 0 and 1.
+
+If $\eta=0.1$, for example, a tree that proposes a correction of $+4$ only moves the current prediction by $+0.4$.
+
+This means each individual tree has less influence, but it also means that later trees will have an opportunity to keep correcting the remaining error.
+
+[IMAGEM: mesma imagem anterior, mas agora com learning rate mais otimizado, e mostrar que a distribuição apresenta erros menores. As imagens devem estar perfeitamente alinhadas, com gráficos e histogramas nas mesmas posições relativas. O que deve mudar é apenas as linhas de projeções assim como as barras no histograma]
+
+Changing the learning rate therefore changes the trajectory of the entire boosting process. A large value allows the ensemble to move quickly, but it can make each update unstable. A small value makes learning more gradual and usually requires more trees.
+
+The interaction below makes that tradeoff visible directly.
+
+[PLAYGROUND: Mesma estrutura das imagens anteriormente, mas agora o usuário pode configurar o learning rate. Tanto as previsões quanto o histograma dever ser continuadamente atualizadas. A todo instance o usuário deve ver a média de erros no histograma e valor. O objetivo é determinar qual é o melhor learning rate]
+
+Values around $0.1$ are common starting points in practice, but there is nothing intrinsically optimal about $0.1$. The appropriate learning rate depends on the dataset, tree complexity, number of boosting iterations, regularization, and validation behavior. It is an empirical choice rather than a mathematical constant.
+
+### More Trees
+
+After training the first tree, we have a better model:
+
+$$
+F_1(x)=F_0(x)+\eta h_1(x)
+$$
+
+but usually not a perfect one.
+
+So we simply repeat the procedure.
+
+We calculate a new residual for every training observation:
+
+$$
+r_i^{(2)} = y_i-F_1(x_i)
+$$
+
+These residuals describe what the ensemble still needs to correct after the first tree has already contributed.
+
+[IMAGEM: na esquerda: mesmo padrão de dados anterioemente, mas agora estamos coletando os resíduos da previsão base + arvore 1, na direita: mostrar no eixo x as feature o no eixo y o “residuo 2”]
+
+We can now train another tree,
+
+$$
+h_2(x)\approx r^{(2)},
+$$
+
+and update the model again:
+
+$$
+F_2(x)
+=
+F_1(x)+\eta h_2(x)
+=
+F_0(x)+\eta h_1(x)+\eta h_2(x)
+$$
+
+[IMAGEM: mesmo padrão de sempre, mas agora temos a linha base na horizontal, a previsões de correção 1 como linhas vermelhas suaves que vão verticalmente da previsão base até o ponto que elas preveem, depois, continuando imediatamente destas linhas vermelhas, agora com possível sobreposição de linhas, mostrar uma linha roxa representando as correções 2. Algumas linhas devem apenas continuar o caminho da correção 1, mas outras devem ‘voltar um pouco’, para mostrar que algumas correções 2 tem sinal positivo ou negativo diferente da correção 1]
+
+The second correction does not have to resemble the first.
+
+In one region, both trees may push the prediction upward. Somewhere else, the first correction may have gone too far, so the second tree learns a negative correction that partially reverses it. The ensemble is not building a fixed decomposition of the target; every new learner is responding to the state of the model produced by all previous learners.
+
+That is why the sequence matters.
+
+Tree $h_2$ is solving a different problem from $h_1$, because $h_1$ has already changed the predictions. Tree $h_3$ will solve another problem again.
+
+After $M$ iterations:
+
+$$
+F_M(x)
+=
+F_0(x)
++
+\eta\sum_{m=1}^{M}h_m(x)
+$$
+
+The following animation expands this iterative process.
+
+[ANIMAÇÃO: Na esquerda temos o gráfico de eixo x e y, na direita temos gráficos de resíduos. Abaixo dos 2 gráficos vamo mostrar, a esquerda, o número que representa a decisão base, e após cada árvore de regressão treinada, vamos mostrar a arvore sendo adicionada a previsão. Algo como:
+
+9.2 + [arvore de decisão pequena (depth 2)]  + [arvore de decisão pequena (depth 2)] + [arvore de decisão pequena (depth 2)] ….
+
+A animação deve seguir de forma suave, profissional, os seguintes passos:
+
+1\. Previsão inicial no gráfico da esquerda]
+2\. Cálculo de residuos. Linhas verticais deve surgir a partir da previsão inicial até os datapoints de teste suavemente
+3\. Os residuos deve se deslocar de forma contínua, até o gráfico de resíduos na direita para suas respectivas posições
+4\. Treinar um novo modelo de previsão em cima dos resíduos. O treino deve mostrar a curva de predição da arvore de decisao surgindo continuadamente da esquerda para a direita
+5\. A linha de previsão dos residuos deve se mover continuamente e suavemente até sobrepor a atual linha de previsão do gráfico esquerdo.
+6\. Devemos somar as linhas de previsão, mantendo um “ghost” da última previsão para mostrar que atualizamos as previsões.
+7\. Repetir passo 1 até 6 pelo menos 4 vezes para mostrar como estamos treinando uma nova árvore.]
+
+There is another useful way to observe the same process.
+
+Instead of focusing on the trees themselves, we can monitor the distribution of the remaining errors. Early in training, the residuals may be widely dispersed. As useful corrections are added, we expect that distribution to become more concentrated around zero, at least on data where the model is genuinely improving.
+
+[ANIMAÇÃO: Mesma animação. Muitos componentes devem ser reutilizados. O que deve ser mostrado no campo de baixo agora são dois gráficos. No canto inferior direito deve haver um histograma com o resíduos, e toda nova atualização de previsão (etapa 6), ele deve alterar de forma contínua e leve. No canto inferior direito, devemos mostrar um gráfico com número de árvores → erro médio (média dos histogramas), para mostrar que cada nova previsão diminui o erro médio]
+
+The interaction between learning rate and number of trees becomes particularly important here.
+
+With a very small learning rate and only a few trees, the ensemble may barely move away from its baseline. With a large learning rate, the first trees may overshoot substantially, forcing later trees to learn corrections in the opposite direction. Somewhere between these extremes is a regime in which each tree contributes enough to be useful without dominating the entire ensemble.
+
+[PLAYGROUND: com os mesmo componentes das animações, o usuário pode ser capaz de alterar o learning rate. Aqui ele seleciona quantas árvores ele quer treinar (de 1 a 4), e o learning rate pode ser alterado de forma contínua. Assumindo que as árvores já foram altomaticamente treinadas, o que eu quero que ele veja são as previsoes compostas no primeiro gráfico ou explodindo ou não sendo o suficiente. Se o learning rate for muito baixo, então a maioria das previsões sequer alcançam seus respectivos pontos de treino. Se for muito grande, a maioria vai extrapolar e a nova previsão deve ser capaz de corrigir o dano.
+
+Deve a ver o mesmo formato da ANIMAÇÃO 1 com 3 elementos: gráfico de previsões no canto superior esquerdo, residuos na direita, e no bloco inferior mais extenso as arvores treinadas (pode ser uma respresentação simples como:
+
+9.2 + [arvore de decisão pequena (depth 2)]  + [arvore de decisão pequena (depth 2)] + [arvore de decisão pequena (depth 2)] ….
+
+Adicionalmente, quando usuário “hover” o mouse em cima de um ponto de dado, a modelo no canto inferior deve mostrar de fato as previsões. Algo como:
+
+9.2 + [arvore de decisão pequena (depth 2)]  2.3 + [arvore de decisão pequena (depth 2)] -1.2 + [arvore de decisão pequena (depth 2)] ….
+
+onde cada número fica abaixo da representação da árvore. O resultado final deve ser a soma de todos.]
+
+### Getting More Complex
+
+Our sine example is intentionally small, but nothing in the procedure requires one feature or four trees.
+
+Real gradient boosting models may contain hundreds or thousands of learners. Every new learner observes the correction required by the model at its current stage and tries to generalize that correction.
+
+With many input features, the tree decides which features are useful through its splits. One branch might partition the data according to age, another according to account balance, and another according to the interaction between several previous decisions. We do not need to manually specify which feature should be responsible for each correction.
+
+This is one reason trees are particularly attractive as base learners for tabular data. They naturally represent thresholds, nonlinearities, and feature interactions without requiring every relationship to be expressed as a smooth transformation in a continuous representation space.
+
+The individual trees used in boosting are usually kept relatively small.
+
+If each learner were an extremely deep tree capable of almost perfectly fitting the current residuals, then each boosting step could memorize a large portion of the training set. Shallow trees instead provide a restricted function class: every update can capture only part of the remaining structure.
+
+This creates an important interaction between tree complexity, learning rate, and the number of boosting rounds. Hundreds of trees with a sufficiently small learning rate may gradually construct a useful function, while hundreds of highly expressive trees combined with aggressive updates can eventually overfit.
+
+There is also nothing in the mathematical definition of gradient boosting that says the learners must be trees.
+
+We could, in principle, use linear models, splines, small neural networks, or other function classes. Decision trees became the dominant choice because they combine useful approximation capacity with an inductive bias that works extremely well for many structured datasets.
+
+[PLAYGROUND: novo dataset um pouco mais complexo que o anterior. O usuário pode treinar um modelo de até 200 arvores, selectionar o learning rate e ver a curva de previsão se aproximar dos pontos]
+
+### What Do We Do When We Want to Classify?
+
+So far, our example has had an especially convenient property: the prediction can be any real number.
+
+If the target is continuous, there is no problem with predicting
+
+$$
+-4.2,\quad 0.7,\quad 38.1
+$$
+
+or any other value in
+
+$$
+(-\infty,\infty).
+$$
+
+With squared error, we can also compute a particularly intuitive correction:
+
+$$
+y-\hat y
+$$
+
+and add a model that predicts it.
+
+Binary classification is different.
+
+Now the final quantity we want is a probability:
+
+$$
+p(y=1\mid x)\in[0,1].
+$$
+
+Adding arbitrary corrections directly to probabilities would be awkward. A probability of $0.9$, for example, cannot simply receive a correction of $+0.4$, because $1.3$ is not a valid probability.
+
+A convenient solution is to perform boosting in a different numerical space.
+
+Instead of constructing the additive model directly in probability space, we transform probabilities from $(0,1)$ into values that can range from $-\infty$ to $+\infty$. The trees operate in that unconstrained space, and when we need an actual probability, we transform the model's output back into $(0,1)$.
+
+[IMAGEM: No lado esquerdo apresentando que regressão é simples, isto é, o espaço de previsão e ground truth estão em  [-infinity, infinity] e podemos usar squared error. Na direita, mostrar que em classificação, a gente pega o espaço em [0,1], transforma para [-infinity, infinity], fazemos o treinamento, e para previsão transformamos o [-infinity, infinity] de volta para [0,1]]
+
+#### Sigmoid and Logits
+
+The two functions that connect these spaces are the **\*\*sigmoid\*\*** and the **\*\*logit\*\***.
+
+The sigmoid takes any real number $z$ and maps it to a value between zero and one:
+
+$$
+\sigma(z)
+=
+\frac{1}{1+e^{-z}}.
+$$
+
+As $z\rightarrow-\infty$, the sigmoid approaches zero. As $z\rightarrow+\infty$, it approaches one.
+
+Its inverse is the logit:
+
+$$
+\operatorname{logit}(p)
+=
+\log\left(\frac{p}{1-p}\right).
+$$
+
+The logit takes a probability $p\in(0,1)$ and maps it onto the entire real line.
+
+[IMAGEM: apresentar a função sigmoid no lado esquerdo, e no direito o logit]
+
+These functions therefore provide a two-way bridge:
+
+$$
+p
+\overset{\text{logit}}{\longrightarrow}
+z
+\overset{\text{sigmoid}}{\longrightarrow}
+p.
+$$
+
+A probability of $0.5$ corresponds to a logit of $0$. Probabilities above $0.5$ have positive logits, while probabilities below $0.5$ have negative logits.
+
+Gradient boosting can construct an additive model in this logit space:
+
+$$
+F_M(x)
+=
+F_0(x)
++
+\eta h_1(x)
++\cdots+
+\eta h_M(x),
+$$
+
+and the final probability is
+
+$$
+p(x)=\sigma(F_M(x)).
+$$
+
+#### Putting the Pieces Together
+
+Consider a tiny classification dataset with five observations, three input features, and a binary target. Suppose three observations belong to class $0$ and two belong to class $1$.
+
+[IMAGEM: Apresentar o dataset exemplo proposto]
+
+Before training the first tree, we again need a baseline.
+
+The empirical probability of class $1$ is
+
+$$
+p_0=\frac{2}{5}=0.4.
+$$
+
+Because our additive model operates in logit space, the initial model value is
+
+$$
+F_0
+=
+\operatorname{logit}(0.4)
+=
+\log\left(\frac{0.4}{0.6}\right)
+\approx -0.405.
+$$
+
+Every observation initially receives this same logit, which corresponds through the sigmoid to a probability of $0.4$.
+
+[IMAGEM: Mesma tabela anteriormente, mas agora com duas novas colunas, a previsão base, e o logit da previsão]
+
+We now need to decide what the next tree should learn.
+
+With binary cross-entropy, the relevant quantity turns out to be
+
+$$
+r_i=y_i-p_i.
+$$
+
+If $y_i=1$ while the current model predicts $p_i=0.4$, then
+
+$$
+r_i=1-0.4=0.6.
+$$
+
+The model needs to move in a direction that raises the logit and therefore raises the probability.
+
+If $y_i=0$,
+
+$$
+r_i=0-0.4=-0.4,
+$$
+
+so the correction points in the opposite direction.
+
+These values are usually called **\*\*pseudo-residuals\*\*** because they play the same role that ordinary residuals played in squared-error regression, even though they arise from the gradient of a different loss.
+
+We will derive this formally later. For now, the important idea is that the loss gives us a correction signal for every training observation.
+
+[IMAGEM: Mesma tabela de anterior, mas agora com uma coluna a mais, com o resíduo]
+
+A new tree is trained to model this correction signal across the feature space.
+
+Suppose that, for one observation, the resulting boosting step contributes $+0.7$ in logit space. Starting from
+
+$$
+F_0=-0.405,
+$$
+
+the updated score becomes
+
+$$
+F_1=-0.405+0.7=0.295.
+$$
+
+To convert this back into a probability:
+
+$$
+p_1
+=
+\sigma(0.295)
+=
+\frac{1}{1+e^{-0.295}}
+\approx 0.573.
+$$
+
+The probability therefore moves from $0.4$ to about $0.573$.
+
+If this observation belongs to class $1$, that is a useful correction. For observations belonging to class $0$, useful updates should generally move their logits downward and consequently decrease their probabilities.
+
+[IMAGEM: Mesma tabela de antes, só que agora com a previsão do logit, e a nova previsão. O intuito aqui é ver que as probabilidades das classes estão mais alinhadas com o verdadeiro y]
+
+After the update, the model should assign lower probabilities to at least some class-$0$ examples and higher probabilities to at least some class-$1$ examples. We can then calculate a new probability for every observation, obtain a new set of pseudo-residuals, train another tree, and repeat the process.
+
+The overall architecture is therefore almost unchanged from regression.
+
+What changes is the loss, and because the loss changes, so does the correction signal produced at every iteration.
+
+#### A More Concrete Example
+
+The previous five-row dataset exposes the arithmetic, but classification becomes more intuitive when we can see the decision pattern spatially.
+
+Suppose we return to a one-dimensional input $x$, except each point now belongs to either class $0$ or class $1$. Rather than learning a continuous sine curve, the model must learn how the probability of class $1$ changes across the input space.
+
+[PLAYGROUND: Mesmo playground que o anteriormente, só que no eixo x e y teremos uma única variável distribuida entre y = 0  e y=1. O procedimento de treinar uma curva deve ser o mesmo, só que o treinamento será realizado utilizando o método descrito ]
+
+The important difference is what the curve represents.
+
+In regression, the ensemble directly approximated the numerical target. In binary classification, the additive ensemble builds a score in logit space, while the sigmoid transforms that score into the probability curve we actually interpret.
+
+A tree that makes a positive correction in some interval is increasing the log-odds of class $1$ there. A negative correction decreases them. Repeating these local adjustments can eventually form a highly nonlinear classification boundary even though every individual tree remains small.
+
+## Mathematics
+
+### Regression
+
+The residual-based explanation above is exact for one particularly important case: squared-error regression.
+
+Suppose our training set is
+
+$$
+\{(x_i,y_i)\}_{i=1}^{n},
+$$
+
+and our current model is $F(x)$.
+
+We want to minimize an empirical loss
+
+$$
+\mathcal{L}(F)
+=
+\sum_{i=1}^{n}
+L(y_i,F(x_i)).
+$$
+
+For squared error, we can write
+
+$$
+L(y_i,F(x_i))
+=
+\frac{1}{2}
+\left(y_i-F(x_i)\right)^2.
+$$
+
+The derivative with respect to the **\*\*prediction\*\*** $F(x_i)$ is
+
+$$
+\frac{\partial L}{\partial F(x_i)}
+=
+F(x_i)-y_i.
+$$
+
+The negative derivative is therefore
+
+$$
+-\frac{\partial L}{\partial F(x_i)}
+=
+y_i-F(x_i),
+$$
+
+which is exactly the residual.
+
+This gives us a more general interpretation of what we were doing earlier.
+
+At boosting iteration $m$, we calculate
+
+$$
+r_{im}
+=
+-
+\left[
+\frac{\partial L(y_i,F(x_i))}
+{\partial F(x_i)}
+\right]_{F=F_{m-1}}.
+$$
+
+These are the **\*\*negative gradients of the loss with respect to the current predictions\*\***.
+
+We then fit a learner $h_m(x)$ so that
+
+$$
+h_m(x_i)\approx r_{im}.
+$$
+
+Finally, we update the predictive function:
+
+$$
+F_m(x)
+=
+F_{m-1}(x)
++
+\eta h_m(x).
+$$
+
+For squared error this reduces to the intuitive residual procedure we have already seen, because the negative gradient happens to be $y-\hat y$.
+
+For another differentiable loss, the negative gradient will generally be something else.
+
+This is the point at which the word **\*\*gradient\*\*** in gradient boosting becomes precise.
+
+The gradient is not being taken with respect to the split thresholds of a decision tree, nor are we differentiating through the tree. Instead, at every training observation, we ask how the loss would change if the current prediction moved slightly.
+
+If the model currently produces the vector
+
+$$
+\mathbf F
+=
+\begin{bmatrix}
+F(x_1)\\
+F(x_2)\\
+\vdots\\
+F(x_n)
+\end{bmatrix},
+$$
+
+then the loss defines a gradient vector
+
+$$
+\nabla_{\mathbf F}\mathcal L
+=
+\begin{bmatrix}
+\frac{\partial \mathcal L}{\partial F(x_1)}\\
+\frac{\partial \mathcal L}{\partial F(x_2)}\\
+\vdots\\
+\frac{\partial \mathcal L}{\partial F(x_n)}
+\end{bmatrix}.
+$$
+
+Ordinary gradient descent would like to move the predictions in the direction
+
+$$
+-\nabla_{\mathbf F}\mathcal L.
+$$
+
+But simply storing one independent correction for every training point would not give us a model that can make predictions for unseen inputs.
+
+Gradient boosting therefore introduces a crucial approximation: it trains a learner $h_m(x)$ to **\*\*generalize the desired gradient direction as a function of the features\*\***.
+
+This is the central bridge between optimization and supervised learning.
+
+The gradient tells us how the predictions should change on the training set. The weak learner searches for structure in those changes and turns them into a function that can also be evaluated at new $x$.
+
+This perspective is often described as **\*\*optimization in function space\*\***.
+
+In ordinary gradient descent, we might have
+
+$$
+f(x;\theta)
+$$
+
+and update a finite-dimensional parameter vector:
+
+$$
+\theta_m
+=
+\theta_{m-1}
+-
+\eta\nabla_\theta\mathcal L.
+$$
+
+In gradient boosting, we instead build the predictive function additively:
+
+$$
+F_m
+=
+F_{m-1}
++
+\eta h_m.
+$$
+
+The search direction is therefore represented by a new function rather than by a direct perturbation of an existing parameter vector.
+
+A more complete version of the update can also include a step size $\gamma_m$:
+
+$$
+F_m(x)
+=
+F_{m-1}(x)
++
+\eta\gamma_m h_m(x),
+$$
+
+where
+
+$$
+\gamma_m
+=
+\arg\min_\gamma
+\sum_{i=1}^{n}
+L\left(
+y_i,
+F_{m-1}(x_i)+\gamma h_m(x_i)
+\right).
+$$
+
+Different implementations approximate or optimize these updates in different ways, but the underlying structure remains the same: obtain a direction from the loss, approximate that direction with a learner, and add the learner to the current function.
+
+[IMAGEM: Imagem com elementos textuais nas cores temas do aflora. Aqui devemos apresentar a formalização do método de GBDT para regressão, mas insinuar que a loss function pode se alinhar para múltiplos propósitos, como classificação binária, multipla, regressão de poisson e outros. Por mais que é uma imagem, deve ser mais textual, e focado também na estética.]
+
+Once we formulate boosting this way, squared-error regression stops being a special algorithm and becomes one instance of a general framework.
+
+Change the loss and the gradient changes with it. The same additive procedure can therefore be adapted to absolute-error-like objectives, Poisson regression, binary classification, multiclass classification, and many other tasks.
+
+### Classification
+
+Let us now formalize the binary classification procedure.
+
+For a binary target
+
+$$
+y_i\in\{0,1\},
+$$
+
+we let the ensemble produce a raw score
+
+$$
+F(x_i)\in\mathbb R.
+$$
+
+This score represents a logit. The corresponding probability is
+
+$$
+p_i
+=
+\sigma(F(x_i))
+=
+\frac{1}{1+e^{-F(x_i)}}.
+$$
+
+We can optimize binary cross-entropy:
+
+$$
+L(y_i,F(x_i))
+=
+-
+\left[
+y_i\log p_i
++
+(1-y_i)\log(1-p_i)
+\right].
+$$
+
+Although the loss is written in terms of $p_i$, that probability depends on the raw model score through
+
+$$
+p_i=\sigma(F(x_i)).
+$$
+
+Taking the derivative with respect to the raw score gives
+
+$$
+\frac{\partial L}{\partial F(x_i)}
+=
+p_i-y_i.
+$$
+
+Therefore the negative gradient is
+
+$$
+-\frac{\partial L}{\partial F(x_i)}
+=
+y_i-p_i.
+$$
+
+This is precisely the pseudo-residual introduced earlier.
+
+At iteration $m$,
+
+$$
+p_{im}
+=
+\sigma(F_{m-1}(x_i)),
+$$
+
+and we calculate
+
+$$
+r_{im}
+=
+y_i-p_{im}.
+$$
+
+A tree is then fitted using these gradient signals as targets.
+
+Conceptually:
+
+$$
+h_m(x_i)\approx y_i-p_{im}.
+$$
+
+The ensemble is subsequently updated in raw-score space,
+
+$$
+F_m(x)
+=
+F_{m-1}(x)
++
+\eta\,\text{correction}_m(x),
+$$
+
+and the new probability is
+
+$$
+p_m(x)
+=
+\sigma(F_m(x)).
+$$
+
+This makes the similarity with regression much clearer.
+
+For squared-error regression:
+
+$$
+r_i=y_i-F(x_i).
+$$
+
+For logistic classification:
+
+$$
+r_i=y_i-\sigma(F(x_i)).
+$$
+
+In both cases, these quantities are negative gradients of the chosen loss with respect to the current prediction representation.
+
+There is one technical detail worth separating from the main intuition. Saying that a classification tree "predicts $y-p$" is an excellent first-order description of the boosting procedure, but many practical gradient boosting algorithms do not simply take the average pseudo-residual inside each leaf and add that value directly.
+
+Once a tree has defined its regions, the value assigned to each leaf can itself be chosen to minimize the loss. This may use additional curvature information from the second derivative.
+
+For logistic loss,
+
+$$
+g_i
+=
+\frac{\partial L}{\partial F(x_i)}
+=
+p_i-y_i,
+$$
+
+while
+
+$$
+h_i
+=
+\frac{\partial^2L}{\partial F(x_i)^2}
+=
+p_i(1-p_i).
+$$
+
+A second-order approximation to the loss around the current prediction has the form
+
+$$
+L(F+\Delta)
+\approx
+L(F)
++
+g\Delta
++
+\frac{1}{2}h\Delta^2.
+$$
+
+Minimizing this local quadratic approximation gives a Newton-like correction
+
+$$
+\Delta
+\approx
+-\frac{g}{h}.
+$$
+
+When several observations fall into one tree leaf $R_j$, a corresponding aggregate Newton step has the general form
+
+$$
+w_j
+\approx
+-
+\frac{\sum_{i\in R_j}g_i}
+{\sum_{i\in R_j}h_i},
+$$
+
+before considering additional regularization terms that a particular implementation may introduce.
+
+Using
+
+$$
+g_i=p_i-y_i,
+$$
+
+we can rewrite the numerator as
+
+$$
+-\sum_i g_i
+=
+\sum_i(y_i-p_i).
+$$
+
+So the first-order pseudo-residual story and the second-order Newton story are not competing explanations. The pseudo-residual determines the direction in which the loss wants each prediction to move, while the second derivative describes the local curvature of the loss and can help determine how large the update should be.
+
+This is the idea behind second-order boosting methods such as those used by XGBoost, although specific implementations introduce their own regularization, split criteria, and computational machinery.
+
+The initial classification prediction also follows directly from the loss.
+
+If the training set contains a fraction
+
+$$
+\bar y
+=
+\frac{1}{n}\sum_{i=1}^{n}y_i
+$$
+
+of positive examples, then the constant probability that minimizes binary cross-entropy is
+
+$$
+p_0=\bar y.
+$$
+
+Since the ensemble operates in logit space, the corresponding initial raw score is
+
+$$
+F_0
+=
+\log\left(
+\frac{\bar y}{1-\bar y}
+\right).
+$$
+
+From there, boosting repeatedly computes probabilities, derives gradients from the loss, fits trees to useful correction patterns, and updates the additive score.
+
+The same general principle extends beyond binary classification. Multiclass problems require multiple class scores and a softmax transformation, while other statistical objectives produce their own gradients and Hessians. The mechanics become more elaborate, but the central procedure remains unchanged.
+
+## Conclusion and Caveats
+
+Gradient boosting becomes considerably easier to reason about once we stop thinking of it as a mysterious sequence of trees.
+
+The ensemble starts with a simple function:
+
+$$
+F_0(x).
+$$
+
+The loss tells us how the current predictions should change. A weak learner observes those desired corrections across the training set and tries to generalize them from the input features. We shrink its contribution, add it to the current model, calculate what is still wrong, and repeat.
+
+For squared-error regression, those corrections are the familiar residuals
+
+$$
+y-\hat y.
+$$
+
+More generally, they are negative gradients
+
+$$
+-\frac{\partial L}{\partial F(x)}.
+$$
+
+This is what allows the same framework to move from regression to classification and many other objectives simply by changing the loss.
+
+Decision trees are especially effective as the learners inside this process because they can capture thresholds, interactions, and nonlinear structure that frequently appear in tabular data. At the same time, keeping individual trees weak forces the ensemble to construct the final function gradually rather than allowing one learner to dominate the fit.
+
+That gradual construction introduces several tradeoffs. The learning rate controls the magnitude of each update. Tree depth controls the complexity available in one update. The number of boosting rounds controls how many opportunities the ensemble receives to correct itself. Increasing any of them indiscriminately can eventually make the model fit training-specific structure rather than generalizable patterns, which is why validation performance and early stopping are important in practice.
+
+The optimization interpretation also has an important limitation. A tree does not reproduce the exact negative-gradient vector independently for every observation. It approximates that vector using a restricted function class. Points assigned to the same leaf share a correction, and the quality of every boosting step therefore depends on whether the tree can find meaningful structure in the gradients.
+
+That restriction is also part of what makes the method useful. Instead of memorizing an arbitrary update for every training observation, gradient boosting repeatedly searches for corrections that can be expressed as reusable rules over the feature space.
+
+After enough iterations, the final model may contain hundreds of trees, yet each one solves a relatively modest problem:
+
+$$
+\text{Given what the ensemble predicts now, what systematic correction should come next?}
+$$
+
+Gradient Boosted Decision Trees turn that sequence of small questions into a powerful predictive function.
