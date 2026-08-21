@@ -34,14 +34,6 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
-- [ ] **Update and deliver the approved Issue 004 email — issue #141**
-  - Move the approved introductory copy and weekly sales chart into the
-    canonical newsletter source.
-  - Preserve the controlled production delivery safeguards and send only after
-    the exact artifact has passed review.
-  - Completion check: the canonical test is received, the subscriber broadcast
-    is sent once, and the delivery report is reviewed.
-
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.
@@ -209,6 +201,14 @@ references for longer-term editorial direction.
     production verification passed on `8b2b127` and `891b7da`, respectively.
 
 ### Publishing and content
+
+- [x] **Update and deliver the approved Issue 004 email — issue #141** — 2026-08-21
+  - Moved the approved introductory copy and weekly sales chart into the
+    canonical newsletter source and verified its HTML and plain-text forms.
+  - Exact-SHA staging and production verification passed on `af815a0` and
+    `df3a66a`, respectively, before the controlled subscriber send.
+  - The Issue 004 report confirmed 8 sent, 8 delivered, 0 bounced, and 0
+    complained without a duplicate broadcast.
 
 - [x] **Publish How the Past Echoes and prepare Issue 004 — issue #137** — 2026-08-21
   - Published the reviewed English ACF/PACF article and short Issue 004 while
