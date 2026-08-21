@@ -73,7 +73,9 @@ routing can be managed independently.
    `confirm.example.com`, and set `NEWSLETTER_TRANSACTIONAL_FROM` to an address
    on it. Keep Resend open and click tracking disabled for this identity so
    confirmation links and pixels are not rewritten through a shared tracking
-   domain. This separates confirmation reputation from marketing broadcasts;
+   domain. Publish a DMARC record for the transactional subdomain even when the
+   provider treats it as optional, and confirm that receivers report DMARC as
+   passing. This separates confirmation reputation from marketing broadcasts;
    do not switch the variable until Resend reports the subdomain verified.
 6. Create the production segment (and optional topic), configure the signed
    webhook at `https://<api-host>/v1/webhooks/resend`, and store its signing
