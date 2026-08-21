@@ -2,6 +2,12 @@
 import { AutocorrelationPlayground } from "@grove/tree-visuals";
 import examples from "../data/acf-pacf-examples.json";
 
+interface Props {
+  locale?: "en" | "pt-BR";
+}
+
+const { locale = "en" } = Astro.props;
+
 const points = examples.sales.values.map((point) => ({
   date: point.date,
   value: Number(point.value),
@@ -9,5 +15,5 @@ const points = examples.sales.values.map((point) => ({
 ---
 
 <div data-analytics-lab="autocorrelation-scan">
-  <AutocorrelationPlayground client:load points={points} />
+  <AutocorrelationPlayground client:load points={points} locale={locale} />
 </div>

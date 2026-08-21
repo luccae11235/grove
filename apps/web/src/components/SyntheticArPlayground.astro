@@ -7,15 +7,16 @@ import {
 
 interface Props {
   mode: "builder" | "autocorrelation" | "partial-autocorrelation";
+  locale?: "en" | "pt-BR";
 }
 
-const { mode } = Astro.props;
+const { mode, locale = "en" } = Astro.props;
 ---
 
 <div data-analytics-lab={`synthetic-ar1-${mode}`}>
   {mode === "builder"
-    ? <SyntheticSeriesBuilder client:load />
+    ? <SyntheticSeriesBuilder client:load locale={locale} />
     : mode === "autocorrelation"
-      ? <SyntheticAutocorrelationPlayground client:load />
-      : <SyntheticPartialAutocorrelationPlayground client:load />}
+      ? <SyntheticAutocorrelationPlayground client:load locale={locale} />
+      : <SyntheticPartialAutocorrelationPlayground client:load locale={locale} />}
 </div>

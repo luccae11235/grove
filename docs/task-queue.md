@@ -54,7 +54,6 @@ references for longer-term editorial direction.
   - Completion check: formulas render with accessible math, all animations and
     both locales are accessible, responsive, and behavior-tested, the draft
     routes build, and production-visible content remains unchanged.
-
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.
@@ -222,6 +221,16 @@ references for longer-term editorial direction.
     production verification passed on `8b2b127` and `891b7da`, respectively.
 
 ### Publishing and content
+
+- [x] **Restore Portuguese locale parity for the production ACF/PACF article — issue #145** — 2026-08-21
+  - Added a professional Brazilian Portuguese translation with the same learning
+    progression, equations, references, and diagnostic guidance as the English article.
+  - Localized all 12 static visuals, four interactive experiences, controls,
+    accessible descriptions, metadata, article routing, and language alternates.
+  - Full local and GitHub gates passed; the owner approved the rendered article,
+    and exact-SHA production verification passed on `452b71c` before the public
+    desktop and mobile routes were checked.
+  - Kept newsletter creation and delivery outside the hotfix.
 
 - [x] **Update and deliver the approved Issue 004 email — issue #141** — 2026-08-21
   - Moved the approved introductory copy and weekly sales chart into the
