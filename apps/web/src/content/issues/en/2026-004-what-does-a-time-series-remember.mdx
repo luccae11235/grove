@@ -4,9 +4,9 @@ locale: en
 issueNumber: 4
 routeSlug: "what-does-a-time-series-remember"
 href: "/newsletter/2026/004/what-does-a-time-series-remember"
-subject: "What does a time series remember?"
-preheader: "Shift a series through time and see what ACF and PACF reveal about the influence of earlier values."
-summary: "The fourth Aflora issue asks how much of the present is contained in a series's own past. It invites readers to build ACF and PACF from ordinary correlation and use their shapes as diagnostic clues."
+subject: "Can a model find a rhythm hidden in data?"
+preheader: "See how experts decide which parts of the past are genuinely useful."
+summary: "The fourth Aflora issue begins with a repeating sales rhythm, then asks how much of the past is genuinely useful when building predictions."
 status: published
 publishedAt: 2026-08-21
 featuredArticles:
@@ -16,18 +16,21 @@ tags:
   - "autocorrelation"
   - "acf-pacf"
 cta:
-  label: "See what the past reveals"
+  label: "See what the past really tells us"
   href: "/learn/acf-and-pacf"
 ---
 
-Suppose today's value in a time series looks related to yesterday's. Is that a
-direct relationship, or is yesterday only carrying an influence that began even
-earlier?
+Look at the line below. Its peaks seem to return on a schedule.
 
-The new interactive article starts with ordinary correlation, then shifts a
-series through time to make each lag visible. You can construct the observation
-pairs yourself, compare autocorrelation across lags, and see why a relationship
-can persist after its direct influence has ended.
+![Daily sales rise and fall in a repeating pattern, with similar peaks returning at regular intervals.](https://aflora.page/articles/acf-pacf/m5-ca1-daily-sales-2015-q1.svg)
 
-By the end, you will have an intuitive way to distinguish what the ACF and PACF
-measure—and to read their shapes as clues rather than causal proof.
+Finding repetition is easy. The harder question is whether an older value tells
+us something useful—or only looks important because the same pattern keeps
+repeating.
+
+Knowing the difference helps people who build predictions decide how much
+history to trust and avoid mistaking an echo for new information.
+
+In the new interactive article, you'll shift the data through time, uncover the
+relationships yourself, and build an intuitive understanding of the tools
+experts call ACF and PACF.
