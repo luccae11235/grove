@@ -15,7 +15,7 @@ test("the production article library excludes drafts", async ({ page }) => {
   })).toHaveCount(0);
   await expect(page.getByRole("link", {
     name: /How the Past Echoes: Understanding ACF and PACF/,
-  })).toHaveCount(0);
+  })).toBeVisible();
 
   await page.goto("/learn/regression-trees/");
   await expect(page.getByRole("heading", {
@@ -27,6 +27,12 @@ test("the production article library excludes drafts", async ({ page }) => {
   await expect(page.getByRole("heading", {
     level: 1,
     name: "Reward Hacking in Reinforcement Learning",
+  })).toBeVisible();
+
+  await page.goto("/learn/acf-and-pacf/");
+  await expect(page.getByRole("heading", {
+    level: 1,
+    name: "How the Past Echoes: Understanding ACF and PACF",
   })).toBeVisible();
 
   await page.goto("/learn/bagging-reduces-tree-variance/");

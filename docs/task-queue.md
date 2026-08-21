@@ -34,6 +34,18 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Publish How the Past Echoes and prepare Issue 004 — issue #137**
+  - Publish the reviewed English ACF/PACF article and its short Issue 004 on
+    2026-08-21 while keeping Bagging and later drafts unpublished.
+  - Record the missing Brazilian Portuguese translation as an explicit parity
+    limitation instead of creating an unreviewed translation during release.
+  - Treat production promotion, provider-draft creation, test delivery, and the
+    subscriber broadcast as separate gates; this task stops after the test email
+    is received and does not authorize a subscriber send or schedule.
+  - Completion check: full checks and exact-SHA staging and production proofs
+    pass, the canonical pages are verified, and the Issue 004 test email is
+    received without sending the production broadcast.
+
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.
