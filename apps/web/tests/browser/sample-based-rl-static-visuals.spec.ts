@@ -1,5 +1,15 @@
 import { expect, test } from "@playwright/test";
 
+const articlePath = "/learn/sample-based-view-of-reinforcement-learning/";
+
+test.beforeEach(async ({ page }) => {
+  const response = await page.goto(articlePath);
+  test.skip(
+    response?.status() === 404,
+    "The sample-based RL article is a staging-only draft in published-only builds.",
+  );
+});
+
 const visuals = [
   [".sample-based-rl-roadmap", "conceptual-shortcut"],
   [".sample-based-rl-learning-paradigms", "learning-paradigms"],
@@ -25,8 +35,6 @@ for (const viewport of [
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
     await page.setViewportSize(viewport);
-    await page.goto("/learn/sample-based-view-of-reinforcement-learning/");
-
     for (const [selector, filename] of visuals) {
       const figure = page.locator(selector);
       const image = figure.locator("img");

@@ -1,5 +1,15 @@
 import { expect, test } from "@playwright/test";
 
+const articlePath = "/learn/sample-based-view-of-reinforcement-learning/";
+
+test.beforeEach(async ({ page }) => {
+  const response = await page.goto(articlePath);
+  test.skip(
+    response?.status() === 404,
+    "The sample-based RL article is a staging-only draft in published-only builds.",
+  );
+});
+
 for (const viewport of [
   { name: "desktop", width: 1_440, height: 960 },
   { name: "mobile", width: 390, height: 844 },
@@ -11,8 +21,6 @@ for (const viewport of [
     page.on("pageerror", (error) => pageErrors.push(error.message));
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.setViewportSize(viewport);
-    await page.goto("/learn/sample-based-view-of-reinforcement-learning/");
-
     const figure = page.locator(".sample-based-rl-mdp-loop");
     const image = figure.locator("img");
     const returnsFigure = page.locator(".sample-based-rl-discounted-returns");
@@ -21,6 +29,13 @@ for (const viewport of [
       name: "Watch the MDP produce a trajectory",
     });
     const rail = machine.locator("[data-mdp-trajectory-rail]");
+
+    if (viewport.name === "mobile") {
+      await page
+        .getByRole("complementary", { name: "In this article" })
+        .getByRole("button", { name: "Close chapters" })
+        .click();
+    }
 
     await figure.scrollIntoViewIfNeeded();
     await expect(figure).toBeVisible();

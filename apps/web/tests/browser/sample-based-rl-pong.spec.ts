@@ -1,5 +1,15 @@
 import { expect, test } from "@playwright/test";
 
+const articlePath = "/learn/sample-based-view-of-reinforcement-learning/";
+
+test.beforeEach(async ({ page }) => {
+  const response = await page.goto(articlePath);
+  test.skip(
+    response?.status() === 404,
+    "The sample-based RL article is a staging-only draft in published-only builds.",
+  );
+});
+
 for (const viewport of [
   { name: "desktop", width: 1_440, height: 960 },
   { name: "mobile", width: 390, height: 844 },
@@ -11,8 +21,6 @@ for (const viewport of [
     page.on("pageerror", (error) => pageErrors.push(error.message));
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.setViewportSize(viewport);
-    await page.goto("/learn/sample-based-view-of-reinforcement-learning/");
-
     const transitionFigure = page.locator(
       ".sample-based-rl-transition-dynamics",
     );
@@ -22,6 +30,13 @@ for (const viewport of [
     });
     const useful = lab.locator('[data-pong-policy="useful"]');
     const weak = lab.locator('[data-pong-policy="weak"]');
+
+    if (viewport.name === "mobile") {
+      await page
+        .getByRole("complementary", { name: "In this article" })
+        .getByRole("button", { name: "Close chapters" })
+        .click();
+    }
 
     await page.waitForTimeout(250);
     expect(pageErrors).toEqual([]);
