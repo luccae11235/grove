@@ -6,6 +6,7 @@ export function markdownToPlainText(markdown: string): string {
   return markdown
     .replace(/\r\n/g, "\n")
     .replace(/^---[\s\S]*?---\s*/u, "")
+    .replace(/!\[([^\]]*)\]\([^\)]+\)/g, "$1")
     .replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1")
     .replace(/[*_`>#]/g, "")
     .replace(/\n{3,}/g, "\n\n")

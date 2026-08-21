@@ -34,6 +34,14 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Update and deliver the approved Issue 004 email — issue #141**
+  - Move the approved introductory copy and weekly sales chart into the
+    canonical newsletter source.
+  - Preserve the controlled production delivery safeguards and send only after
+    the exact artifact has passed review.
+  - Completion check: the canonical test is received, the subscriber broadcast
+    is sent once, and the delivery report is reviewed.
+
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.
