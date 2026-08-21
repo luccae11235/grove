@@ -34,26 +34,6 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
-- [ ] **Draft a sample-based introduction to reinforcement learning — issue #132**
-  - Preserve the supplied English prose while standardizing its mathematical
-    notation and replacing visual placeholders only when their implementation is
-    explicitly in scope.
-  - Implement the bandit-to-RL progression, the introductory and interactive
-    forms of the canonical agent–environment loop, every planned animation,
-    and every remaining static-visual and learning-layer interaction placeholder.
-  - Add a professionally reviewed Brazilian Portuguese draft with localized
-    visual text, interactive copy, accessible descriptions, and equivalent
-    desktop and mobile routes.
-  - Keep each visual close to the article's text measure, give it one explicit
-    learner question, and reuse the same MDP and sampled trajectory across the
-    later comparisons.
-  - [x] Replace all six remaining static-visual placeholders with accessible,
-    responsive desktop and mobile figures.
-  - [x] Finish the remaining planned animations and learning-layer interactions.
-  - Keep publication, production deployment, and newsletter delivery out of scope.
-  - Completion check: formulas render with accessible math, all animations and
-    both locales are accessible, responsive, and behavior-tested, the draft
-    routes build, and production-visible content remains unchanged.
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.
@@ -231,6 +211,18 @@ references for longer-term editorial direction.
     and exact-SHA production verification passed on `452b71c` before the public
     desktop and mobile routes were checked.
   - Kept newsletter creation and delivery outside the hotfix.
+
+- [x] **Draft a sample-based introduction to reinforcement learning — issue #132** — 2026-08-21
+  - Preserved and standardized the English draft and added the reviewed Brazilian
+    Portuguese version with equivalent localized visuals and interactions.
+  - Completed twelve accessible, responsive visuals, including the computed MDP
+    trajectory and Pong reward-comparison interactions on desktop and mobile.
+  - Kept the article in draft with `noindex`; production publication and newsletter
+    delivery remain separate and were not performed.
+  - Completion check: `pnpm check`, eight focused browser scenarios, PR #147, and
+    post-merge CI passed; Railway staging verification run `32510468079` proved
+    implementation SHA `ac29c0849920f8ae377a1fa000935b72db1c601a`, with both
+    localized routes returning HTTP 200.
 
 - [x] **Update and deliver the approved Issue 004 email — issue #141** — 2026-08-21
   - Moved the approved introductory copy and weekly sales chart into the
