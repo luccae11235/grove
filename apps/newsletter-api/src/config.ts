@@ -17,6 +17,10 @@ const runtimeSchema = z.object({
   ),
   NEWSLETTER_PUBLIC_SIGNUP: z.enum(["true", "false"]).default("false"),
   NEWSLETTER_FROM: z.string().min(3),
+  NEWSLETTER_TRANSACTIONAL_FROM: z.preprocess(
+    (value) => value === "" ? undefined : value,
+    z.string().min(3).optional(),
+  ),
   NEWSLETTER_REPLY_TO: z.preprocess(
     (value) => value === "" ? undefined : value,
     z.string().email().optional(),
@@ -73,6 +77,7 @@ export function loadConfig(environment: NodeJS.ProcessEnv = process.env) {
     recipientAllowlist,
     publicSignup,
     newsletterFrom: parsed.NEWSLETTER_FROM,
+    newsletterTransactionalFrom: parsed.NEWSLETTER_TRANSACTIONAL_FROM ?? parsed.NEWSLETTER_FROM,
     newsletterReplyTo: parsed.NEWSLETTER_REPLY_TO,
     webUrl: parsed.WEB_URL.replace(/\/$/, ""),
     apiPublicUrl: parsed.API_PUBLIC_URL.replace(/\/$/, ""),

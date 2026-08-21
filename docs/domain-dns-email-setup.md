@@ -69,7 +69,13 @@ routing can be managed independently.
 4. Wait for Resend to mark the domain verified. Confirm that
    `NEWSLETTER_FROM` uses the verified domain and that `NEWSLETTER_REPLY_TO` is a
    monitored mailbox.
-5. Create the production segment (and optional topic), configure the signed
+5. Verify a second sending subdomain for transactional mail, such as
+   `confirm.example.com`, and set `NEWSLETTER_TRANSACTIONAL_FROM` to an address
+   on it. Keep Resend open and click tracking disabled for this identity so
+   confirmation links and pixels are not rewritten through a shared tracking
+   domain. This separates confirmation reputation from marketing broadcasts;
+   do not switch the variable until Resend reports the subdomain verified.
+6. Create the production segment (and optional topic), configure the signed
    webhook at `https://<api-host>/v1/webhooks/resend`, and store its signing
    secret only in Railway and the repository-level GitHub Actions secrets.
 
@@ -97,6 +103,9 @@ environment if the repository or plan later supports one.
   rejected.
 - [ ] Resend reports the sending domain verified; SPF, DKIM, and DMARC results
   pass in received test-message headers.
+- [ ] A real confirmation message uses the dedicated transactional From domain,
+  contains no tracking rewrite or pixel, and passes SPF, DKIM, and DMARC in the
+  received-message headers before production signup uses that identity.
 - [ ] Privacy, reply-to, postal, and recovery contacts are real and monitored.
 - [ ] Double opt-in, confirmation, unsubscribe, bounce, complaint, and signed
   webhook handling pass the pre-launch sequence in

@@ -121,6 +121,11 @@ references for longer-term editorial direction.
       `f2058f1`; production smoke passed all ten checks on `8d07633`.
   - [ ] Make signup and confirmation feedback immediate on a real iPhone.
   - [ ] Review a received issue in one non-Gmail mailbox provider.
+  - [ ] Separate transactional confirmation reputation from broadcasts — issue #152.
+    - [ ] Add a dedicated, verified transactional sending subdomain and keep
+      tracking disabled for confirmation and subscription-management mail.
+    - [ ] Verify a real received confirmation passes SPF, DKIM, and DMARC and
+      review its placement before enabling the new identity in production.
   - Completion check: real readers can subscribe, confirm, receive, and
     unsubscribe safely.
 

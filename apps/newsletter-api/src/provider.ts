@@ -45,6 +45,7 @@ export interface ResendProviderOptions {
   segmentId: string;
   topicId?: string;
   from: string;
+  transactionalFrom: string;
   replyTo?: string;
 }
 
@@ -73,7 +74,7 @@ export class ResendNewsletterProvider implements NewsletterProvider {
         };
     const url = escapeHtml(message.confirmationUrl);
     const response = await this.resend.emails.send({
-      from: this.options.from,
+      from: this.options.transactionalFrom,
       to: message.email,
       replyTo: this.options.replyTo,
       subject: copy.subject,
@@ -102,7 +103,7 @@ export class ResendNewsletterProvider implements NewsletterProvider {
         };
     const url = escapeHtml(message.unsubscribeUrl);
     const response = await this.resend.emails.send({
-      from: this.options.from,
+      from: this.options.transactionalFrom,
       to: message.email,
       replyTo: this.options.replyTo,
       subject: copy.subject,
