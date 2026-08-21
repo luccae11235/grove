@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import {
   pearsonCorrelation,
+  type AcfLocale,
   type TimeSeriesPoint,
 } from "./AutocorrelationPlayground";
 import styles from "./AutocorrelationPlayground.module.css";
@@ -39,8 +40,13 @@ function countAtProgress(total: number, progress: number): number {
   return progress <= 0 ? 0 : Math.max(1, Math.round(total * progress / 100));
 }
 
-function format(value: number | null): string {
-  return value === null ? "—" : value.toFixed(2).replace("-", "−");
+function format(value: number | null, locale: AcfLocale = "en"): string {
+  return value === null
+    ? "—"
+    : value.toLocaleString(locale === "pt-BR" ? "pt-BR" : "en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).replace("-", "−");
 }
 
 function symmetricScale(values: number[]): ValueScale {
@@ -155,12 +161,15 @@ function PacfTimeSeriesChart({
   lag,
   pairCount,
   scale,
+  locale,
 }: {
   points: TimeSeriesPoint[];
   lag: number;
   pairCount: number;
   scale: ValueScale;
+  locale: AcfLocale;
 }) {
+  const pt = locale === "pt-BR";
   const markerId = useId().replaceAll(":", "");
   const plotRight = TIME_PLOT.width - TIME_PLOT.right;
   const plotBottom = TIME_PLOT.height - TIME_PLOT.bottom;
@@ -187,10 +196,12 @@ function PacfTimeSeriesChart({
       className={styles.timeChart}
       viewBox={`0 0 ${TIME_PLOT.width} ${TIME_PLOT.height}`}
       role="img"
-      aria-label={`Synthetic AR(1) series with ${pairCount} windows scanned at lag ${lag}. ${lag === 1 ? "There are no intermediate values." : `${lag - 1} intermediate values predict both endpoints in the current window.`}`}
+      aria-label={pt
+        ? `Série AR(1) sintética com ${pairCount} janelas varridas no lag ${lag}. ${lag === 1 ? "Não há valores intermediários." : `${lag - 1} valores intermediários predizem os dois extremos da janela atual.`}`
+        : `Synthetic AR(1) series with ${pairCount} windows scanned at lag ${lag}. ${lag === 1 ? "There are no intermediate values." : `${lag - 1} intermediate values predict both endpoints in the current window.`}`}
     >
-      <title>{`PACF scan at lag ${lag}`}</title>
-      <desc>The full series stays fixed. A green band marks the intermediate observations, and two arrows point from those observations to the endpoints they predict.</desc>
+      <title>{pt ? `Varredura da PACF no lag ${lag}` : `PACF scan at lag ${lag}`}</title>
+      <desc>{pt ? "A série completa permanece fixa. Uma faixa verde marca as observações intermediárias, e duas setas partem delas em direção aos extremos que predizem." : "The full series stays fixed. A green band marks the intermediate observations, and two arrows point from those observations to the endpoints they predict."}</desc>
       <defs>
         <marker id={markerId} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
           <path d="M 0 0 L 10 5 L 0 10 z" fill="#157451" />
@@ -199,7 +210,7 @@ function PacfTimeSeriesChart({
       {scale.ticks.map((tick) => (
         <g key={tick}>
           <line className={tick === 0 ? styles.zeroLine : styles.gridline} x1={TIME_PLOT.left} x2={plotRight} y1={y(tick)} y2={y(tick)} />
-          <text className={styles.tick} x={TIME_PLOT.left - 9} y={y(tick) + 4} textAnchor="end">{format(tick)}</text>
+          <text className={styles.tick} x={TIME_PLOT.left - 9} y={y(tick) + 4} textAnchor="end">{format(tick, locale)}</text>
         </g>
       ))}
       {[0, Math.floor((points.length - 1) / 2), points.length - 1].map((index) => (
@@ -217,7 +228,7 @@ function PacfTimeSeriesChart({
               <path d={`M ${bandCenter} ${TIME_PLOT.top - 17} Q ${x(laterIndex)} ${TIME_PLOT.top - 17} ${x(laterIndex)} ${y(points[laterIndex].value) - 7}`} markerEnd={`url(#${markerId})`} />
             </g>
           ) : (
-            <text className={styles.middleNote} x={plotRight} y={TIME_PLOT.top - 17} textAnchor="end">No middle values at lag 1</text>
+            <text className={styles.middleNote} x={plotRight} y={TIME_PLOT.top - 17} textAnchor="end">{pt ? "Sem valores intermediários no lag 1" : "No middle values at lag 1"}</text>
           )}
           <circle className={styles.predictedEndpoint} cx={x(currentIndex)} cy={y(points[currentIndex].value)} r="5.5" />
           <circle className={styles.predictedEndpoint} cx={x(laterIndex)} cy={y(points[laterIndex].value)} r="5.5" />
@@ -232,12 +243,15 @@ function ResidualScatterChart({
   lag,
   scale,
   correlation,
+  locale,
 }: {
   pairs: ResidualPair[];
   lag: number;
   scale: ValueScale;
   correlation: number | null;
+  locale: AcfLocale;
 }) {
+  const pt = locale === "pt-BR";
   const clipId = useId().replaceAll(":", "");
   const plotRight = SMALL_PLOT.width - SMALL_PLOT.right;
   const plotBottom = SMALL_PLOT.height - SMALL_PLOT.bottom;
@@ -252,10 +266,10 @@ function ResidualScatterChart({
       className={styles.smallChart}
       viewBox={`0 0 ${SMALL_PLOT.width} ${SMALL_PLOT.height}`}
       role="img"
-      aria-label={`${pairs.length} residual pairs at lag ${lag}; partial correlation ${format(correlation)}.`}
+      aria-label={pt ? `${pairs.length} pares de resíduos no lag ${lag}; correlação parcial ${format(correlation, locale)}.` : `${pairs.length} residual pairs at lag ${lag}; partial correlation ${format(correlation, locale)}.`}
     >
-      <title>{`Endpoint residuals at lag ${lag}`}</title>
-      <desc>Each point pairs what the middle observations failed to predict at the left endpoint with what they failed to predict at the right endpoint.</desc>
+      <title>{pt ? `Resíduos dos extremos no lag ${lag}` : `Endpoint residuals at lag ${lag}`}</title>
+      <desc>{pt ? "Cada ponto combina o que as observações intermediárias não conseguiram predizer no extremo esquerdo com o que não conseguiram predizer no extremo direito." : "Each point pairs what the middle observations failed to predict at the left endpoint with what they failed to predict at the right endpoint."}</desc>
       <defs>
         <clipPath id={clipId}>
           <rect x={SMALL_PLOT.left} y={SMALL_PLOT.top} width={plotRight - SMALL_PLOT.left} height={plotBottom - SMALL_PLOT.top} />
@@ -265,8 +279,8 @@ function ResidualScatterChart({
         <g key={tick}>
           <line className={tick === 0 ? styles.zeroLine : styles.gridline} x1={SMALL_PLOT.left} x2={plotRight} y1={y(tick)} y2={y(tick)} />
           <line className={tick === 0 ? styles.zeroLine : styles.gridline} x1={x(tick)} x2={x(tick)} y1={SMALL_PLOT.top} y2={plotBottom} />
-          <text className={styles.tick} x={SMALL_PLOT.left - 9} y={y(tick) + 4} textAnchor="end">{format(tick)}</text>
-          <text className={styles.tick} x={x(tick)} y={plotBottom + 20} textAnchor="middle">{format(tick)}</text>
+          <text className={styles.tick} x={SMALL_PLOT.left - 9} y={y(tick) + 4} textAnchor="end">{format(tick, locale)}</text>
+          <text className={styles.tick} x={x(tick)} y={plotBottom + 20} textAnchor="middle">{format(tick, locale)}</text>
         </g>
       ))}
       <g clipPath={`url(#${clipId})`}>
@@ -278,7 +292,7 @@ function ResidualScatterChart({
             r={index === pairs.length - 1 ? 5 : 3.3}
             key={`${pair.index}-${pair.laterIndex}`}
           >
-            <title>{`Left residual ${format(pair.left)}, right residual ${format(pair.right)}`}</title>
+            <title>{pt ? `Resíduo esquerdo ${format(pair.left, locale)}, resíduo direito ${format(pair.right, locale)}` : `Left residual ${format(pair.left, locale)}, right residual ${format(pair.right, locale)}`}</title>
           </circle>
         ))}
         {line && (
@@ -291,8 +305,8 @@ function ResidualScatterChart({
           />
         )}
       </g>
-      <text className={styles.axisLabel} x={(SMALL_PLOT.left + plotRight) / 2} y={SMALL_PLOT.height - 8} textAnchor="middle">Residual at t</text>
-      <text className={styles.axisLabel} x="14" y={(SMALL_PLOT.top + plotBottom) / 2} textAnchor="middle" transform={`rotate(-90 14 ${(SMALL_PLOT.top + plotBottom) / 2})`}>Residual at t + {lag}</text>
+      <text className={styles.axisLabel} x={(SMALL_PLOT.left + plotRight) / 2} y={SMALL_PLOT.height - 8} textAnchor="middle">{pt ? "Resíduo em t" : "Residual at t"}</text>
+      <text className={styles.axisLabel} x="14" y={(SMALL_PLOT.top + plotBottom) / 2} textAnchor="middle" transform={`rotate(-90 14 ${(SMALL_PLOT.top + plotBottom) / 2})`}>{pt ? `Resíduo em t + ${lag}` : `Residual at t + ${lag}`}</text>
     </svg>
   );
 }
@@ -301,11 +315,14 @@ function PacfBars({
   values,
   selectedLag,
   progressByLag,
+  locale,
 }: {
   values: number[];
   selectedLag: number;
   progressByLag: Record<number, number>;
+  locale: AcfLocale;
 }) {
+  const pt = locale === "pt-BR";
   const plotRight = SMALL_PLOT.width - SMALL_PLOT.right;
   const plotBottom = SMALL_PLOT.height - SMALL_PLOT.bottom;
   const y = (value: number) => SMALL_PLOT.top + (1 - value) / 2 * (plotBottom - SMALL_PLOT.top);
@@ -326,13 +343,13 @@ function PacfBars({
   });
 
   return (
-    <svg className={styles.smallChart} viewBox={`0 0 ${SMALL_PLOT.width} ${SMALL_PLOT.height}`} role="img" aria-label="Partial autocorrelation results for the lags scanned so far.">
-      <title>Partial autocorrelation by lag</title>
-      <desc>Bars show the correlation left after the intermediate observations have been removed from both endpoints.</desc>
+    <svg className={styles.smallChart} viewBox={`0 0 ${SMALL_PLOT.width} ${SMALL_PLOT.height}`} role="img" aria-label={pt ? "Resultados de autocorrelação parcial para os lags varridos até agora." : "Partial autocorrelation results for the lags scanned so far."}>
+      <title>{pt ? "Autocorrelação parcial por lag" : "Partial autocorrelation by lag"}</title>
+      <desc>{pt ? "As barras mostram a correlação que resta depois que as observações intermediárias são removidas dos dois extremos." : "Bars show the correlation left after the intermediate observations have been removed from both endpoints."}</desc>
       {[-1, -0.5, 0, 0.5, 1].map((tick) => (
         <g key={tick}>
           <line className={tick === 0 ? styles.zeroLine : styles.gridline} x1={SMALL_PLOT.left} x2={plotRight} y1={y(tick)} y2={y(tick)} />
-          <text className={styles.tick} x={SMALL_PLOT.left - 9} y={y(tick) + 4} textAnchor="end">{tick === 0 ? "0" : format(tick)}</text>
+          <text className={styles.tick} x={SMALL_PLOT.left - 9} y={y(tick) + 4} textAnchor="end">{tick === 0 ? "0" : format(tick, locale)}</text>
         </g>
       ))}
       {results.map((result, index) => {
@@ -343,7 +360,7 @@ function PacfBars({
         return (
           <g key={result.lag}>
             <rect className={result.lag === selectedLag ? styles.selectedBar : styles.bar} x={center - barWidth / 2} y={top} width={barWidth} height={height} rx="2">
-              <title>{`Lag ${result.lag}: PACF ${format(result.correlation)} from ${result.count} windows`}</title>
+              <title>{pt ? `Lag ${result.lag}: PACF ${format(result.correlation, locale)}, calculada com ${result.count} janelas` : `Lag ${result.lag}: PACF ${format(result.correlation, locale)} from ${result.count} windows`}</title>
             </rect>
             <text className={result.lag === selectedLag ? styles.selectedTick : styles.tick} x={center} y={plotBottom + 20} textAnchor="middle">{result.lag}</text>
           </g>
@@ -355,7 +372,8 @@ function PacfBars({
   );
 }
 
-export function PartialAutocorrelationPlayground({ points }: { points: TimeSeriesPoint[] }) {
+export function PartialAutocorrelationPlayground({ points, locale = "en" }: { points: TimeSeriesPoint[]; locale?: AcfLocale }) {
+  const pt = locale === "pt-BR";
   const [lag, setLag] = useState(1);
   const [progressByLag, setProgressByLag] = useState<Record<number, number>>(() =>
     Object.fromEntries(LAGS.map((candidate) => [candidate, 0])),
@@ -414,7 +432,17 @@ export function PartialAutocorrelationPlayground({ points }: { points: TimeSerie
   };
 
   const middleCount = Math.max(0, lag - 1);
-  const guidance = progress === 0
+  const guidance = pt
+    ? progress === 0
+      ? lag === 1
+        ? "O lag 1 não tem observações intermediárias para remover. Varra-o primeiro para criar uma referência."
+        : `A faixa verde contém ${middleCount} ${middleCount === 1 ? "observação intermediária" : "observações intermediárias"}. Ela prediz os dois extremos.`
+      : progress < 100
+        ? "Cada ponto é um par de resíduos: o que o meio não conseguiu predizer à esquerda e à direita."
+        : lag < 10
+          ? `O lag ${lag} está completo. A PACF foi salva, e o lag ${Math.min(10, lag + 1)} já está disponível.`
+          : "Os dez lags estão completos. Selecione qualquer lag para inspecionar ou repetir a varredura de resíduos."
+    : progress === 0
     ? lag === 1
       ? "Lag 1 has no middle observations to remove. Scan it first so we have a reference."
       : `The green band contains ${middleCount} middle observation${middleCount === 1 ? "" : "s"}. It predicts both endpoints.`
@@ -425,19 +453,19 @@ export function PartialAutocorrelationPlayground({ points }: { points: TimeSerie
         : "All ten lags are complete. Select any lag to inspect or replay its residual scan.";
 
   if (points.length < 24) {
-    return <p className={styles.error}>The PACF playground needs at least twenty-four observations.</p>;
+    return <p className={styles.error}>{pt ? "O playground da PACF precisa de pelo menos 24 observações." : "The PACF playground needs at least twenty-four observations."}</p>;
   }
 
   return (
-    <section className={styles.playground} aria-label="Explore partial autocorrelation by removing intermediate observations">
+    <section className={styles.playground} lang={locale} aria-label={pt ? "Explore a autocorrelação parcial removendo as observações intermediárias" : "Explore partial autocorrelation by removing intermediate observations"}>
       <div className={styles.timePanel}>
         <div className={styles.panelHeader}>
-          <strong>Middle values predict both ends</strong>
-          <span>Window {windowCount} of {windowTotal} · {middleCount} middle value{middleCount === 1 ? "" : "s"}</span>
+          <strong>{pt ? "Os valores intermediários predizem os dois extremos" : "Middle values predict both ends"}</strong>
+          <span>{pt ? `Janela ${windowCount} de ${windowTotal} · ${middleCount} ${middleCount === 1 ? "valor intermediário" : "valores intermediários"}` : `Window ${windowCount} of ${windowTotal} · ${middleCount} middle value${middleCount === 1 ? "" : "s"}`}</span>
         </div>
-        <PacfTimeSeriesChart points={points} lag={lag} pairCount={windowCount} scale={seriesScale} />
+        <PacfTimeSeriesChart points={points} lag={lag} pairCount={windowCount} scale={seriesScale} locale={locale} />
         <label className={styles.scanControl} htmlFor={rangeId}>
-          <span>Scan windows</span>
+          <span>{pt ? "Varrer janelas" : "Scan windows"}</span>
           <strong>{windowCount} / {windowTotal}</strong>
           <input
             id={rangeId}
@@ -445,7 +473,7 @@ export function PartialAutocorrelationPlayground({ points }: { points: TimeSerie
             min="0"
             max="100"
             value={progress}
-            aria-valuetext={`${windowCount} of ${windowTotal} windows`}
+            aria-valuetext={pt ? `${windowCount} de ${windowTotal} janelas` : `${windowCount} of ${windowTotal} windows`}
             onInput={(event) => {
               setIsPlaying(false);
               updateProgress(Number(event.currentTarget.value));
@@ -458,18 +486,18 @@ export function PartialAutocorrelationPlayground({ points }: { points: TimeSerie
       <div className={styles.lowerPanels}>
         <section className={styles.scatterPanel} aria-labelledby={`${rangeId}-residual-title`}>
           <div className={styles.panelHeader}>
-            <strong id={`${rangeId}-residual-title`}>Lag {lag} residual pairs</strong>
-            <span>partial r = {format(correlation)}</span>
+            <strong id={`${rangeId}-residual-title`}>{pt ? `Pares de resíduos no lag ${lag}` : `Lag ${lag} residual pairs`}</strong>
+            <span>{pt ? "r parcial" : "partial r"} = {format(correlation, locale)}</span>
           </div>
-          <p className={styles.panelNote}>Only what the middle values could not predict enters this scatter plot.</p>
-          <ResidualScatterChart pairs={residualPairs} lag={lag} scale={residualScale} correlation={correlation} />
+          <p className={styles.panelNote}>{pt ? "Somente o que os valores intermediários não conseguiram predizer entra neste gráfico de dispersão." : "Only what the middle values could not predict enters this scatter plot."}</p>
+          <ResidualScatterChart pairs={residualPairs} lag={lag} scale={residualScale} correlation={correlation} locale={locale} />
         </section>
         <section className={styles.barPanel} aria-labelledby={`${rangeId}-pacf-title`}>
           <div className={styles.panelHeader}>
-            <strong id={`${rangeId}-pacf-title`}>Partial correlation by lag</strong>
-            <span>{completedLagCount} completed</span>
+            <strong id={`${rangeId}-pacf-title`}>{pt ? "Correlação parcial por lag" : "Partial correlation by lag"}</strong>
+            <span>{pt ? `${completedLagCount} concluídos` : `${completedLagCount} completed`}</span>
           </div>
-          <PacfBars values={values} selectedLag={lag} progressByLag={progressByLag} />
+          <PacfBars values={values} selectedLag={lag} progressByLag={progressByLag} locale={locale} />
         </section>
       </div>
 
@@ -477,10 +505,10 @@ export function PartialAutocorrelationPlayground({ points }: { points: TimeSerie
         <p>{guidance}</p>
         <div className={styles.guideControls}>
           <button type="button" className={styles.runButton} onClick={togglePlayback}>
-            {isPlaying ? "Pause scan" : progress === 100 ? "Replay scan" : "Run scan"}
+            {pt ? (isPlaying ? "Pausar varredura" : progress === 100 ? "Repetir varredura" : "Executar varredura") : (isPlaying ? "Pause scan" : progress === 100 ? "Replay scan" : "Run scan")}
           </button>
           <fieldset className={styles.lagPicker}>
-            <legend>Choose lag</legend>
+            <legend>{pt ? "Escolha o lag" : "Choose lag"}</legend>
             <div className={styles.lagButtons}>
               {LAGS.map((candidate) => (
                 <button
@@ -502,7 +530,7 @@ export function PartialAutocorrelationPlayground({ points }: { points: TimeSerie
         </div>
       </div>
       <p className={styles.srOnly} aria-live="polite">
-        Lag {lag}, {windowCount} of {windowTotal} windows scanned, partial correlation {format(correlation)}.
+        {pt ? `Lag ${lag}, ${windowCount} de ${windowTotal} janelas varridas, correlação parcial ${format(correlation, locale)}.` : `Lag ${lag}, ${windowCount} of ${windowTotal} windows scanned, partial correlation ${format(correlation, locale)}.`}
       </p>
     </section>
   );
