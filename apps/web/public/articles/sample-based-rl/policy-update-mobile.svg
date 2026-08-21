@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1536" viewBox="0 0 1024 1536" role="img" aria-labelledby="policy-update-mobile-title policy-update-mobile-desc">
+  <title id="policy-update-mobile-title">Experience updates a policy's preference</title>
+  <desc id="policy-update-mobile-desc">A vertical comparison shows the same state s and the same actions left and right before and after learning. Policy pi begins with a weak preference for right. Experience D says right brought a higher return and enters update U. Policy pi prime keeps the same input and actions but gives right a stronger preference.</desc>
+  <defs>
+    <marker id="mobile-arrow-green" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+      <path d="M1 1 11 6 1 11Z" fill="#0b8f55"/>
+    </marker>
+  </defs>
+
+  <rect width="1024" height="1536" fill="#ffffff"/>
+  <rect x="18" y="18" width="988" height="1500" rx="34" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+
+  <g font-family="Inter, Arial, sans-serif">
+    <rect x="64" y="66" width="896" height="424" rx="28" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+    <text x="112" y="123" fill="#65736c" font-size="23" font-weight="600" letter-spacing="3">BEFORE LEARNING</text>
+    <text x="112" y="188" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="48" font-style="italic">π(a | s)</text>
+
+    <text x="112" y="244" fill="#65736c" font-size="20" font-weight="600" letter-spacing="2">STATE</text>
+    <rect x="112" y="267" width="154" height="137" rx="23" fill="#eef7f2"/>
+    <text x="189" y="339" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="55" font-style="italic" text-anchor="middle" dominant-baseline="middle">s</text>
+
+    <path d="M266 336H326M326 336V282M326 336V391M326 282H356M326 391H356" fill="none" stroke="#65736c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="356" y="239" fill="#65736c" font-size="20" font-weight="600" letter-spacing="2">POSSIBLE ACTIONS</text>
+
+    <text x="356" y="282" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="27" font-style="italic">a<tspan baseline-shift="sub" font-size="17">1</tspan></text>
+    <text x="403" y="282" fill="#65736c" font-size="23">left</text>
+    <rect x="356" y="299" width="424" height="20" rx="10" fill="#eef7f2"/>
+    <rect x="356" y="299" width="195" height="20" rx="10" fill="#65736c" opacity="0.52"/>
+
+    <text x="356" y="391" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="27" font-style="italic">a<tspan baseline-shift="sub" font-size="17">2</tspan></text>
+    <text x="403" y="391" fill="#65736c" font-size="23">right</text>
+    <rect x="356" y="408" width="424" height="20" rx="10" fill="#eef7f2"/>
+    <rect x="356" y="408" width="229" height="20" rx="10" fill="#65736c" opacity="0.62"/>
+    <text x="806" y="418" fill="#65736c" font-size="21">weak</text>
+
+    <text x="512" y="548" fill="#65736c" font-family="Georgia, 'Times New Roman', serif" font-size="48" text-anchor="middle">+</text>
+
+    <rect x="184" y="565" width="656" height="208" rx="26" fill="#eef7f2" stroke="#0b8f55" stroke-width="2"/>
+    <text x="512" y="615" fill="#157451" font-size="21" font-weight="700" letter-spacing="2" text-anchor="middle">EXPERIENCE</text>
+    <text x="512" y="672" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="43" font-style="italic" text-anchor="middle">D</text>
+    <text x="512" y="724" fill="#17231e" font-size="25" text-anchor="middle">right brought <tspan font-weight="700">higher return</tspan></text>
+
+    <path d="M512 773V815" fill="none" stroke="#0b8f55" stroke-width="3" marker-end="url(#mobile-arrow-green)"/>
+    <circle cx="512" cy="893" r="69" fill="#ffffff" stroke="#0b8f55" stroke-width="4"/>
+    <text x="512" y="884" fill="#65736c" font-size="19" font-weight="700" letter-spacing="2" text-anchor="middle">UPDATE</text>
+    <text x="512" y="924" fill="#157451" font-family="Georgia, 'Times New Roman', serif" font-size="41" font-style="italic" text-anchor="middle">U</text>
+    <path d="M512 962V1016" fill="none" stroke="#0b8f55" stroke-width="4" marker-end="url(#mobile-arrow-green)"/>
+
+    <rect x="64" y="1033" width="896" height="424" rx="28" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+    <text x="112" y="1090" fill="#157451" font-size="23" font-weight="600" letter-spacing="3">AFTER LEARNING</text>
+    <text x="112" y="1155" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="48" font-style="italic">π′(a | s)</text>
+
+    <text x="112" y="1211" fill="#65736c" font-size="20" font-weight="600" letter-spacing="2">STATE</text>
+    <rect x="112" y="1234" width="154" height="137" rx="23" fill="#eef7f2"/>
+    <text x="189" y="1306" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="55" font-style="italic" text-anchor="middle" dominant-baseline="middle">s</text>
+
+    <path d="M266 1303H326M326 1303V1249M326 1303V1358M326 1249H356M326 1358H356" fill="none" stroke="#65736c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="356" y="1206" fill="#65736c" font-size="20" font-weight="600" letter-spacing="2">POSSIBLE ACTIONS</text>
+
+    <text x="356" y="1249" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="27" font-style="italic">a<tspan baseline-shift="sub" font-size="17">1</tspan></text>
+    <text x="403" y="1249" fill="#65736c" font-size="23">left</text>
+    <rect x="356" y="1266" width="424" height="20" rx="10" fill="#eef7f2"/>
+    <rect x="356" y="1266" width="76" height="20" rx="10" fill="#65736c" opacity="0.38"/>
+
+    <text x="356" y="1358" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="27" font-style="italic">a<tspan baseline-shift="sub" font-size="17">2</tspan></text>
+    <text x="403" y="1358" fill="#157451" font-size="23" font-weight="600">right</text>
+    <rect x="356" y="1375" width="424" height="20" rx="10" fill="#eef7f2"/>
+    <rect x="356" y="1375" width="348" height="20" rx="10" fill="#0b8f55"/>
+    <text x="730" y="1417" fill="#157451" font-size="21" font-weight="600">stronger</text>
+  </g>
+</svg>

@@ -34,6 +34,27 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Draft a sample-based introduction to reinforcement learning — issue #132**
+  - Preserve the supplied English prose while standardizing its mathematical
+    notation and replacing visual placeholders only when their implementation is
+    explicitly in scope.
+  - Implement the bandit-to-RL progression, the introductory and interactive
+    forms of the canonical agent–environment loop, every planned animation,
+    and every remaining static-visual and learning-layer interaction placeholder.
+  - Add a professionally reviewed Brazilian Portuguese draft with localized
+    visual text, interactive copy, accessible descriptions, and equivalent
+    desktop and mobile routes.
+  - Keep each visual close to the article's text measure, give it one explicit
+    learner question, and reuse the same MDP and sampled trajectory across the
+    later comparisons.
+  - [x] Replace all six remaining static-visual placeholders with accessible,
+    responsive desktop and mobile figures.
+  - [x] Finish the remaining planned animations and learning-layer interactions.
+  - Keep publication, production deployment, and newsletter delivery out of scope.
+  - Completion check: formulas render with accessible math, all animations and
+    both locales are accessible, responsive, and behavior-tested, the draft
+    routes build, and production-visible content remains unchanged.
+
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.

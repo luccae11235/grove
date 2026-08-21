@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1774" height="887" viewBox="0 0 1774 887" role="img" aria-labelledby="value-policy-title value-policy-desc">
+  <title id="value-policy-title">Value-based learning uses values before acting; policy-based learning represents action probabilities directly</title>
+  <desc id="value-policy-desc">Both agents receive the same state s and can move left or right. The value-based agent first learns a Q table of expected returns, then a policy chooses the action with the largest Q value, producing right. The policy-based agent learns pi theta directly, mapping the state to a 30 percent chance of moving left and a 70 percent chance of moving right without an intermediate value table.</desc>
+  <defs>
+    <marker id="vp-arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M1 1 11 6 1 11Z" fill="#65736c"/>
+    </marker>
+    <marker id="vp-arrow-green" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M1 1 11 6 1 11Z" fill="#0b8f55"/>
+    </marker>
+    <style>
+      .sans { font-family: Inter, Arial, sans-serif; }
+      .math { font-family: Georgia, 'Times New Roman', serif; font-style: italic; }
+      .eyebrow { font-family: Inter, Arial, sans-serif; font-size: 19px; font-weight: 700; letter-spacing: 1.8px; }
+    </style>
+  </defs>
+
+  <rect width="1774" height="887" fill="#ffffff"/>
+  <rect x="20" y="20" width="1734" height="847" rx="34" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+
+  <!-- Value-based: learned values mediate the action choice. -->
+  <g aria-label="Value-based learning uses an action-value table before the policy chooses">
+    <rect x="58" y="55" width="820" height="777" rx="30" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+    <text x="104" y="119" class="sans" font-size="34" font-weight="700" fill="#17231e">Value-based</text>
+    <text x="104" y="158" class="sans" font-size="23" fill="#65736c">Learn expected returns, then choose.</text>
+
+    <text x="104" y="231" class="eyebrow" fill="#65736c">STATE</text>
+    <rect x="104" y="255" width="130" height="140" rx="24" fill="#eef7f2"/>
+    <text x="169" y="328" class="math" font-size="58" fill="#17231e" text-anchor="middle" dominant-baseline="middle">s</text>
+    <path d="M234 325H278" fill="none" stroke="#65736c" stroke-width="3" stroke-linecap="round" marker-end="url(#vp-arrow)"/>
+
+    <text x="298" y="213" class="eyebrow" fill="#157451">LEARNED ACTION VALUES</text>
+    <rect x="278" y="235" width="340" height="326" rx="26" fill="#ffffff" stroke="#0b8f55" stroke-width="3"/>
+    <rect x="278" y="235" width="340" height="92" rx="26" fill="#eef7f2"/>
+    <path d="M278 301V327H618V301" fill="#eef7f2"/>
+    <text x="448" y="283" class="math" font-size="45" fill="#17231e" text-anchor="middle">Q(s, a)</text>
+    <text x="354" y="352" class="sans" font-size="18" font-weight="700" letter-spacing="1.1" fill="#65736c" text-anchor="middle">ACTION</text>
+    <text x="512" y="352" class="sans" font-size="18" font-weight="700" letter-spacing="1.1" fill="#65736c" text-anchor="middle">EXPECTED RETURN</text>
+
+    <rect x="304" y="370" width="288" height="72" rx="17" fill="#ffffff" stroke="#e1e9e4" stroke-width="2"/>
+    <text x="329" y="414" class="math" font-size="28" fill="#17231e">a<tspan baseline-shift="sub" font-size="17">1</tspan></text>
+    <text x="374" y="414" class="sans" font-size="23" fill="#65736c">left</text>
+    <text x="565" y="414" class="sans" font-size="25" fill="#65736c" text-anchor="end">0.3</text>
+
+    <rect x="304" y="458" width="288" height="76" rx="17" fill="#eef7f2" stroke="#0b8f55" stroke-width="2"/>
+    <text x="329" y="504" class="math" font-size="28" font-weight="700" fill="#157451">a<tspan baseline-shift="sub" font-size="17">2</tspan></text>
+    <text x="374" y="504" class="sans" font-size="23" font-weight="700" fill="#157451">right</text>
+    <text x="565" y="504" class="sans" font-size="25" font-weight="700" fill="#157451" text-anchor="end">0.8</text>
+
+    <path d="M618 398H652" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#vp-arrow-green)"/>
+    <rect x="654" y="300" width="176" height="196" rx="25" fill="#ffffff" stroke="#0b8f55" stroke-width="3"/>
+    <text x="742" y="339" class="eyebrow" fill="#65736c" text-anchor="middle">POLICY</text>
+    <text x="742" y="388" class="math" font-size="38" fill="#17231e" text-anchor="middle">π<tspan baseline-shift="sub" font-size="22">Q</tspan>(s)</text>
+    <line x1="681" y1="409" x2="803" y2="409" stroke="#e1e9e4" stroke-width="2"/>
+    <text x="742" y="447" class="sans" font-size="20" font-weight="700" fill="#157451" text-anchor="middle">choose max Q</text>
+
+    <path d="M742 496V548" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#vp-arrow-green)"/>
+    <rect x="670" y="558" width="144" height="118" rx="24" fill="#eef7f2" stroke="#0b8f55" stroke-width="3"/>
+    <text x="742" y="603" class="math" font-size="34" font-weight="700" fill="#157451" text-anchor="middle">a<tspan baseline-shift="sub" font-size="20">2</tspan></text>
+    <text x="742" y="645" class="sans" font-size="23" font-weight="700" fill="#157451" text-anchor="middle">right</text>
+
+    <text x="468" y="762" class="sans" font-size="24" font-weight="650" fill="#17231e" text-anchor="middle">values <tspan fill="#65736c">→</tspan> policy <tspan fill="#65736c">→</tspan> action</text>
+  </g>
+
+  <!-- Policy-based: the learned object is already the action distribution. -->
+  <g aria-label="Policy-based learning maps the state directly to action probabilities">
+    <rect x="896" y="55" width="820" height="777" rx="30" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+    <text x="942" y="119" class="sans" font-size="34" font-weight="700" fill="#17231e">Policy-based</text>
+    <text x="942" y="158" class="sans" font-size="23" fill="#65736c">Learn the action probabilities directly.</text>
+
+    <text x="942" y="273" class="eyebrow" fill="#65736c">STATE</text>
+    <rect x="942" y="297" width="130" height="140" rx="24" fill="#eef7f2"/>
+    <text x="1007" y="370" class="math" font-size="58" fill="#17231e" text-anchor="middle" dominant-baseline="middle">s</text>
+    <path d="M1072 367H1126" fill="none" stroke="#65736c" stroke-width="3" stroke-linecap="round" marker-end="url(#vp-arrow)"/>
+
+    <rect x="1128" y="267" width="214" height="200" rx="30" fill="#eef7f2" stroke="#0b8f55" stroke-width="3"/>
+    <text x="1235" y="310" class="eyebrow" fill="#157451" text-anchor="middle">LEARNED POLICY</text>
+    <text x="1235" y="375" class="math" font-size="45" fill="#17231e" text-anchor="middle">π<tspan baseline-shift="sub" font-size="27">θ</tspan>(a | s)</text>
+    <text x="1235" y="424" class="sans" font-size="20" fill="#65736c" text-anchor="middle">the decision rule</text>
+
+    <text x="1510" y="230" class="eyebrow" fill="#65736c" text-anchor="middle">ACTION PROBABILITIES</text>
+    <path d="M1342 338H1382Q1410 338 1430 310" fill="none" stroke="#65736c" stroke-width="3" stroke-linecap="round" marker-end="url(#vp-arrow)"/>
+    <path d="M1342 396H1382Q1410 396 1430 455" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#vp-arrow-green)"/>
+
+    <rect x="1434" y="260" width="228" height="112" rx="24" fill="#ffffff" stroke="#e1e9e4" stroke-width="2"/>
+    <text x="1464" y="306" class="math" font-size="30" fill="#17231e">a<tspan baseline-shift="sub" font-size="18">1</tspan></text>
+    <text x="1510" y="306" class="sans" font-size="23" fill="#65736c">left</text>
+    <text x="1632" y="306" class="sans" font-size="28" fill="#65736c" text-anchor="end">30%</text>
+    <rect x="1464" y="330" width="168" height="12" rx="6" fill="#eef7f2"/>
+    <rect x="1464" y="330" width="50" height="12" rx="6" fill="#65736c" opacity="0.5"/>
+
+    <rect x="1434" y="410" width="228" height="126" rx="24" fill="#eef7f2" stroke="#0b8f55" stroke-width="3"/>
+    <text x="1464" y="460" class="math" font-size="30" font-weight="700" fill="#157451">a<tspan baseline-shift="sub" font-size="18">2</tspan></text>
+    <text x="1510" y="460" class="sans" font-size="23" font-weight="700" fill="#157451">right</text>
+    <text x="1632" y="460" class="sans" font-size="28" font-weight="700" fill="#157451" text-anchor="end">70%</text>
+    <rect x="1464" y="490" width="168" height="12" rx="6" fill="#ffffff"/>
+    <rect x="1464" y="490" width="118" height="12" rx="6" fill="#0b8f55"/>
+
+    <text x="1306" y="762" class="sans" font-size="24" font-weight="650" fill="#17231e" text-anchor="middle">state <tspan fill="#65736c">→</tspan> policy <tspan fill="#65736c">→</tspan> action probabilities</text>
+  </g>
+</svg>

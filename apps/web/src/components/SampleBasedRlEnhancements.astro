@@ -1,0 +1,13 @@
+---
+import PongRewardPortal from "./PongRewardPortal";
+import MdpTrajectoryPortal from "./MdpTrajectoryPortal";
+
+interface Props {
+  locale?: "en" | "pt-BR";
+}
+
+const { locale = "en" } = Astro.props;
+---
+
+<PongRewardPortal locale={locale} client:load />
+<MdpTrajectoryPortal locale={locale} client:load />
