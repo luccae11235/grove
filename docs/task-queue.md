@@ -202,6 +202,16 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Restore Portuguese locale parity for the production ACF/PACF article — issue #145** — 2026-08-21
+  - Added a professional Brazilian Portuguese translation with the same learning
+    progression, equations, references, and diagnostic guidance as the English article.
+  - Localized all 12 static visuals, four interactive experiences, controls,
+    accessible descriptions, metadata, article routing, and language alternates.
+  - Full local and GitHub gates passed; the owner approved the rendered article,
+    and exact-SHA production verification passed on `452b71c` before the public
+    desktop and mobile routes were checked.
+  - Kept newsletter creation and delivery outside the hotfix.
+
 - [x] **Draft a sample-based introduction to reinforcement learning — issue #132** — 2026-08-21
   - Preserved and standardized the English draft and added the reviewed Brazilian
     Portuguese version with equivalent localized visuals and interactions.
