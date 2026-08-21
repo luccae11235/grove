@@ -12,6 +12,7 @@ const provider = new ResendNewsletterProvider({
   segmentId: config.resendSegmentId,
   topicId: config.resendTopicId,
   from: config.newsletterFrom,
+  transactionalFrom: config.newsletterTransactionalFrom,
   replyTo: config.newsletterReplyTo,
 });
 const app = createApp({

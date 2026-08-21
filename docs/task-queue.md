@@ -121,6 +121,19 @@ references for longer-term editorial direction.
       `f2058f1`; production smoke passed all ten checks on `8d07633`.
   - [ ] Make signup and confirmation feedback immediate on a real iPhone.
   - [ ] Review a received issue in one non-Gmail mailbox provider.
+  - [x] Separate transactional confirmation reputation from broadcasts — issue #152.
+    - [x] Add a dedicated, verified transactional sending subdomain and keep
+      tracking disabled for confirmation and subscription-management mail.
+    - [x] Verify a real received confirmation passes SPF, DKIM, and DMARC and
+      review its placement before enabling the new identity in production.
+    - Completed 2026-08-21: `confirm.aflora.page` was verified in Resend with
+      dedicated DKIM, SPF, return-path MX, and monitored DMARC. Exact staging
+      revision `24ba23f7bd8f87a2960b4dad16d1064ee5135fe3` sent untracked
+      transactional messages that Gmail authenticated and placed in Personal.
+  - [ ] Require explicit reader action before confirmation — issue #154.
+    - A staging proof subscriber changed from pending to active 18 seconds after
+      delivery without an intentional link click; replace the confirmation
+      page's automatic redirect with an explicit, scanner-safe action.
   - Completion check: real readers can subscribe, confirm, receive, and
     unsubscribe safely.
 

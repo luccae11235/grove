@@ -30,6 +30,11 @@ PostgreSQL or Resend credentials. Set `NEWSLETTER_TEST_DATABASE_URL` to a
 disposable PostgreSQL database to run the migration/repository integration test;
 the test isolates itself in a temporary schema.
 
+`NEWSLETTER_FROM` is the marketing broadcast identity. Set
+`NEWSLETTER_TRANSACTIONAL_FROM` to a separately verified sending subdomain for
+confirmation and subscription-management messages. If it is omitted, the API
+keeps using `NEWSLETTER_FROM` for compatibility.
+
 ## Public routes
 
 - `GET /health` verifies the database connection;
