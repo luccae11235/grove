@@ -34,6 +34,17 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Restore Portuguese locale parity for the production ACF/PACF article — issue #145**
+  - Add a professional Brazilian Portuguese translation with the same learning
+    progression, equations, references, and diagnostic guidance as the English article.
+  - Localize every static visual, animation, playground control, accessible
+    description, metadata field, and article route without changing the underlying data.
+  - Keep the English article unchanged and require owner review of the complete
+    Portuguese rendering before any production merge.
+  - Keep newsletter creation and delivery out of scope.
+  - Completion check: locale-parity browser coverage, focused checks, the full
+    repository gate, and desktop/mobile rendered review pass before production approval.
+
 - [ ] **Update and deliver the approved Issue 004 email — issue #141**
   - Move the approved introductory copy and weekly sales chart into the
     canonical newsletter source.

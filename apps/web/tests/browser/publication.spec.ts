@@ -51,6 +51,7 @@ test("the published reading flow is complete in Brazilian Portuguese", async ({ 
   await expect(page.getByRole("heading", { level: 1, name: /Aprendizado de máquina/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /Como árvores de decisão aprendem a prever números/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /Como inventar o algoritmo de árvore de decisão do zero/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Como o passado ecoa: entendendo ACF e PACF/ })).toBeVisible();
 
   await page.getByRole("link", { name: /Como árvores de decisão aprendem a prever números/ }).click();
   await expect(page).toHaveURL(/\/pt-br\/learn\/regression-trees\/$/);
