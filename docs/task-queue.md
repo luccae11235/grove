@@ -36,9 +36,10 @@ references for longer-term editorial direction.
 
 - [ ] **Draft the model-evaluation article — issue #155**
   - [x] Define the English article's learning contract and heading structure.
-  - [ ] Write and review the article body in a separately scoped follow-up.
-  - Keep visuals, translation, publication, deployment, and newsletter work out
-    of the outline step.
+  - [x] Place the supplied English article body into the draft structure.
+  - [ ] Review and implement the article's visual and playground notes.
+  - Keep translation, publication, deployment, and newsletter work out of the
+    draft-writing step.
   - Completion check: the finished English draft passes focused content checks
     and rendered desktop/mobile review before publication work begins.
 

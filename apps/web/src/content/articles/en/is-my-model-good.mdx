@@ -3,7 +3,7 @@ articleId: is-my-model-good
 locale: en
 routeSlug: is-my-model-good
 href: /learn/is-my-model-good
-title: Is my model good?
+title: Is My Model Good?
 navTitle: Understand accuracy, precision, and recall
 description: "Learn why accuracy alone cannot describe a binary classifier, and use the cost of mistakes to choose between precision and recall."
 eyebrow: Supervised learning · Model evaluation
@@ -11,7 +11,7 @@ area: Supervised learning
 topic: Accuracy, precision, and recall
 summary: Compare what accuracy, precision, and recall reveal about the same predictions, then choose the metric that matches the mistake that matters.
 status: draft
-readingTime: 8–10 min
+readingTime: 15–18 min
 interactiveCount: 0
 staticVisualCount: 0
 difficulty: foundational
@@ -36,7 +36,7 @@ learning:
 
 <header className="page-header lesson-header article-hero">
   <p className="eyebrow">Supervised learning · Model evaluation</p>
-  <h1>Is my model good?</h1>
+  <h1>Is My Model Good?</h1>
   <p className="lede">
     Accuracy tells you how often a classifier is right. Precision and recall
     reveal which mistakes that single number can hide.
@@ -44,38 +44,553 @@ learning:
 </header>
 
 <article className="lesson-body deep-article model-evaluation-article">
-  <p className="lesson-stage">One score, an incomplete answer</p>
-  <h2 id="accuracy">How often is the model right?</h2>
+Supervised learning can take several different forms depending on what we want a model to predict.
 
-  <h3 id="truth-and-prediction">The dot is the truth. The circle is the prediction.</h3>
+A regression model might predict the price of a house. A binary classifier might predict whether a patient has a disease. A multiclass classifier might identify which object appears in an image. A count regression model might estimate how many calls a call center will receive tomorrow, while a ranking model might decide which search results should appear first.
 
-  <h3 id="accuracy-question">Accuracy counts every correct prediction.</h3>
+Because the nature of these predictions changes, the way we evaluate them changes as well.
 
-  <p className="lesson-stage">The mistakes are not always equal</p>
-  <h2 id="recall">When missing a positive is dangerous</h2>
+For regression, metrics such as Mean Squared Error (MSE) and Mean Absolute Error (MAE) measure how far predictions are from the actual values. For classification, accuracy is one common choice. Ranking systems are often evaluated with metrics such as NDCG.
 
-  <h3 id="recall-question">Of the real positives, how many did the model find?</h3>
+These are only examples. None of these problems has a single universal metric that completely describes whether a model is good. Different metrics exist because they measure different aspects of a model's behavior.
 
-  <p className="lesson-stage">Trust the model's positive claim</p>
-  <h2 id="precision">When a false alarm is costly</h2>
+In this article, we will focus on binary classification.
 
-  <h3 id="precision-question">Of the predicted positives, how many were real?</h3>
+To make the problem visual, we will represent every datapoint as a dot. The dot could correspond to very different kinds of data: a piece of text being classified by emotion, one row of a tabular dataset containing several features about a customer, or an image being classified according to whether it contains a particular object.
 
-  <p className="lesson-stage">The same correct cases, a different comparison</p>
-  <h2 id="precision-versus-recall">Precision starts with the prediction. Recall starts with reality.</h2>
+The classifier does not actually see a green or red dot. It sees the datapoint and its features and must predict which of two classes it belongs to. Before making that prediction, you can think of the dot as effectively gray: its class is unknown to the model.
 
-  <p className="lesson-stage">Look beyond the headline number</p>
-  <h2 id="same-accuracy">The same accuracy can hide opposite behavior</h2>
+Because we are evaluating the classifier on labeled test data, however, **we** know the true class afterward. We will therefore color each dot green or red to show what it really was. The colors exist for us to evaluate the predictions, not as information given to the model.
 
-  <h3 id="conservative-model">A cautious model: fewer false alarms, more missed positives</h3>
+Now imagine that our test set contains green and red dots. The classifier receives each datapoint and places it into one of two circles:
 
-  <h3 id="aggressive-model">An aggressive model: fewer missed positives, more false alarms</h3>
+* the green circle means the model predicted **positive**;
+* the red circle means the model predicted **negative**.
 
-  <p className="lesson-stage">Choose the question before the score</p>
-  <h2 id="choose-a-metric">Which mistake matters more?</h2>
+The color of the dot represents its true class. The circle represents the model's prediction.
 
-  <h3 id="metric-check">Accuracy, precision, or recall?</h3>
+{/* Editorial note:
+IMAGEM: modelo recebendo uma sequência de pontos e separando-os entre os dois círculos.
+*/}
 
-  <p className="lesson-stage">Keep the mental model</p>
-  <h2 id="summary">Three metrics, three questions</h2>
+The most immediate way to evaluate this classifier is simply to count how often the point ended up in the correct circle.
+
+$$
+\text{Accuracy} =
+
+\frac{\text{correct classifications}}
+{\text{all classifications}}
+$$
+
+If a green point lands in the green circle, the model was correct. If a red point lands in the red circle, it was also correct.
+
+Accuracy therefore answers a useful question:
+
+**How often is the model right?**
+
+However, knowing how often a model is right does not tell us everything we may care about. In many applications, we also need to understand **how the model is wrong**.
+
+Two questions will guide the rest of this article.
+
+**Precision:** among the examples I **said** were positive, how many actually were positive?
+
+**Recall:** among the examples that **really were** positive, how many did I successfully identify as positive?
+
+These questions may initially sound similar, but they inspect the same predictions from two very different directions.
+
+Before looking at their formulas, it is more useful to understand why we would want to ask them in the first place.
+
+Metrics such as ROC-AUC, F1, PR-AUC, specificity, and many others offer additional ways to evaluate classifiers. We will leave most of them aside here and focus on building a clear intuition for accuracy, precision, and recall.
+
+---
+
+## When Missing a Case Is Dangerous
+
+Imagine a medical test used for cancer screening.
+
+Each patient is represented by one point:
+
+* green means the patient actually has cancer;
+* red means the patient does not.
+
+The classifier uses information about the patient and makes a simple decision:
+
+* green circle → investigate the patient further;
+* red circle → do not investigate further.
+
+{/* Editorial note:
+IMAGEM: reutilizar exatamente o visual central com pacientes sendo classificados.
+*/}
+
+There are two ways this classifier can make a mistake.
+
+The first is sending a healthy patient for further investigation.
+
+That patient may need another test, spend additional time in the healthcare system, and experience unnecessary worry. This error clearly has a cost.
+
+The second error is more serious: a patient who actually has cancer is classified as healthy.
+
+That patient may leave the screening process without receiving the additional investigation they needed.
+
+Both mistakes matter, but screening systems usually have a clear asymmetry between them. Missing a real case can be considerably more costly than investigating someone who eventually turns out to be healthy.
+
+Because of that, we might deliberately tolerate some red points entering the green circle if doing so prevents green points from escaping into the red circle.
+
+{/* Editorial note:
+VISUAL: mover progressivamente o limite do classificador. Mostrar mais pontos vermelhos entrando no círculo verde, mas cada vez menos pontos verdes ficando no círculo vermelho.
+*/}
+
+Now ignore the red points for a moment and highlight every patient who actually has cancer, regardless of which circle the classifier placed them in.
+
+This leads naturally to the question we care about:
+
+> Of all the patients who actually have cancer, how many did we detect?
+
+This quantity is called **recall**, also commonly called **sensitivity** in medical contexts.
+
+$$
+\text{Recall} =
+
+\frac{\text{green points in the green circle}}
+{\text{all actually green points}}
+$$
+
+The denominator includes every green point in the dataset. Some may be in the green circle and some may be in the red circle.
+
+The numerator keeps only the green points that the classifier successfully sent to the green circle.
+
+Visually, recall begins from **reality**.
+
+Before looking at what the model predicted, we first ask: *Which points are actually positive?* Then we measure how many of those points the classifier found.
+
+A classifier can therefore have high recall even when some red points are also being sent to the green circle. If almost every genuinely green point is captured, recall will be high.
+
+This does not mean the classifier is necessarily good overall. High recall tells us something more specific: **few actual positives were missed**.
+
+---
+
+## When an Accusation Requires Confidence
+
+Now consider a completely different problem.
+
+Suppose an email filter can automatically send messages classified as spam to a quarantine area or remove them from the main inbox.
+
+Again, every email is represented by one point:
+
+* green → actually spam;
+* red → actually legitimate.
+
+The classifier decides:
+
+* green circle → classified as spam;
+* red circle → classified as legitimate.
+
+{/* Editorial note:
+IMAGEM: utilizar exatamente o mesmo mecanismo visual do capítulo anterior.
+*/}
+
+Once again, there are two kinds of mistakes.
+
+The first occurs when a spam message is classified as legitimate. An unwanted email reaches the inbox. This is annoying, but usually recoverable.
+
+The second occurs when a legitimate message is classified as spam. An important email may never be seen or may even be removed.
+
+The asymmetry now points in the opposite direction.
+
+We may prefer to let some spam through if doing so means that almost nothing classified as spam is actually a legitimate message.
+
+In visual terms, the classifier becomes more conservative about placing points in the green circle.
+
+{/* Editorial note:
+VISUAL: tornar o modelo progressivamente mais conservador. O círculo verde recebe menos pontos, mas quase todos eles são realmente verdes.
+*/}
+
+Instead of highlighting all genuinely green points, now look only at the contents of the circle that the model labeled positive.
+
+The relevant question becomes:
+
+> Of the messages the model called spam, how many were actually spam?
+
+This is **precision**.
+
+$$
+\text{Precision} =
+
+\frac{\text{green points in the green circle}}
+{\text{all points in the green circle}}
+$$
+
+The denominator is now determined entirely by the model's predictions. We look at everything inside the predicted-positive circle, whether the points themselves are green or red.
+
+The numerator keeps only the points that really are green.
+
+Precision therefore begins from **the model's claim**.
+
+We first ask: *Which points did the classifier say were positive?* Then we inspect how often that claim was correct.
+
+This gives us the central distinction between precision and recall:
+
+**Recall:** look at all the green points and ask how many we found.
+
+**Precision:** look at everything we called green and ask how much of it really was green.
+
+{/* Editorial note:
+VISUAL LADO A LADO igual ao da imagem principal:
+
+Precision → destacar o círculo previsto como verde.
+
+Recall → destacar os pontos realmente verdes espalhados pelos dois círculos.
+*/}
+
+The numerator happens to be the same in both metrics: green points correctly placed in the green circle.
+
+What changes is the denominator, and therefore the question we are asking.
+
+---
+
+## Scenarios
+
+We can now remove cancer, patients, email, and spam completely.
+
+All we need are green and red points and the two circles.
+
+Every arrangement below could be the result produced by some binary classifier.
+
+The four possible combinations also correspond to the familiar confusion-matrix terms:
+
+* a green point in the green circle is a **true positive**;
+* a red point in the green circle is a **false positive**;
+* a green point in the red circle is a **false negative**;
+* a red point in the red circle is a **true negative**.
+
+We will compare precision and recall with accuracy, which measures the fraction of all points that were placed in the correct circle.
+
+### Scenario 1 — High Accuracy Can Hide a Poor Model
+
+Consider 100 points:
+
+* 5 are actually green;
+* 95 are actually red.
+
+The classifier produces:
+
+* green circle: 1 green + 1 red;
+* red circle: 4 green + 94 red.
+
+$$
+\text{Accuracy}=95\%
+$$
+
+$$
+\text{Precision}=50\%
+$$
+
+$$
+\text{Recall}=20\%
+$$
+
+If we looked only at the statement **95% accuracy**, this classifier might sound excellent.
+
+Yet among the five genuinely green points, it found only one.
+
+The high accuracy comes largely from the fact that red points dominate the dataset. Correctly classifying 94 of the 95 red points is enough to make the overall accuracy look impressive even though the classifier performs poorly on the rare positive class.
+
+This is one reason accuracy can become especially misleading on imbalanced datasets. The prevalence of each class affects how much each type of correct prediction contributes to the final number.
+
+---
+
+### Scenario 2 — Perfect Precision, Very Low Recall
+
+Now suppose we have:
+
+* 10 green points;
+* 90 red points.
+
+The classifier produces:
+
+* green circle: 2 green;
+* red circle: 8 green + 90 red.
+
+$$
+\text{Accuracy}=92\%
+$$
+
+$$
+\text{Precision}=100\%
+$$
+
+$$
+\text{Recall}=20\%
+$$
+
+Every time this classifier says **green**, it is right.
+
+There are no red points in the green circle, so its precision is perfect.
+
+However, the classifier almost never predicts green. It identifies only 2 of the 10 genuinely green points, giving it a recall of only 20%.
+
+Perfect precision can therefore be achieved by behaving very conservatively: make very few positive predictions, but make them only when the model is highly confident.
+
+The price is that many actual positives may be missed.
+
+---
+
+### Scenario 3 — Perfect Recall, Low Precision
+
+Keep the same class distribution:
+
+* 10 green points;
+* 90 red points.
+
+This time the classifier produces:
+
+* green circle: 10 green + 30 red;
+* red circle: 60 red.
+
+$$
+\text{Accuracy}=70\%
+$$
+
+$$
+\text{Precision}=25\%
+$$
+
+$$
+\text{Recall}=100\%
+$$
+
+Now no green point escapes.
+
+Every genuinely green example is inside the green circle, which gives us perfect recall.
+
+But the model also classified 30 red points as positive. Among the 40 points it called green, only 10 really were green.
+
+The classifier therefore finds every positive at the cost of producing many false alarms.
+
+Just as precision can be increased by being conservative, recall can be pushed toward 100% by becoming increasingly aggressive about predicting the positive class.
+
+---
+
+### Scenario 4 — A Balanced Model
+
+Now consider a balanced population:
+
+* 50 green points;
+* 50 red points.
+
+The classifier produces:
+
+* green circle: 45 green + 5 red;
+* red circle: 5 green + 45 red.
+
+$$
+\text{Accuracy}=90\%
+$$
+
+$$
+\text{Precision}=90\%
+$$
+
+$$
+\text{Recall}=90\%
+$$
+
+This classifier behaves symmetrically.
+
+It correctly identifies 45 of the 50 green points while making only five incorrect positive predictions. It also correctly classifies 45 of the 50 red points.
+
+In this particular configuration, accuracy, precision, and recall happen to have the same value. That is a consequence of the balanced class distribution and symmetric errors, not a general relationship between the metrics.
+
+---
+
+### Scenario 5 — Same Accuracy, Completely Different Behavior
+
+Finally, consider two classifiers evaluated on exactly the same 100 points:
+
+* 50 green;
+* 50 red.
+
+Both classifiers achieve the same accuracy.
+
+#### Model A
+
+* green circle: 30 green;
+* red circle: 20 green + 50 red.
+
+$$
+\text{Accuracy}=80\%
+$$
+
+$$
+\text{Precision}=100\%
+$$
+
+$$
+\text{Recall}=60\%
+$$
+
+Model A is extremely conservative.
+
+Whenever it predicts green, it is correct. However, it leaves 20 genuinely green points in the red circle.
+
+#### Model B
+
+* green circle: 50 green + 20 red;
+* red circle: 30 red.
+
+$$
+\text{Accuracy}=80\%
+$$
+
+$$
+\text{Precision}\approx71\%
+$$
+
+$$
+\text{Recall}=100\%
+$$
+
+Model B behaves in almost the opposite way.
+
+It captures every green point, but it also sends 20 red points into the green circle.
+
+Both models are correct on 80 of the 100 observations, so their accuracy is exactly the same. Yet their behavior is clearly different.
+
+Model A avoids false positive predictions at the cost of missing some actual positives. Model B avoids missing positives at the cost of producing more false alarms.
+
+Depending on the real problem, either behavior could be preferable.
+
+For something similar to the spam-filter example, we might prefer Model A's caution. For something similar to cancer screening, Model B's ability to capture every positive might matter more.
+
+This is why a metric should not be interpreted as an absolute description of **model quality**. Each metric summarizes a particular property of the classifier's behavior.
+
+---
+
+## Explore It Yourself
+
+We can make these relationships easier to see by directly controlling the contents of the two circles.
+
+{/* Editorial note:
+Apresentar um playground utilizando exatamente os dois círculos do restante do artigo.
+*/}
+
+Instead of changing a classifier or its training process, you control its final predictions directly.
+
+{/* Editorial note:
+Explicar que o leitor agora controla diretamente o resultado de uma classificação.
+*/}
+
+Each circle should allow four quantities to be manipulated:
+
+**Predicted green circle**
+
+* number of actually green points;
+* number of actually red points.
+
+**Predicted red circle**
+
+* number of actually green points;
+* number of actually red points.
+
+{/* Editorial note:
+Os pontos devem aparecer ou desaparecer imediatamente conforme os valores são alterados.
+*/}
+
+From those four numbers, the playground can calculate all three metrics automatically.
+
+$$
+\text{Accuracy}
+$$
+
+$$
+\text{Precision}
+$$
+
+$$
+\text{Recall}
+$$
+
+The important part is not merely seeing the numbers change, but seeing which points each metric pays attention to.
+
+For **precision**, highlight only the predicted-green circle.
+
+> Of the points I said were green, how many really were green?
+
+For **recall**, fade the red points and highlight every actually green point across both circles.
+
+> Of the points that really were green, how many did I say were green?
+
+For **accuracy**, highlight every point whose actual color agrees with the circle containing it.
+
+> Of all the points, how many were classified correctly?
+
+{/* Editorial note:
+Adicionar alguns presets que o leitor pode selecionar:
+
+* High accuracy, low recall;
+* High precision, low recall;
+* High recall, low precision;
+* Balanced;
+* Predict almost everything positive;
+* Predict almost everything negative.
+*/}
+
+{/* Editorial note:
+Permitir também que o usuário construa qualquer distribuição manualmente.
+*/}
+
+After experimenting with the distributions, there is one final detail worth making explicit.
+
+There is nothing inherently special about green being the **positive** class.
+
+We chose green as positive simply to keep the visual language consistent throughout the article. We could reverse the definition and declare red to be the positive class instead.
+
+The points would not move. The classifier would not change. Only the perspective from which we calculate precision and recall would change.
+
+We could then ask:
+
+> Of the points I said were red, how many really were red?
+
+That would be precision for the red class.
+
+Or:
+
+> Of the points that really were red, how many did I correctly classify as red?
+
+That would be recall for the red class.
+
+{/* Editorial note:
+Opcionalmente permitir no playground um botão:
+
+**Positive class: Green / Red**
+
+Ao alterná-lo, nenhuma bolinha muda de lugar. Apenas muda a classe a partir da qual precision e recall são calculados.
+*/}
+
+This reveals an important property of both metrics:
+
+> Precision and recall are not single universal numbers that belong to a classifier independently of how we define the task. They are calculated relative to whichever class we choose to treat as positive.
+
+When green is the positive class, recall for green is often called **sensitivity**.
+
+The corresponding ability to correctly identify red examples—the recall of the negative class—is what is usually called **specificity**:
+
+$$
+\text{Specificity} =
+
+\frac{\text{red points in the red circle}}
+{\text{all actually red points}}
+$$
+
+The terminology is useful, but the visual logic remains exactly the same.
+
+The two questions worth remembering are simpler than the formulas:
+
+> **Precision:** among what I **said** was positive, how much did I get right?
+
+> **Recall:** among what **really was** positive, how much did I find?
+
+Neither is universally more important.
+
+The appropriate metric depends on what the classifier is being used for and, especially, on which kind of error is more costly in the real problem.
 </article>
