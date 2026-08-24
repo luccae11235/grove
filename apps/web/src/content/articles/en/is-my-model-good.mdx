@@ -1,0 +1,81 @@
+---
+articleId: is-my-model-good
+locale: en
+routeSlug: is-my-model-good
+href: /learn/is-my-model-good
+title: Is my model good?
+navTitle: Understand accuracy, precision, and recall
+description: "Learn why accuracy alone cannot describe a binary classifier, and use the cost of mistakes to choose between precision and recall."
+eyebrow: Supervised learning · Model evaluation
+area: Supervised learning
+topic: Accuracy, precision, and recall
+summary: Compare what accuracy, precision, and recall reveal about the same predictions, then choose the metric that matches the mistake that matters.
+status: draft
+readingTime: 8–10 min
+interactiveCount: 0
+staticVisualCount: 0
+difficulty: foundational
+access: public
+prerequisites: []
+related: []
+implementation: mdx
+learning:
+  priorKnowledge:
+    - Compare ordinary counts and percentages.
+    - Understand that a model can assign an example to one of two groups.
+  likelyMisconception: A classifier with high accuracy must also be good at finding positive cases and making trustworthy positive predictions.
+  transferOutcome: Given a binary-classification problem, explain whether accuracy, precision, or recall best captures the mistake that matters and justify the choice.
+  motivatingQuestion: Can two models be equally accurate but useful in completely different ways?
+  conceptualBottleneck: Precision and recall count the same true-positive cases but answer different questions because they use different comparison groups.
+  evidenceOfUnderstanding:
+    - Distinguish an example's true class from the class predicted by the model.
+    - Explain accuracy, precision, and recall as three questions about the same predictions.
+    - Predict which metric suffers when false positives or false negatives increase.
+    - Choose a metric from the real cost of a model's mistakes.
+---
+
+<header className="page-header lesson-header article-hero">
+  <p className="eyebrow">Supervised learning · Model evaluation</p>
+  <h1>Is my model good?</h1>
+  <p className="lede">
+    Accuracy tells you how often a classifier is right. Precision and recall
+    reveal which mistakes that single number can hide.
+  </p>
+</header>
+
+<article className="lesson-body deep-article model-evaluation-article">
+  <p className="lesson-stage">One score, an incomplete answer</p>
+  <h2 id="accuracy">How often is the model right?</h2>
+
+  <h3 id="truth-and-prediction">The dot is the truth. The circle is the prediction.</h3>
+
+  <h3 id="accuracy-question">Accuracy counts every correct prediction.</h3>
+
+  <p className="lesson-stage">The mistakes are not always equal</p>
+  <h2 id="recall">When missing a positive is dangerous</h2>
+
+  <h3 id="recall-question">Of the real positives, how many did the model find?</h3>
+
+  <p className="lesson-stage">Trust the model's positive claim</p>
+  <h2 id="precision">When a false alarm is costly</h2>
+
+  <h3 id="precision-question">Of the predicted positives, how many were real?</h3>
+
+  <p className="lesson-stage">The same correct cases, a different comparison</p>
+  <h2 id="precision-versus-recall">Precision starts with the prediction. Recall starts with reality.</h2>
+
+  <p className="lesson-stage">Look beyond the headline number</p>
+  <h2 id="same-accuracy">The same accuracy can hide opposite behavior</h2>
+
+  <h3 id="conservative-model">A cautious model: fewer false alarms, more missed positives</h3>
+
+  <h3 id="aggressive-model">An aggressive model: fewer missed positives, more false alarms</h3>
+
+  <p className="lesson-stage">Choose the question before the score</p>
+  <h2 id="choose-a-metric">Which mistake matters more?</h2>
+
+  <h3 id="metric-check">Accuracy, precision, or recall?</h3>
+
+  <p className="lesson-stage">Keep the mental model</p>
+  <h2 id="summary">Three metrics, three questions</h2>
+</article>

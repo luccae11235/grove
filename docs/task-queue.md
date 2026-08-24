@@ -34,6 +34,14 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Draft the model-evaluation article — issue #155**
+  - [x] Define the English article's learning contract and heading structure.
+  - [ ] Write and review the article body in a separately scoped follow-up.
+  - Keep visuals, translation, publication, deployment, and newsletter work out
+    of the outline step.
+  - Completion check: the finished English draft passes focused content checks
+    and rendered desktop/mobile review before publication work begins.
+
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.
