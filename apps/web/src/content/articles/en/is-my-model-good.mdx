@@ -69,9 +69,9 @@ Now imagine that our test set contains green and red dots. The classifier receiv
 
 The color of the dot represents its true class. The circle represents the model's prediction.
 
-{/* Editorial note:
-IMAGEM: modelo recebendo uma sequência de pontos e separando-os entre os dois círculos.
-*/}
+<aside className="article-production-placeholder" data-placeholder-kind="image" aria-label="Image placeholder">
+  <pre>{`[IMAGEM: modelo recebendo uma sequência de pontos e separando-os entre os dois círculos.]`}</pre>
+</aside>
 
 The most immediate way to evaluate this classifier is simply to count how often the point ended up in the correct circle.
 
@@ -118,9 +118,9 @@ The classifier uses information about the patient and makes a simple decision:
 * green circle → investigate the patient further;
 * red circle → do not investigate further.
 
-{/* Editorial note:
-IMAGEM: reutilizar exatamente o visual central com pacientes sendo classificados.
-*/}
+<aside className="article-production-placeholder" data-placeholder-kind="image" aria-label="Image placeholder">
+  <pre>{`[IMAGEM: reutilizar exatamente o visual central com pacientes sendo classificados.]`}</pre>
+</aside>
 
 There are two ways this classifier can make a mistake.
 
@@ -136,9 +136,9 @@ Both mistakes matter, but screening systems usually have a clear asymmetry betwe
 
 Because of that, we might deliberately tolerate some red points entering the green circle if doing so prevents green points from escaping into the red circle.
 
-{/* Editorial note:
-VISUAL: mover progressivamente o limite do classificador. Mostrar mais pontos vermelhos entrando no círculo verde, mas cada vez menos pontos verdes ficando no círculo vermelho.
-*/}
+<aside className="article-production-placeholder" data-placeholder-kind="animation" aria-label="Animation placeholder">
+  <pre>{`[VISUAL: mover progressivamente o limite do classificador. Mostrar mais pontos vermelhos entrando no círculo verde, mas cada vez menos pontos verdes ficando no círculo vermelho.]`}</pre>
+</aside>
 
 Now ignore the red points for a moment and highlight every patient who actually has cancer, regardless of which circle the classifier placed them in.
 
@@ -185,9 +185,9 @@ The classifier decides:
 * green circle → classified as spam;
 * red circle → classified as legitimate.
 
-{/* Editorial note:
-IMAGEM: utilizar exatamente o mesmo mecanismo visual do capítulo anterior.
-*/}
+<aside className="article-production-placeholder" data-placeholder-kind="image" aria-label="Image placeholder">
+  <pre>{`[IMAGEM: utilizar exatamente o mesmo mecanismo visual do capítulo anterior.]`}</pre>
+</aside>
 
 Once again, there are two kinds of mistakes.
 
@@ -201,9 +201,9 @@ We may prefer to let some spam through if doing so means that almost nothing cla
 
 In visual terms, the classifier becomes more conservative about placing points in the green circle.
 
-{/* Editorial note:
-VISUAL: tornar o modelo progressivamente mais conservador. O círculo verde recebe menos pontos, mas quase todos eles são realmente verdes.
-*/}
+<aside className="article-production-placeholder" data-placeholder-kind="animation" aria-label="Animation placeholder">
+  <pre>{`[VISUAL: tornar o modelo progressivamente mais conservador. O círculo verde recebe menos pontos, mas quase todos eles são realmente verdes.]`}</pre>
+</aside>
 
 Instead of highlighting all genuinely green points, now look only at the contents of the circle that the model labeled positive.
 
@@ -234,13 +234,13 @@ This gives us the central distinction between precision and recall:
 
 **Precision:** look at everything we called green and ask how much of it really was green.
 
-{/* Editorial note:
-VISUAL LADO A LADO igual ao da imagem principal:
+<aside className="article-production-placeholder" data-placeholder-kind="animation" aria-label="Animation placeholder">
+  <pre>{`[VISUAL LADO A LADO igual ao da imagem principal:
 
 Precision → destacar o círculo previsto como verde.
 
-Recall → destacar os pontos realmente verdes espalhados pelos dois círculos.
-*/}
+Recall → destacar os pontos realmente verdes espalhados pelos dois círculos.]`}</pre>
+</aside>
 
 The numerator happens to be the same in both metrics: green points correctly placed in the green circle.
 
@@ -470,15 +470,15 @@ This is why a metric should not be interpreted as an absolute description of **m
 
 We can make these relationships easier to see by directly controlling the contents of the two circles.
 
-{/* Editorial note:
-Apresentar um playground utilizando exatamente os dois círculos do restante do artigo.
-*/}
+<aside className="article-production-placeholder" data-placeholder-kind="playground" aria-label="Playground placeholder">
+  <pre>{`[Apresentar um playground utilizando exatamente os dois círculos do restante do artigo.]`}</pre>
+</aside>
 
 Instead of changing a classifier or its training process, you control its final predictions directly.
 
-{/* Editorial note:
-Explicar que o leitor agora controla diretamente o resultado de uma classificação.
-*/}
+<aside className="article-production-placeholder" data-placeholder-kind="playground" aria-label="Playground placeholder">
+  <pre>{`[Explicar que o leitor agora controla diretamente o resultado de uma classificação.]`}</pre>
+</aside>
 
 Each circle should allow four quantities to be manipulated:
 
@@ -492,9 +492,9 @@ Each circle should allow four quantities to be manipulated:
 * number of actually green points;
 * number of actually red points.
 
-{/* Editorial note:
-Os pontos devem aparecer ou desaparecer imediatamente conforme os valores são alterados.
-*/}
+<aside className="article-production-placeholder" data-placeholder-kind="playground" aria-label="Playground placeholder">
+  <pre>{`[Os pontos devem aparecer ou desaparecer imediatamente conforme os valores são alterados.]`}</pre>
+</aside>
 
 From those four numbers, the playground can calculate all three metrics automatically.
 
@@ -524,20 +524,20 @@ For **accuracy**, highlight every point whose actual color agrees with the circl
 
 > Of all the points, how many were classified correctly?
 
-{/* Editorial note:
-Adicionar alguns presets que o leitor pode selecionar:
+<aside className="article-production-placeholder" data-placeholder-kind="playground" aria-label="Playground placeholder">
+  <pre>{`[Adicionar alguns presets que o leitor pode selecionar:
 
 * High accuracy, low recall;
 * High precision, low recall;
 * High recall, low precision;
 * Balanced;
 * Predict almost everything positive;
-* Predict almost everything negative.
-*/}
+* Predict almost everything negative.]`}</pre>
+</aside>
 
-{/* Editorial note:
-Permitir também que o usuário construa qualquer distribuição manualmente.
-*/}
+<aside className="article-production-placeholder" data-placeholder-kind="playground" aria-label="Playground placeholder">
+  <pre>{`[Permitir também que o usuário construa qualquer distribuição manualmente.]`}</pre>
+</aside>
 
 After experimenting with the distributions, there is one final detail worth making explicit.
 
@@ -559,13 +559,13 @@ Or:
 
 That would be recall for the red class.
 
-{/* Editorial note:
-Opcionalmente permitir no playground um botão:
+<aside className="article-production-placeholder" data-placeholder-kind="playground" aria-label="Playground placeholder">
+  <pre>{`[Opcionalmente permitir no playground um botão:
 
 **Positive class: Green / Red**
 
-Ao alterná-lo, nenhuma bolinha muda de lugar. Apenas muda a classe a partir da qual precision e recall são calculados.
-*/}
+Ao alterná-lo, nenhuma bolinha muda de lugar. Apenas muda a classe a partir da qual precision e recall são calculados.]`}</pre>
+</aside>
 
 This reveals an important property of both metrics:
 
