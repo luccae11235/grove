@@ -29,6 +29,10 @@ test("the first classifier visual derives every dot from configurable outcome co
   await expect(predictedNegative.locator('[data-actual-class="positive"]')).toHaveCount(6);
   await expect(predictedPositive.locator('[data-actual-class="negative"]')).toHaveCount(3);
   await expect(predictedPositive.locator('[data-actual-class="positive"]')).toHaveCount(21);
+  await expect(visual.locator(".dot-center")).toHaveCount(0);
+  await expect(visual.getByText("one input, one prediction", { exact: true })).toHaveCount(0);
+  await expect(visual.getByText("Dot color and fill", { exact: false })).toHaveCount(0);
+  await expect(visual.getByText("The enclosing circle shows the model's prediction.", { exact: true })).toBeVisible();
 
   await expect(page.getByText("[IMAGEM: modelo recebendo", { exact: false })).toHaveCount(0);
   await expect(page.locator(".article-production-placeholder")).toHaveCount(11);
@@ -53,6 +57,7 @@ test("the classifier visual stays inside the article on desktop and mobile", asy
         visualRight: visual.right,
         svgLeft: svg.left,
         svgRight: svg.right,
+        visualWidth: visual.width,
       };
     });
 
@@ -60,5 +65,6 @@ test("the classifier visual stays inside the article on desktop and mobile", asy
     expect(geometry.visualRight).toBeLessThanOrEqual(geometry.articleRight + 1);
     expect(geometry.svgLeft).toBeGreaterThanOrEqual(geometry.visualLeft);
     expect(geometry.svgRight).toBeLessThanOrEqual(geometry.visualRight);
+    if (viewport.width === 1440) expect(geometry.visualWidth).toBeLessThanOrEqual(521);
   }
 });

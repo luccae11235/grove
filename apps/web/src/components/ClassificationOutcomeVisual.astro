@@ -15,7 +15,7 @@ const {
   predictedNegative = { positive: 6, negative: 18 },
   predictedPositive = { positive: 21, negative: 3 },
   incoming = ["negative", "positive", "positive", "negative", "positive"],
-  caption = "Dot color and fill show the actual class. The enclosing circle shows the model's prediction.",
+  caption = "The enclosing circle shows the model's prediction.",
 } = Astro.props;
 
 const maximumDotsPerCircle = 50;
@@ -103,22 +103,20 @@ const accessibleSummary = [
       {incoming.map((actual, index) => (
         <g class={`classification-dot actual-${actual}`} transform={`translate(360 ${34 + index * 20})`}>
           <circle r="5.5" />
-          {actual === "negative" && <circle class="dot-center" r="1.35" />}
         </g>
       ))}
-      <path class="incoming-guide" d={`M360 ${38 + Math.max(0, incoming.length - 1) * 20}V136`} />
+      <path class="incoming-guide" d={`M360 ${38 + Math.max(0, incoming.length - 1) * 20}V144`} />
     </g>
 
     <g class="classifier-node" aria-hidden="true">
-      <rect x="280" y="137" width="160" height="70" rx="14" />
-      <text x="360" y="167" text-anchor="middle">Binary classifier</text>
-      <text class="classifier-subtitle" x="360" y="188" text-anchor="middle">one input, one prediction</text>
+      <rect x="286" y="145" width="148" height="52" rx="13" />
+      <text x="360" y="177" text-anchor="middle">Binary classifier</text>
     </g>
 
     <g class="routing-arrows" aria-hidden="true">
-      <path d="M324 207C307 221 292 233 278 248" />
+      <path d="M318 197C304 216 290 232 278 248" />
       <path class="arrow-head" d="m278 248 11-3-5-9Z" />
-      <path d="M396 207C413 221 428 233 442 248" />
+      <path d="M402 197C416 216 430 232 442 248" />
       <path class="arrow-head" d="m442 248-11-3 5-9Z" />
     </g>
 
@@ -131,7 +129,6 @@ const accessibleSummary = [
           transform={`translate(${dot.x.toFixed(2)} ${dot.y.toFixed(2)})`}
         >
           <circle r="6" />
-          {dot.actual === "negative" && <circle class="dot-center" r="1.45" />}
         </g>
       ))}
       <text class="prediction-label" x="190" y="474" text-anchor="middle">Predicted negative</text>
@@ -146,7 +143,6 @@ const accessibleSummary = [
           transform={`translate(${dot.x.toFixed(2)} ${dot.y.toFixed(2)})`}
         >
           <circle r="6" />
-          {dot.actual === "negative" && <circle class="dot-center" r="1.45" />}
         </g>
       ))}
       <text class="prediction-label" x="530" y="474" text-anchor="middle">Predicted positive</text>
@@ -165,9 +161,8 @@ const accessibleSummary = [
     --positive: var(--accent);
     --positive-dark: var(--accent-hover);
     --negative: #b44332;
-    --negative-soft: #faece8;
-    width: 100%;
-    margin: 34px 0 42px;
+    width: min(520px, 100%);
+    margin: 34px auto 42px;
     border: 1px solid var(--border);
     border-radius: 18px;
     background: var(--surface-raised);
@@ -207,13 +202,6 @@ const accessibleSummary = [
     font-weight: 720;
   }
 
-  .classifier-node .classifier-subtitle {
-    fill: var(--text-muted);
-    font-size: 12px;
-    font-weight: 560;
-    letter-spacing: 0.02em;
-  }
-
   .routing-arrows path {
     fill: none;
     stroke: var(--ink);
@@ -242,22 +230,17 @@ const accessibleSummary = [
   }
 
   .classification-dot > circle:first-child {
-    stroke-width: 1.7;
+    stroke-width: 2;
   }
 
   .classification-dot.actual-positive > circle:first-child {
-    fill: var(--positive);
+    fill: color-mix(in srgb, var(--positive) 22%, var(--surface-raised));
     stroke: var(--positive-dark);
   }
 
   .classification-dot.actual-negative > circle:first-child {
-    fill: var(--negative-soft);
+    fill: color-mix(in srgb, var(--negative) 5%, var(--surface-raised));
     stroke: var(--negative);
-  }
-
-  .classification-dot.actual-negative .dot-center {
-    fill: var(--negative);
-    stroke: none;
   }
 
   .predicted-negative .prediction-label {
@@ -299,14 +282,13 @@ const accessibleSummary = [
   }
 
   .actual-positive-key i {
-    border: 1px solid var(--positive-dark);
-    background: var(--positive);
+    border: 2px solid var(--positive-dark);
+    background: color-mix(in srgb, var(--positive) 22%, var(--surface-raised));
   }
 
   .actual-negative-key i {
     border: 2px solid var(--negative);
-    background: var(--negative-soft);
-    box-shadow: inset 0 0 0 2px var(--surface-subtle);
+    background: color-mix(in srgb, var(--negative) 5%, var(--surface-raised));
   }
 
   .visual-reading {
