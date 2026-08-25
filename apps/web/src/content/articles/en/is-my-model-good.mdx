@@ -36,6 +36,7 @@ learning:
 
 import ClassificationOutcomeVisual from "../../../components/ClassificationOutcomeVisual.astro";
 import ClassificationMetricsPlayground from "../../../components/ClassificationMetricsPlayground.astro";
+import ScenarioOutcomeVisual from "../../../components/ScenarioOutcomeVisual.astro";
 import ClassifierTradeoffAnimation from "../../../components/ClassifierTradeoffAnimation.astro";
 import PrecisionRecallComparison from "../../../components/PrecisionRecallComparison.astro";
 
@@ -279,6 +280,8 @@ The classifier produces:
 * green circle: 1 green + 1 red;
 * red circle: 4 green + 94 red.
 
+<ScenarioOutcomeVisual label="Scenario 1" predictedRed={{ green: 4, red: 94 }} predictedGreen={{ green: 1, red: 1 }} />
+
 $$
 \text{Accuracy}=95\%
 $$
@@ -312,6 +315,8 @@ The classifier produces:
 
 * green circle: 2 green;
 * red circle: 8 green + 90 red.
+
+<ScenarioOutcomeVisual label="Scenario 2" predictedRed={{ green: 8, red: 90 }} predictedGreen={{ green: 2, red: 0 }} />
 
 $$
 \text{Accuracy}=92\%
@@ -349,6 +354,8 @@ This time the classifier produces:
 * green circle: 10 green + 30 red;
 * red circle: 60 red.
 
+<ScenarioOutcomeVisual label="Scenario 3" predictedRed={{ green: 0, red: 60 }} predictedGreen={{ green: 10, red: 30 }} />
+
 $$
 \text{Accuracy}=70\%
 $$
@@ -385,6 +392,8 @@ The classifier produces:
 * green circle: 45 green + 5 red;
 * red circle: 5 green + 45 red.
 
+<ScenarioOutcomeVisual label="Scenario 4" predictedRed={{ green: 5, red: 45 }} predictedGreen={{ green: 45, red: 5 }} />
+
 $$
 \text{Accuracy}=90\%
 $$
@@ -419,6 +428,8 @@ Both classifiers achieve the same accuracy.
 * green circle: 30 green;
 * red circle: 20 green + 50 red.
 
+<ScenarioOutcomeVisual label="Model A" predictedRed={{ green: 20, red: 50 }} predictedGreen={{ green: 30, red: 0 }} />
+
 $$
 \text{Accuracy}=80\%
 $$
@@ -439,6 +450,8 @@ Whenever it predicts green, it is correct. However, it leaves 20 genuinely green
 
 * green circle: 50 green + 20 red;
 * red circle: 30 red.
+
+<ScenarioOutcomeVisual label="Model B" predictedRed={{ green: 0, red: 30 }} predictedGreen={{ green: 50, red: 20 }} />
 
 $$
 \text{Accuracy}=80\%

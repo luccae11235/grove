@@ -45,6 +45,34 @@ test("the playground recalculates metrics and changes perspective without moving
   await expect(playground).toHaveAttribute("data-positive", "red");
 });
 
+test("every scenario renders the exact classifier distribution described in the article", async ({ page }) => {
+  const scenarios = page.locator("[data-scenario-outcome]");
+  await expect(scenarios).toHaveCount(6);
+  await expect(scenarios.nth(0).locator("svg")).toHaveAttribute("aria-label", /Scenario 1/);
+
+  const expectedDots = [100, 100, 100, 100, 100, 100];
+  for (let index = 0; index < expectedDots.length; index += 1) {
+    await expect(scenarios.nth(index).locator(".dot")).toHaveCount(expectedDots[index]);
+  }
+});
+
+test("the playground uses sliders and keeps controls beside the visual on desktop", async ({ page }) => {
+  const playground = page.locator("[data-metrics-playground]");
+  const sliders = playground.locator('input[type="range"]');
+  await expect(sliders).toHaveCount(4);
+  await expect(playground.locator('input[type="number"]')).toHaveCount(0);
+
+  await sliders.nth(0).fill("30");
+  await expect(playground.locator('[data-count-value="gg"]')).toHaveText("30");
+  await expect(playground.locator('[data-metric-value="accuracy"]')).toHaveText("88%");
+
+  const visual = await playground.locator(".visual-wrap").boundingBox();
+  const controls = await playground.locator(".edit-panel").boundingBox();
+  expect(visual).not.toBeNull();
+  expect(controls).not.toBeNull();
+  expect(controls!.x).toBeGreaterThan(visual!.x);
+});
+
 test("all new visual systems remain inside the article at desktop and mobile widths", async ({ page }) => {
   for (const viewport of [{ width: 1440, height: 960 }, { width: 390, height: 844 }]) {
     await page.setViewportSize(viewport);

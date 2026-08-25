@@ -216,14 +216,13 @@ references for longer-term editorial direction.
 ### Publishing and content
 
 - [x] **Draft the model-evaluation article — issue #155** — 2026-08-25
-  - Preserved the supplied English article and completed its reusable classifier,
-    contextual screening and spam visuals, threshold animations, precision-versus-
-    recall calculation, and configurable metric playground.
-  - Removed all production placeholders while keeping translation, publication,
-    deployment, and newsletter delivery outside this draft-writing step.
-  - Completion check: typecheck and production build passed; five focused browser
-    tests and rendered desktop/mobile review confirmed the metrics, interactions,
-    accessibility behavior, arrowheads, and responsive containment.
+  - Added exact-count classifier visuals for every scenario so each stated distribution
+    can be inspected directly.
+  - Compacted the metrics playground and replaced typed point counts with accessible sliders.
+  - Kept translation, publication, deployment, and newsletter delivery outside this draft step.
+  - Completion check: typecheck and production build passed; seven focused browser
+    tests verified exact scenario counts, slider calculations, interactions, and
+    desktop/mobile containment; rendered review confirmed the compact hierarchy.
 
 - [x] **Restore Portuguese locale parity for the production ACF/PACF article — issue #145** — 2026-08-21
   - Added a professional Brazilian Portuguese translation with the same learning
