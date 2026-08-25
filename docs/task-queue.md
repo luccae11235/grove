@@ -37,6 +37,7 @@ references for longer-term editorial direction.
 - [ ] **Draft the model-evaluation article — issue #155**
   - [x] Define the English article's learning contract and heading structure.
   - [x] Place the supplied English article body into the draft structure.
+  - [x] Build the reusable classifier-and-two-circles foundation visual.
   - [ ] Review and implement the article's visual and playground notes.
   - Keep translation, publication, deployment, and newsletter work out of the
     draft-writing step.

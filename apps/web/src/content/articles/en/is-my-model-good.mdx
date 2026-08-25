@@ -13,7 +13,7 @@ summary: Compare what accuracy, precision, and recall reveal about the same pred
 status: draft
 readingTime: 15–18 min
 interactiveCount: 0
-staticVisualCount: 0
+staticVisualCount: 1
 difficulty: foundational
 access: public
 prerequisites: []
@@ -33,6 +33,8 @@ learning:
     - Predict which metric suffers when false positives or false negatives increase.
     - Choose a metric from the real cost of a model's mistakes.
 ---
+
+import ClassificationOutcomeVisual from "../../../components/ClassificationOutcomeVisual.astro";
 
 <header className="page-header lesson-header article-hero">
   <p className="eyebrow">Supervised learning · Model evaluation</p>
@@ -69,9 +71,10 @@ Now imagine that our test set contains green and red dots. The classifier receiv
 
 The color of the dot represents its true class. The circle represents the model's prediction.
 
-<aside className="article-production-placeholder" data-placeholder-kind="image" aria-label="Image placeholder">
-  <pre>{`[IMAGEM: modelo recebendo uma sequência de pontos e separando-os entre os dois círculos.]`}</pre>
-</aside>
+<ClassificationOutcomeVisual
+  predictedNegative={{ positive: 6, negative: 18 }}
+  predictedPositive={{ positive: 21, negative: 3 }}
+/>
 
 The most immediate way to evaluate this classifier is simply to count how often the point ended up in the correct circle.
 
