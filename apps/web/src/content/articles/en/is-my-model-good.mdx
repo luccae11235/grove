@@ -12,8 +12,8 @@ topic: Accuracy, precision, and recall
 summary: Compare what accuracy, precision, and recall reveal about the same predictions, then choose the metric that matches the mistake that matters.
 status: draft
 readingTime: 15–18 min
-interactiveCount: 0
-staticVisualCount: 3
+interactiveCount: 3
+staticVisualCount: 4
 difficulty: foundational
 access: public
 prerequisites: []
@@ -35,6 +35,9 @@ learning:
 ---
 
 import ClassificationOutcomeVisual from "../../../components/ClassificationOutcomeVisual.astro";
+import ClassificationMetricsPlayground from "../../../components/ClassificationMetricsPlayground.astro";
+import ClassifierTradeoffAnimation from "../../../components/ClassifierTradeoffAnimation.astro";
+import PrecisionRecallComparison from "../../../components/PrecisionRecallComparison.astro";
 
 <header className="page-header lesson-header article-hero">
   <p className="eyebrow">Supervised learning · Model evaluation</p>
@@ -142,9 +145,7 @@ Both mistakes matter, but screening systems usually have a clear asymmetry betwe
 
 Because of that, we might deliberately tolerate some red points entering the green circle if doing so prevents green points from escaping into the red circle.
 
-<aside className="article-production-placeholder" data-placeholder-kind="animation" aria-label="Animation placeholder">
-  <pre>{`[VISUAL: mover progressivamente o limite do classificador. Mostrar mais pontos vermelhos entrando no círculo verde, mas cada vez menos pontos verdes ficando no círculo vermelho.]`}</pre>
-</aside>
+<ClassifierTradeoffAnimation mode="recall" />
 
 Now ignore the red points for a moment and highlight every patient who actually has cancer, regardless of which circle the classifier placed them in.
 
@@ -210,9 +211,7 @@ We may prefer to let some spam through if doing so means that almost nothing cla
 
 In visual terms, the classifier becomes more conservative about placing points in the green circle.
 
-<aside className="article-production-placeholder" data-placeholder-kind="animation" aria-label="Animation placeholder">
-  <pre>{`[VISUAL: tornar o modelo progressivamente mais conservador. O círculo verde recebe menos pontos, mas quase todos eles são realmente verdes.]`}</pre>
-</aside>
+<ClassifierTradeoffAnimation mode="precision" />
 
 Instead of highlighting all genuinely green points, now look only at the contents of the circle that the model labeled positive.
 
@@ -243,13 +242,7 @@ This gives us the central distinction between precision and recall:
 
 **Precision:** look at everything we called green and ask how much of it really was green.
 
-<aside className="article-production-placeholder" data-placeholder-kind="animation" aria-label="Animation placeholder">
-  <pre>{`[VISUAL LADO A LADO igual ao da imagem principal:
-
-Precision → destacar o círculo previsto como verde.
-
-Recall → destacar os pontos realmente verdes espalhados pelos dois círculos.]`}</pre>
-</aside>
+<PrecisionRecallComparison />
 
 The numerator happens to be the same in both metrics: green points correctly placed in the green circle.
 
@@ -479,15 +472,7 @@ This is why a metric should not be interpreted as an absolute description of **m
 
 We can make these relationships easier to see by directly controlling the contents of the two circles.
 
-<aside className="article-production-placeholder" data-placeholder-kind="playground" aria-label="Playground placeholder">
-  <pre>{`[Apresentar um playground utilizando exatamente os dois círculos do restante do artigo.]`}</pre>
-</aside>
-
 Instead of changing a classifier or its training process, you control its final predictions directly.
-
-<aside className="article-production-placeholder" data-placeholder-kind="playground" aria-label="Playground placeholder">
-  <pre>{`[Explicar que o leitor agora controla diretamente o resultado de uma classificação.]`}</pre>
-</aside>
 
 Each circle should allow four quantities to be manipulated:
 
@@ -501,9 +486,7 @@ Each circle should allow four quantities to be manipulated:
 * number of actually green points;
 * number of actually red points.
 
-<aside className="article-production-placeholder" data-placeholder-kind="playground" aria-label="Playground placeholder">
-  <pre>{`[Os pontos devem aparecer ou desaparecer imediatamente conforme os valores são alterados.]`}</pre>
-</aside>
+<ClassificationMetricsPlayground />
 
 From those four numbers, the playground can calculate all three metrics automatically.
 
@@ -533,21 +516,6 @@ For **accuracy**, highlight every point whose actual color agrees with the circl
 
 > Of all the points, how many were classified correctly?
 
-<aside className="article-production-placeholder" data-placeholder-kind="playground" aria-label="Playground placeholder">
-  <pre>{`[Adicionar alguns presets que o leitor pode selecionar:
-
-* High accuracy, low recall;
-* High precision, low recall;
-* High recall, low precision;
-* Balanced;
-* Predict almost everything positive;
-* Predict almost everything negative.]`}</pre>
-</aside>
-
-<aside className="article-production-placeholder" data-placeholder-kind="playground" aria-label="Playground placeholder">
-  <pre>{`[Permitir também que o usuário construa qualquer distribuição manualmente.]`}</pre>
-</aside>
-
 After experimenting with the distributions, there is one final detail worth making explicit.
 
 There is nothing inherently special about green being the **positive** class.
@@ -567,14 +535,6 @@ Or:
 > Of the points that really were red, how many did I correctly classify as red?
 
 That would be recall for the red class.
-
-<aside className="article-production-placeholder" data-placeholder-kind="playground" aria-label="Playground placeholder">
-  <pre>{`[Opcionalmente permitir no playground um botão:
-
-**Positive class: Green / Red**
-
-Ao alterná-lo, nenhuma bolinha muda de lugar. Apenas muda a classe a partir da qual precision e recall são calculados.]`}</pre>
-</aside>
 
 This reveals an important property of both metrics:
 

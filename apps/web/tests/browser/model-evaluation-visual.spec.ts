@@ -73,7 +73,7 @@ test("the classifier visuals derive every dot from their contextual outcome coun
 
   await expect(page.getByText("[IMAGEM: modelo recebendo", { exact: false })).toHaveCount(0);
   await expect(page.locator('[data-placeholder-kind="image"]')).toHaveCount(0);
-  await expect(page.locator(".article-production-placeholder")).toHaveCount(9);
+  await expect(page.locator(".article-production-placeholder")).toHaveCount(0);
 });
 
 test("the classifier visual stays inside the article on desktop and mobile", async ({ page }) => {
