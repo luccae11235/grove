@@ -8,6 +8,7 @@ interface Props {
   predictedNegative?: OutcomeCounts;
   predictedPositive?: OutcomeCounts;
   incoming?: Array<"positive" | "negative">;
+  classifierLabel?: string;
   caption?: string;
 }
 
@@ -15,6 +16,7 @@ const {
   predictedNegative = { positive: 6, negative: 18 },
   predictedPositive = { positive: 21, negative: 3 },
   incoming = ["negative", "positive", "positive", "negative", "positive"],
+  classifierLabel = "Binary classifier",
   caption = "The enclosing circle shows the model's prediction.",
 } = Astro.props;
 
@@ -78,9 +80,11 @@ function placeDots(
 
 const negativePredictionDots = placeDots(predictedNegative, 190, 326, -0.5);
 const positivePredictionDots = placeDots(predictedPositive, 530, 326, 0.35);
+const describeActualCount = (count: number, actualClass: "positive" | "negative") =>
+  `${count} actual ${actualClass}${count === 1 ? "" : "s"}`;
 const accessibleSummary = [
-  `Predicted negative circle: ${predictedNegative.negative} actual negatives and ${predictedNegative.positive} actual positives.`,
-  `Predicted positive circle: ${predictedPositive.positive} actual positives and ${predictedPositive.negative} actual negatives.`,
+  `Predicted negative circle: ${describeActualCount(predictedNegative.negative, "negative")} and ${describeActualCount(predictedNegative.positive, "positive")}.`,
+  `Predicted positive circle: ${describeActualCount(predictedPositive.positive, "positive")} and ${describeActualCount(predictedPositive.negative, "negative")}.`,
 ].join(" ");
 ---
 
@@ -95,7 +99,7 @@ const accessibleSummary = [
   <svg
     viewBox="0 0 720 500"
     role="img"
-    aria-label={`A binary classifier routes dots into two prediction circles. ${accessibleSummary}`}
+    aria-label={`${classifierLabel} routes dots into two prediction circles. ${accessibleSummary}`}
   >
     <rect class="visual-field" x="1" y="1" width="718" height="498" rx="24" />
 
@@ -110,7 +114,7 @@ const accessibleSummary = [
 
     <g class="classifier-node" aria-hidden="true">
       <rect x="286" y="145" width="148" height="52" rx="13" />
-      <text x="360" y="177" text-anchor="middle">Binary classifier</text>
+      <text x="360" y="177" text-anchor="middle">{classifierLabel}</text>
     </g>
 
     <g class="routing-arrows" aria-hidden="true">

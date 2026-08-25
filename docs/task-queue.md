@@ -38,6 +38,8 @@ references for longer-term editorial direction.
   - [x] Define the English article's learning contract and heading structure.
   - [x] Place the supplied English article body into the draft structure.
   - [x] Build the reusable classifier-and-two-circles foundation visual.
+  - [x] Add the contextual medical-screening static image.
+  - [x] Add the contextual spam-filter static image.
   - [ ] Review and implement the article's visual and playground notes.
   - Keep translation, publication, deployment, and newsletter work out of the
     draft-writing step.
