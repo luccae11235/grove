@@ -30,7 +30,7 @@ test("the playground recalculates metrics and changes perspective without moving
   await expect(playground.locator('[data-metric-value="precision"]')).toHaveText("90%");
   await expect(playground.locator('[data-metric-value="recall"]')).toHaveText("90%");
 
-  await playground.getByRole("button", { name: "High precision, low recall" }).click();
+  await playground.getByLabel("Try a pattern").selectOption("precision");
   await expect(playground.locator('[data-metric-value="precision"]')).toHaveText("100%");
   await expect(playground.locator('[data-metric-value="recall"]')).toHaveText("20%");
 
@@ -61,6 +61,8 @@ test("the playground uses sliders and keeps controls beside the visual on deskto
   const sliders = playground.locator('input[type="range"]');
   await expect(sliders).toHaveCount(4);
   await expect(playground.locator('input[type="number"]')).toHaveCount(0);
+  await expect(playground.getByLabel("Try a pattern")).toHaveValue("balanced");
+  await expect(playground.locator(".prediction-disc").first()).toHaveAttribute("r", "112");
 
   await sliders.nth(0).fill("30");
   await expect(playground.locator('[data-count-value="gg"]')).toHaveText("30");

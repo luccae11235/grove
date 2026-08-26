@@ -215,6 +215,12 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Refine the model-evaluation playground — issue #155** — 2026-08-26
+  - Enlarged the classifier circles and dots while keeping the complete playground visible.
+  - Replaced the scrolling preset pills with one selector and removed redundant explanatory labels.
+  - Completion check: typecheck and production build passed; seven focused browser tests
+    and responsive rendered review confirmed calculations, interaction, and containment.
+
 - [x] **Draft the model-evaluation article — issue #155** — 2026-08-25
   - Added exact-count classifier visuals for every scenario so each stated distribution
     can be inspected directly.

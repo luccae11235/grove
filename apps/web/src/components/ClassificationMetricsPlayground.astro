@@ -20,32 +20,32 @@ const instanceId = `classification-metrics-${Math.random().toString(36).slice(2,
     </fieldset>
   </div>
 
-  <div class="preset-row" aria-label="Example distributions">
-    <span>Try a pattern</span>
-    <div>
-      <button type="button" data-preset="accuracy">High accuracy, low recall</button>
-      <button type="button" data-preset="precision">High precision, low recall</button>
-      <button type="button" data-preset="recall">High recall, low precision</button>
-      <button type="button" data-preset="balanced">Balanced</button>
-      <button type="button" data-preset="mostly-positive">Almost everything positive</button>
-      <button type="button" data-preset="mostly-negative">Almost everything negative</button>
-    </div>
+  <div class="preset-row">
+    <label for={`${instanceId}-preset`}>Try a pattern</label>
+    <select id={`${instanceId}-preset`} data-preset-select>
+      <option value="balanced">Balanced</option>
+      <option value="accuracy">High accuracy, low recall</option>
+      <option value="precision">High precision, low recall</option>
+      <option value="recall">High recall, low precision</option>
+      <option value="mostly-positive">Almost everything positive</option>
+      <option value="mostly-negative">Almost everything negative</option>
+    </select>
   </div>
 
   <div class="lab-body">
   <div class="visual-wrap">
-    <svg viewBox="0 0 720 250" role="img" aria-labelledby={`${instanceId}-visual-title ${instanceId}-visual-desc`}>
+    <svg viewBox="0 0 720 280" role="img" aria-labelledby={`${instanceId}-visual-title ${instanceId}-visual-desc`}>
       <title id={`${instanceId}-visual-title`}>Classification outcomes</title>
       <desc id={`${instanceId}-visual-desc`}>Actual green and red examples grouped by the class predicted by the model.</desc>
       <g class="prediction-region predicted-red" data-circle="red">
-        <circle class="prediction-disc" cx="190" cy="110" r="86" />
+        <circle class="prediction-disc" cx="180" cy="132" r="112" />
         <g data-dot-layer="red"></g>
-        <text class="prediction-label" x="190" y="222" text-anchor="middle">Predicted red</text>
+        <text class="prediction-label" x="180" y="272" text-anchor="middle">Predicted red</text>
       </g>
       <g class="prediction-region predicted-green" data-circle="green">
-        <circle class="prediction-disc" cx="530" cy="110" r="86" />
+        <circle class="prediction-disc" cx="540" cy="132" r="112" />
         <g data-dot-layer="green"></g>
-        <text class="prediction-label" x="530" y="222" text-anchor="middle">Predicted green</text>
+        <text class="prediction-label" x="540" y="272" text-anchor="middle">Predicted green</text>
       </g>
     </svg>
     <div class="legend" aria-hidden="true">
@@ -55,7 +55,6 @@ const instanceId = `classification-metrics-${Math.random().toString(36).slice(2,
   </div>
 
   <div class="edit-panel">
-    <p>Build your own distribution</p>
     <div class="input-groups">
       <fieldset>
         <legend>Predicted green</legend>
@@ -73,7 +72,7 @@ const instanceId = `classification-metrics-${Math.random().toString(36).slice(2,
 
   <div class="metric-summary">
   <fieldset class="metric-focus">
-    <legend>Show how each metric counts</legend>
+    <legend>Highlight</legend>
     <label><input type="radio" name={`${instanceId}-metric`} value="accuracy" checked /> Accuracy</label>
     <label><input type="radio" name={`${instanceId}-metric`} value="precision" /> Precision</label>
     <label><input type="radio" name={`${instanceId}-metric`} value="recall" /> Recall</label>
@@ -83,17 +82,14 @@ const instanceId = `classification-metrics-${Math.random().toString(36).slice(2,
     <article data-metric-card="accuracy">
       <span>Accuracy</span><strong data-metric-value="accuracy">—</strong>
       <div class="fraction"><b data-numerator="accuracy">0</b><i></i><b data-denominator="accuracy">0</b></div>
-      <small>correct predictions / all predictions</small>
     </article>
     <article data-metric-card="precision">
       <span>Precision</span><strong data-metric-value="precision">—</strong>
       <div class="fraction"><b data-numerator="precision">0</b><i></i><b data-denominator="precision">0</b></div>
-      <small>correct positive predictions / all positive predictions</small>
     </article>
     <article data-metric-card="recall">
       <span>Recall</span><strong data-metric-value="recall">—</strong>
       <div class="fraction"><b data-numerator="recall">0</b><i></i><b data-denominator="recall">0</b></div>
-      <small>positives found / all actual positives</small>
     </article>
   </div>
   </div>
@@ -130,15 +126,15 @@ const instanceId = `classification-metrics-${Math.random().toString(36).slice(2,
         Math.round(((index + 1) * green) / (green + red)) > Math.round((index * green) / (green + red)) ? "green" : "red",
       );
       classes.forEach((actual, index) => {
-        const radius = classes.length === 1 ? 0 : 66 * Math.sqrt((index + 0.5) / classes.length);
+        const radius = classes.length === 1 ? 0 : 88 * Math.sqrt((index + 0.5) / classes.length);
         const angle = rotation + index * Math.PI * (3 - Math.sqrt(5));
         const dot = document.createElementNS(SVG_NS, "circle");
         dot.setAttribute("cx", String(centerX + Math.cos(angle) * radius));
-        dot.setAttribute("cy", String(110 + Math.sin(angle) * radius));
-        dot.setAttribute("r", classes.length > 100 ? "3" : "4");
+        dot.setAttribute("cy", String(132 + Math.sin(angle) * radius));
+        dot.setAttribute("r", classes.length > 100 ? "3.5" : "5");
         dot.setAttribute("class", `outcome-dot playground-dot actual-${actual}`);
         dot.dataset.actual = actual;
-        dot.dataset.predicted = centerX === 530 ? "green" : "red";
+        dot.dataset.predicted = centerX === 540 ? "green" : "red";
         layer.append(dot);
       });
     }
@@ -149,8 +145,8 @@ const instanceId = `classification-metrics-${Math.random().toString(36).slice(2,
         root.querySelector<HTMLOutputElement>(`[data-count-value="${key}"]`)!.value = inputs[key].value;
       });
       const gg = value("gg"), gr = value("gr"), rg = value("rg"), rr = value("rr");
-      dots(root.querySelector('[data-dot-layer="green"]')!, gg, gr, 530, 0.35);
-      dots(root.querySelector('[data-dot-layer="red"]')!, rg, rr, 190, -0.5);
+      dots(root.querySelector('[data-dot-layer="green"]')!, gg, gr, 540, 0.35);
+      dots(root.querySelector('[data-dot-layer="red"]')!, rg, rr, 180, -0.5);
 
       const positive = root.querySelector<HTMLInputElement>('[name$="-positive"]:checked')!.value;
       const focus = root.querySelector<HTMLInputElement>('[name$="-metric"]:checked')!.value;
@@ -179,12 +175,10 @@ const instanceId = `classification-metrics-${Math.random().toString(36).slice(2,
     }
 
     root.addEventListener("input", render);
-    root.addEventListener("click", (event) => {
-      const button = (event.target as Element).closest<HTMLButtonElement>("[data-preset]");
-      if (!button) return;
-      const preset = presets[button.dataset.preset!];
+    root.querySelector<HTMLSelectElement>("[data-preset-select]")!.addEventListener("change", (event) => {
+      const select = event.currentTarget as HTMLSelectElement;
+      const preset = presets[select.value];
       [inputs.gg.value, inputs.gr.value, inputs.rg.value, inputs.rr.value] = preset.map(String);
-      root.querySelectorAll("[data-preset]").forEach((item) => item.toggleAttribute("aria-pressed", item === button));
       render();
     });
     render();
@@ -214,12 +208,10 @@ const instanceId = `classification-metrics-${Math.random().toString(36).slice(2,
   .positive-class legend, .metric-focus legend { margin-bottom: 7px; color: var(--text-muted); font-size: 12px; font-weight: 700; }
   .positive-class label, .metric-focus label { display: inline-flex; align-items: center; gap: 5px; margin-right: 10px; font-size: 13px; font-weight: 650; }
   input[type="radio"] { accent-color: var(--accent); }
-  .preset-row { border-block: 1px solid var(--border); padding-block: 11px; background: var(--surface-subtle); }
-  .preset-row > span, .edit-panel > p { display: block; margin: 0 0 7px; font-size: 11px; font-weight: 750; }
-  .preset-row > div { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
-  button { flex: 0 0 auto; border: 1px solid var(--border-strong); border-radius: 999px; padding: 7px 10px; background: var(--surface-raised); color: var(--text); font: inherit; font-size: 11px; cursor: pointer; }
-  button:hover, button:focus-visible, button[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface-raised)); }
-  .lab-body { display: grid; grid-template-columns: minmax(0, 3fr) minmax(220px, 2fr); align-items: center; }
+  .preset-row { display: flex; align-items: center; gap: 12px; border-block: 1px solid var(--border); padding-block: 10px; background: var(--surface-subtle); }
+  .preset-row label { flex: 0 0 auto; font-size: 11px; font-weight: 750; }
+  .preset-row select { min-width: 0; flex: 1; border: 1px solid var(--border-strong); border-radius: 9px; padding: 7px 30px 7px 10px; background: var(--surface-raised); color: var(--text); font: inherit; font-size: 11px; }
+  .lab-body { display: grid; grid-template-columns: minmax(0, 4fr) minmax(190px, 1.65fr); align-items: center; }
   .visual-wrap { min-width: 0; padding: 10px 4px 4px; }
   .visual-wrap svg { display: block; width: 100%; height: auto; }
   .prediction-disc { stroke-width: 2; transition: opacity .2s ease, stroke-width .2s ease; }
@@ -243,14 +235,13 @@ const instanceId = `classification-metrics-${Math.random().toString(36).slice(2,
   .metric-focus { padding-block: 10px 7px; text-align: center; }
   .metric-focus legend { margin-bottom: 4px; }
   .metric-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding-bottom: 13px; }
-  .metric-cards article { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; border: 1px solid var(--border); border-radius: 11px; padding: 9px 10px; background: var(--surface-raised); }
+  .metric-cards article { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 8px; border: 1px solid var(--border); border-radius: 11px; padding: 9px 10px; background: var(--surface-raised); }
   .metric-cards article.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
   .metric-cards span { font-size: 12px; font-weight: 750; }
   .metric-cards strong { color: var(--accent-hover); font-size: 17px; }
-  .fraction { display: inline-grid; grid-template-rows: auto 1px auto; justify-items: center; align-self: center; width: 36px; grid-row: 2 / 4; }
+  .fraction { display: inline-grid; grid-template-rows: auto 1px auto; justify-items: center; width: 36px; grid-column: 1 / -1; justify-self: start; }
   .fraction i { width: 100%; height: 1px; background: currentColor; }
   .fraction b { font-size: 12px; line-height: 17px; }
-  .metric-cards small { color: var(--text-muted); font-size: 10px; line-height: 1.35; }
   .edit-panel { align-self: stretch; display: flex; flex-direction: column; justify-content: center; padding-block: 14px; border-left: 1px solid var(--border); background: var(--surface-subtle); }
   .input-groups { display: grid; gap: 13px; }
   .input-groups fieldset { display: grid; gap: 7px; }
@@ -259,7 +250,7 @@ const instanceId = `classification-metrics-${Math.random().toString(36).slice(2,
   .input-groups label span { display: flex; justify-content: space-between; gap: 8px; }
   .input-groups output { color: var(--text); font-variant-numeric: tabular-nums; }
   input[type="range"] { width: 100%; margin: 0; accent-color: var(--accent); cursor: pointer; }
-  input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
   @media (max-width: 600px) {
     .playground-heading { align-items: start; flex-direction: column; }
@@ -267,7 +258,7 @@ const instanceId = `classification-metrics-${Math.random().toString(36).slice(2,
     .edit-panel { border-top: 1px solid var(--border); border-left: 0; }
     .input-groups { grid-template-columns: 1fr 1fr; gap: 14px; }
     .metric-cards { grid-template-columns: 1fr; }
-    .metric-cards small, .fraction { display: none; }
+    .fraction { display: none; }
     .prediction-label { font-size: 18px; }
   }
   @media (prefers-reduced-motion: reduce) {
