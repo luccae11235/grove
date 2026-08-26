@@ -215,6 +215,13 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Apply beta-reader revisions to model evaluation — issue #155** — 2026-08-26
+  - Tightened the opening and repeated scenarios while preserving the applied recall and precision stories.
+  - Added precision's zero-denominator boundary, the trivial accuracy baseline, and operational metric caveats.
+  - Compared equal-accuracy models directly and clarified positive-class switching in the playground.
+  - Completion check: typecheck and production build passed; eight focused browser tests
+    and rendered review confirmed calculations, interaction, direct comparison, and containment.
+
 - [x] **Refine the model-evaluation playground — issue #155** — 2026-08-26
   - Enlarged the classifier circles and dots while keeping the complete playground visible.
   - Replaced the scrolling preset pills with one selector and removed redundant explanatory labels.

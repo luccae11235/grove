@@ -56,6 +56,16 @@ test("every scenario renders the exact classifier distribution described in the 
   }
 });
 
+test("the equal-accuracy models compare directly and preserve their distinct metrics", async ({ page }) => {
+  const comparison = page.locator("[data-scenario-model-comparison]");
+  await expect(comparison).toHaveCount(1);
+  await expect(comparison.locator("section")).toHaveCount(2);
+  await expect(comparison.getByRole("heading", { name: "Model A" })).toBeVisible();
+  await expect(comparison.getByRole("heading", { name: "Model B" })).toBeVisible();
+  await expect(comparison.locator("section").nth(0)).toContainText(/Accuracy\s*80%.*Precision\s*100%.*Recall\s*60%/s);
+  await expect(comparison.locator("section").nth(1)).toContainText(/Accuracy\s*80%.*Precision\s*71%.*Recall\s*100%/s);
+});
+
 test("the playground uses sliders and keeps controls beside the visual on desktop", async ({ page }) => {
   const playground = page.locator("[data-metrics-playground]");
   const sliders = playground.locator('input[type="range"]');
@@ -63,6 +73,7 @@ test("the playground uses sliders and keeps controls beside the visual on deskto
   await expect(playground.locator('input[type="number"]')).toHaveCount(0);
   await expect(playground.getByLabel("Try a pattern")).toHaveValue("balanced");
   await expect(playground.locator(".prediction-disc").first()).toHaveAttribute("r", "112");
+  await expect(playground).toContainText("Changes the perspective, not the dots.");
 
   await sliders.nth(0).fill("30");
   await expect(playground.locator('[data-count-value="gg"]')).toHaveText("30");
@@ -80,13 +91,13 @@ test("all new visual systems remain inside the article at desktop and mobile wid
     await page.setViewportSize(viewport);
     await page.reload();
     const geometries = await page.locator(
-      "[data-classifier-tradeoff], .metric-comparison, [data-metrics-playground]",
+      "[data-classifier-tradeoff], .metric-comparison, [data-scenario-model-comparison], [data-metrics-playground]",
     ).evaluateAll((elements) => elements.map((element) => {
       const visual = element.getBoundingClientRect();
       const article = element.closest("article")!.getBoundingClientRect();
       return { left: visual.left, right: visual.right, articleLeft: article.left, articleRight: article.right };
     }));
-    expect(geometries).toHaveLength(4);
+    expect(geometries).toHaveLength(5);
     for (const geometry of geometries) {
       expect(geometry.left).toBeGreaterThanOrEqual(geometry.articleLeft - 1);
       expect(geometry.right).toBeLessThanOrEqual(geometry.articleRight + 1);

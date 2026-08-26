@@ -37,6 +37,7 @@ learning:
 import ClassificationOutcomeVisual from "../../../components/ClassificationOutcomeVisual.astro";
 import ClassificationMetricsPlayground from "../../../components/ClassificationMetricsPlayground.astro";
 import ScenarioOutcomeVisual from "../../../components/ScenarioOutcomeVisual.astro";
+import ScenarioModelComparison from "../../../components/ScenarioModelComparison.astro";
 import ClassifierTradeoffAnimation from "../../../components/ClassifierTradeoffAnimation.astro";
 import PrecisionRecallComparison from "../../../components/PrecisionRecallComparison.astro";
 
@@ -50,17 +51,11 @@ import PrecisionRecallComparison from "../../../components/PrecisionRecallCompar
 </header>
 
 <article className="lesson-body deep-article model-evaluation-article">
-Supervised learning can take several different forms depending on what we want a model to predict.
+A classifier can be right 95% of the time and still miss most of the cases we care about.
 
-A regression model might predict the price of a house. A binary classifier might predict whether a patient has a disease. A multiclass classifier might identify which object appears in an image. A count regression model might estimate how many calls a call center will receive tomorrow, while a ranking model might decide which search results should appear first.
+That sounds contradictory only if we expect one number to describe every kind of success and failure. Different prediction problems need different forms of evaluation, and even one problem may need several metrics because each metric answers a different question.
 
-Because the nature of these predictions changes, the way we evaluate them changes as well.
-
-For regression, metrics such as Mean Squared Error (MSE) and Mean Absolute Error (MAE) measure how far predictions are from the actual values. For classification, accuracy is one common choice. Ranking systems are often evaluated with metrics such as NDCG.
-
-These are only examples. None of these problems has a single universal metric that completely describes whether a model is good. Different metrics exist because they measure different aspects of a model's behavior.
-
-In this article, we will focus on binary classification.
+Here we will focus on **binary classification**: a model must place each example into one of two classes.
 
 To make the problem visual, we will represent every datapoint as a dot. The dot could correspond to very different kinds of data: a piece of text being classified by emotion, one row of a tabular dataset containing several features about a customer, or an image being classified according to whether it contains a particular object.
 
@@ -177,7 +172,7 @@ This does not mean the classifier is necessarily good overall. High recall tells
 
 ---
 
-## When an Accusation Requires Confidence
+## When a Positive Prediction Must Be Trustworthy
 
 Now consider a completely different problem.
 
@@ -300,79 +295,35 @@ Yet among the five genuinely green points, it found only one.
 
 The high accuracy comes largely from the fact that red points dominate the dataset. Correctly classifying 94 of the 95 red points is enough to make the overall accuracy look impressive even though the classifier performs poorly on the rare positive class.
 
+An even simpler classifier that predicted red for every point would also achieve 95% accuracy. Our classifier found one green point, but the extra red point it mislabeled canceled that gain in the accuracy score.
+
 This is one reason accuracy can become especially misleading on imbalanced datasets. The prevalence of each class affects how much each type of correct prediction contributes to the final number.
 
 ---
 
 ### Scenario 2 — Perfect Precision, Very Low Recall
 
-Now suppose we have:
-
-* 10 green points;
-* 90 red points.
-
-The classifier produces:
-
-* green circle: 2 green;
-* red circle: 8 green + 90 red.
+Now keep 100 points, with 10 green and 90 red. This classifier predicts green only twice, and both predictions are correct. The other 8 green points and all 90 red points go to the red circle.
 
 <ScenarioOutcomeVisual label="Scenario 2" predictedRed={{ green: 8, red: 90 }} predictedGreen={{ green: 2, red: 0 }} />
 
-$$
-\text{Accuracy}=92\%
-$$
-
-$$
-\text{Precision}=100\%
-$$
-
-$$
-\text{Recall}=20\%
-$$
-
-Every time this classifier says **green**, it is right.
-
-There are no red points in the green circle, so its precision is perfect.
-
-However, the classifier almost never predicts green. It identifies only 2 of the 10 genuinely green points, giving it a recall of only 20%.
+The result is **92% accuracy, 100% precision, and 20% recall**. Every time the classifier says green, it is right—but it finds only 2 of the 10 genuinely green points.
 
 Perfect precision can therefore be achieved by behaving very conservatively: make very few positive predictions, but make them only when the model is highly confident.
 
 The price is that many actual positives may be missed.
 
+There is an important boundary to this idea. If the model makes no positive predictions at all, the denominator of precision is zero. Precision is then **undefined**, not 100%.
+
 ---
 
 ### Scenario 3 — Perfect Recall, Low Precision
 
-Keep the same class distribution:
-
-* 10 green points;
-* 90 red points.
-
-This time the classifier produces:
-
-* green circle: 10 green + 30 red;
-* red circle: 60 red.
+Keep the same 10 green and 90 red points, but make the classifier much more willing to predict green. It sends all 10 green points and 30 red points to the green circle, leaving 60 red points in the red circle.
 
 <ScenarioOutcomeVisual label="Scenario 3" predictedRed={{ green: 0, red: 60 }} predictedGreen={{ green: 10, red: 30 }} />
 
-$$
-\text{Accuracy}=70\%
-$$
-
-$$
-\text{Precision}=25\%
-$$
-
-$$
-\text{Recall}=100\%
-$$
-
-Now no green point escapes.
-
-Every genuinely green example is inside the green circle, which gives us perfect recall.
-
-But the model also classified 30 red points as positive. Among the 40 points it called green, only 10 really were green.
+Now **accuracy is 70%, precision is 25%, and recall is 100%**. No green point escapes, but only 10 of the 40 points called green really are green.
 
 The classifier therefore finds every positive at the cost of producing many false alarms.
 
@@ -382,33 +333,11 @@ Just as precision can be increased by being conservative, recall can be pushed t
 
 ### Scenario 4 — A Balanced Model
 
-Now consider a balanced population:
-
-* 50 green points;
-* 50 red points.
-
-The classifier produces:
-
-* green circle: 45 green + 5 red;
-* red circle: 5 green + 45 red.
+Now consider a balanced population of 50 green and 50 red points. The classifier gets 45 points from each class right and makes five mistakes in each direction.
 
 <ScenarioOutcomeVisual label="Scenario 4" predictedRed={{ green: 5, red: 45 }} predictedGreen={{ green: 45, red: 5 }} />
 
-$$
-\text{Accuracy}=90\%
-$$
-
-$$
-\text{Precision}=90\%
-$$
-
-$$
-\text{Recall}=90\%
-$$
-
-This classifier behaves symmetrically.
-
-It correctly identifies 45 of the 50 green points while making only five incorrect positive predictions. It also correctly classifies 45 of the 50 red points.
+This symmetric result gives us **90% accuracy, 90% precision, and 90% recall**.
 
 In this particular configuration, accuracy, precision, and recall happen to have the same value. That is a consequence of the balanced class distribution and symmetric errors, not a general relationship between the metrics.
 
@@ -416,58 +345,24 @@ In this particular configuration, accuracy, precision, and recall happen to have
 
 ### Scenario 5 — Same Accuracy, Completely Different Behavior
 
-Finally, consider two classifiers evaluated on exactly the same 100 points:
+Finally, consider two classifiers evaluated on the same 50 green and 50 red points. Both are correct on 80 observations, but they make different promises.
 
-* 50 green;
-* 50 red.
+<ScenarioModelComparison models={[
+  {
+    label: "Model A",
+    predictedRed: { green: 20, red: 50 },
+    predictedGreen: { green: 30, red: 0 },
+  },
+  {
+    label: "Model B",
+    predictedRed: { green: 0, red: 30 },
+    predictedGreen: { green: 50, red: 20 },
+  },
+]} />
 
-Both classifiers achieve the same accuracy.
+Model A is conservative. Whenever it predicts green, it is correct, but it leaves 20 genuinely green points in the red circle.
 
-#### Model A
-
-* green circle: 30 green;
-* red circle: 20 green + 50 red.
-
-<ScenarioOutcomeVisual label="Model A" predictedRed={{ green: 20, red: 50 }} predictedGreen={{ green: 30, red: 0 }} />
-
-$$
-\text{Accuracy}=80\%
-$$
-
-$$
-\text{Precision}=100\%
-$$
-
-$$
-\text{Recall}=60\%
-$$
-
-Model A is extremely conservative.
-
-Whenever it predicts green, it is correct. However, it leaves 20 genuinely green points in the red circle.
-
-#### Model B
-
-* green circle: 50 green + 20 red;
-* red circle: 30 red.
-
-<ScenarioOutcomeVisual label="Model B" predictedRed={{ green: 0, red: 30 }} predictedGreen={{ green: 50, red: 20 }} />
-
-$$
-\text{Accuracy}=80\%
-$$
-
-$$
-\text{Precision}\approx71\%
-$$
-
-$$
-\text{Recall}=100\%
-$$
-
-Model B behaves in almost the opposite way.
-
-It captures every green point, but it also sends 20 red points into the green circle.
+Model B behaves in almost the opposite way. It captures every green point, but it also sends 20 red points into the green circle.
 
 Both models are correct on 80 of the 100 observations, so their accuracy is exactly the same. Yet their behavior is clearly different.
 
@@ -487,7 +382,7 @@ We can make these relationships easier to see by directly controlling the conten
 
 Instead of changing a classifier or its training process, you control its final predictions directly.
 
-Each circle should allow four quantities to be manipulated:
+Control four quantities—two in each circle:
 
 **Predicted green circle**
 
@@ -502,18 +397,6 @@ Each circle should allow four quantities to be manipulated:
 <ClassificationMetricsPlayground />
 
 From those four numbers, the playground can calculate all three metrics automatically.
-
-$$
-\text{Accuracy}
-$$
-
-$$
-\text{Precision}
-$$
-
-$$
-\text{Recall}
-$$
 
 The important part is not merely seeing the numbers change, but seeing which points each metric pays attention to.
 
@@ -575,4 +458,6 @@ The two questions worth remembering are simpler than the formulas:
 Neither is universally more important.
 
 The appropriate metric depends on what the classifier is being used for and, especially, on which kind of error is more costly in the real problem.
+
+These metrics describe one fixed set of predictions; they do not make the deployment decision by themselves. In practice, choosing a threshold may also require explicit error costs, calibrated probabilities, and attention to class prevalence—especially because precision can change when the prevalence of the positive class changes.
 </article>
