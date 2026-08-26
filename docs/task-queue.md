@@ -316,9 +316,11 @@ references for longer-term editorial direction.
     interaction states, and one representative viewport by default.
   - Capped notes and synthesis while preserving evidence, disagreements,
     audience-specific judgments, and strengths worth protecting.
-  - Completion check: skill validation passed, and three parallel fresh-context
-    readers produced distinct, evidence-backed feedback on the reward-hacking
-    article while the sole explorer respected the interaction budget.
+  - Moved the repository copy to the canonical `.agents/skills` discovery path
+    on 2026-08-26 so it is available from branches containing `develop`.
+  - Completion check: both repository and user-level copies validate, and three
+    parallel fresh-context readers produced distinct, evidence-backed feedback
+    while the sole explorer respected the interaction budget.
 
 - [x] **Fix article navigation and split-preview discoverability** — 2026-07-24
   - Moved the fixed chapter panel below the site header so its close and reopen
