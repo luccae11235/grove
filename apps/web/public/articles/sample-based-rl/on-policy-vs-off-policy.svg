@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1774" height="887" viewBox="0 0 1774 887" role="img" aria-labelledby="policy-roles-title policy-roles-desc">
+  <title id="policy-roles-title">On-policy and off-policy learning assign policy roles differently</title>
+  <desc id="policy-roles-desc">Two aligned learning paths compare the policy that generates experience with the policy that receives the update. On-policy learning uses the same policy pi in both roles. Off-policy learning uses behavior policy pi b to generate the sampled trajectory and applies update U to a different target policy pi t.</desc>
+
+  <defs>
+    <marker id="policy-roles-arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M1 1L11 6L1 11Z" fill="#0b8f55"/>
+    </marker>
+    <style>
+      .sans { font-family: Inter, Arial, sans-serif; }
+      .math { font-family: Georgia, 'Times New Roman', serif; font-style: italic; }
+      .role { font-family: Inter, Arial, sans-serif; font-size: 19px; font-weight: 700; letter-spacing: 1.6px; text-anchor: middle; }
+      .function { font-family: Inter, Arial, sans-serif; font-size: 21px; text-anchor: middle; }
+      .policy-symbol { font-family: Georgia, 'Times New Roman', serif; font-size: 52px; font-style: italic; text-anchor: middle; dominant-baseline: middle; }
+      .trajectory-symbol { font-family: Georgia, 'Times New Roman', serif; font-size: 31px; font-style: italic; text-anchor: middle; dominant-baseline: middle; }
+    </style>
+  </defs>
+
+  <rect width="1774" height="887" fill="#ffffff"/>
+  <rect x="20" y="20" width="1734" height="847" rx="34" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+
+  <text x="86" y="92" class="sans" font-size="39" font-weight="700" fill="#17231e">Who generates experience—and who learns from it?</text>
+  <line x1="86" y1="469" x2="1688" y2="469" stroke="#e1e9e4" stroke-width="2"/>
+
+  <!-- On-policy: the two role labels point to the same policy identity. -->
+  <g aria-label="On-policy learning uses the same policy for behavior and target roles">
+    <rect x="86" y="164" width="190" height="48" rx="24" fill="#eef7f2"/>
+    <text x="181" y="195" class="sans" font-size="20" font-weight="700" letter-spacing="1.5" fill="#157451" text-anchor="middle">ON-POLICY</text>
+    <text x="1575" y="199" class="math" font-size="38" font-weight="700" fill="#157451" text-anchor="middle">π<tspan baseline-shift="sub" font-size="23">behavior</tspan> = π<tspan baseline-shift="sub" font-size="23">target</tspan></text>
+
+    <rect x="300" y="250" width="270" height="154" rx="28" fill="#eef7f2" stroke="#0b8f55" stroke-width="3"/>
+    <text x="435" y="284" class="role" fill="#157451">BEHAVIOR POLICY</text>
+    <text x="435" y="337" class="policy-symbol" fill="#0b8f55">π</text>
+    <text x="435" y="383" class="function" fill="#17231e">generates experience</text>
+
+    <path d="M570 327H680" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#policy-roles-arrow)"/>
+
+    <rect x="700" y="267" width="320" height="120" rx="26" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+    <text x="860" y="300" class="role" fill="#65736c">SAMPLED TRAJECTORY</text>
+    <text x="860" y="348" class="trajectory-symbol" fill="#17231e">s₀  →  a₀  →  r₁  →  s₁</text>
+
+    <path d="M1020 327H1094" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#policy-roles-arrow)"/>
+    <circle cx="1170" cy="327" r="58" fill="#ffffff" stroke="#0b8f55" stroke-width="3"/>
+    <text x="1170" y="307" class="sans" font-size="16" font-weight="700" letter-spacing="1.5" fill="#65736c" text-anchor="middle">UPDATE</text>
+    <text x="1170" y="349" class="math" font-size="43" fill="#157451" text-anchor="middle">U</text>
+
+    <path d="M1228 327H1340" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#policy-roles-arrow)"/>
+
+    <rect x="1360" y="250" width="270" height="154" rx="28" fill="#eef7f2" stroke="#0b8f55" stroke-width="3"/>
+    <text x="1495" y="284" class="role" fill="#157451">TARGET POLICY</text>
+    <text x="1495" y="337" class="policy-symbol" fill="#0b8f55">π</text>
+    <text x="1495" y="383" class="function" fill="#17231e">receives the update</text>
+  </g>
+
+  <!-- Off-policy: the stable learning path now begins and ends at distinct policies. -->
+  <g aria-label="Off-policy learning uses different policies for behavior and target roles">
+    <rect x="86" y="515" width="190" height="48" rx="24" fill="#ffffff" stroke="#e1e9e4" stroke-width="2"/>
+    <text x="181" y="546" class="sans" font-size="20" font-weight="700" letter-spacing="1.5" fill="#17231e" text-anchor="middle">OFF-POLICY</text>
+    <text x="1575" y="550" class="math" font-size="38" font-weight="700" fill="#17231e" text-anchor="middle">π<tspan baseline-shift="sub" font-size="23">b</tspan> ≠ π<tspan baseline-shift="sub" font-size="23">t</tspan></text>
+
+    <rect x="300" y="601" width="270" height="154" rx="28" fill="#ffffff" stroke="#65736c" stroke-width="3"/>
+    <text x="435" y="635" class="role" fill="#65736c">BEHAVIOR POLICY</text>
+    <text x="435" y="688" class="policy-symbol" fill="#17231e">π<tspan baseline-shift="sub" font-size="30">b</tspan></text>
+    <text x="435" y="734" class="function" fill="#17231e">generates experience</text>
+
+    <path d="M570 678H680" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#policy-roles-arrow)"/>
+
+    <rect x="700" y="618" width="320" height="120" rx="26" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+    <text x="860" y="651" class="role" fill="#65736c">SAMPLED TRAJECTORY</text>
+    <text x="860" y="699" class="trajectory-symbol" fill="#17231e">s₀  →  a₀  →  r₁  →  s₁</text>
+
+    <path d="M1020 678H1094" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#policy-roles-arrow)"/>
+    <circle cx="1170" cy="678" r="58" fill="#ffffff" stroke="#0b8f55" stroke-width="3"/>
+    <text x="1170" y="658" class="sans" font-size="16" font-weight="700" letter-spacing="1.5" fill="#65736c" text-anchor="middle">UPDATE</text>
+    <text x="1170" y="700" class="math" font-size="43" fill="#157451" text-anchor="middle">U</text>
+
+    <path d="M1228 678H1340" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#policy-roles-arrow)"/>
+
+    <rect x="1360" y="601" width="270" height="154" rx="28" fill="#eef7f2" stroke="#0b8f55" stroke-width="3"/>
+    <text x="1495" y="635" class="role" fill="#157451">TARGET POLICY</text>
+    <text x="1495" y="688" class="policy-symbol" fill="#0b8f55">π<tspan baseline-shift="sub" font-size="30">t</tspan></text>
+    <text x="1495" y="734" class="function" fill="#17231e">receives the update</text>
+  </g>
+</svg>

@@ -1,0 +1,638 @@
+.experiment,
+.overview,
+.bootstrapFigure,
+.comparisonFigure {
+  --bagging-green: #176b50;
+  --bagging-blue: #285f8f;
+  --bagging-warm: #9f5838;
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface-raised);
+  color: var(--text);
+  overflow: hidden;
+}
+
+.experiment button {
+  min-height: 42px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: white;
+  color: var(--text);
+  cursor: pointer;
+  padding: 7px 11px;
+  font: 700 0.72rem/1.2 Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.experiment button:focus-visible,
+.experimentChart:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.experiment button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.experiment button[aria-pressed="true"],
+.experiment .primaryButton {
+  border-color: var(--bagging-green);
+  background: var(--bagging-green);
+  color: white;
+}
+
+.experimentHeader {
+  padding: 21px 23px 17px;
+}
+
+.experimentHeader p,
+.experimentHeader h3,
+.experimentHeader span {
+  margin: 0;
+}
+
+.experimentHeader p,
+.stageLine,
+.treeCountControl > span,
+.speedHeading {
+  color: var(--bagging-green);
+  font: 780 0.66rem/1.3 Inter, ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.treeCountControl > span small {
+  font-size: 0.52rem;
+  letter-spacing: 0.04em;
+}
+
+.treeCountControl button {
+  display: grid;
+  min-width: 62px;
+  gap: 2px;
+  padding: 6px 10px;
+  text-align: center;
+}
+
+.treeCountControl button strong {
+  font-size: 0.78rem;
+}
+
+.treeCountControl button small {
+  font-size: 0.58rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}
+
+.experimentHeader h3 {
+  margin-top: 5px;
+  font-size: clamp(1.2rem, 3vw, 1.55rem);
+  letter-spacing: -0.025em;
+}
+
+.experimentHeader span {
+  display: block;
+  max-width: 610px;
+  margin-top: 7px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.treeCountControl,
+.experimentControls,
+.playControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.treeCountControl {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-subtle);
+  padding: 9px 23px;
+}
+
+.treeCountControl > span,
+.speedHeading {
+  margin-right: 3px;
+  color: var(--text-muted);
+}
+
+.speedControl {
+  display: grid;
+  width: min(205px, 100%);
+  gap: 5px;
+}
+
+.speedHeading {
+  display: flex;
+  justify-content: space-between;
+}
+
+.speedHeading strong {
+  color: var(--bagging-green);
+  font-size: 0.72rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.speedControl input[type="range"] {
+  width: 100%;
+  height: 6px;
+  margin: 5px 0 2px;
+  appearance: none;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--bagging-green) 0 var(--speed-position),
+    #cbd7d0 var(--speed-position) 100%
+  );
+  cursor: pointer;
+}
+
+.speedControl input[type="range"]::-webkit-slider-thumb {
+  width: 19px;
+  height: 19px;
+  appearance: none;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: var(--bagging-green);
+  box-shadow: 0 0 0 1px var(--bagging-green), 0 2px 6px rgb(17 45 34 / 20%);
+}
+
+.speedControl input[type="range"]::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: var(--bagging-green);
+  box-shadow: 0 0 0 1px var(--bagging-green), 0 2px 6px rgb(17 45 34 / 20%);
+}
+
+.speedControl input[type="range"]:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 5px;
+}
+
+.speedControl input[type="range"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.speedScale {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-muted);
+  font-size: 0.58rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.stageLine {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 38px;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 23px;
+}
+
+.stageLine strong {
+  color: var(--bagging-blue);
+  font-size: 0.68rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.experimentChart,
+.overview svg,
+.bootstrapFigure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.experimentChart {
+  background: #fcfdfc;
+}
+
+.gridline {
+  stroke: #e6ece8;
+  stroke-width: 1;
+}
+
+.axis,
+.xTick,
+.histogramAxis {
+  stroke: #82938a;
+  stroke-width: 1.25;
+}
+
+.tick,
+.axisLabel,
+.fixedInputLabel,
+.histogramTitle,
+.histogramCount,
+.predictionLabel,
+.staticLabel,
+.drawLabel,
+.repeatLabel,
+.observationText,
+.treePrediction,
+.averageWord,
+.averageValue,
+.overviewDirectLabel {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.tick,
+.axisLabel,
+.histogramCount {
+  fill: var(--text-muted);
+  font-size: 17px;
+}
+
+.histogramCount {
+  font-variant-numeric: tabular-nums;
+}
+
+.axisLabel {
+  font-weight: 650;
+}
+
+.fixedInput {
+  stroke: var(--text);
+  stroke-dasharray: 5 5;
+  stroke-width: 1.5;
+}
+
+.fixedInputLabel,
+.histogramTitle,
+.predictionLabel {
+  fill: var(--text);
+  font-size: 17px;
+  font-weight: 760;
+}
+
+.outerBand {
+  fill: #e9f0f4;
+  opacity: 0.72;
+}
+
+.innerBand {
+  fill: #cddde6;
+  opacity: 0.75;
+}
+
+.trueCurve {
+  fill: none;
+  stroke: #617c8c;
+  stroke-dasharray: 6 5;
+  stroke-width: 2;
+}
+
+.modelCurve {
+  fill: none;
+  stroke: var(--bagging-green);
+  stroke-linejoin: round;
+  stroke-width: 3.6;
+}
+
+.currentTreeCurve {
+  fill: none;
+  stroke: var(--bagging-blue);
+  stroke-dasharray: 4 4;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  opacity: 0.42;
+}
+
+.leafHitArea {
+  stroke: transparent;
+  stroke-width: 18;
+}
+
+.activeLeaf {
+  stroke: rgb(23 107 80 / 24%);
+}
+
+.samplePoint {
+  fill: white;
+  stroke: var(--bagging-warm);
+  stroke-width: 2.2;
+  transition: opacity 140ms ease;
+}
+
+.dimmedPoint {
+  opacity: 0.16 !important;
+}
+
+.histogramBar {
+  fill: var(--bagging-blue);
+  opacity: 0.65;
+}
+
+.standardDeviationBand {
+  fill: #dfeaf3;
+  opacity: 0.75;
+}
+
+.meanLine {
+  stroke: var(--bagging-green);
+  stroke-dasharray: 3 3;
+  stroke-width: 1.7;
+}
+
+.meanMarker {
+  fill: var(--bagging-green);
+}
+
+.meanLabel {
+  fill: var(--bagging-green);
+  stroke: #fcfdfc;
+  stroke-width: 4px;
+  paint-order: stroke;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.predictionMarker,
+.transferMarker,
+.reducedTransferMarker {
+  fill: #f5b53d;
+  stroke: var(--text);
+  stroke-width: 1.8;
+}
+
+.transferMarker {
+  animation: transfer-prediction var(--transfer-duration) ease-in-out forwards;
+}
+
+.reducedTransferMarker {
+  transform: translateX(var(--prediction-travel));
+}
+
+@keyframes transfer-prediction {
+  to { transform: translateX(var(--prediction-travel)); }
+}
+
+.experimentControls {
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  background: var(--surface-subtle);
+  padding: 12px 15px;
+}
+
+.processButton {
+  margin-left: auto;
+}
+
+.motionNote,
+.liveStatus {
+  margin: 0;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 9px 17px;
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.motionNote {
+  background: #fffaf0;
+}
+
+.liveStatus {
+  min-height: 16px;
+}
+
+.overview,
+.bootstrapFigure,
+.comparisonFigure {
+  margin: 30px 0 34px;
+}
+
+.overview figcaption,
+.bootstrapFigure figcaption,
+.comparisonFigure figcaption {
+  border-top: 1px solid var(--border);
+  background: var(--surface-subtle);
+  color: var(--text-muted);
+  padding: 11px 16px;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.comparisonFigure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #fcfdfc;
+}
+
+.comparisonTitle,
+.comparisonTick,
+.comparisonAxisLabel,
+.comparisonDirectLabel {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.comparisonTitle {
+  fill: var(--text);
+  font-size: 18px;
+  font-weight: 780;
+}
+
+.comparisonTick,
+.comparisonAxisLabel {
+  fill: var(--text-muted);
+  font-size: 13px;
+}
+
+.comparisonAxisLabel {
+  font-weight: 650;
+}
+
+.comparisonGridline {
+  stroke: #e6ece8;
+  stroke-width: 1;
+}
+
+.comparisonAxis {
+  stroke: #82938a;
+  stroke-width: 1.2;
+}
+
+.comparisonLine {
+  fill: none;
+  stroke: var(--bagging-green);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.comparisonPoint {
+  fill: white;
+  stroke: var(--bagging-green);
+  stroke-width: 2;
+}
+
+.comparisonDirectLabel {
+  fill: var(--bagging-green);
+  stroke: #fcfdfc;
+  stroke-width: 4px;
+  paint-order: stroke;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.smallTree {
+  fill: none;
+  stroke: var(--bagging-green);
+  stroke-width: 2;
+}
+
+.smallTreeNode {
+  fill: white;
+  stroke: var(--bagging-green);
+  stroke-width: 2;
+}
+
+.treePrediction {
+  fill: var(--bagging-blue);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.averageArrow,
+.bootstrapArrow,
+.repeatGuide {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 2;
+}
+
+.averageArrow,
+.bootstrapArrow {
+  marker-end: none;
+}
+
+.averageWord,
+.overviewDirectLabel,
+.drawLabel,
+.repeatLabel {
+  fill: var(--text-muted);
+  font-size: 17px;
+}
+
+.averageResult {
+  fill: #e5f3ed;
+  stroke: var(--bagging-green);
+  stroke-width: 2;
+}
+
+.averageValue {
+  fill: var(--bagging-green);
+  font-size: 24px;
+  font-weight: 820;
+}
+
+.staticLabel {
+  fill: var(--text);
+  font-size: 18px;
+  font-weight: 760;
+}
+
+.observationBox,
+.repeatedObservationBox {
+  fill: white;
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+}
+
+.repeatedObservationBox {
+  fill: #eef5fb;
+  stroke: var(--bagging-blue);
+  stroke-width: 2;
+}
+
+.observationText {
+  fill: var(--text);
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.repeatGuide {
+  stroke: var(--bagging-blue);
+  stroke-dasharray: 4 4;
+}
+
+.repeatLabel {
+  fill: var(--bagging-blue);
+  font-weight: 700;
+}
+
+@media (max-width: 620px) {
+  .experimentHeader {
+    padding: 18px 16px 14px;
+  }
+
+  .stageLine,
+  .treeCountControl {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .experimentControls {
+    align-items: flex-start;
+  }
+
+  .playControls {
+    width: 100%;
+  }
+
+  .playControls button {
+    flex: 1 1 auto;
+  }
+
+  .processButton {
+    margin-left: 0;
+  }
+
+  .overview svg,
+  .bootstrapFigure svg,
+  .comparisonFigure svg {
+    min-height: 150px;
+  }
+}
+
+@media (max-width: 430px) {
+  .speedControl,
+  .processButton {
+    width: 100%;
+  }
+
+  .processButton {
+    flex: 1 1 auto;
+  }
+
+  .treeCountControl button {
+    flex: 1 1 15%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .experiment *,
+  .overview *,
+  .bootstrapFigure *,
+  .comparisonFigure * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1536" viewBox="0 0 1024 1536" role="img" aria-labelledby="policy-roles-mobile-title policy-roles-mobile-desc">
+  <title id="policy-roles-mobile-title">O aprendizado on-policy e off-policy atribui papéis diferentes às políticas</title>
+  <desc id="policy-roles-mobile-desc">Dois fluxos de aprendizado verticais comparam a política que gera a experiência com a política que recebe a atualização. O aprendizado on-policy usa a mesma política pi nos dois papéis. O aprendizado off-policy usa a política de comportamento pi b para gerar a trajetória amostrada e aplica a atualização U a uma política-alvo diferente, pi t.</desc>
+
+  <defs>
+    <marker id="policy-roles-mobile-arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M1 1L11 6L1 11Z" fill="#0b8f55"/>
+    </marker>
+    <style>
+      .sans { font-family: Inter, Arial, sans-serif; }
+      .math { font-family: Georgia, 'Times New Roman', serif; font-style: italic; }
+      .role { font-family: Inter, Arial, sans-serif; font-size: 24px; font-weight: 700; letter-spacing: 1.4px; text-anchor: middle; }
+      .behavior-role { font-size: 18px; letter-spacing: 0.8px; }
+      .function { font-family: Inter, Arial, sans-serif; font-size: 28px; text-anchor: middle; }
+      .policy-symbol { font-family: Georgia, 'Times New Roman', serif; font-size: 45px; font-style: italic; text-anchor: middle; dominant-baseline: middle; }
+    </style>
+  </defs>
+
+  <rect width="1024" height="1536" fill="#ffffff"/>
+  <rect x="18" y="18" width="988" height="1500" rx="34" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+
+  <text x="60" y="80" class="sans" font-size="40" font-weight="700" fill="#17231e">Quem gera a experiência —</text>
+  <text x="60" y="126" class="sans" font-size="40" font-weight="700" fill="#17231e">e quem aprende com ela?</text>
+
+  <!-- On-policy reflows into one uninterrupted vertical path. -->
+  <g aria-label="On-policy learning uses the same política for behavior and target roles">
+    <rect x="52" y="170" width="920" height="620" rx="30" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+    <rect x="84" y="202" width="216" height="48" rx="24" fill="#eef7f2"/>
+    <text x="192" y="233" class="sans" font-size="21" font-weight="700" letter-spacing="1.5" fill="#157451" text-anchor="middle">ON-POLICY</text>
+    <text x="932" y="238" class="math" font-size="37" font-weight="700" fill="#157451" text-anchor="end">π<tspan baseline-shift="sub" font-size="22">comportamento</tspan> = π<tspan baseline-shift="sub" font-size="22">alvo</tspan></text>
+
+    <rect x="250" y="275" width="524" height="100" rx="26" fill="#eef7f2" stroke="#0b8f55" stroke-width="3"/>
+    <text x="395" y="315" class="role behavior-role" fill="#157451">POLÍTICA COMPORTAMENTAL</text>
+    <text x="672" y="312" class="policy-symbol" fill="#0b8f55">π</text>
+    <text x="512" y="355" class="function" fill="#17231e">gera experiência</text>
+
+    <path d="M512 375V414" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#policy-roles-mobile-arrow)"/>
+
+    <rect x="220" y="430" width="584" height="82" rx="24" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+    <text x="340" y="463" class="role" font-size="21" fill="#65736c">TRAJETÓRIA</text>
+    <text x="647" y="474" class="math" font-size="33" fill="#17231e" text-anchor="middle">s₀ → a₀ → r₁ → s₁</text>
+
+    <path d="M512 512V539" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#policy-roles-mobile-arrow)"/>
+    <circle cx="512" cy="585" r="42" fill="#ffffff" stroke="#0b8f55" stroke-width="3"/>
+    <text x="512" y="579" class="sans" font-size="14" font-weight="700" letter-spacing="1.2" fill="#65736c" text-anchor="middle">AJUSTE</text>
+    <text x="512" y="609" class="math" font-size="34" fill="#157451" text-anchor="middle">U</text>
+
+    <path d="M512 627V654" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#policy-roles-mobile-arrow)"/>
+
+    <rect x="250" y="670" width="524" height="100" rx="26" fill="#eef7f2" stroke="#0b8f55" stroke-width="3"/>
+    <text x="395" y="710" class="role" fill="#157451">POLÍTICA-ALVO</text>
+    <text x="672" y="707" class="policy-symbol" fill="#0b8f55">π</text>
+    <text x="512" y="750" class="function" fill="#17231e">recebe a atualização</text>
+  </g>
+
+  <!-- Off-policy keeps the same path but makes the two política identities explicit. -->
+  <g aria-label="Off-policy learning uses different policies for behavior and target roles">
+    <rect x="52" y="824" width="920" height="620" rx="30" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+    <rect x="84" y="856" width="216" height="48" rx="24" fill="#ffffff" stroke="#e1e9e4" stroke-width="2"/>
+    <text x="192" y="887" class="sans" font-size="21" font-weight="700" letter-spacing="1.5" fill="#17231e" text-anchor="middle">OFF-POLICY</text>
+    <text x="932" y="892" class="math" font-size="37" font-weight="700" fill="#17231e" text-anchor="end">π<tspan baseline-shift="sub" font-size="22">b</tspan> ≠ π<tspan baseline-shift="sub" font-size="22">t</tspan></text>
+
+    <rect x="250" y="929" width="524" height="100" rx="26" fill="#ffffff" stroke="#65736c" stroke-width="3"/>
+    <text x="395" y="969" class="role behavior-role" fill="#65736c">POLÍTICA COMPORTAMENTAL</text>
+    <text x="672" y="966" class="policy-symbol" fill="#17231e">π<tspan baseline-shift="sub" font-size="27">b</tspan></text>
+    <text x="512" y="1009" class="function" fill="#17231e">gera experiência</text>
+
+    <path d="M512 1029V1068" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#policy-roles-mobile-arrow)"/>
+
+    <rect x="220" y="1084" width="584" height="82" rx="24" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+    <text x="340" y="1117" class="role" font-size="21" fill="#65736c">TRAJETÓRIA</text>
+    <text x="647" y="1128" class="math" font-size="33" fill="#17231e" text-anchor="middle">s₀ → a₀ → r₁ → s₁</text>
+
+    <path d="M512 1166V1193" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#policy-roles-mobile-arrow)"/>
+    <circle cx="512" cy="1239" r="42" fill="#ffffff" stroke="#0b8f55" stroke-width="3"/>
+    <text x="512" y="1233" class="sans" font-size="14" font-weight="700" letter-spacing="1.2" fill="#65736c" text-anchor="middle">AJUSTE</text>
+    <text x="512" y="1263" class="math" font-size="34" fill="#157451" text-anchor="middle">U</text>
+
+    <path d="M512 1281V1308" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#policy-roles-mobile-arrow)"/>
+
+    <rect x="250" y="1324" width="524" height="100" rx="26" fill="#eef7f2" stroke="#0b8f55" stroke-width="3"/>
+    <text x="395" y="1364" class="role" fill="#157451">POLÍTICA-ALVO</text>
+    <text x="672" y="1361" class="policy-symbol" fill="#0b8f55">π<tspan baseline-shift="sub" font-size="27">t</tspan></text>
+    <text x="512" y="1404" class="function" fill="#17231e">recebe a atualização</text>
+  </g>
+</svg>

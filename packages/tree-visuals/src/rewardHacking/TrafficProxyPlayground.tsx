@@ -21,6 +21,7 @@ import {
   type TrafficTrainingStep,
 } from "./trafficMdp";
 import type { RewardMode } from "./engine";
+import { isPt, type RhLocale } from "./shared";
 
 const MAX_TRAINING_EPISODES = TRAFFIC_TRAINING.episodes;
 const TRAINING_TICK_MS = 60;
@@ -49,16 +50,16 @@ interface TrafficFrame {
   cumulativeOverflow: number;
 }
 
-function compactNumber(value: number, digits = 1) {
-  return value.toLocaleString("en-US", {
+function compactNumber(value: number, digits = 1, locale: RhLocale = "en") {
+  return value.toLocaleString(locale === "pt-BR" ? "pt-BR" : "en-US", {
     maximumFractionDigits: digits,
     minimumFractionDigits: 0,
   });
 }
 
-function formatQ(value: number) {
-  if (Math.abs(value) < 0.005) return "0.00";
-  return value.toFixed(2);
+function formatQ(value: number, locale: RhLocale = "en") {
+  const formatted = Math.abs(value) < 0.005 ? "0.00" : value.toFixed(2);
+  return locale === "pt-BR" ? formatted.replace(".", ",") : formatted;
 }
 
 function evaluationFrames(evaluation: TrafficEvaluation): TrafficFrame[] {
@@ -100,12 +101,15 @@ function TrafficQTables({
   activeState,
   chosenAction,
   updatedAction,
+  locale,
 }: {
   qValues: Float64Array;
   activeState: TrafficState;
   chosenAction: number | null;
   updatedAction: number | null;
+  locale: RhLocale;
 }) {
+  const pt = isPt(locale);
   const values = Array.from(qValues);
   const floor = Math.min(...values);
   const ceiling = Math.max(...values);
@@ -114,38 +118,40 @@ function TrafficQTables({
   const release = qValue(qValues, activeState, 1);
   const preference = bestActionAt(qValues, activeState);
   const preferenceLabel =
-    preference === null ? "tie" : TRAFFIC_ACTIONS[preference].name;
+    preference === null
+      ? pt ? "empate" : "tie"
+      : preference === 0
+        ? pt ? "reter" : "hold"
+        : pt ? "liberar" : "release";
 
   return (
     <section
       className={styles.trafficValues}
-      aria-label="Controller action-value tables"
+      aria-label={pt ? "Tabelas de valores de ação do controlador" : "Controller action-value tables"}
     >
       <div className={styles.trafficValueHeading}>
-        <h4>What the controller expects</h4>
+        <h4>{pt ? "O que o controlador espera" : "What the controller expects"}</h4>
         <p>
-          Current state c {activeState.congestion}, q {activeState.queue} · hold{" "}
-          {formatQ(hold)} · release {formatQ(release)} · {preferenceLabel}
+          {pt ? "Estado atual" : "Current state"} c {activeState.congestion}, q {activeState.queue} · {pt ? "reter" : "hold"}{" "}
+          {formatQ(hold, locale)} · {pt ? "liberar" : "release"} {formatQ(release, locale)} · {preferenceLabel}
         </p>
       </div>
       <p className={styles.trafficValueLegend}>
         <span>
-          <b className={styles.trafficLegendWinner}>WIN</b> higher Q for that
-          state
+          <b className={styles.trafficLegendWinner}>{pt ? "MELHOR" : "WIN"}</b> {pt ? "Q mais alto nesse estado" : "higher Q for that state"}
         </span>
         <span>
           <b className={styles.trafficLegendCurrent} aria-hidden="true" />{" "}
-          current state in both tables
+          {pt ? "estado atual nas duas tabelas" : "current state in both tables"}
         </span>
         <span>
-          <b className={styles.trafficLegendAction} aria-hidden="true" /> action
-          updated or chosen now
+          <b className={styles.trafficLegendAction} aria-hidden="true" /> {pt ? "ação atualizada ou escolhida agora" : "action updated or chosen now"}
         </span>
       </p>
       <div
         className={styles.trafficHeatmapScroll}
         tabIndex={0}
-        aria-label="Scrollable hold and release action-value tables"
+        aria-label={pt ? "Tabelas roláveis dos valores das ações reter e liberar" : "Scrollable hold and release action-value tables"}
       >
         <div className={styles.trafficHeatmaps}>
           {TRAFFIC_ACTIONS.map((action, actionIndex) => (
@@ -154,12 +160,12 @@ function TrafficQTables({
               key={action.name}
             >
               <h5>
-                {action.name === "hold" ? "Hold" : "Release"}
-                <span>Q(state, {action.name})</span>
+                {action.name === "hold" ? (pt ? "Reter" : "Hold") : (pt ? "Liberar" : "Release")}
+                <span>Q({pt ? "estado" : "state"}, {pt ? (action.name === "hold" ? "reter" : "liberar") : action.name})</span>
               </h5>
               <table
                 className={styles.trafficQTable}
-                aria-label={`${action.name} action values`}
+                aria-label={pt ? `Valores da ação ${action.name === "hold" ? "reter" : "liberar"}` : `${action.name} action values`}
               >
                 <thead>
                   <tr>
@@ -222,14 +228,14 @@ function TrafficQTables({
                                     "--traffic-heat": heat,
                                   } as CSSProperties
                                 }
-                                aria-label={`${action.name}, congestion ${congestion}, queue ${queue}, Q ${formatQ(value)}${winner ? ", higher-valued action for this state" : ""}${current ? ", current state" : ""}${actionMarked ? ", action updated or chosen now" : ""}`}
-                                title={`${action.name} · c ${congestion}, q ${queue} · Q ${formatQ(value)}`}
+                                aria-label={pt ? `${action.name === "hold" ? "reter" : "liberar"}, congestionamento ${congestion}, fila ${queue}, Q ${formatQ(value, locale)}${winner ? ", ação de maior valor neste estado" : ""}${current ? ", estado atual" : ""}${actionMarked ? ", ação atualizada ou escolhida agora" : ""}` : `${action.name}, congestion ${congestion}, queue ${queue}, Q ${formatQ(value)}${winner ? ", higher-valued action for this state" : ""}${current ? ", current state" : ""}${actionMarked ? ", action updated or chosen now" : ""}`}
+                                title={`${pt ? (action.name === "hold" ? "reter" : "liberar") : action.name} · c ${congestion}, q ${queue} · Q ${formatQ(value, locale)}`}
                                 key={queue}
                               >
                                 {winner ? (
-                                  <b aria-hidden="true">WIN</b>
+                                  <b aria-hidden="true">{pt ? "MELHOR" : "WIN"}</b>
                                 ) : null}
-                                <span>{formatQ(value)}</span>
+                                <span>{formatQ(value, locale)}</span>
                               </td>
                             );
                           },
@@ -239,7 +245,7 @@ function TrafficQTables({
                   )}
                 </tbody>
               </table>
-              <p>Rows: congestion c · columns: queued cars q</p>
+              <p>{pt ? "Linhas: congestionamento c · colunas: carros na fila q" : "Rows: congestion c · columns: queued cars q"}</p>
             </section>
           ))}
         </div>
@@ -254,13 +260,16 @@ function TrafficLearningScene({
   action,
   event,
   exploring,
+  locale,
 }: {
   previousState: TrafficState;
   state: TrafficState;
   action: number | null;
   event: TrafficEvent | null;
   exploring: boolean;
+  locale: RhLocale;
 }) {
+  const pt = isPt(locale);
   const [releaseAnimations, setReleaseAnimations] = useState<
     { id: number; position: number }[]
   >([]);
@@ -315,7 +324,7 @@ function TrafficLearningScene({
     <div
       className={styles.trafficOriginalScene}
       role="img"
-      aria-label={`Traffic changed from congestion ${previousState.congestion}, queue ${previousState.queue} to congestion ${state.congestion}, queue ${state.queue}. Signal ${actionName}. Highway speed is ${Math.round(speed * 100)} percent.${event?.released ? ` ${event.released} queued ${event.released === 1 ? "car was" : "cars were"} released through the merge.` : ""}${event?.overflow ? ` ${event.overflow} car overflowed the full ramp queue.` : ""}`}
+      aria-label={pt ? `O tráfego passou de congestionamento ${previousState.congestion}, fila ${previousState.queue} para congestionamento ${state.congestion}, fila ${state.queue}. Sinal ${actionName === "release" ? "liberar" : "reter"}. A velocidade da rodovia é ${Math.round(speed * 100)} por cento.${event?.released ? ` ${event.released} ${event.released === 1 ? "carro da fila foi liberado" : "carros da fila foram liberados"} pela confluência.` : ""}${event?.overflow ? ` ${event.overflow} carro excedeu a capacidade da fila da rampa.` : ""}` : `Traffic changed from congestion ${previousState.congestion}, queue ${previousState.queue} to congestion ${state.congestion}, queue ${state.queue}. Signal ${actionName}. Highway speed is ${Math.round(speed * 100)} percent.${event?.released ? ` ${event.released} queued ${event.released === 1 ? "car was" : "cars were"} released through the merge.` : ""}${event?.overflow ? ` ${event.overflow} car overflowed the full ramp queue.` : ""}`}
     >
       <svg
         className={styles.trafficOriginalMap}
@@ -324,7 +333,7 @@ function TrafficLearningScene({
         aria-hidden="true"
       >
         <text className={styles.trafficMapLabel} x="18" y="25">
-          HIGHWAY · TRAFFIC FLOWS →
+          {pt ? "RODOVIA · FLUXO DO TRÁFEGO →" : "HIGHWAY · TRAFFIC FLOWS →"}
         </text>
         <text
           className={styles.trafficFlowLabel}
@@ -332,7 +341,7 @@ function TrafficLearningScene({
           y="25"
           textAnchor="end"
         >
-          {Math.round(speed * 100)}% speed
+          {Math.round(speed * 100)}% {pt ? "da velocidade" : "speed"}
         </text>
 
         <path
@@ -376,7 +385,7 @@ function TrafficLearningScene({
           d="M -8 244 H 255 C 350 244 360 110 476 110"
         />
         <text className={styles.trafficMapLabel} x="18" y="286">
-          ON-RAMP · QUEUED CARS MOVE →
+          {pt ? "RAMPA DE ACESSO · CARROS NA FILA →" : "ON-RAMP · QUEUED CARS MOVE →"}
         </text>
         <text
           className={styles.trafficMapLabel}
@@ -384,7 +393,7 @@ function TrafficLearningScene({
           y="154"
           textAnchor="middle"
         >
-          MERGE
+          {pt ? "CONFLUÊNCIA" : "MERGE"}
         </text>
 
         {queueCarX.map((x, index) =>
@@ -447,16 +456,16 @@ function TrafficLearningScene({
           />
           <rect width="84" height="38" rx="9" />
           <text x="42" y="24">
-            {actionName === "release" ? "RELEASE" : "HOLD"}
+            {actionName === "release" ? (pt ? "LIBERAR" : "RELEASE") : (pt ? "RETER" : "HOLD")}
           </text>
         </g>
       </svg>
       <div className={styles.trafficOriginalCongestion} aria-hidden="true">
         <div>
-          <span>Highway congestion</span>
+          <span>{pt ? "Congestionamento na rodovia" : "Highway congestion"}</span>
           <span>
             {state.congestion} / {TRAFFIC_CONFIG.maxCongestion} ·{" "}
-            {Math.round(speed * 100)}% speed
+            {Math.round(speed * 100)}% {pt ? "da velocidade" : "speed"}
           </span>
         </div>
         <div>
@@ -473,10 +482,14 @@ function TrafficLearningScene({
 
 function TrafficLearningPlayground({
   rewardMode,
+  locale,
 }: {
   rewardMode: RewardMode;
+  locale: RhLocale;
 }) {
   const aligned = rewardMode === "aligned";
+  const pt = isPt(locale);
+  const numberLocale = pt ? "pt-BR" : "en-US";
   const [mode, setMode] = useState<PlaybackMode>("idle");
   const [episodes, setEpisodes] = useState(0);
   const [evaluation, setEvaluation] =
@@ -646,43 +659,42 @@ function TrafficLearningPlayground({
 
   const status =
     mode === "idle"
-      ? "Ready to learn"
+      ? pt ? "Pronto para aprender" : "Ready to learn"
       : mode === "training"
-        ? "Exploring and updating Q-values…"
+        ? pt ? "Explorando e atualizando os valores Q…" : "Exploring and updating Q-values…"
         : mode === "paused"
-          ? `Paused after ${episodes.toLocaleString("en-US")} episodes`
+          ? pt ? `Pausado após ${episodes.toLocaleString(numberLocale)} episódios` : `Paused after ${episodes.toLocaleString(numberLocale)} episodes`
           : mode === "replaying"
-            ? `Running learned policy · step ${playbackStep} of ${REPLAY_STEPS}`
-            : "Training complete";
+            ? pt ? `Executando a política aprendida · passo ${playbackStep} de ${REPLAY_STEPS}` : `Running learned policy · step ${playbackStep} of ${REPLAY_STEPS}`
+            : pt ? "Treino concluído" : "Training complete";
 
   const eventText =
     showTrainingFrame
-      ? `Episode ${trainingStep.episode.toLocaleString("en-US")}, step ${trainingStep.step}: ${
-          trainingStep.exploring ? "explored" : "followed current values"
-        } ${TRAFFIC_ACTIONS[trainingStep.action].name}; ${sceneEvent?.arrival ? "1 car arrived" : "no car arrived"}, ${sceneEvent?.released ?? 0} released, reward ${compactNumber(trainingStep.reward, 2)}.`
+      ? pt ? `Episódio ${trainingStep.episode.toLocaleString(numberLocale)}, passo ${trainingStep.step}: ${trainingStep.exploring ? "explorou" : "seguiu os valores atuais"} ${TRAFFIC_ACTIONS[trainingStep.action].name === "hold" ? "reter" : "liberar"}; ${sceneEvent?.arrival ? "chegou 1 carro" : "nenhum carro chegou"}, ${sceneEvent?.released ?? 0} liberados, recompensa ${compactNumber(trainingStep.reward, 2, locale)}.` : `Episode ${trainingStep.episode.toLocaleString(numberLocale)}, step ${trainingStep.step}: ${trainingStep.exploring ? "explored" : "followed current values"} ${TRAFFIC_ACTIONS[trainingStep.action].name}; ${sceneEvent?.arrival ? "1 car arrived" : "no car arrived"}, ${sceneEvent?.released ?? 0} released, reward ${compactNumber(trainingStep.reward, 2)}.`
       : mode === "replaying" && replayFrame
-        ? `Step ${playbackStep} of ${REPLAY_STEPS}: chose ${TRAFFIC_ACTIONS[replayFrame.action].name} from c ${replayFrame.previousState.congestion}, q ${replayFrame.previousState.queue}; ${replayFrame.event.arrival ? "1 car arrived" : "no car arrived"}, ${replayFrame.event.released} released${replayFrame.event.overflow ? ", 1 overflowed the full queue" : ""}.`
+        ? pt ? `Passo ${playbackStep} de ${REPLAY_STEPS}: escolheu ${TRAFFIC_ACTIONS[replayFrame.action].name === "hold" ? "reter" : "liberar"} em c ${replayFrame.previousState.congestion}, q ${replayFrame.previousState.queue}; ${replayFrame.event.arrival ? "chegou 1 carro" : "nenhum carro chegou"}, ${replayFrame.event.released} liberados${replayFrame.event.overflow ? ", 1 excedeu a capacidade da fila" : ""}.` : `Step ${playbackStep} of ${REPLAY_STEPS}: chose ${TRAFFIC_ACTIONS[replayFrame.action].name} from c ${replayFrame.previousState.congestion}, q ${replayFrame.previousState.queue}; ${replayFrame.event.arrival ? "1 car arrived" : "no car arrived"}, ${replayFrame.event.released} released${replayFrame.event.overflow ? ", 1 overflowed the full queue" : ""}.`
         : mode === "complete" && evaluation
-          ? `Learned policy ready · mean queue ${compactNumber(evaluation.averageQueue, 2)} · highway speed ${Math.round(evaluation.averageHighwaySpeed * 100)}% · ${evaluation.releasedCars} cars released.`
-          : "Start learning to watch both action-value tables change.";
+          ? pt ? `Política aprendida pronta · fila média ${compactNumber(evaluation.averageQueue, 2, locale)} · velocidade da rodovia ${Math.round(evaluation.averageHighwaySpeed * 100)}% · ${evaluation.releasedCars} carros liberados.` : `Learned policy ready · mean queue ${compactNumber(evaluation.averageQueue, 2)} · highway speed ${Math.round(evaluation.averageHighwaySpeed * 100)}% · ${evaluation.releasedCars} cars released.`
+          : pt ? "Inicie o aprendizado para observar as duas tabelas de valores de ação mudarem." : "Start learning to watch both action-value tables change.";
 
   return (
     <section
       className={`${styles.lab} ${styles.learningLab} ${styles.trafficLearningLab}`}
-      aria-label={`${aligned ? "Combined-delay" : "Highway-speed proxy"} learning playground`}
+      data-locale={locale}
+      aria-label={pt ? `Playground de aprendizado com ${aligned ? "atraso combinado" : "proxy de velocidade da rodovia"}` : `${aligned ? "Combined-delay" : "Highway-speed proxy"} learning playground`}
       data-training-model="live-q-learning"
     >
       <header className={styles.learningHeader}>
         <div>
-          <p className={styles.kicker}>Traffic control · MDP 3</p>
-          <h3>Who gets to move?</h3>
+          <p className={styles.kicker}>{pt ? "Controle de tráfego" : "Traffic control"} · MDP 3</p>
+          <h3>{pt ? "Quem pode avançar?" : "Who gets to move?"}</h3>
         </div>
         <p className={styles.learningReward}>
-          Reward seen by the controller
+          {pt ? "Recompensa vista pelo controlador" : "Reward seen by the controller"}
           <strong>
             {aligned
-              ? "−(ramp queue + 0.5 × highway delay)"
-              : "normalized highway speed"}
+              ? pt ? "−(fila da rampa + 0,5 × atraso da rodovia)" : "−(ramp queue + 0.5 × highway delay)"
+              : pt ? "velocidade normalizada da rodovia" : "normalized highway speed"}
           </strong>
         </p>
       </header>
@@ -697,35 +709,38 @@ function TrafficLearningPlayground({
             exploring={
               mode === "training" && Boolean(trainingStep?.exploring)
             }
+            locale={locale}
           />
         </div>
 
         <aside
           className={styles.learningPanel}
-          aria-label="Learning controls and progress"
+          aria-label={pt ? "Controles e progresso do aprendizado" : "Learning controls and progress"}
         >
           <div className={styles.learningStatus} aria-live="polite">
             <span>{status}</span>
-            <strong>{episodes.toLocaleString("en-US")} episodes</strong>
+            <strong>{episodes.toLocaleString(numberLocale)} {pt ? "episódios" : "episodes"}</strong>
           </div>
 
           <div className={styles.trafficLearningMetrics}>
             <div>
-              <span>Queue</span>
+              <span>{pt ? "Fila" : "Queue"}</span>
               <strong>
                 {sceneState.queue}/{TRAFFIC_CONFIG.maxQueue}
               </strong>
             </div>
             <div>
-              <span>Congestion</span>
+              <span>{pt ? "Congestionamento" : "Congestion"}</span>
               <strong>{sceneState.congestion}</strong>
             </div>
             <div>
-              <span>Action</span>
+              <span>{pt ? "Ação" : "Action"}</span>
               <strong>
                 {sceneAction === null
                   ? "—"
-                  : TRAFFIC_ACTIONS[sceneAction].name}
+                  : pt
+                    ? TRAFFIC_ACTIONS[sceneAction].name === "hold" ? "reter" : "liberar"
+                    : TRAFFIC_ACTIONS[sceneAction].name}
               </strong>
             </div>
           </div>
@@ -735,14 +750,14 @@ function TrafficLearningPlayground({
           </p>
 
           <p className={styles.trafficEpsilon}>
-            Exploration ε <strong>{currentEpsilon.toFixed(2)}</strong>
+            {pt ? "Exploração" : "Exploration"} ε <strong>{pt ? currentEpsilon.toFixed(2).replace(".", ",") : currentEpsilon.toFixed(2)}</strong>
           </p>
 
           <div className={styles.learningControls}>
             <label className={styles.learningSpeedSlider}>
               <span>
-                Training speed
-                <output>{speed} episodes/s</output>
+                {pt ? "Velocidade do treino" : "Training speed"}
+                <output>{speed} {pt ? "episódios/s" : "episodes/s"}</output>
               </span>
               <input
                 type="range"
@@ -761,12 +776,12 @@ function TrafficLearningPlayground({
               disabled={mode === "replaying"}
             >
               {mode === "training"
-                ? "Pause training"
+                ? pt ? "Pausar treino" : "Pause training"
                 : mode === "paused"
-                  ? "Continue training"
+                  ? pt ? "Continuar treino" : "Continue training"
                   : mode === "complete"
-                    ? "Train again"
-                    : "Train 5,000 episodes"}
+                    ? pt ? "Treinar novamente" : "Train again"
+                    : pt ? "Treinar por 5.000 episódios" : "Train 5,000 episodes"}
             </button>
             <button
               type="button"
@@ -779,7 +794,7 @@ function TrafficLearningPlayground({
                 mode === "idle"
               }
             >
-              Run 120-step episode
+              {pt ? "Executar episódio de 120 passos" : "Run 120-step episode"}
             </button>
             <button
               type="button"
@@ -787,7 +802,7 @@ function TrafficLearningPlayground({
               onClick={() => resetExperience()}
               disabled={mode === "replaying"}
             >
-              Reset learning
+              {pt ? "Reiniciar aprendizado" : "Reset learning"}
             </button>
           </div>
         </aside>
@@ -798,12 +813,20 @@ function TrafficLearningPlayground({
         activeState={qActiveState}
         chosenAction={chosenAction}
         updatedAction={updatedAction}
+        locale={locale}
       />
 
       <p className={styles.learningTakeaway}>
         {mode === "complete" && evaluation ? (
           aligned ? (
-            <>
+            pt ? <>
+              O controlador liberou <strong>{evaluation.releasedCars} carros</strong>,
+              mantendo a fila média da rampa em{" "}
+              <strong>{compactNumber(evaluation.averageQueue, 2, locale)}</strong>,
+              enquanto aceitava uma velocidade média de{" "}
+              <strong>{Math.round(evaluation.averageHighwaySpeed * 100)}%</strong>
+              na rodovia. Agora, as duas fontes de atraso afetam qual ação vence.
+            </> : <>
               The controller released{" "}
               <strong>{evaluation.releasedCars} cars</strong>, keeping the mean
               ramp queue at{" "}
@@ -817,7 +840,13 @@ function TrafficLearningPlayground({
               . Both sources of delay now affect which action wins.
             </>
           ) : (
-            <>
+            pt ? <>
+              O controlador manteve a velocidade da rodovia em{" "}
+              <strong>{Math.round(evaluation.averageHighwaySpeed * 100)}%</strong>
+              liberando <strong>{evaluation.releasedCars} carros</strong>. A rampa
+              encheu, e <strong>{evaluation.overflows} chegadas posteriores excederam
+              sua capacidade</strong> — resultados que essa recompensa nunca considera.
+            </> : <>
               The controller kept highway speed at{" "}
               <strong>
                 {Math.round(evaluation.averageHighwaySpeed * 100)}%
@@ -829,17 +858,17 @@ function TrafficLearningPlayground({
             </>
           )
         ) : (
-          "The arrivals, traffic dynamics, and learning rule stay fixed. Only the reward changes."
+          pt ? "As chegadas, a dinâmica do tráfego e a regra de aprendizado permanecem iguais. Apenas a recompensa muda." : "The arrivals, traffic dynamics, and learning rule stay fixed. Only the reward changes."
         )}
       </p>
     </section>
   );
 }
 
-export function TrafficProxyPlayground() {
-  return <TrafficLearningPlayground rewardMode="proxy" />;
+export function TrafficProxyPlayground({ locale = "en" }: { locale?: RhLocale }) {
+  return <TrafficLearningPlayground rewardMode="proxy" locale={locale} />;
 }
 
-export function TrafficAlignedPlayground() {
-  return <TrafficLearningPlayground rewardMode="aligned" />;
+export function TrafficAlignedPlayground({ locale = "en" }: { locale?: RhLocale }) {
+  return <TrafficLearningPlayground rewardMode="aligned" locale={locale} />;
 }

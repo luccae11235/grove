@@ -1,0 +1,241 @@
+# How bagging makes decision-tree predictions more stable
+
+Article ID: bagging-reduces-tree-variance
+Status: revised interactive draft implemented
+GitHub issue: #120
+Article source: apps/web/src/content/articles/en/bagging-reduces-tree-variance.mdx
+Plan owner: Aflora editorial
+Last reviewed: 2026-08-13 (narrative revision)
+Earliest publication date: 2026-08-26
+
+## Lesson brief
+
+```text
+Learner: a reader who understands the basic behavior of a decision tree, but has
+  not studied model variance or ensemble methods
+Prior knowledge: fitted models depend on training data; averages combine numbers;
+  variance describes spread
+Likely misconception: many trees are more stable merely because the ensemble is
+  larger, or bootstrap sampling by itself reduces variance
+Transfer outcome: explain, from a new prediction distribution at a fixed input,
+  why averaging varied tree predictions narrows that distribution and identify
+  the independence assumption behind the sigma-squared-over-B result
+Motivating question: if a hospital retrains the same tree and an unchanged patient
+  record receives a different risk estimate, can we build a prediction that
+  changes less?
+Smallest faithful example: deep regression trees fitted to small noisy samples
+  from one sine curve, with every prediction inspected at the same input x_0
+Conceptual bottleneck: the unstable objects remain unstable; it is the average
+  of their prediction fluctuations that has less variance
+Old approach and its limitation: trust one fitted tree, whose early splits can
+  change when a few training observations change
+New idea the learner will invent: create varied training views with bootstrap
+  samples, fit one tree to each, and average their predictions
+Intuition → mechanism → formal statement: observe a wide pointwise prediction
+  distribution → average high and low fluctuations → derive Var(T-bar_B)=sigma^2/B
+  for independent, equal-variance tree predictions
+Primary representation: the same sine curve, training-sample size, tree settings,
+  fixed input x_0, prediction axis, and horizontal distribution scale throughout
+Prediction points: predict the next tree's value after resampling; identify why
+  repeated training on an unchanged dataset gives no diversity; rank the spread
+  for B=1, 2, 5, and 25 before revealing it
+Worked-to-independent progression: inspect resampled trees → trace three bootstrap
+  samples → average two and five concrete predictions → interpret the general
+  variance formula → diagnose a correlated-tree limit
+Application or failure case: return to the hospital and distinguish instability
+  reduced by averaging from uncertainty shared through one original cohort
+Evidence of understanding: explain what is fixed in pointwise variance; explain
+  why replacement creates different trees; translate the factor 1/B into a
+  distributional prediction; state why the result is an idealized benchmark
+Simplifications and limits: synthetic regression, one fixed input, equal tree
+  variances, independent predictions for the displayed derivation, no covariance
+  formula, random-feature sampling, classification, OOB error, or boosting
+```
+
+## Narrative revision guide
+
+- The hero contains only useful reader guidance: difficulty, no coding required,
+  and two guided experiments. The synthetic curve is not product metadata.
+- Open with one unchanged patient record receiving 18%, 29%, and 21% mortality-risk
+  estimates from scheduled retrainings of the same fictitious hospital model.
+- State why instability matters before introducing terminology. Do not present a
+  single decision tree as a medical deployment recommendation.
+- Introduce the sine process only in the model-variance section, as a controlled
+  toy laboratory where alternate training datasets can be generated and the fitted
+  tree can be watched. Keep the hospital analogy active at the major conceptual
+  turns: fixed input, bootstrap cohorts, averaging, shared uncertainty, and conclusion.
+- Preserve the article's section order, five visual scenes, two experiment shells,
+  computed results, notation, and mathematical derivation.
+- Make each transition answer pressure created by the preceding section: observe
+  changing predictions → define their spread → create useful tree differences from
+  one dataset → average them → compare distributions → explain the ideal benchmark
+  → explain why the measured curve has a floor.
+- Explain the floor with two layers of variation. More trees average away which
+  rows each bootstrap sample happened to repeat or omit. They cannot average away
+  which observations were absent from the original dataset shared by every tree.
+- Replace the generic new-chart transfer exercise with a return to the hospital.
+  Ask what evidence the team has gained, what bagging cannot promise, and what
+  would still need monitoring in a consequential setting.
+- Prefer concrete nouns, causal transitions, and complete sentences. Define a
+  symbol next to the object it represents and translate every formula back into
+  visible behavior.
+
+## Editorial decisions from the initial sketch
+
+- Use a decision tree from the first resampling scene instead of introducing a
+  polynomial model and replacing it later. The polynomial adds a second model
+  vocabulary but does not provide evidence needed for the transfer outcome.
+- Introduce ensemble learning through the instability problem. Keep the opening
+  distinction between bagging and boosting to one sentence near the boundary,
+  after the reader understands what bagging is for.
+- Keep two sources of variation explicit. Across experimental trials, a new
+  training dataset is sampled from the sine process. Within each trial, bagging
+  draws bootstrap samples from that dataset and averages the resulting trees.
+- Treat `sigma^2(x_0) / B` as an idealized benchmark. Bootstrap trees share an
+  original dataset and are correlated; the exact correlation result belongs to
+  the planned follow-up article.
+- Use the independent-tree formula once. Concrete cases for two and five trees
+  should interpret the same equation rather than repeat the derivation.
+
+## Discovery sequence
+
+1. Encounter an unchanged patient record whose risk estimate moves across three
+   scheduled retrainings of the same fictitious hospital model.
+2. Hold the process, algorithm, and input fixed. Name the spread across possible
+   training datasets as pointwise model variance.
+3. Explain why an early split change can propagate through a deep tree.
+4. Ask how one observed dataset can produce several non-identical trees.
+5. Invent bootstrap sampling by drawing the same number of rows with replacement.
+6. Average two concrete tree predictions, then five, and predict what happens to
+   the distribution across repeated training datasets.
+7. Reveal the narrowing distributions for B = 1, 2, 5, and 25.
+8. Derive `Var(T-bar_B(x_0)) = sigma^2(x_0) / B` under independence and equal
+   variance, translating every algebraic step back to the visual.
+9. Stress the independence assumption and split the measured movement into
+   bootstrap-specific variation and original-dataset variation shared by all trees.
+10. Return to the hospital and ask what a narrower prediction distribution proves,
+    what it does not prove, and how the team could compare retraining stability
+    without treating stability as permission to deploy the model.
+
+## Visual and interactive plan
+
+All five visual scenes remain within the 720-pixel article measure. The two
+computed experiments share one episode shell, axes, fixed input, data generator,
+phase language, controls, and aligned horizontal histogram.
+
+### 1. One tree feeds a prediction distribution — implemented
+
+Learning question: Why can the same tree-learning procedure give different
+predictions at one fixed input?
+
+One episode samples 38 observations, learns a real regression tree depth by depth,
+predicts at `x_0`, and transfers the prediction horizontally into a histogram that
+uses the plot's exact y-scale. Repeated episodes change only the outer dataset.
+
+The process starts paused at 0.25 episodes per second. Play/pause, one-episode,
+reset, and a nonlinear speed slider provide only the agency needed to inspect and
+then accumulate the loop. The slider maps 0.25× at the left, 1× at its midpoint,
+and 10× at the right. High speed skips only intermediate display frames; the final
+fitted model and recorded prediction remain exact. The true sine mean and nested
+noise bands are optional.
+Tree-leaf segments and their supporting observations are linked by pointer and
+keyboard inspection.
+
+The right-side metrics and explanatory cards from the first implementation are
+removed. Phase, curve, points, transferred prediction, and growing histogram carry
+the story directly. A dashed marker tracks the exact mean of all completed
+predictions. A shaded interval spans one empirical prediction standard deviation
+on either side of that center once two episodes exist. Histogram bins become
+progressively narrower with sample count while the plot and histogram preserve
+one shared y-domain.
+
+### 2. Bootstrap sampling with replacement — implemented static figure
+
+Learning question: What changes when sampling happens with replacement?
+
+Two aligned rows show an observed dataset and a same-size bootstrap sample.
+Repeated `C` observations share a restrained visual cue; absent `D` and `E`
+observations are communicated by their absence and the text alternative. There
+are no controls, tree glyphs, predictions, or out-of-bag statistics.
+
+### 3. Several predictions become one — implemented static figure
+
+Learning question: What is the aggregation step in bagging?
+
+The compact figure appears only after bootstrap sampling and immediately before
+the bagging equation. Three direct tree predictions flow into their arithmetic
+mean. It introduces no decorative underlining and no competing explanation.
+
+### 4. A bagged model feeds the same distribution — implemented
+
+Learning question: Why does averaging more varied trees produce a more stable
+final prediction?
+
+The outer episode is visually identical to the single-tree experiment. Within
+it, bootstrap samples are drawn without animating every draw, trees are fitted,
+and the dark running-average curve updates while the current tree remains faint.
+Only the final ensemble prediction transfers to the aligned histogram.
+
+The learner selects `B = 1, 2, 5, 10, 25`. Every completed outer episode computes
+all five nested ensemble sizes from the same bootstrap-tree sequence, so changing
+`B` preserves a fair history instead of mixing unrelated trials. The article
+distinguishes the within-episode average settling from the across-episode
+distribution narrowing; accumulating more trials alone is not described as
+variance reduction. Each tree-count button reports its own history's standard
+deviation so the learner can compare the five spreads directly.
+
+### 5. Prediction spread across ensemble sizes — implemented computed static figure
+
+Learning question: Does the same experiment actually produce more stable
+predictions as more trees are averaged?
+
+A restrained line plot computes 240 repeated outer datasets for every integer
+`B` from 1 through 25 using the same noisy-sine generator, tree learner, bootstrap
+logic, and fixed `x_0` as the playgrounds. Each point is the empirical standard
+deviation of final ensemble predictions. The chart preserves small finite-sample
+wiggles rather than replacing the measurements with an idealized curve, while
+direct labels at 1, 5, and 25 trees expose the large overall reduction.
+
+### Shared accessibility and truth contract
+
+- SVG titles and descriptions state what is fixed and what changes.
+- Direct labels, line form, point shape, position, and opacity supplement color.
+- Controls have keyboard focus and at least 42-pixel targets; the plots support
+  arrow-key leaf inspection and concise completion announcements.
+- Reduced motion disables autoplay and replaces travel with a stepped transfer;
+  one-episode playback preserves the causal sequence.
+- Fixed seeds reproduce datasets, tree traces, bootstrap membership, exact means,
+  prediction standard deviations, histogram bins, and empirical variances outside
+  the view.
+- Browser checks cover KaTeX, episode state, the 0.25×–10× slider, high-speed
+  accumulation, running means, standard-deviation bands and comparisons, adaptive
+  bins, tree-count histories, 720-pixel containment, mobile overflow, and reduced
+  motion.
+
+## Mathematics and truth checks
+
+- At a fixed input, define model variance over repeated training datasets before
+  using `Var` without a subscript.
+- Distinguish the original training dataset from each bootstrap sample in words
+  and notation.
+- Do not claim that bootstrap trees are independent. Independence is introduced
+  only as a simplifying thought experiment for the `1 / B` derivation.
+- Do not claim the observed empirical variances equal `sigma^2 / B` exactly.
+- State that standard deviation shrinks like `1 / sqrt(B)` if width is discussed;
+  the variance, not the raw width, shrinks like `1 / B`.
+- State that averaging preserves the expected center under equal expected
+  predictions; do not promise unchanged real-world bias for every bagging setup.
+
+## Release contract
+
+- The article remains `status: draft` with no `publishedAt` through the initial
+  pull request into `develop`.
+- A draft preview may use `SHOW_DRAFTS=true`; published-only staging and production
+  must continue to hide the route, catalog card, sitemap entry, and feed entry.
+- The exact pull-request revision must pass checks and be reviewed in Railway
+  staging before merge to `develop`.
+- Publication requires a separate issue-linked change no earlier than 2026-08-26,
+  followed by the normal `develop` to `main` release path and explicit production
+  approval.
+- Drafting, merging, deploying, or publishing the website never authorizes a
+  newsletter draft, schedule, or send.

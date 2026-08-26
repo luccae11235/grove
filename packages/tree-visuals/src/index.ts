@@ -22,6 +22,31 @@ export {
   MultiFeatureRegressionPlayground,
   multiFeatureRegressionSummary,
 } from "./MultiFeatureRegressionPlayground";
+export {
+  adaptiveHistogramBinCount,
+  BaggingDistributionPlayground,
+  BaggingEnsembleOverview,
+  BaggingStandardDeviationComparison,
+  BootstrapSamplesPlayground,
+  bootstrapSample,
+  computeStandardDeviationComparison,
+  fitRegressionTree,
+  fittingFrameStride,
+  generateSineSample,
+  predictTree,
+  predictionMean,
+  predictionStandardDeviation,
+  runBaggingExperiment,
+  sampleVariance,
+  speedFromSliderPosition,
+  TreeVariancePlayground,
+} from "./BaggingVariancePlaygrounds";
+export type {
+  BaggingExperiment,
+  BaggingTrial,
+  RegressionTree,
+  SinePoint,
+} from "./BaggingVariancePlaygrounds";
 export { CheckpointLab } from "./rewardHacking/CheckpointLab";
 export {
   CheckpointAlignedPlayground,
@@ -38,6 +63,23 @@ export {
   TrafficAlignedPlayground,
   TrafficProxyPlayground,
 } from "./rewardHacking/TrafficProxyPlayground";
+export { PongRewardComparison } from "./sampleBasedRl/PongRewardComparison";
+export { MdpTrajectoryMachine } from "./sampleBasedRl/MdpTrajectoryMachine";
+export {
+  advanceToNextOutcome,
+  choosePongAction,
+  createPongState,
+  PONG_GEOMETRY,
+  predictedPaddleIntercept,
+  stepPongState,
+} from "./sampleBasedRl/pongModel";
+export type {
+  PongAction,
+  PongBall,
+  PongOutcome,
+  PongPolicy,
+  PongState,
+} from "./sampleBasedRl/pongModel";
 export {
   DatasetComplexityPlayground,
   FeatureImportancePlayground,

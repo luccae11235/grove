@@ -9,7 +9,13 @@ test("the production article library excludes drafts", async ({ page }) => {
   })).toBeVisible();
   await expect(page.getByRole("link", {
     name: /Reward Hacking in Reinforcement Learning/,
+  })).toBeVisible();
+  await expect(page.getByRole("link", {
+    name: /Why averaging trees makes predictions more stable/,
   })).toHaveCount(0);
+  await expect(page.getByRole("link", {
+    name: /How the Past Echoes: Understanding ACF and PACF/,
+  })).toBeVisible();
 
   await page.goto("/learn/regression-trees/");
   await expect(page.getByRole("heading", {
@@ -18,6 +24,18 @@ test("the production article library excludes drafts", async ({ page }) => {
   })).toBeVisible();
 
   await page.goto("/learn/reward-hacking/");
+  await expect(page.getByRole("heading", {
+    level: 1,
+    name: "Reward Hacking in Reinforcement Learning",
+  })).toBeVisible();
+
+  await page.goto("/learn/acf-and-pacf/");
+  await expect(page.getByRole("heading", {
+    level: 1,
+    name: "How the Past Echoes: Understanding ACF and PACF",
+  })).toBeVisible();
+
+  await page.goto("/learn/bagging-reduces-tree-variance/");
   await expect(page).toHaveURL(/\/$/);
 });
 
@@ -33,6 +51,7 @@ test("the published reading flow is complete in Brazilian Portuguese", async ({ 
   await expect(page.getByRole("heading", { level: 1, name: /Aprendizado de máquina/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /Como árvores de decisão aprendem a prever números/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /Como inventar o algoritmo de árvore de decisão do zero/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Como o passado ecoa: entendendo ACF e PACF/ })).toBeVisible();
 
   await page.getByRole("link", { name: /Como árvores de decisão aprendem a prever números/ }).click();
   await expect(page).toHaveURL(/\/pt-br\/learn\/regression-trees\/$/);

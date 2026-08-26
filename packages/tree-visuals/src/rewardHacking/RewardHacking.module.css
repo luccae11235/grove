@@ -524,10 +524,27 @@
   text-align: center;
 }
 
-.learningBoardCaption span {
+.localizedCaptionDetail {
   display: block;
   margin-top: 2px;
-  font-size: 0.65rem;
+}
+
+.learningCheckpointGuide {
+  display: grid;
+  gap: 3px;
+  margin-top: 10px;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  background: var(--accent-soft);
+  padding: 10px 12px;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.learningCheckpointGuide strong {
+  color: var(--text);
+  font-size: 0.76rem;
 }
 
 .learningPanel {
@@ -1106,6 +1123,10 @@
   grid-template-columns: repeat(3, 1fr);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
+}
+
+.trafficLearningLab[data-locale="pt-BR"] .trafficLearningMetrics {
+  grid-template-columns: 0.75fr 1.6fr 0.65fr;
 }
 
 .trafficLearningLab .learningStage {

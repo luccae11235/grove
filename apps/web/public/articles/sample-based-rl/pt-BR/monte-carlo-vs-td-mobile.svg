@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1840" viewBox="0 0 1024 1840" role="img" aria-labelledby="mc-td-mobile-title mc-td-mobile-desc">
+  <title id="mc-td-mobile-title">Monte Carlo atualiza após o episódio; TD pode atualizar durante a amostragem</title>
+  <desc id="mc-td-mobile-desc">Duas cópias empilhadas verticalmente da mesma trajetória de estados, ações e recompensas comparam o momento da atualização. Monte Carlo aplica U somente depois de chegar ao estado terminal. O método de diferenças temporais pode aplicar U após transições intermediárias e alterar a política repetidamente enquanto o episódio continua.</desc>
+
+  <defs>
+    <marker id="mc-td-mobile-arrow-green" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto">
+      <path d="M1 1L11 6L1 11Z" fill="#0b8f55"/>
+    </marker>
+    <marker id="mc-td-mobile-arrow-neutral" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto">
+      <path d="M1 1L11 6L1 11Z" fill="#65736c"/>
+    </marker>
+    <style>
+      .sans { font-family: Inter, Arial, sans-serif; }
+      .math { font-family: Georgia, 'Times New Roman', serif; font-style: italic; }
+      .token { font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-size: 43px; text-anchor: middle; dominant-baseline: middle; }
+      .step-arrow { font-family: Inter, Arial, sans-serif; font-size: 33px; fill: #65736c; text-anchor: middle; dominant-baseline: middle; }
+      .policy { font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-size: 40px; text-anchor: middle; dominant-baseline: middle; }
+    </style>
+
+    <g id="mc-td-mobile-trajectory">
+      <g class="token" fill="#17231e">
+        <text x="0" y="0">s₀</text>
+        <text x="620" y="0">s₁</text>
+        <text x="380" y="170">s₂</text>
+        <text x="780" y="170">s<tspan baseline-shift="sub" font-size="25">T</tspan></text>
+      </g>
+      <g class="token" fill="#65736c">
+        <text x="200" y="0">a₀</text>
+        <text x="0" y="170">a₁</text>
+      </g>
+      <g fill="#eef7f2" stroke="#0b8f55" stroke-width="2.5">
+        <rect x="346" y="-37" width="108" height="74" rx="20"/>
+        <rect x="136" y="133" width="108" height="74" rx="20"/>
+        <rect x="596" y="133" width="108" height="74" rx="20"/>
+      </g>
+      <g class="token" fill="#157451" font-weight="700">
+        <text x="400" y="0">r₁</text>
+        <text x="190" y="170">r₂</text>
+        <text x="650" y="170">r<tspan baseline-shift="sub" font-size="25">T</tspan></text>
+      </g>
+      <g class="step-arrow">
+        <text x="100" y="0">→</text>
+        <text x="300" y="0">→</text>
+        <text x="510" y="0">→</text>
+        <text x="95" y="170">→</text>
+        <text x="285" y="170">→</text>
+        <text x="470" y="170">→</text>
+        <text x="525" y="170">···</text>
+        <text x="565" y="170">→</text>
+        <text x="730" y="170">→</text>
+      </g>
+      <path d="M620 43C620 86 600 104 552 104H45C8 104 0 118 0 134" fill="none" stroke="#65736c" stroke-width="2.5" marker-end="url(#mc-td-mobile-arrow-neutral)"/>
+    </g>
+  </defs>
+
+  <rect width="1024" height="1840" fill="#ffffff"/>
+  <rect x="20" y="20" width="984" height="1800" rx="34" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+
+  <g aria-label="Monte Carlo applies one update after the terminal state">
+    <rect x="48" y="50" width="928" height="780" rx="28" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+    <text x="84" y="116" class="sans" font-size="38" font-weight="700" fill="#17231e">Monte Carlo</text>
+
+    <rect x="92" y="160" width="92" height="68" rx="21" fill="#eef7f2" stroke="#0b8f55" stroke-width="2.5"/>
+    <text x="138" y="196" class="policy" fill="#157451">π₀</text>
+    <path d="M184 194H242" fill="none" stroke="#0b8f55" stroke-width="3.5" marker-end="url(#mc-td-mobile-arrow-green)"/>
+    <rect x="258" y="150" width="200" height="88" rx="23" fill="#ffffff" stroke="#0b8f55" stroke-width="2.5"/>
+    <text x="358" y="203" class="sans" font-size="29" font-weight="700" text-anchor="middle" fill="#17231e">MDP</text>
+    <path d="M458 194H520" fill="none" stroke="#0b8f55" stroke-width="3.5" marker-end="url(#mc-td-mobile-arrow-green)"/>
+
+    <use href="#mc-td-mobile-trajectory" transform="translate(90 340)"/>
+    <text x="870" y="462" class="sans" font-size="21" fill="#65736c" text-anchor="middle">episódio termina</text>
+
+    <path d="M870 551V619" fill="none" stroke="#0b8f55" stroke-width="3.5" marker-end="url(#mc-td-mobile-arrow-green)"/>
+    <circle cx="870" cy="666" r="40" fill="#eef7f2" stroke="#0b8f55" stroke-width="3"/>
+    <text x="870" y="668" class="math" font-size="47" font-weight="700" text-anchor="middle" dominant-baseline="middle" fill="#157451">U</text>
+    <path d="M830 666H755" fill="none" stroke="#0b8f55" stroke-width="3.5" marker-end="url(#mc-td-mobile-arrow-green)"/>
+    <rect x="615" y="632" width="126" height="68" rx="21" fill="#eef7f2" stroke="#0b8f55" stroke-width="2.5"/>
+    <text x="678" y="668" class="policy" fill="#157451">π₁</text>
+  </g>
+
+  <g aria-label="Temporal Difference applies updates after intermediate transitions">
+    <rect x="48" y="870" width="928" height="920" rx="28" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+    <text x="84" y="936" class="sans" font-size="38" font-weight="700" fill="#17231e">Diferenças temporais</text>
+
+    <rect x="92" y="980" width="92" height="68" rx="21" fill="#eef7f2" stroke="#0b8f55" stroke-width="2.5"/>
+    <text x="138" y="1016" class="policy" fill="#157451">π₀</text>
+    <path d="M184 1014H242" fill="none" stroke="#0b8f55" stroke-width="3.5" marker-end="url(#mc-td-mobile-arrow-green)"/>
+    <rect x="258" y="970" width="200" height="88" rx="23" fill="#ffffff" stroke="#0b8f55" stroke-width="2.5"/>
+    <text x="358" y="1023" class="sans" font-size="29" font-weight="700" text-anchor="middle" fill="#17231e">MDP</text>
+    <path d="M458 1014H520" fill="none" stroke="#0b8f55" stroke-width="3.5" marker-end="url(#mc-td-mobile-arrow-green)"/>
+
+    <use href="#mc-td-mobile-trajectory" transform="translate(90 1160)"/>
+
+    <g aria-label="First update after reaching estado s one">
+      <path d="M750 1160H773" fill="none" stroke="#0b8f55" stroke-width="3.5" marker-end="url(#mc-td-mobile-arrow-green)"/>
+      <circle cx="820" cy="1160" r="36" fill="#eef7f2" stroke="#0b8f55" stroke-width="3"/>
+      <text x="820" y="1162" class="math" font-size="43" font-weight="700" text-anchor="middle" dominant-baseline="middle" fill="#157451">U</text>
+      <path d="M820 1196V1214" fill="none" stroke="#0b8f55" stroke-width="3" marker-end="url(#mc-td-mobile-arrow-green)"/>
+      <rect x="768" y="1225" width="104" height="56" rx="18" fill="#ffffff" stroke="#0b8f55" stroke-width="2.5"/>
+      <text x="820" y="1255" class="policy" font-size="31" fill="#157451">π₁</text>
+    </g>
+
+    <g aria-label="Second update after reaching estado s two">
+      <path d="M470 1373V1457" fill="none" stroke="#0b8f55" stroke-width="3.5" marker-end="url(#mc-td-mobile-arrow-green)"/>
+      <circle cx="470" cy="1500" r="36" fill="#eef7f2" stroke="#0b8f55" stroke-width="3"/>
+      <text x="470" y="1502" class="math" font-size="43" font-weight="700" text-anchor="middle" dominant-baseline="middle" fill="#157451">U</text>
+      <path d="M470 1536V1562" fill="none" stroke="#0b8f55" stroke-width="3" marker-end="url(#mc-td-mobile-arrow-green)"/>
+      <rect x="418" y="1574" width="104" height="56" rx="18" fill="#ffffff" stroke="#0b8f55" stroke-width="2.5"/>
+      <text x="470" y="1604" class="policy" font-size="31" fill="#157451">π₂</text>
+    </g>
+
+    <g aria-label="Another update after reaching the terminal state">
+      <path d="M870 1373V1457" fill="none" stroke="#0b8f55" stroke-width="3.5" marker-end="url(#mc-td-mobile-arrow-green)"/>
+      <circle cx="870" cy="1500" r="36" fill="#eef7f2" stroke="#0b8f55" stroke-width="3"/>
+      <text x="870" y="1502" class="math" font-size="43" font-weight="700" text-anchor="middle" dominant-baseline="middle" fill="#157451">U</text>
+      <path d="M870 1536V1562" fill="none" stroke="#0b8f55" stroke-width="3" marker-end="url(#mc-td-mobile-arrow-green)"/>
+      <rect x="818" y="1574" width="104" height="56" rx="18" fill="#ffffff" stroke="#0b8f55" stroke-width="2.5"/>
+      <text x="870" y="1604" class="policy" font-size="31" fill="#157451">π₃</text>
+    </g>
+  </g>
+</svg>

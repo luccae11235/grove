@@ -1,0 +1,482 @@
+---
+articleId: bagging-reduces-tree-variance
+locale: en
+routeSlug: bagging-reduces-tree-variance
+href: /learn/bagging-reduces-tree-variance
+title: Why averaging trees makes predictions more stable
+navTitle: Reduce tree variance with bagging
+description: "See decision-tree predictions change across training samples, then discover why averaging bootstrap trees makes the final prediction more stable."
+eyebrow: Decision trees · Bagging
+area: Supervised learning
+topic: Bagging and model variance
+summary: Keep one input fixed, watch tree predictions move as the data changes, and use averaging to narrow their distribution.
+status: draft
+readingTime: 20–25 min
+interactiveCount: 2
+staticVisualCount: 3
+difficulty: intermediate
+series: tree-based-machine-learning
+access: public
+prerequisites:
+  - regression-trees-from-scratch
+related: []
+implementation: mdx
+learning:
+  priorKnowledge:
+    - Understand that supervised-learning models are fitted from finite training data.
+    - Recognize the piecewise-constant prediction made by a regression tree.
+    - Interpret an average and variance as descriptions of center and spread.
+  likelyMisconception: Bagging makes each decision tree stable, or bootstrap sampling alone is what reduces variance.
+  transferOutcome: Explain from a prediction distribution at one fixed input why averaging varied tree predictions reduces model variance and identify the independence assumption behind the one-over-B result.
+  motivatingQuestion: If one tree changes when its training data changes, can we build a prediction that changes less?
+  conceptualBottleneck: The individual trees remain unstable; the average of their prediction fluctuations is the object with lower variance.
+  evidenceOfUnderstanding:
+    - Identify what stays fixed and what changes when model variance is measured at one input.
+    - Explain why sampling with replacement can produce different trees from one observed dataset.
+    - Predict how the distribution of ensemble predictions changes from one to two, five, and more averaged trees.
+    - Translate the independent-tree variance formula into a claim about prediction stability and state its limitation.
+---
+
+import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import BaggingPlayground from "../../../components/BaggingPlayground.astro";
+
+<header className="page-header lesson-header article-hero">
+  <p className="eyebrow">Decision trees · Bagging</p>
+  <h1>Why averaging trees makes predictions more stable</h1>
+  <p className="lede">
+    A small change in the training data can produce a different decision tree.
+    Bagging does not stop the trees from changing. It makes their average change less.
+  </p>
+  <div className="article-meta" aria-label="Article information">
+    <DifficultyBadge difficulty="intermediate" showDescription />
+    <span><strong>No coding</strong> required</span>
+    <span><strong>2</strong> guided experiments</span>
+  </div>
+</header>
+
+<article className="lesson-body deep-article bagging-article">
+  <p className="lesson-stage">A prediction that will not stay still</p>
+  <h2 id="same-question-different-tree">The patient did not change. The prediction did.</h2>
+
+  Imagine a hospital that retrains a mortality-risk model every six months. Each
+  version uses the same patient fields, the same decision-tree algorithm, and the
+  same settings. What changes is the training cohort: six more months of completed
+  cases enter the hospital's records while older cases leave the training window.
+
+  During a review, the team sends one stored patient record through three versions
+  of the model. The record is identical each time, yet the estimated risk is
+  **18%**, then **29%**, then **21%**.
+
+  Nothing about that stored patient changed. The model changed because the data
+  used to fit it changed.
+
+  That difference matters. A prediction can guide attention, testing, or another
+  decision. If it moves sharply whenever the hospital refreshes its data, the team
+  needs to know whether it is seeing a durable pattern or the influence of one
+  particular training sample. The hospital is fictitious, but the instability
+  problem is not.
+
+  Decision trees are especially exposed to this problem. A few different records
+  can change which threshold wins near the top of a tree. That first change sends
+  later records down different branches, where new thresholds win. A small change
+  in evidence can therefore reshape much of the fitted model.
+
+  Our question for this article is:
+
+  > **If one tree changes when its training data changes, can we build a
+  > prediction that changes less?**
+
+  We cannot repeatedly collect alternate histories from a real hospital merely to
+  watch this happen. We need a controlled setting where the underlying relationship
+  stays fixed, data collection can be repeated, and every fitted prediction can be
+  inspected. Then we can isolate the instability before returning to what it means
+  for the hospital.
+
+  <p className="lesson-stage">Hold one input still</p>
+  <h2 id="model-variance">What is model variance?</h2>
+
+  To explore the hospital's problem, we will use a simple toy example: noisy
+  observations gathered around a sine curve. This is not a model of medicine. It
+  is a controlled world where we know the underlying relationship and can generate
+  many plausible training datasets. Its observations follow
+
+  $$
+  Y = \sin(X) + \varepsilon,
+  $$
+
+  The sine curve is the relationship that remains in place. The term
+  $\varepsilon$ adds ordinary observation-to-observation noise, so points gather
+  around the curve instead of landing exactly on it. From all the points this
+  process could produce, a training run sees only one finite dataset, $D$.
+
+  In plain language, **model variance asks how much the prediction would move if
+  we repeated the entire training process with another plausible dataset**. The
+  patient or input stays the same; only the training evidence changes.
+
+  A training algorithm $\mathcal A$ turns that dataset into a fitted model:
+
+  $$
+  \mathcal A(D) = \hat f_D.
+  $$
+
+  The subscript $D$ matters: the fitted function carries the history of the data
+  that produced it. If we repeat data collection, we obtain
+  $D_1,D_2,D_3,\ldots$ and a sequence of predictions at the same input:
+
+  $$
+  \hat f_{D_1}(x_0),\qquad
+  \hat f_{D_2}(x_0),\qquad
+  \hat f_{D_3}(x_0),\qquad \ldots
+  $$
+
+  Think of $x_0$ as the stored patient record in the opening story. We keep that
+  one question fixed and collect the answers from many fitted models. Those
+  answers form a distribution. Its spread is **model variance at $x_0$**:
+
+  $$
+  \operatorname{Var}_D\!\left[\hat f_D(x_0)\right].
+  $$
+
+  The subscript $D$ names the only object allowed to vary: the training dataset.
+  The input $x_0$, the data-generating process, and the learning algorithm remain
+  fixed. This is a **pointwise** definition because it asks whether the answer is
+  stable at one particular input, not whether two fitted curves look similar
+  everywhere.
+
+  We can now reproduce the hospital's unsettling observation under controlled
+  conditions. One episode samples a new dataset, learns a regression tree depth
+  by depth, and asks for a prediction at the fixed $x_0$. The finished prediction
+  then travels into the histogram on the right.
+
+  Begin with **Run one episode** so the complete path remains visible: data,
+  fitted tree, prediction, distribution. Then use **Play** and the speed slider
+  to collect enough repeated predictions to see their spread. The slider begins
+  at $0.25\times$, reaches $1\times$ at its midpoint, and accelerates to
+  $10\times$ at the right edge.
+
+  The true sine process is hidden at first so it does not compete with the learned
+  tree. Reveal its mean and probability bands only when you want to compare the
+  fitted evidence with the process that produced the data. Hover a tree segment
+  or a training point to inspect which observations support the same learned leaf.
+
+  **Before you run it, predict the shape:** repeated tree predictions should land
+  at several different values rather than pile up at one value.
+</article>
+
+<div className="interactive-breakout article-interactive bagging-interactive">
+  <BaggingPlayground kind="variance" />
+</div>
+
+<article className="lesson-body deep-article bagging-article">
+  Each completed episode asks the same model-building procedure the same question.
+  Only the finite training sample changes. If the predictions gather tightly, the
+  procedure is stable at $x_0$. If they spread out, another plausible dataset can
+  change the answer substantially. This is the behavior hidden behind the
+  hospital's three different percentages.
+
+  The dashed mean marker averages every completed prediction. Early observations
+  can move it sharply; later observations have less influence, so the marker tends
+  to settle. The shaded interval spans one empirical standard deviation on either
+  side of that mean. It is a direct measure of how far the predictions typically
+  sit from their current center. Meanwhile, the histogram uses progressively
+  narrower bins as evidence accumulates. Its axis stays aligned with the prediction
+  plot, but its growing resolution reveals the distribution in more detail.
+
+  It is tempting to move $x_0$ and inspect the rest of the fitted curve. That would
+  answer a different question: how one model predicts across different inputs.
+  Here the input must stay still so the movement can be attributed to retraining.
+
+  <div className="prediction-prompt">
+    <p className="lesson-stage">Check what varies</p>
+    <h3>What fed the histogram?</h3>
+    <p>
+      Name the three things that remained fixed across episodes. Then explain why
+      a histogram of the sampled observations would not answer the hospital's
+      stability question.
+    </p>
+  </div>
+
+  <p className="lesson-stage">Create useful differences</p>
+  <h2 id="bootstrap">How can one observed dataset give us several trees?</h2>
+
+  The experiment could create a fresh training dataset whenever it wanted. The
+  hospital cannot. At one retraining date it has one observed cohort. Fitting the
+  same deterministic tree to that unchanged cohort five times produces five
+  identical trees, and averaging five identical predictions changes nothing.
+
+  **Bootstrap sampling** creates varied training views from the data we have. If
+  $D$ contains $n$ observations, one bootstrap dataset $D_b^*$ is made by drawing
+  $n$ times from $D$ **with replacement**. After each draw, the selected observation
+  returns to the pool, so it may be drawn again.
+
+  Bootstrap sampling gives the hospital several training views of the cohort it
+  actually observed. Inspect the two rows below. Their size stays fixed; only
+  their membership changes.
+
+  <BaggingPlayground kind="bootstrap" />
+
+  Repeat this sampling process and fit one tree to each bootstrap dataset:
+
+  $$
+  D_1^* \longrightarrow T_1,\qquad
+  D_2^* \longrightarrow T_2,\qquad
+  \ldots,\qquad
+  D_B^* \longrightarrow T_B.
+  $$
+
+  Every tree uses the same learning algorithm and settings. Its evidence changes:
+  some observations appear several times, while others do not appear in that
+  bootstrap sample at all. Because trees are sensitive to their training data,
+  these altered views can produce different splits and different predictions.
+
+  Bootstrap sampling supplies **variation**. It does not yet reduce variance.
+  The reduction comes from what we do with those varied predictions.
+
+  From here on, keep two levels of repetition separate. Inside one episode, we
+  will fit several bootstrap trees from one original dataset and combine their
+  predictions. Across episodes, we will replace that original dataset and watch
+  how the combined prediction changes.
+
+  <p className="lesson-stage">Average the predictions</p>
+  <h2 id="bagging">Let the trees disagree, then combine them</h2>
+
+  We have created disagreement on purpose. That sounds like the opposite of
+  stability, until we change the object that makes the final prediction. Before
+  reading the equation, inspect how three separate answers become one answer below.
+
+  <BaggingPlayground kind="overview" />
+
+  **Bagging**, short for bootstrap aggregating, averages the predictions:
+
+  $$
+  \bar T_B(x)=\frac{1}{B}\sum_{b=1}^{B}T_b(x).
+  $$
+
+  The bootstrap step creates varied trees. The aggregation step creates the final
+  model prediction. If two trees predict $0.42$ and $0.70$ at $x_0$, then
+
+  $$
+  \bar T_2(x_0)=\frac{0.42+0.70}{2}=0.56.
+  $$
+
+  A high or low tree still moves the average, but it no longer controls the answer.
+  With two trees, each receives half the weight. With ten, each receives one tenth.
+  In general, each of the $B$ trees receives weight $1/B$.
+
+  In the hospital analogy, no single bootstrap version of the observed cohort gets
+  to determine the patient's final risk estimate. Each tree contributes one vote
+  to the numeric average. The fitted trees can disagree while the prediction used
+  by the ensemble moves less.
+
+  There are now two loops, and confusing them hides the reason bagging works.
+  **Inside one episode**, several bootstrap trees come from one original dataset;
+  their predictions enter one running average. **Across episodes**, a new original
+  dataset starts the whole process again. The final averages from those outer
+  episodes form the distribution whose spread measures model variance.
+
+  The next experiment deliberately has the same shape as the first. Choose the
+  number of trees, run an episode, and watch the dark average curve update as each
+  bootstrap tree joins it. Only the final ensemble prediction moves into the
+  histogram. Because histories for every value of $B$ reuse the same episode
+  datasets, you can change the tree count without changing the comparison. Every
+  tree-count button reports the standard deviation of its own prediction history,
+  so you can compare spreads without resetting or mixing the evidence.
+
+  **Before you run the experiment, predict the comparison:** on the same fixed
+  scale, the completed predictions should form a narrower distribution as more
+  trees are averaged inside each episode.
+</article>
+
+<div className="interactive-breakout article-interactive bagging-interactive">
+  <BaggingPlayground kind="distribution" />
+</div>
+
+<article className="lesson-body deep-article bagging-article">
+  With $B=1$, every episode contributes one bootstrap-tree prediction. With more
+  trees, every episode still contributes only one number, but that number is now
+  an average. The individual trees remain unstable. The new evidence is that
+  their final averages vary less from episode to episode.
+
+  Do not confuse the histogram becoming fuller with variance reduction. More
+  episodes only reveal a distribution more clearly. The evidence for lower
+  variance is that the ensemble's completed predictions occupy a narrower range
+  on the same fixed scale—and therefore have a smaller standard deviation. At
+  $10\times$ speed, let roughly one hundred episodes accumulate, then compare the
+  values beneath the tree counts. The histories share outer datasets, so the
+  comparison changes only how many bootstrap-tree predictions are averaged inside
+  each model.
+
+  The live values will move while evidence accumulates. The fixed graph below runs
+  the same experiment for 240 outer datasets and every ensemble size from one to
+  twenty-five trees. These are computed model predictions, not an ideal $1/\sqrt B$
+  curve and not hand-authored values.
+
+  <BaggingPlayground kind="comparison" />
+
+  The measured standard deviation falls from about **0.27** for one tree to about
+  **0.17** for twenty-five. It does not fall perfectly at every step: 240 outer
+  datasets provide a strong comparison, but they are still a finite sample. The
+  important shape is the large early decline followed by a much flatter tail.
+
+  We have therefore seen the result before proving it. On this noisy-sine problem,
+  larger bagged models produce a tighter distribution of predictions at the fixed
+  $x_0$. The mathematics below gives a clean benchmark for why averaging creates
+  that decline. Afterward, we will return to the flattening near 0.17 and explain
+  why real bootstrap trees cannot follow the benchmark all the way to zero.
+
+  <p className="lesson-stage">The mathematical benchmark</p>
+  <h2 id="variance-derivation">Why does averaging shrink variance?</h2>
+
+  The experiment gives us visible evidence. Now consider a deliberately simplified
+  model. Unlike the earlier $\operatorname{Var}_D$, the unqualified variance below
+  ranges over both sources of randomness in a repeated complete experiment: the
+  original dataset changes across episodes, and the bootstrap draws change within
+  each dataset. At the fixed input $x_0$, suppose every tree prediction has variance
+  $\sigma^2(x_0)$.
+
+  Now impose an artificial independence benchmark. Independence means that knowing
+  one tree predicted unusually high would tell us nothing about whether another
+  tree predicted high or low. Real bootstrap trees do not behave this way, because
+  the trees inside an episode share the same original dataset. The benchmark asks
+  what averaging would achieve if they did.
+
+  Starting from the bagged prediction,
+
+  $$
+  \begin{aligned}
+  \operatorname{Var}\!\left[\bar T_B(x_0)\right]
+  &= \operatorname{Var}\!\left[\frac{1}{B}\sum_{b=1}^{B}T_b(x_0)\right] \\
+  &= \frac{1}{B^2}\sum_{b=1}^{B}\operatorname{Var}\!\left[T_b(x_0)\right] \\
+  &= \frac{1}{B^2}\,B\sigma^2(x_0) \\
+  &= \frac{\sigma^2(x_0)}{B}.
+  \end{aligned}
+  $$
+
+  The first equality replaces the ensemble prediction with its average. Pulling
+  the factor $1/B$ through a variance squares that factor, giving $1/B^2$.
+  Independence then lets the $B$ tree variances add without covariance terms.
+  Because each tree has the same variance, the sum contains $B$ equal copies of
+  $\sigma^2(x_0)$, cancelling one factor of $B$.
+
+  Therefore,
+
+  $$
+  \boxed{\operatorname{Var}\!\left[\bar T_B(x_0)\right]
+  =\frac{\sigma^2(x_0)}{B}}.
+  $$
+
+  Under these assumptions, two averaged trees have half the variance of one; five
+  have one fifth. The histograms and graph display standard deviation because it
+  has the same units as the predictions and is closer to the width we can see.
+  Taking the square root of both sides gives a slower visual contraction:
+  standard deviation shrinks like $1/\sqrt B$, even though variance shrinks like
+  $1/B$.
+
+  <p className="lesson-stage">Center and spread</p>
+  <h2 id="bias">Does the center move too?</h2>
+
+  Stability is not the same as correctness. A prediction distribution can be
+  tightly concentrated around the wrong value. **Bias** asks whether its center is
+  systematically displaced from the ideal prediction. **Variance** asks how much
+  predictions move around that center when the training data changes.
+
+  If every tree has expected prediction $\mu(x)$, linearity of expectation gives
+
+  $$
+  \mathbb E\!\left[\bar T_B(x)\right]
+  =\frac{1}{B}\sum_{b=1}^{B}\mathbb E[T_b(x)]
+  =\mu(x).
+  $$
+
+  In this simplified picture, averaging preserves the center while reducing the
+  spread. Bagging can quiet disagreement among trees. It cannot rescue trees that
+  are all systematically wrong in the same direction. For the hospital, a stable
+  risk estimate would still need separate evidence that it is accurate, calibrated,
+  fair, and useful for the decision being made.
+
+  <p className="lesson-stage">Where the benchmark stops</p>
+  <h2 id="correlation-limit">Why did the standard deviation stop near 0.17?</h2>
+
+  The formula $\sigma^2(x_0)/B$ assumes independent tree predictions. Our
+  bootstrap trees do not satisfy that assumption. The fundamental reason is that
+  every tree inside an episode traces back to the same finite original dataset.
+  Their bootstrap samples often overlap too, but even different resamples inherit
+  the original dataset's same gaps, unusual observations, and local imbalances.
+  Their predictions therefore tend to move together.
+
+  It helps to separate two sources of movement.
+
+  1. **Bootstrap movement:** from one tree to the next, different original rows
+     are repeated or omitted. Averaging more trees is very effective at reducing
+     this movement.
+  2. **Original-dataset movement:** every tree in one episode starts from the same
+     finite dataset. If that dataset underrepresents one region of the sine curve,
+     drawing more bootstrap samples cannot invent the missing observations. The
+     entire ensemble carries some of that shared uncertainty.
+
+  The hospital faces the same boundary. If its original six-month cohort contains
+  too few records for patients like the one being evaluated, resampling that cohort
+  twenty-five different ways cannot create the missing experience. All twenty-five
+  trees inherit the same weak spot.
+
+  Early trees remove a great deal of bootstrap movement, so the standard deviation
+  drops quickly. Later trees are mostly averaging more versions of evidence the
+  ensemble has already seen. They make smaller improvements, while the shared
+  original-dataset movement remains. Twenty-five trees are not an infinite
+  ensemble, but this shared component explains why the measured curve bends toward
+  a floor instead of continuing toward zero at the ideal $1/\sqrt B$ rate.
+
+  The statement that survives is:
+
+  > **Averaging reduces variance when model predictions do not fluctuate in
+  > exactly the same way.**
+
+  The more differently trees fluctuate, the more their highs and lows cancel. The
+  more they move together, the sooner the improvement levels off. We keep that
+  correlation floor qualitative here; its exact formula belongs to the follow-up.
+  That later article will make the correlation visible and show why random forests
+  vary the available features as well as the rows. Boosting answers a different
+  question and deserves a separate comparison.
+
+  <p className="lesson-stage">Return to the decision</p>
+  <h2 id="explain-a-new-ensemble">What has the hospital gained?</h2>
+
+  Return to the stored patient record that received 18%, 29%, and 21% risk
+  estimates. The hospital cannot conclude that bagging will make all three values
+  identical. It can make a narrower and more useful claim: if much of that movement
+  comes from an unstable tree reacting to the particular training sample, averaging
+  varied trees can reduce it.
+
+  The team should test that claim rather than assume it. Across historical
+  retraining windows, it can keep the patient profile or another fixed evaluation
+  set unchanged, record each model's predictions, and compare their standard
+  deviations. The single-tree and bagged systems must face the same windows. A
+  narrower bagged distribution is direct evidence of greater **operational
+  pointwise stability** across those retrainings.
+
+  That operational comparison can contain more than sampling instability. Patient
+  populations, clinical practice, or measurement may also change between windows.
+  Interpreting the spread purely as model variance from finite sampling requires
+  the team to control for those shifts or account for them separately.
+
+  That evidence still has boundaries. It does not prove that the average risk is
+  correct. It does not show equal stability for every kind of patient. And it does
+  not justify the independent-tree formula merely because several trees were used.
+  Stability is one property of a consequential model, not permission to deploy it.
+
+  The useful transfer is therefore not a new chart-reading trick. It is a way to
+  frame retraining itself: keep the question fixed, vary the training evidence,
+  measure how much the answer moves, and then ask which part of that movement an
+  ensemble can actually average away.
+
+  <div className="mental-model">
+    <p className="lesson-stage">Keep the smallest useful model</p>
+    <p>
+      <strong>
+        Bootstrap sampling gives an unstable learner several views of one observed
+        dataset. Bagging averages their predictions. It reduces movement the trees
+        do not share; it cannot erase uncertainty they inherit together.
+      </strong>
+    </p>
+  </div>
+</article>

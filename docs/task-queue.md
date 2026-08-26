@@ -34,6 +34,17 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
+  - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
+    while keeping Bagging and ACF/PACF in draft.
+  - Review the short Issue 003 web, HTML email, and plain-text forms before the
+    production promotion.
+  - Treat the production merge, provider draft, test email, and subscriber send
+    as separate gates with explicit approval for production and delivery.
+  - Completion check: exact-SHA staging and production verification pass, the
+    test email is approved, and the Issue 003 report confirms delivery without
+    a duplicate send.
+
 - [ ] **Draft and test Issue 002 about classification and regression trees — issue #92**
   - Keep the newsletter issue in draft while reviewing its web, HTML email,
     and plain-text forms.
@@ -54,6 +65,16 @@ references for longer-term editorial direction.
     two decision-tree articles, with exact-SHA deployment verification passing.
 
 ### Learning experience
+
+- [ ] **Prepare the Reward Hacking article for release — issue #123**
+  - Make the first checkpoint playground clearly explain that readers can move
+    checkpoints and watch the model learn the changed route.
+  - Add and review the complete Brazilian Portuguese article on the same
+    isolated branch before release.
+  - Keep production deploys, merges, and newsletter delivery out of scope until
+    separately reviewed and authorized.
+  - Completion check: focused checks and desktop/mobile rendered review pass,
+    followed by staging review of the complete English and Portuguese article.
 
 - [x] **Add minimal anonymous article feedback — issue #96**
   - Let readers rate whether an article was useful without an account,
@@ -100,6 +121,19 @@ references for longer-term editorial direction.
       `f2058f1`; production smoke passed all ten checks on `8d07633`.
   - [ ] Make signup and confirmation feedback immediate on a real iPhone.
   - [ ] Review a received issue in one non-Gmail mailbox provider.
+  - [x] Separate transactional confirmation reputation from broadcasts — issue #152.
+    - [x] Add a dedicated, verified transactional sending subdomain and keep
+      tracking disabled for confirmation and subscription-management mail.
+    - [x] Verify a real received confirmation passes SPF, DKIM, and DMARC and
+      review its placement before enabling the new identity in production.
+    - Completed 2026-08-21: `confirm.aflora.page` was verified in Resend with
+      dedicated DKIM, SPF, return-path MX, and monitored DMARC. Exact staging
+      revision `24ba23f7bd8f87a2960b4dad16d1064ee5135fe3` sent untracked
+      transactional messages that Gmail authenticated and placed in Personal.
+  - [ ] Require explicit reader action before confirmation — issue #154.
+    - A staging proof subscriber changed from pending to active 18 seconds after
+      delivery without an intentional link click; replace the confirmation
+      page's automatic redirect with an explicit, scanner-safe action.
   - Completion check: real readers can subscribe, confirm, receive, and
     unsubscribe safely.
 
@@ -180,6 +214,57 @@ references for longer-term editorial direction.
     production verification passed on `8b2b127` and `891b7da`, respectively.
 
 ### Publishing and content
+
+- [x] **Restore Portuguese locale parity for the production ACF/PACF article — issue #145** — 2026-08-21
+  - Added a professional Brazilian Portuguese translation with the same learning
+    progression, equations, references, and diagnostic guidance as the English article.
+  - Localized all 12 static visuals, four interactive experiences, controls,
+    accessible descriptions, metadata, article routing, and language alternates.
+  - Full local and GitHub gates passed; the owner approved the rendered article,
+    and exact-SHA production verification passed on `452b71c` before the public
+    desktop and mobile routes were checked.
+  - Kept newsletter creation and delivery outside the hotfix.
+
+- [x] **Draft a sample-based introduction to reinforcement learning — issue #132** — 2026-08-21
+  - Preserved and standardized the English draft and added the reviewed Brazilian
+    Portuguese version with equivalent localized visuals and interactions.
+  - Completed twelve accessible, responsive visuals, including the computed MDP
+    trajectory and Pong reward-comparison interactions on desktop and mobile.
+  - Kept the article in draft with `noindex`; production publication and newsletter
+    delivery remain separate and were not performed.
+  - Completion check: `pnpm check`, eight focused browser scenarios, PR #147, and
+    post-merge CI passed; Railway staging verification run `32510468079` proved
+    implementation SHA `ac29c0849920f8ae377a1fa000935b72db1c601a`, with both
+    localized routes returning HTTP 200.
+
+- [x] **Update and deliver the approved Issue 004 email — issue #141** — 2026-08-21
+  - Moved the approved introductory copy and weekly sales chart into the
+    canonical newsletter source and verified its HTML and plain-text forms.
+  - Exact-SHA staging and production verification passed on `af815a0` and
+    `df3a66a`, respectively, before the controlled subscriber send.
+  - The Issue 004 report confirmed 8 sent, 8 delivered, 0 bounced, and 0
+    complained without a duplicate broadcast.
+
+- [x] **Publish How the Past Echoes and prepare Issue 004 — issue #137** — 2026-08-21
+  - Published the reviewed English ACF/PACF article and short Issue 004 while
+    keeping Bagging and later drafts out of production.
+  - Recorded the missing Brazilian Portuguese translation as an explicit parity
+    limitation instead of creating an unreviewed translation during release.
+  - Full checks passed; exact-SHA staging and production verification passed on
+    `3cdedee` and `8bac90e`, respectively, and the canonical pages were checked.
+  - Created one Resend draft and confirmed the test email in the owner's Gmail
+    inbox without sending or scheduling the production subscriber broadcast.
+
+- [x] **Draft the bagging variance article — issue #120** — 2026-08-13
+  - Used one fixed patient question and a noisy sine-curve laboratory to explain
+    pointwise model variance, bootstrap sampling, aggregation, and the correlated-tree floor.
+  - Added two computed experiments and three restrained visuals with accessible,
+    responsive, keyboard, and reduced-motion behavior.
+  - Incorporated beta-reader feedback and kept draft-only browser checks active in
+    staging while published-only builds continue to exclude the article.
+  - Completion check: the full local and GitHub gates passed; staging verification
+    run `31752958060` confirmed exact revision `e79a0bec9a2d669911eb040e150af1376dfde0ed`,
+    and production continued to return 404 for the draft route.
 
 - [x] **Establish the weekly article publishing guideline — issue #121** — 2026-08-13
   - Separated draft intake into `develop`/staging from the Friday publication

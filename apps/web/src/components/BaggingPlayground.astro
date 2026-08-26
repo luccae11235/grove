@@ -1,0 +1,29 @@
+---
+import {
+  BaggingDistributionPlayground,
+  BaggingEnsembleOverview,
+  BaggingStandardDeviationComparison,
+  BootstrapSamplesPlayground,
+  TreeVariancePlayground,
+} from "@grove/tree-visuals";
+
+interface Props {
+  kind: "overview" | "variance" | "bootstrap" | "distribution" | "comparison";
+}
+
+const { kind } = Astro.props;
+---
+
+<div data-analytics-lab={`bagging-${kind}`}>
+  {kind === "overview" ? (
+    <BaggingEnsembleOverview />
+  ) : kind === "variance" ? (
+    <TreeVariancePlayground client:load />
+  ) : kind === "bootstrap" ? (
+    <BootstrapSamplesPlayground />
+  ) : kind === "comparison" ? (
+    <BaggingStandardDeviationComparison />
+  ) : (
+    <BaggingDistributionPlayground client:load />
+  )}
+</div>
