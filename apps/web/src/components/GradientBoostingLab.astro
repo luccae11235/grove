@@ -1,0 +1,45 @@
+---
+import {
+  GradientBoostingFigure,
+  GradientBoostingClassificationFigure,
+  GradientBoostingClassificationPlayground,
+  GradientBoostingFrameworkFigure,
+  GradientBoostingComplexityPlayground,
+  GradientBoostingErrorAnimation,
+  GradientBoostingLearningRatePlayground,
+  GradientBoostingProcessAnimation,
+  GradientBoostingTreeRatePlayground,
+  type GradientBoostingFigureKind,
+  type GradientBoostingClassificationFigureKind,
+} from "@grove/tree-visuals";
+import type { Locale } from "../i18n";
+
+interface Props {
+  kind: GradientBoostingFigureKind | GradientBoostingClassificationFigureKind | "learning-rate" | "boosting-process" | "error-contraction" | "tree-rate" | "complexity" | "classification-playground" | "gradient-framework";
+  locale?: Locale;
+}
+
+const { kind, locale = "en" } = Astro.props;
+---
+
+<div data-analytics-lab={`gradient-boosting-${kind}`}>
+  {kind === "learning-rate" ? (
+    <GradientBoostingLearningRatePlayground client:load locale={locale} />
+  ) : kind === "boosting-process" ? (
+    <GradientBoostingProcessAnimation client:visible locale={locale} />
+  ) : kind === "error-contraction" ? (
+    <GradientBoostingErrorAnimation client:visible locale={locale} />
+  ) : kind === "tree-rate" ? (
+    <GradientBoostingTreeRatePlayground client:visible locale={locale} />
+  ) : kind === "complexity" ? (
+    <GradientBoostingComplexityPlayground client:visible locale={locale} />
+  ) : kind === "classification-playground" ? (
+    <GradientBoostingClassificationPlayground client:visible locale={locale} />
+  ) : kind === "gradient-framework" ? (
+    <GradientBoostingFrameworkFigure locale={locale} />
+  ) : kind.startsWith("classification-") ? (
+    <GradientBoostingClassificationFigure kind={kind as GradientBoostingClassificationFigureKind} locale={locale} />
+  ) : (
+    <GradientBoostingFigure kind={kind as GradientBoostingFigureKind} locale={locale} />
+  )}
+</div>

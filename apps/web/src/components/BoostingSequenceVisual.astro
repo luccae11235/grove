@@ -1,0 +1,260 @@
+---
+import type { Locale } from "../i18n";
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = "en" } = Astro.props;
+const pt = locale === "pt-BR";
+---
+
+<figure class="boosting-sequence">
+  <div
+    class="boosting-sequence-diagram"
+    role="img"
+    aria-labelledby="boosting-sequence-title boosting-sequence-description"
+  >
+    <span id="boosting-sequence-title" class="sr-only">
+      {pt
+        ? "Um modelo de gradient boosting cresce por meio de correções sequenciais de árvores"
+        : "A gradient boosting model grows through sequential tree corrections"}
+    </span>
+    <span id="boosting-sequence-description" class="sr-only">
+      {pt
+        ? "A predição inicial F zero é combinada com uma primeira árvore ajustada ao que F zero ainda não captura, produzindo F um. Uma segunda árvore se ajusta ao que F um ainda não captura, produzindo F dois. A repetição desse processo produz o modelo final F M."
+        : "The initial prediction F zero is combined with a first tree fitted to what F zero misses, producing F one. A second tree fits what F one still misses, producing F two. Repeating this process produces the final model F M."}
+    </span>
+
+    <div class="model-state model-state-initial">
+      <strong>F<sub>0</sub>(x)</strong>
+      <span>{pt ? "predição inicial" : "initial prediction"}</span>
+    </div>
+
+    <div class="tree-correction" aria-hidden="true">
+      <span class="plus">+</span>
+      <div class="tree-term">
+        <svg viewBox="0 0 72 54">
+          <path d="M36 8v12M36 20 18 34M36 20l18 14M18 34v11M54 34v11" />
+          <circle cx="36" cy="8" r="4" />
+          <circle cx="18" cy="45" r="4" />
+          <circle cx="54" cy="45" r="4" />
+        </svg>
+        <span>{pt ? <>ajusta o que F<sub>0</sub> não captura</> : <>fits what F<sub>0</sub> misses</>}</span>
+      </div>
+      <span class="arrow arrow-wide">→</span>
+      <span class="arrow arrow-narrow">↓</span>
+    </div>
+
+    <div class="model-state">
+      <strong>F<sub>1</sub>(x)</strong>
+    </div>
+
+    <div class="tree-correction" aria-hidden="true">
+      <span class="plus">+</span>
+      <div class="tree-term">
+        <svg viewBox="0 0 72 54">
+          <path d="M36 8v12M36 20 18 34M36 20l18 14M18 34v11M54 34v11" />
+          <circle cx="36" cy="8" r="4" />
+          <circle cx="18" cy="45" r="4" />
+          <circle cx="54" cy="45" r="4" />
+        </svg>
+        <span>{pt ? <>ajusta o que F<sub>1</sub> não captura</> : <>fits what F<sub>1</sub> misses</>}</span>
+      </div>
+      <span class="arrow arrow-wide">→</span>
+      <span class="arrow arrow-narrow">↓</span>
+    </div>
+
+    <div class="model-state">
+      <strong>F<sub>2</sub>(x)</strong>
+    </div>
+
+    <div class="sequence-continues" aria-hidden="true">
+      <span>· · ·</span>
+      <span class="arrow arrow-wide">→</span>
+      <span class="arrow arrow-narrow">↓</span>
+    </div>
+
+    <div class="model-state model-state-final">
+      <strong>F<sub>M</sub>(x)</strong>
+      <span>{pt ? "modelo final" : "final model"}</span>
+    </div>
+  </div>
+
+  <figcaption>
+    {pt
+      ? "Cada nova árvore se ajusta ao que o modelo atual ainda não captura, criando o modelo seguinte."
+      : "Each new tree fits what the current model still misses, creating the next model."}
+  </figcaption>
+</figure>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .boosting-sequence {
+    width: 100%;
+    margin: 42px 0 52px;
+  }
+
+  .boosting-sequence-diagram {
+    display: grid;
+    grid-template-columns: minmax(78px, 0.85fr) minmax(126px, 1.35fr) minmax(78px, 0.85fr) minmax(126px, 1.35fr) minmax(78px, 0.85fr) 52px minmax(78px, 0.85fr);
+    align-items: center;
+    gap: 8px;
+    padding: 18px 0 20px;
+  }
+
+  .model-state,
+  .tree-term {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .model-state {
+    gap: 7px;
+  }
+
+  .model-state strong {
+    color: var(--text);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.35rem;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .model-state span,
+  .tree-term span {
+    color: var(--text-muted);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.65rem;
+    line-height: 1.35;
+  }
+
+  .model-state-final strong {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .tree-correction {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .tree-term {
+    gap: 5px;
+  }
+
+  .tree-term svg {
+    width: 62px;
+    color: var(--accent);
+    overflow: visible;
+  }
+
+  .tree-term path {
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
+  }
+
+  .tree-term circle {
+    fill: var(--surface-raised);
+    stroke: currentColor;
+    stroke-width: 1.7;
+  }
+
+  .plus,
+  .arrow,
+  .sequence-continues {
+    color: var(--text-muted);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .plus {
+    font-size: 1.1rem;
+  }
+
+  .arrow {
+    font-size: 1rem;
+  }
+
+  .arrow-narrow {
+    display: none;
+  }
+
+  .sequence-continues {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 8px;
+    font-size: 0.9rem;
+  }
+
+  figcaption {
+    max-width: 560px;
+    margin: 0 auto;
+    color: var(--text-muted);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.72rem;
+    line-height: 1.55;
+    text-align: center;
+  }
+
+  @media (max-width: 640px) {
+    .boosting-sequence {
+      margin: 34px 0 42px;
+    }
+
+    .boosting-sequence-diagram {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding: 8px 0 18px;
+    }
+
+    .tree-correction {
+      grid-template-columns: auto auto;
+      justify-content: center;
+      gap: 8px 15px;
+    }
+
+    .tree-term {
+      grid-column: 2;
+    }
+
+    .tree-correction .arrow {
+      grid-column: 2;
+      justify-self: center;
+    }
+
+    .sequence-continues {
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .arrow-wide {
+      display: none;
+    }
+
+    .arrow-narrow {
+      display: inline;
+    }
+
+    .model-state span,
+    .tree-term span {
+      font-size: 0.68rem;
+    }
+  }
+</style>
