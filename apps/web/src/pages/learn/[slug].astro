@@ -41,7 +41,9 @@ const inCatalog = articles.some((article) => article.id === entry.data.articleId
 const newsletterSource = `${entry.data.articleId}-article`;
 const translations = entry.data.articleId === "reward-hacking-three-mdps"
   ? { en: "/learn/reward-hacking/", "pt-BR": "/pt-br/learn/reward-hacking/" }
-  : undefined;
+  : entry.data.articleId === "gradient-boosting-quick-deep-dive"
+    ? { en: "/learn/gradient-boosting-quick-deep-dive/", "pt-BR": "/pt-br/learn/gradient-boosting-quick-deep-dive/" }
+    : undefined;
 ---
 
 <BaseLayout
@@ -99,12 +101,14 @@ const translations = entry.data.articleId === "reward-hacking-three-mdps"
     line-height: 1.65;
   }
 
-  .bagging-article .katex {
+  .bagging-article .katex,
+  .gradient-boosting-article .katex {
     color: var(--text);
     font-size: 1.06em;
   }
 
-  .bagging-article .katex-display {
+  .bagging-article .katex-display,
+  .gradient-boosting-article .katex-display {
     box-sizing: border-box;
     width: 100%;
     max-width: 100%;
@@ -117,7 +121,8 @@ const translations = entry.data.articleId === "reward-hacking-three-mdps"
     scrollbar-width: thin;
   }
 
-  .bagging-article .katex-display > .katex {
+  .bagging-article .katex-display > .katex,
+  .gradient-boosting-article .katex-display > .katex {
     display: inline-block;
     min-width: max-content;
     font-size: clamp(1.03rem, 2.4vw, 1.26rem);
@@ -125,7 +130,8 @@ const translations = entry.data.articleId === "reward-hacking-three-mdps"
   }
 
   @media (max-width: 520px) {
-    .bagging-article .katex-display {
+    .bagging-article .katex-display,
+    .gradient-boosting-article .katex-display {
       margin-right: -8px;
       margin-left: -8px;
       padding-right: 8px;

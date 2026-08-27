@@ -175,6 +175,17 @@ references for longer-term editorial direction.
 
 ### Learning experience
 
+- [x] **Complete the gradient boosting visual system — issue #136** — 2026-08-24
+  - Built the regression and classification figures, animations, and
+    playgrounds from two locked, deterministic one-dimensional experiments.
+  - Added the complete Brazilian Portuguese article with localized figures,
+    controls, interaction states, and accessible descriptions.
+  - Finished the sequence with a compact loss-agnostic framework image that
+    preserves the shared gradient → tree → additive-update engine.
+  - Completion check: no visual specifications remain; the full repository
+    gate passed and desktop, tablet, and mobile rendered reviews confirmed the
+    artifacts are accessible, responsive, and contained.
+
 - [x] **Rebalance Article 2 regression-tree playgrounds — issue #104** — 2026-08-02
   - Kept Playground 2's prediction plot and growing tree side by side on desktop
     with continuous connectors between every visible parent and child.
@@ -201,14 +212,6 @@ references for longer-term editorial direction.
     production verification passed on `8b2b127` and `891b7da`, respectively.
 
 ### Publishing and content
-
-- [x] **Draft a quick deep dive on gradient boosting — issue #136** — 2026-08-20
-  - Preserved the supplied manuscript while adding article metadata and a real
-    Markdown heading hierarchy.
-  - Kept all 18 image, 2 animation, and 4 playground specifications as
-    placeholders with their implementations explicitly deferred.
-  - Completion check: web typecheck, the published-only build, and the explicit
-    draft-preview build passed; the draft route rendered with every placeholder.
 
 - [x] **Draft the bagging variance article — issue #120** — 2026-08-13
   - Used one fixed patient question and a noisy sine-curve laboratory to explain
