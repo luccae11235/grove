@@ -16,6 +16,7 @@ export async function getStaticPaths() {
     "bagging-reduces-tree-variance",
     "gradient-boosting-quick-deep-dive",
     "sample-based-view-of-reinforcement-learning",
+    "is-my-model-good",
   ]);
   const includeDrafts =
     import.meta.env.DEV || import.meta.env.SHOW_DRAFTS === "true";
@@ -46,6 +47,8 @@ const usesRouteArticleFrame =
   entry.data.articleId === "sample-based-view-of-reinforcement-learning";
 const translations = entry.data.articleId === "reward-hacking-three-mdps"
   ? { en: "/learn/reward-hacking/", "pt-BR": "/pt-br/learn/reward-hacking/" }
+  : entry.data.articleId === "is-my-model-good"
+    ? { en: "/learn/is-my-model-good/", "pt-BR": "/pt-br/learn/meu-modelo-e-bom/" }
   : entry.data.articleId === "gradient-boosting-quick-deep-dive"
     ? { en: "/learn/gradient-boosting-quick-deep-dive/", "pt-BR": "/pt-br/learn/gradient-boosting-quick-deep-dive/" }
   : entry.data.articleId === "sample-based-view-of-reinforcement-learning"
@@ -119,6 +122,27 @@ const translations = entry.data.articleId === "reward-hacking-three-mdps"
     font-family: Georgia, "Times New Roman", serif;
     font-size: 1rem;
     line-height: 1.6;
+  }
+
+  .model-evaluation-article .article-production-placeholder {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 28px 0 34px;
+    padding: 18px 20px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 12px;
+    background: var(--surface-subtle);
+    color: var(--text-muted);
+  }
+
+  .model-evaluation-article .article-production-placeholder pre {
+    margin: 0;
+    overflow: visible;
+    color: inherit;
+    font: 600 0.82rem/1.65 Inter, ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: 0.01em;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
   }
 
   .reward-hacking-article .formula > p {

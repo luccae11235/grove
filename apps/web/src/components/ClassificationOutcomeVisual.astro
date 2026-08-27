@@ -1,0 +1,353 @@
+---
+export interface OutcomeCounts {
+  positive: number;
+  negative: number;
+}
+
+interface Props {
+  locale?: "en" | "pt-BR";
+  predictedNegative?: OutcomeCounts;
+  predictedPositive?: OutcomeCounts;
+  incoming?: Array<"positive" | "negative">;
+  classifierLabel?: string;
+  caption?: string;
+}
+
+const {
+  locale = "en",
+  predictedNegative = { positive: 6, negative: 18 },
+  predictedPositive = { positive: 21, negative: 3 },
+  incoming = ["negative", "positive", "positive", "negative", "positive"],
+  classifierLabel,
+  caption,
+} = Astro.props;
+
+const copy = locale === "pt-BR"
+  ? {
+      classifierLabel: "Classificador binário",
+      caption: "O círculo ao redor mostra a previsão do modelo.",
+      predictedNegative: "Previu negativo",
+      predictedPositive: "Previu positivo",
+      actualPositive: "Positivo real",
+      actualNegative: "Negativo real",
+      routes: "separa os pontos em dois círculos de previsão",
+    }
+  : {
+      classifierLabel: "Binary classifier",
+      caption: "The enclosing circle shows the model's prediction.",
+      predictedNegative: "Predicted negative",
+      predictedPositive: "Predicted positive",
+      actualPositive: "Actual positive",
+      actualNegative: "Actual negative",
+      routes: "routes dots into two prediction circles",
+    };
+
+const resolvedClassifierLabel = classifierLabel ?? copy.classifierLabel;
+const resolvedCaption = caption ?? copy.caption;
+
+const maximumDotsPerCircle = 50;
+
+function validateCounts(label: string, counts: OutcomeCounts) {
+  for (const [actualClass, value] of Object.entries(counts)) {
+    if (!Number.isInteger(value) || value < 0) {
+      throw new Error(`${label}.${actualClass} must be a non-negative integer.`);
+    }
+  }
+
+  if (counts.positive + counts.negative > maximumDotsPerCircle) {
+    throw new Error(`${label} supports at most ${maximumDotsPerCircle} dots.`);
+  }
+}
+
+validateCounts("predictedNegative", predictedNegative);
+validateCounts("predictedPositive", predictedPositive);
+
+if (incoming.length > 8 || incoming.some((actualClass) => actualClass !== "positive" && actualClass !== "negative")) {
+  throw new Error("incoming must contain at most eight positive or negative dots.");
+}
+
+interface PositionedDot {
+  actual: "positive" | "negative";
+  x: number;
+  y: number;
+}
+
+function placeDots(
+  counts: OutcomeCounts,
+  centerX: number,
+  centerY: number,
+  rotation: number,
+): PositionedDot[] {
+  const total = counts.positive + counts.negative;
+  if (total === 0) return [];
+
+  const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+  const maximumRadius = 84;
+  let positivesPlaced = 0;
+
+  return Array.from({ length: total }, (_, index) => {
+    const expectedPositives = Math.round(((index + 1) * counts.positive) / total);
+    const actual = expectedPositives > positivesPlaced ? "positive" : "negative";
+    if (actual === "positive") positivesPlaced += 1;
+
+    const radius = total === 1
+      ? 0
+      : maximumRadius * Math.sqrt((index + 0.5) / total);
+    const angle = rotation + index * goldenAngle;
+
+    return {
+      actual,
+      x: centerX + Math.cos(angle) * radius,
+      y: centerY + Math.sin(angle) * radius,
+    };
+  });
+}
+
+const negativePredictionDots = placeDots(predictedNegative, 190, 326, -0.5);
+const positivePredictionDots = placeDots(predictedPositive, 530, 326, 0.35);
+const accessibleSummary = locale === "pt-BR"
+  ? [
+      `Círculo de previsão negativa: ${predictedNegative.negative} negativos reais e ${predictedNegative.positive} positivos reais.`,
+      `Círculo de previsão positiva: ${predictedPositive.positive} positivos reais e ${predictedPositive.negative} negativos reais.`,
+    ].join(" ")
+  : [
+      `Predicted negative circle: ${predictedNegative.negative} actual negative${predictedNegative.negative === 1 ? "" : "s"} and ${predictedNegative.positive} actual positive${predictedNegative.positive === 1 ? "" : "s"}.`,
+      `Predicted positive circle: ${predictedPositive.positive} actual positive${predictedPositive.positive === 1 ? "" : "s"} and ${predictedPositive.negative} actual negative${predictedPositive.negative === 1 ? "" : "s"}.`,
+    ].join(" ");
+---
+
+<figure
+  class="classification-outcome-visual"
+  data-classification-outcome-visual
+  data-predicted-negative-actual-negative={predictedNegative.negative}
+  data-predicted-negative-actual-positive={predictedNegative.positive}
+  data-predicted-positive-actual-negative={predictedPositive.negative}
+  data-predicted-positive-actual-positive={predictedPositive.positive}
+>
+  <svg
+    viewBox="0 0 720 500"
+    role="img"
+    aria-label={`${resolvedClassifierLabel} ${copy.routes}. ${accessibleSummary}`}
+  >
+    <rect class="visual-field" x="1" y="1" width="718" height="498" rx="24" />
+
+    <g class="incoming-dots" aria-hidden="true">
+      {incoming.map((actual, index) => (
+        <g class={`classification-dot actual-${actual}`} transform={`translate(360 ${34 + index * 20})`}>
+          <circle r="5.5" />
+        </g>
+      ))}
+      <path class="incoming-guide" d={`M360 ${38 + Math.max(0, incoming.length - 1) * 20}V144`} />
+    </g>
+
+    <g class="classifier-node" aria-hidden="true">
+      <rect x="286" y="145" width="148" height="52" rx="13" />
+      <text x="360" y="177" text-anchor="middle">{resolvedClassifierLabel}</text>
+    </g>
+
+    <g class="routing-arrows" aria-hidden="true">
+      <path d="M318 197C304 216 290 232 278 248" />
+      <path class="arrow-head" d="M289 245L278 248L284 236" />
+      <path d="M402 197C416 216 430 232 442 248" />
+      <path class="arrow-head" d="M431 245L442 248L436 236" />
+    </g>
+
+    <g class="prediction-region predicted-negative" data-prediction="negative" aria-hidden="true">
+      <circle class="prediction-disc" cx="190" cy="326" r="118" />
+      {negativePredictionDots.map((dot) => (
+        <g
+          class={`classification-dot actual-${dot.actual}`}
+          data-actual-class={dot.actual}
+          transform={`translate(${dot.x.toFixed(2)} ${dot.y.toFixed(2)})`}
+        >
+          <circle r="6" />
+        </g>
+      ))}
+      <text class="prediction-label" x="190" y="474" text-anchor="middle">{copy.predictedNegative}</text>
+    </g>
+
+    <g class="prediction-region predicted-positive" data-prediction="positive" aria-hidden="true">
+      <circle class="prediction-disc" cx="530" cy="326" r="118" />
+      {positivePredictionDots.map((dot) => (
+        <g
+          class={`classification-dot actual-${dot.actual}`}
+          data-actual-class={dot.actual}
+          transform={`translate(${dot.x.toFixed(2)} ${dot.y.toFixed(2)})`}
+        >
+          <circle r="6" />
+        </g>
+      ))}
+      <text class="prediction-label" x="530" y="474" text-anchor="middle">{copy.predictedPositive}</text>
+    </g>
+  </svg>
+
+  <figcaption>
+    <span class="visual-key actual-positive-key"><i aria-hidden="true"></i>{copy.actualPositive}</span>
+    <span class="visual-key actual-negative-key"><i aria-hidden="true"></i>{copy.actualNegative}</span>
+    <span class="visual-reading">{resolvedCaption}</span>
+  </figcaption>
+</figure>
+
+<style>
+  .classification-outcome-visual {
+    --positive: var(--accent);
+    --positive-dark: var(--accent-hover);
+    --negative: #b44332;
+    width: min(520px, 100%);
+    margin: 34px auto 42px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--surface-raised);
+    box-shadow: 0 16px 44px rgb(22 56 43 / 7%);
+    overflow: hidden;
+  }
+
+  .classification-outcome-visual svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .visual-field {
+    fill: var(--surface-raised);
+  }
+
+  .incoming-guide {
+    fill: none;
+    stroke: var(--border-strong);
+    stroke-dasharray: 3 6;
+    stroke-linecap: round;
+    stroke-width: 1.5;
+  }
+
+  .classifier-node rect {
+    fill: var(--surface-subtle);
+    stroke: var(--ink);
+    stroke-width: 1.5;
+  }
+
+  .classifier-node text,
+  .prediction-label {
+    fill: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-weight: 720;
+  }
+
+  .classifier-node text {
+    font-size: 15px;
+    font-weight: 680;
+  }
+
+  .prediction-label {
+    font-size: 19px;
+  }
+
+  .routing-arrows path {
+    fill: none;
+    stroke: var(--ink);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.75;
+  }
+
+  .routing-arrows .arrow-head {
+    fill: none;
+  }
+
+  .prediction-disc {
+    stroke-width: 2;
+  }
+
+  .predicted-negative .prediction-disc {
+    fill: color-mix(in srgb, var(--negative) 3%, var(--surface-raised));
+    stroke: var(--negative);
+  }
+
+  .predicted-positive .prediction-disc {
+    fill: color-mix(in srgb, var(--positive) 4%, var(--surface-raised));
+    stroke: var(--positive);
+  }
+
+  .classification-dot > circle:first-child {
+    stroke-width: 2;
+  }
+
+  .classification-dot.actual-positive > circle:first-child {
+    fill: color-mix(in srgb, var(--positive) 22%, var(--surface-raised));
+    stroke: var(--positive-dark);
+  }
+
+  .classification-dot.actual-negative > circle:first-child {
+    fill: color-mix(in srgb, var(--negative) 5%, var(--surface-raised));
+    stroke: var(--negative);
+  }
+
+  .predicted-negative .prediction-label {
+    fill: var(--negative);
+  }
+
+  .predicted-positive .prediction-label {
+    fill: var(--positive-dark);
+  }
+
+  .classification-outcome-visual figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 9px 18px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-subtle);
+    color: var(--text-muted);
+    padding: 13px 16px;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.72rem;
+    line-height: 1.55;
+  }
+
+  .visual-key {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--text);
+    font-weight: 680;
+    white-space: nowrap;
+  }
+
+  .visual-key i {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .actual-positive-key i {
+    border: 2px solid var(--positive-dark);
+    background: color-mix(in srgb, var(--positive) 22%, var(--surface-raised));
+  }
+
+  .actual-negative-key i {
+    border: 2px solid var(--negative);
+    background: color-mix(in srgb, var(--negative) 5%, var(--surface-raised));
+  }
+
+  .visual-reading {
+    flex: 1 1 260px;
+  }
+
+  @media (max-width: 520px) {
+    .classification-outcome-visual {
+      margin: 28px 0 36px;
+      border-radius: 14px;
+    }
+
+    .classification-outcome-visual figcaption {
+      align-items: flex-start;
+      gap: 8px 14px;
+      padding: 12px 13px;
+    }
+
+    .visual-reading {
+      flex-basis: 100%;
+    }
+  }
+</style>

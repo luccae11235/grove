@@ -226,6 +226,38 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Add foundational metadata and Portuguese locale parity to model evaluation — issue #155** — 2026-08-27
+  - Added the foundational badge and prior-knowledge description to both article headers.
+  - Added the complete Brazilian Portuguese prose, metadata, visual, animation,
+    playground, accessible-copy, routing, and language-switcher experience.
+  - Kept both locales in draft and kept publication, deployment, merge, and
+    newsletter delivery out of scope.
+  - Completion check: typecheck and the draft-inclusive production build passed;
+    eleven focused browser tests and rendered desktop/mobile review confirmed
+    locale parity, calculations, interactions, and containment.
+
+- [x] **Apply beta-reader revisions to model evaluation — issue #155** — 2026-08-26
+  - Tightened the opening and repeated scenarios while preserving the applied recall and precision stories.
+  - Added precision's zero-denominator boundary, the trivial accuracy baseline, and operational metric caveats.
+  - Compared equal-accuracy models directly and clarified positive-class switching in the playground.
+  - Completion check: typecheck and production build passed; eight focused browser tests
+    and rendered review confirmed calculations, interaction, direct comparison, and containment.
+
+- [x] **Refine the model-evaluation playground — issue #155** — 2026-08-26
+  - Enlarged the classifier circles and dots while keeping the complete playground visible.
+  - Replaced the scrolling preset pills with one selector and removed redundant explanatory labels.
+  - Completion check: typecheck and production build passed; seven focused browser tests
+    and responsive rendered review confirmed calculations, interaction, and containment.
+
+- [x] **Draft the model-evaluation article — issue #155** — 2026-08-25
+  - Added exact-count classifier visuals for every scenario so each stated distribution
+    can be inspected directly.
+  - Compacted the metrics playground and replaced typed point counts with accessible sliders.
+  - Kept translation, publication, deployment, and newsletter delivery outside this draft step.
+  - Completion check: typecheck and production build passed; seven focused browser
+    tests verified exact scenario counts, slider calculations, interactions, and
+    desktop/mobile containment; rendered review confirmed the compact hierarchy.
+
 - [x] **Restore Portuguese locale parity for the production ACF/PACF article — issue #145** — 2026-08-21
   - Added a professional Brazilian Portuguese translation with the same learning
     progression, equations, references, and diagnostic guidance as the English article.
