@@ -215,6 +215,16 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Add foundational metadata and Portuguese locale parity to model evaluation — issue #155** — 2026-08-27
+  - Added the foundational badge and prior-knowledge description to both article headers.
+  - Added the complete Brazilian Portuguese prose, metadata, visual, animation,
+    playground, accessible-copy, routing, and language-switcher experience.
+  - Kept both locales in draft and kept publication, deployment, merge, and
+    newsletter delivery out of scope.
+  - Completion check: typecheck and the draft-inclusive production build passed;
+    eleven focused browser tests and rendered desktop/mobile review confirmed
+    locale parity, calculations, interactions, and containment.
+
 - [x] **Apply beta-reader revisions to model evaluation — issue #155** — 2026-08-26
   - Tightened the opening and repeated scenarios while preserving the applied recall and precision stories.
   - Added precision's zero-denominator boundary, the trivial accuracy baseline, and operational metric caveats.

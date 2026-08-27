@@ -1,71 +1,128 @@
 ---
 interface Props {
   title?: string;
+  locale?: "en" | "pt-BR";
 }
 
-const { title = "Explore the metrics" } = Astro.props;
+const { title, locale = "en" } = Astro.props;
+const copy = locale === "pt-BR"
+  ? {
+      title: "Explore as métricas",
+      eyebrow: "Playground interativo",
+      positiveClass: "Classe positiva",
+      green: "Verde",
+      red: "Vermelho",
+      perspective: "Muda a perspectiva, não os pontos.",
+      tryPattern: "Experimente um padrão",
+      balanced: "Equilibrado",
+      highAccuracy: "Alta acurácia, recall baixo",
+      highPrecision: "Alta precisão, recall baixo",
+      highRecall: "Recall alto, precisão baixa",
+      mostlyPositive: "Quase tudo positivo",
+      mostlyNegative: "Quase tudo negativo",
+      outcomes: "Resultados da classificação",
+      outcomesDescription: "Exemplos realmente verdes e vermelhos agrupados pela classe prevista pelo modelo.",
+      predictedRed: "Previu vermelho",
+      predictedGreen: "Previu verde",
+      actualGreen: "Verde real",
+      actualRed: "Vermelho real",
+      actuallyGreen: "Realmente verde",
+      actuallyRed: "Realmente vermelho",
+      highlight: "Destacar",
+      accuracy: "Acurácia",
+      precision: "Precisão",
+      recall: "Recall",
+    }
+  : {
+      title: "Explore the metrics",
+      eyebrow: "Interactive playground",
+      positiveClass: "Positive class",
+      green: "Green",
+      red: "Red",
+      perspective: "Changes the perspective, not the dots.",
+      tryPattern: "Try a pattern",
+      balanced: "Balanced",
+      highAccuracy: "High accuracy, low recall",
+      highPrecision: "High precision, low recall",
+      highRecall: "High recall, low precision",
+      mostlyPositive: "Almost everything positive",
+      mostlyNegative: "Almost everything negative",
+      outcomes: "Classification outcomes",
+      outcomesDescription: "Actual green and red examples grouped by the class predicted by the model.",
+      predictedRed: "Predicted red",
+      predictedGreen: "Predicted green",
+      actualGreen: "Actual green",
+      actualRed: "Actual red",
+      actuallyGreen: "Actually green",
+      actuallyRed: "Actually red",
+      highlight: "Highlight",
+      accuracy: "Accuracy",
+      precision: "Precision",
+      recall: "Recall",
+    };
+const resolvedTitle = title ?? copy.title;
 const instanceId = `classification-metrics-${Math.random().toString(36).slice(2, 10)}`;
 ---
 
-<section class="metrics-playground" data-metrics-playground aria-labelledby={`${instanceId}-title`}>
+<section class="metrics-playground" data-metrics-playground data-locale={locale} aria-labelledby={`${instanceId}-title`}>
   <div class="playground-heading">
     <div>
-      <p class="eyebrow">Interactive playground</p>
-      <h3 id={`${instanceId}-title`}>{title}</h3>
+      <p class="eyebrow">{copy.eyebrow}</p>
+      <h3 id={`${instanceId}-title`}>{resolvedTitle}</h3>
     </div>
     <fieldset class="positive-class">
-      <legend>Positive class</legend>
-      <label><input type="radio" name={`${instanceId}-positive`} value="green" checked /> Green</label>
-      <label><input type="radio" name={`${instanceId}-positive`} value="red" /> Red</label>
-      <small>Changes the perspective, not the dots.</small>
+      <legend>{copy.positiveClass}</legend>
+      <label><input type="radio" name={`${instanceId}-positive`} value="green" checked /> {copy.green}</label>
+      <label><input type="radio" name={`${instanceId}-positive`} value="red" /> {copy.red}</label>
+      <small>{copy.perspective}</small>
     </fieldset>
   </div>
 
   <div class="preset-row">
-    <label for={`${instanceId}-preset`}>Try a pattern</label>
+    <label for={`${instanceId}-preset`}>{copy.tryPattern}</label>
     <select id={`${instanceId}-preset`} data-preset-select>
-      <option value="balanced">Balanced</option>
-      <option value="accuracy">High accuracy, low recall</option>
-      <option value="precision">High precision, low recall</option>
-      <option value="recall">High recall, low precision</option>
-      <option value="mostly-positive">Almost everything positive</option>
-      <option value="mostly-negative">Almost everything negative</option>
+      <option value="balanced">{copy.balanced}</option>
+      <option value="accuracy">{copy.highAccuracy}</option>
+      <option value="precision">{copy.highPrecision}</option>
+      <option value="recall">{copy.highRecall}</option>
+      <option value="mostly-positive">{copy.mostlyPositive}</option>
+      <option value="mostly-negative">{copy.mostlyNegative}</option>
     </select>
   </div>
 
   <div class="lab-body">
   <div class="visual-wrap">
     <svg viewBox="0 0 720 280" role="img" aria-labelledby={`${instanceId}-visual-title ${instanceId}-visual-desc`}>
-      <title id={`${instanceId}-visual-title`}>Classification outcomes</title>
-      <desc id={`${instanceId}-visual-desc`}>Actual green and red examples grouped by the class predicted by the model.</desc>
+      <title id={`${instanceId}-visual-title`}>{copy.outcomes}</title>
+      <desc id={`${instanceId}-visual-desc`}>{copy.outcomesDescription}</desc>
       <g class="prediction-region predicted-red" data-circle="red">
         <circle class="prediction-disc" cx="180" cy="132" r="112" />
         <g data-dot-layer="red"></g>
-        <text class="prediction-label" x="180" y="272" text-anchor="middle">Predicted red</text>
+        <text class="prediction-label" x="180" y="272" text-anchor="middle">{copy.predictedRed}</text>
       </g>
       <g class="prediction-region predicted-green" data-circle="green">
         <circle class="prediction-disc" cx="540" cy="132" r="112" />
         <g data-dot-layer="green"></g>
-        <text class="prediction-label" x="540" y="272" text-anchor="middle">Predicted green</text>
+        <text class="prediction-label" x="540" y="272" text-anchor="middle">{copy.predictedGreen}</text>
       </g>
     </svg>
     <div class="legend" aria-hidden="true">
-      <span><i class="green-dot"></i>Actual green</span>
-      <span><i class="red-dot"></i>Actual red</span>
+      <span><i class="green-dot"></i>{copy.actualGreen}</span>
+      <span><i class="red-dot"></i>{copy.actualRed}</span>
     </div>
   </div>
 
   <div class="edit-panel">
     <div class="input-groups">
       <fieldset>
-        <legend>Predicted green</legend>
-        <label><span>Actually green <output data-count-value="gg">45</output></span><input data-count="gg" type="range" min="0" max="100" step="1" value="45" /></label>
-        <label><span>Actually red <output data-count-value="gr">5</output></span><input data-count="gr" type="range" min="0" max="100" step="1" value="5" /></label>
+        <legend>{copy.predictedGreen}</legend>
+        <label><span>{copy.actuallyGreen} <output data-count-value="gg">45</output></span><input data-count="gg" type="range" min="0" max="100" step="1" value="45" /></label>
+        <label><span>{copy.actuallyRed} <output data-count-value="gr">5</output></span><input data-count="gr" type="range" min="0" max="100" step="1" value="5" /></label>
       </fieldset>
       <fieldset>
-        <legend>Predicted red</legend>
-        <label><span>Actually green <output data-count-value="rg">5</output></span><input data-count="rg" type="range" min="0" max="100" step="1" value="5" /></label>
-        <label><span>Actually red <output data-count-value="rr">45</output></span><input data-count="rr" type="range" min="0" max="100" step="1" value="45" /></label>
+        <legend>{copy.predictedRed}</legend>
+        <label><span>{copy.actuallyGreen} <output data-count-value="rg">5</output></span><input data-count="rg" type="range" min="0" max="100" step="1" value="5" /></label>
+        <label><span>{copy.actuallyRed} <output data-count-value="rr">45</output></span><input data-count="rr" type="range" min="0" max="100" step="1" value="45" /></label>
       </fieldset>
     </div>
   </div>
@@ -73,23 +130,23 @@ const instanceId = `classification-metrics-${Math.random().toString(36).slice(2,
 
   <div class="metric-summary">
   <fieldset class="metric-focus">
-    <legend>Highlight</legend>
-    <label><input type="radio" name={`${instanceId}-metric`} value="accuracy" checked /> Accuracy</label>
-    <label><input type="radio" name={`${instanceId}-metric`} value="precision" /> Precision</label>
-    <label><input type="radio" name={`${instanceId}-metric`} value="recall" /> Recall</label>
+    <legend>{copy.highlight}</legend>
+    <label><input type="radio" name={`${instanceId}-metric`} value="accuracy" checked /> {copy.accuracy}</label>
+    <label><input type="radio" name={`${instanceId}-metric`} value="precision" /> {copy.precision}</label>
+    <label><input type="radio" name={`${instanceId}-metric`} value="recall" /> {copy.recall}</label>
   </fieldset>
 
   <div class="metric-cards" aria-hidden="true">
     <article data-metric-card="accuracy">
-      <span>Accuracy</span><strong data-metric-value="accuracy">—</strong>
+      <span>{copy.accuracy}</span><strong data-metric-value="accuracy">—</strong>
       <div class="fraction"><b data-numerator="accuracy">0</b><i></i><b data-denominator="accuracy">0</b></div>
     </article>
     <article data-metric-card="precision">
-      <span>Precision</span><strong data-metric-value="precision">—</strong>
+      <span>{copy.precision}</span><strong data-metric-value="precision">—</strong>
       <div class="fraction"><b data-numerator="precision">0</b><i></i><b data-denominator="precision">0</b></div>
     </article>
     <article data-metric-card="recall">
-      <span>Recall</span><strong data-metric-value="recall">—</strong>
+      <span>{copy.recall}</span><strong data-metric-value="recall">—</strong>
       <div class="fraction"><b data-numerator="recall">0</b><i></i><b data-denominator="recall">0</b></div>
     </article>
   </div>
@@ -171,8 +228,9 @@ const instanceId = `classification-metrics-${Math.random().toString(36).slice(2,
         root.querySelector(`[data-denominator="${metric}"]`)!.textContent = String(denominator);
         root.querySelector(`[data-metric-card="${metric}"]`)!.classList.toggle("active", focus === metric);
       }
-      root.querySelector<HTMLElement>("[data-live-summary]")!.textContent =
-        `Positive class ${positive}. Accuracy ${percent(...metrics.accuracy)}. Precision ${percent(...metrics.precision)}. Recall ${percent(...metrics.recall)}.`;
+      root.querySelector<HTMLElement>("[data-live-summary]")!.textContent = root.dataset.locale === "pt-BR"
+        ? `Classe positiva ${positive === "green" ? "verde" : "vermelha"}. Acurácia ${percent(...metrics.accuracy)}. Precisão ${percent(...metrics.precision)}. Recall ${percent(...metrics.recall)}.`
+        : `Positive class ${positive}. Accuracy ${percent(...metrics.accuracy)}. Precision ${percent(...metrics.precision)}. Recall ${percent(...metrics.recall)}.`;
     }
 
     root.addEventListener("input", render);

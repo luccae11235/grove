@@ -5,12 +5,26 @@ interface Counts {
 }
 
 interface Props {
+  locale?: "en" | "pt-BR";
   label: string;
   predictedRed: Counts;
   predictedGreen: Counts;
 }
 
-const { label, predictedRed, predictedGreen } = Astro.props;
+const { locale = "en", label, predictedRed, predictedGreen } = Astro.props;
+const copy = locale === "pt-BR"
+  ? {
+      predictedRed: "Previu vermelho",
+      predictedGreen: "Previu verde",
+      actualGreen: "Verde real",
+      actualRed: "Vermelho real",
+    }
+  : {
+      predictedRed: "Predicted red",
+      predictedGreen: "Predicted green",
+      actualGreen: "Actual green",
+      actualRed: "Actual red",
+    };
 
 for (const [region, counts] of Object.entries({ predictedRed, predictedGreen })) {
   for (const [actual, count] of Object.entries(counts)) {
@@ -35,7 +49,9 @@ function placeDots(counts: Counts, centerX: number, rotation: number) {
 
 const redDots = placeDots(predictedRed, 190, -0.5);
 const greenDots = placeDots(predictedGreen, 530, 0.35);
-const summary = `${label}. Predicted red: ${predictedRed.green} actual green and ${predictedRed.red} actual red. Predicted green: ${predictedGreen.green} actual green and ${predictedGreen.red} actual red.`;
+const summary = locale === "pt-BR"
+  ? `${label}. Previu vermelho: ${predictedRed.green} verdes reais e ${predictedRed.red} vermelhos reais. Previu verde: ${predictedGreen.green} verdes reais e ${predictedGreen.red} vermelhos reais.`
+  : `${label}. Predicted red: ${predictedRed.green} actual green and ${predictedRed.red} actual red. Predicted green: ${predictedGreen.green} actual green and ${predictedGreen.red} actual red.`;
 ---
 
 <figure class="scenario-outcome" data-scenario-outcome data-label={label}>
@@ -53,17 +69,17 @@ const summary = `${label}. Predicted red: ${predictedRed.green} actual green and
     <g class="region predicted-red" aria-hidden="true">
       <circle class="disc" cx="190" cy="166" r="92" />
       {redDots.map((dot) => <circle class={`dot actual-${dot.actual}`} cx={dot.x} cy={dot.y} r="4" />)}
-      <text x="190" y="270" text-anchor="middle">Predicted red</text>
+      <text x="190" y="270" text-anchor="middle">{copy.predictedRed}</text>
     </g>
     <g class="region predicted-green" aria-hidden="true">
       <circle class="disc" cx="530" cy="166" r="92" />
       {greenDots.map((dot) => <circle class={`dot actual-${dot.actual}`} cx={dot.x} cy={dot.y} r="4" />)}
-      <text x="530" y="270" text-anchor="middle">Predicted green</text>
+      <text x="530" y="270" text-anchor="middle">{copy.predictedGreen}</text>
     </g>
   </svg>
   <figcaption>
-    <span><i class="green"></i>Actual green</span>
-    <span><i class="red"></i>Actual red</span>
+    <span><i class="green"></i>{copy.actualGreen}</span>
+    <span><i class="red"></i>{copy.actualRed}</span>
   </figcaption>
 </figure>
 

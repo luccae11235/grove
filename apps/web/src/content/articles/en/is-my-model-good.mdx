@@ -36,6 +36,7 @@ learning:
 
 import ClassificationOutcomeVisual from "../../../components/ClassificationOutcomeVisual.astro";
 import ClassificationMetricsPlayground from "../../../components/ClassificationMetricsPlayground.astro";
+import DifficultyBadge from "../../../components/DifficultyBadge.astro";
 import ScenarioOutcomeVisual from "../../../components/ScenarioOutcomeVisual.astro";
 import ScenarioModelComparison from "../../../components/ScenarioModelComparison.astro";
 import ClassifierTradeoffAnimation from "../../../components/ClassifierTradeoffAnimation.astro";
@@ -48,6 +49,9 @@ import PrecisionRecallComparison from "../../../components/PrecisionRecallCompar
     Accuracy tells you how often a classifier is right. Precision and recall
     reveal which mistakes that single number can hide.
   </p>
+  <div className="article-meta" aria-label="Article information">
+    <DifficultyBadge difficulty="foundational" showDescription />
+  </div>
 </header>
 
 <article className="lesson-body deep-article model-evaluation-article">

@@ -13,6 +13,7 @@ type ArticleEntry = CollectionEntry<"articles">;
 export async function getStaticPaths() {
   const genericMdxArticleIds = new Set([
     "sample-based-view-of-reinforcement-learning",
+    "is-my-model-good",
   ]);
   const includeDrafts =
     import.meta.env.DEV || import.meta.env.SHOW_DRAFTS === "true";
@@ -46,6 +47,8 @@ const translations = entry.data.articleId === "sample-based-view-of-reinforcemen
       en: "/learn/sample-based-view-of-reinforcement-learning/",
       "pt-BR": "/pt-br/learn/uma-visao-do-aprendizado-por-reforco-baseada-em-amostras/",
     }
+  : entry.data.articleId === "is-my-model-good"
+    ? { en: "/learn/is-my-model-good/", "pt-BR": "/pt-br/learn/meu-modelo-e-bom/" }
   : undefined;
 ---
 

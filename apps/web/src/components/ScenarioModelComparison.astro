@@ -13,10 +13,14 @@ interface Model {
 }
 
 interface Props {
+  locale?: "en" | "pt-BR";
   models: [Model, Model];
 }
 
-const { models } = Astro.props;
+const { locale = "en", models } = Astro.props;
+const metricLabels = locale === "pt-BR"
+  ? { accuracy: "Acurácia", precision: "Precisão", recall: "Recall" }
+  : { accuracy: "Accuracy", precision: "Precision", recall: "Recall" };
 
 const summaries = models.map((model) => {
   const truePositive = model.predictedGreen.green;
@@ -28,11 +32,11 @@ const summaries = models.map((model) => {
 
   return {
     ...model,
-    metrics: {
-      Accuracy: percent(truePositive + trueNegative, total),
-      Precision: percent(truePositive, predictedPositive),
-      Recall: percent(truePositive, actualPositive),
-    },
+    metrics: [
+      [metricLabels.accuracy, percent(truePositive + trueNegative, total)],
+      [metricLabels.precision, percent(truePositive, predictedPositive)],
+      [metricLabels.recall, percent(truePositive, actualPositive)],
+    ],
   };
 });
 ---
@@ -43,11 +47,12 @@ const summaries = models.map((model) => {
       <h4 id={`comparison-${model.label.toLowerCase().replaceAll(" ", "-")}`}>{model.label}</h4>
       <ScenarioOutcomeVisual
         label={model.label}
+        locale={locale}
         predictedRed={model.predictedRed}
         predictedGreen={model.predictedGreen}
       />
       <dl>
-        {Object.entries(model.metrics).map(([metric, value]) => (
+        {model.metrics.map(([metric, value]) => (
           <div><dt>{metric}</dt><dd>{value}</dd></div>
         ))}
       </dl>

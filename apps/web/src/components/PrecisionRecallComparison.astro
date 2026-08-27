@@ -5,14 +5,54 @@ export interface OutcomeCounts {
 }
 
 interface Props {
+  locale?: "en" | "pt-BR";
   predictedNegative?: OutcomeCounts;
   predictedPositive?: OutcomeCounts;
 }
 
 const {
+  locale = "en",
   predictedNegative = { positive: 6, negative: 18 },
   predictedPositive = { positive: 21, negative: 3 },
 } = Astro.props;
+
+const copy = locale === "pt-BR"
+  ? {
+      precisionEyebrow: "Comece pela afirmação do modelo",
+      recallEyebrow: "Comece pela realidade",
+      precision: "Precisão",
+      recall: "Recall",
+      predictedNegative: "Previu negativo",
+      predictedPositive: "Previu positivo",
+      precisionAria: `A precisão considera o círculo previsto como positivo: ${predictedPositive.positive} positivos reais entre ${predictedPositive.positive + predictedPositive.negative} previsões positivas.`,
+      recallAria: `O recall considera todos os pontos realmente positivos: ${predictedPositive.positive} detectados entre ${predictedPositive.positive + predictedNegative.positive} positivos reais.`,
+      dividedBy: "dividido por",
+      plus: "mais",
+      equals: "é igual a",
+      precisionQuestion: "De tudo o que chamamos de positivo, quanto realmente era positivo?",
+      recallQuestion: "De tudo o que realmente era positivo, quanto encontramos?",
+      actualPositive: "Positivo real",
+      actualNegative: "Negativo real",
+      reading: "O numerador não muda. O denominador muda a pergunta.",
+    }
+  : {
+      precisionEyebrow: "Start with the model's claim",
+      recallEyebrow: "Start with reality",
+      precision: "Precision",
+      recall: "Recall",
+      predictedNegative: "Predicted negative",
+      predictedPositive: "Predicted positive",
+      precisionAria: `Precision considers the predicted-positive circle: ${predictedPositive.positive} actual positives out of ${predictedPositive.positive + predictedPositive.negative} positive predictions.`,
+      recallAria: `Recall considers all actual-positive dots: ${predictedPositive.positive} detected out of ${predictedPositive.positive + predictedNegative.positive} actual positives.`,
+      dividedBy: "divided by",
+      plus: "plus",
+      equals: "equals",
+      precisionQuestion: "Of everything called positive, how much really was positive?",
+      recallQuestion: "Of everything truly positive, how much did we find?",
+      actualPositive: "Actual positive",
+      actualNegative: "Actual negative",
+      reading: "The numerator stays the same. The denominator changes the question.",
+    };
 
 const maximumDotsPerCircle = 50;
 
@@ -80,75 +120,75 @@ const recall = percentage(truePositives, truePositives + falseNegatives);
   <div class="panels">
     <section class="metric-panel precision-panel" aria-labelledby="precision-title">
       <header>
-        <p class="eyebrow">Start with the model's claim</p>
-        <h3 id="precision-title">Precision</h3>
+        <p class="eyebrow">{copy.precisionEyebrow}</p>
+        <h3 id="precision-title">{copy.precision}</h3>
       </header>
 
-      <svg viewBox="0 0 300 170" role="img" aria-label={`Precision considers the predicted-positive circle: ${truePositives} actual positives out of ${truePositives + falsePositives} positive predictions.`}>
+      <svg viewBox="0 0 300 170" role="img" aria-label={copy.precisionAria}>
         <g class="prediction-region predicted-negative faded" aria-hidden="true">
           <circle class="prediction-disc" cx="74" cy="92" r="62" />
           {negativeDots.map((dot) => (
             <circle class={`classification-dot actual-${dot.actual}`} cx={dot.x} cy={dot.y} r="3.8" />
           ))}
-          <text x="74" y="166" text-anchor="middle">Predicted negative</text>
+          <text x="74" y="166" text-anchor="middle">{copy.predictedNegative}</text>
         </g>
         <g class="prediction-region predicted-positive" aria-hidden="true">
           <circle class="prediction-disc" cx="226" cy="92" r="62" />
           {positiveDots.map((dot) => (
             <circle class={`classification-dot actual-${dot.actual}`} cx={dot.x} cy={dot.y} r="3.8" />
           ))}
-          <text x="226" y="166" text-anchor="middle">Predicted positive</text>
+          <text x="226" y="166" text-anchor="middle">{copy.predictedPositive}</text>
         </g>
       </svg>
 
-      <div class="calculation" aria-label={`${truePositives} divided by ${truePositives} plus ${falsePositives} equals ${precision}`}>
+      <div class="calculation" aria-label={`${truePositives} ${copy.dividedBy} ${truePositives} ${copy.plus} ${falsePositives} ${copy.equals} ${precision}`}>
         <span class="numerator">{truePositives}</span>
         <span class="fraction-line" aria-hidden="true"></span>
         <span class="denominator">{truePositives} + {falsePositives}</span>
         <span class="equals">=</span>
         <strong>{precision}</strong>
       </div>
-      <p class="question">Of everything called positive, how much really was positive?</p>
+      <p class="question">{copy.precisionQuestion}</p>
     </section>
 
     <section class="metric-panel recall-panel" aria-labelledby="recall-title">
       <header>
-        <p class="eyebrow">Start with reality</p>
-        <h3 id="recall-title">Recall</h3>
+        <p class="eyebrow">{copy.recallEyebrow}</p>
+        <h3 id="recall-title">{copy.recall}</h3>
       </header>
 
-      <svg viewBox="0 0 300 170" role="img" aria-label={`Recall considers all actual-positive dots: ${truePositives} detected out of ${truePositives + falseNegatives} actual positives.`}>
+      <svg viewBox="0 0 300 170" role="img" aria-label={copy.recallAria}>
         <g class="prediction-region predicted-negative" aria-hidden="true">
           <circle class="prediction-disc subdued-disc" cx="74" cy="92" r="62" />
           {negativeDots.map((dot) => (
             <circle class={`classification-dot actual-${dot.actual} ${dot.actual === "negative" ? "faded-dot" : ""}`} cx={dot.x} cy={dot.y} r="3.8" />
           ))}
-          <text x="74" y="166" text-anchor="middle">Predicted negative</text>
+          <text x="74" y="166" text-anchor="middle">{copy.predictedNegative}</text>
         </g>
         <g class="prediction-region predicted-positive" aria-hidden="true">
           <circle class="prediction-disc subdued-disc" cx="226" cy="92" r="62" />
           {positiveDots.map((dot) => (
             <circle class={`classification-dot actual-${dot.actual} ${dot.actual === "negative" ? "faded-dot" : ""}`} cx={dot.x} cy={dot.y} r="3.8" />
           ))}
-          <text x="226" y="166" text-anchor="middle">Predicted positive</text>
+          <text x="226" y="166" text-anchor="middle">{copy.predictedPositive}</text>
         </g>
       </svg>
 
-      <div class="calculation" aria-label={`${truePositives} divided by ${truePositives} plus ${falseNegatives} equals ${recall}`}>
+      <div class="calculation" aria-label={`${truePositives} ${copy.dividedBy} ${truePositives} ${copy.plus} ${falseNegatives} ${copy.equals} ${recall}`}>
         <span class="numerator">{truePositives}</span>
         <span class="fraction-line" aria-hidden="true"></span>
         <span class="denominator">{truePositives} + {falseNegatives}</span>
         <span class="equals">=</span>
         <strong>{recall}</strong>
       </div>
-      <p class="question">Of everything truly positive, how much did we find?</p>
+      <p class="question">{copy.recallQuestion}</p>
     </section>
   </div>
 
   <figcaption>
-    <span class="visual-key actual-positive-key"><i aria-hidden="true"></i>Actual positive</span>
-    <span class="visual-key actual-negative-key"><i aria-hidden="true"></i>Actual negative</span>
-    <span class="reading">The numerator stays the same. The denominator changes the question.</span>
+    <span class="visual-key actual-positive-key"><i aria-hidden="true"></i>{copy.actualPositive}</span>
+    <span class="visual-key actual-negative-key"><i aria-hidden="true"></i>{copy.actualNegative}</span>
+    <span class="reading">{copy.reading}</span>
   </figcaption>
 </figure>
 

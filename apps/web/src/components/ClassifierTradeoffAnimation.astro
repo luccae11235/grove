@@ -1,14 +1,15 @@
 ---
 interface Props {
   mode: "recall" | "precision";
+  locale?: "en" | "pt-BR";
 }
 
-const { mode } = Astro.props;
+const { mode, locale = "en" } = Astro.props;
 const totalPositive = 16;
 const totalNegative = 16;
 const total = totalPositive + totalNegative;
 
-const copy = mode === "recall"
+const englishCopy = mode === "recall"
   ? {
       title: "Move toward higher recall",
       model: "Screening threshold",
@@ -28,6 +29,49 @@ const copy = mode === "recall"
         { id: "balanced", label: "Balanced", tp: 12, fp: 4 },
         { id: "target", label: "More selective", tp: 8, fp: 1 },
       ],
+    };
+
+const portugueseCopy = mode === "recall"
+  ? {
+      title: "Avance em direção a um recall maior",
+      model: "Limiar de triagem",
+      description: "À medida que o modelo prevê positivo com mais frequência, menos positivos reais são perdidos — mas mais negativos reais viram alarmes falsos.",
+      stages: [
+        { id: "cautious", label: "Cauteloso", tp: 7, fp: 1 },
+        { id: "balanced", label: "Equilibrado", tp: 12, fp: 4 },
+        { id: "target", label: "Capturar mais", tp: 15, fp: 8 },
+      ],
+    }
+  : {
+      title: "Avance em direção a uma precisão maior",
+      model: "Limiar de spam",
+      description: "À medida que o modelo se torna mais seletivo, menos mensagens legítimas viram alarmes falsos — mas mais mensagens de spam deixam de ser detectadas.",
+      stages: [
+        { id: "broad", label: "Abrangente", tp: 15, fp: 8 },
+        { id: "balanced", label: "Equilibrado", tp: 12, fp: 4 },
+        { id: "target", label: "Mais seletivo", tp: 8, fp: 1 },
+      ],
+    };
+
+const copy = locale === "pt-BR" ? portugueseCopy : englishCopy;
+const labels = locale === "pt-BR"
+  ? {
+      context: mode === "recall" ? "Modelo de triagem" : "Filtro de spam",
+      play: "Reproduzir",
+      playAria: `Reproduzir animação do limiar de ${mode === "recall" ? "recall" : "precisão"}`,
+      stages: "etapas",
+      predictedNegative: "Previu negativo",
+      predictedPositive: "Previu positivo",
+      metric: mode === "recall" ? "Recall" : "Precisão",
+    }
+  : {
+      context: mode === "recall" ? "Screening model" : "Spam filter",
+      play: "Play",
+      playAria: `Play ${mode} threshold animation`,
+      stages: "stages",
+      predictedNegative: "Predicted negative",
+      predictedPositive: "Predicted positive",
+      metric: mode === "recall" ? "Recall" : "Precision",
     };
 
 function slot(index: number, centerX: number, centerY: number, rotation: number) {
@@ -57,6 +101,13 @@ const stageData = copy.stages.map((stage) => ({
 }));
 
 const initialStage = stageData[0];
+const initialSummary = locale === "pt-BR"
+  ? mode === "recall"
+    ? `${initialStage.tp} de 16 positivos reais encontrados · ${initialStage.fp} alarme falso`
+    : `${initialStage.tp} de ${initialStage.tp + initialStage.fp} previsões positivas corretas · ${initialStage.falseNegatives} positivos não detectados`
+  : mode === "recall"
+    ? `${initialStage.tp} of 16 actual positives found · ${initialStage.fp} false alarm`
+    : `${initialStage.tp} of ${initialStage.tp + initialStage.fp} positive predictions correct · ${initialStage.falseNegatives} missed positives`;
 const dotPosition = (dot: typeof dots[number], stage: typeof stageData[number]) => {
   const predictedPositive = dot.actual === "positive"
     ? dot.classIndex < stage.tp
@@ -73,15 +124,15 @@ const dotPosition = (dot: typeof dots[number], stage: typeof stageData[number]) 
 >
   <header>
     <div>
-      <span>{mode === "recall" ? "Screening model" : "Spam filter"}</span>
+      <span>{labels.context}</span>
       <h3>{copy.title}</h3>
     </div>
-    <button type="button" class="tradeoff-play" data-tradeoff-play aria-label={`Play ${mode} threshold animation`}>
-      Play
+    <button type="button" class="tradeoff-play" data-tradeoff-play aria-label={labels.playAria}>
+      {labels.play}
     </button>
   </header>
 
-  <div class="tradeoff-stage-controls" role="group" aria-label={`${copy.title} stages`}>
+  <div class="tradeoff-stage-controls" role="group" aria-label={`${copy.title}: ${labels.stages}`}>
     {stageData.map((stage, index) => (
       <button
         type="button"
@@ -106,8 +157,8 @@ const dotPosition = (dot: typeof dots[number], stage: typeof stageData[number]) 
 
     <circle class="tradeoff-region predicted-negative" cx="168" cy="194" r="108" />
     <circle class="tradeoff-region predicted-positive" cx="472" cy="194" r="108" />
-    <text class="tradeoff-region-label negative-label" x="168" y="320" text-anchor="middle">Predicted negative</text>
-    <text class="tradeoff-region-label positive-label" x="472" y="320" text-anchor="middle">Predicted positive</text>
+    <text class="tradeoff-region-label negative-label" x="168" y="320" text-anchor="middle">{labels.predictedNegative}</text>
+    <text class="tradeoff-region-label positive-label" x="472" y="320" text-anchor="middle">{labels.predictedPositive}</text>
 
     {dots.map((dot) => {
       const initial = dotPosition(dot, initialStage);
@@ -132,20 +183,18 @@ const dotPosition = (dot: typeof dots[number], stage: typeof stageData[number]) 
 
   <div class="tradeoff-readout" aria-live="polite" aria-atomic="true">
     <div>
-      <span>{mode === "recall" ? "Recall" : "Precision"}</span>
+      <span>{labels.metric}</span>
       <strong data-primary-metric>{(mode === "recall" ? initialStage.recall : initialStage.precision).toFixed(1)}%</strong>
     </div>
     <p data-tradeoff-summary>
-      {mode === "recall"
-        ? `${initialStage.tp} of 16 actual positives found · ${initialStage.fp} false alarm`
-        : `${initialStage.tp} of ${initialStage.tp + initialStage.fp} positive predictions correct · ${initialStage.falseNegatives} missed positives`}
+      {initialSummary}
     </p>
   </div>
 
   <figcaption>{copy.description}</figcaption>
 </figure>
 
-<script is:inline define:vars={{ stageData, mode }}>
+<script is:inline define:vars={{ stageData, mode, locale }}>
   (() => {
     const roots = document.querySelectorAll(`[data-classifier-tradeoff][data-mode="${mode}"]`);
     const root = roots[roots.length - 1];
@@ -160,7 +209,7 @@ const dotPosition = (dot: typeof dots[number], stage: typeof stageData[number]) 
     let currentIndex = 0;
     let timer;
 
-    const plural = (count, word) => `${count} ${word}${count === 1 ? "" : "s"}`;
+    const plural = (count, singular, pluralForm) => `${count} ${count === 1 ? singular : pluralForm}`;
     const setStage = (index) => {
       currentIndex = index;
       const stage = stageData[index];
@@ -178,9 +227,13 @@ const dotPosition = (dot: typeof dots[number], stage: typeof stageData[number]) 
       });
       if (metric) metric.textContent = `${(mode === "recall" ? stage.recall : stage.precision).toFixed(1)}%`;
       if (summary) {
-        summary.textContent = mode === "recall"
-          ? `${stage.tp} of 16 actual positives found · ${plural(stage.fp, "false alarm")}`
-          : `${stage.tp} of ${stage.tp + stage.fp} positive predictions correct · ${plural(stage.falseNegatives, "missed positive")}`;
+        summary.textContent = locale === "pt-BR"
+          ? mode === "recall"
+            ? `${stage.tp} de 16 positivos reais encontrados · ${plural(stage.fp, "alarme falso", "alarmes falsos")}`
+            : `${stage.tp} de ${stage.tp + stage.fp} previsões positivas corretas · ${plural(stage.falseNegatives, "positivo não detectado", "positivos não detectados")}`
+          : mode === "recall"
+            ? `${stage.tp} of 16 actual positives found · ${plural(stage.fp, "false alarm", "false alarms")}`
+            : `${stage.tp} of ${stage.tp + stage.fp} positive predictions correct · ${plural(stage.falseNegatives, "missed positive", "missed positives")}`;
       }
     };
 
@@ -188,8 +241,10 @@ const dotPosition = (dot: typeof dots[number], stage: typeof stageData[number]) 
       if (timer) window.clearInterval(timer);
       timer = undefined;
       if (play instanceof HTMLButtonElement) {
-        play.textContent = "Play";
-        play.setAttribute("aria-label", `Play ${mode} threshold animation`);
+        play.textContent = locale === "pt-BR" ? "Reproduzir" : "Play";
+        play.setAttribute("aria-label", locale === "pt-BR"
+          ? `Reproduzir animação do limiar de ${mode === "recall" ? "recall" : "precisão"}`
+          : `Play ${mode} threshold animation`);
       }
     };
 
@@ -204,8 +259,10 @@ const dotPosition = (dot: typeof dots[number], stage: typeof stageData[number]) 
         return;
       }
       if (play instanceof HTMLButtonElement) {
-        play.textContent = "Pause";
-        play.setAttribute("aria-label", `Pause ${mode} threshold animation`);
+        play.textContent = locale === "pt-BR" ? "Pausar" : "Pause";
+        play.setAttribute("aria-label", locale === "pt-BR"
+          ? `Pausar animação do limiar de ${mode === "recall" ? "recall" : "precisão"}`
+          : `Pause ${mode} threshold animation`);
       }
       setStage((currentIndex + 1) % stageData.length);
       timer = window.setInterval(() => setStage((currentIndex + 1) % stageData.length), 1700);

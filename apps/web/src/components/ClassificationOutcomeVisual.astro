@@ -5,6 +5,7 @@ export interface OutcomeCounts {
 }
 
 interface Props {
+  locale?: "en" | "pt-BR";
   predictedNegative?: OutcomeCounts;
   predictedPositive?: OutcomeCounts;
   incoming?: Array<"positive" | "negative">;
@@ -13,12 +14,36 @@ interface Props {
 }
 
 const {
+  locale = "en",
   predictedNegative = { positive: 6, negative: 18 },
   predictedPositive = { positive: 21, negative: 3 },
   incoming = ["negative", "positive", "positive", "negative", "positive"],
-  classifierLabel = "Binary classifier",
-  caption = "The enclosing circle shows the model's prediction.",
+  classifierLabel,
+  caption,
 } = Astro.props;
+
+const copy = locale === "pt-BR"
+  ? {
+      classifierLabel: "Classificador binário",
+      caption: "O círculo ao redor mostra a previsão do modelo.",
+      predictedNegative: "Previu negativo",
+      predictedPositive: "Previu positivo",
+      actualPositive: "Positivo real",
+      actualNegative: "Negativo real",
+      routes: "separa os pontos em dois círculos de previsão",
+    }
+  : {
+      classifierLabel: "Binary classifier",
+      caption: "The enclosing circle shows the model's prediction.",
+      predictedNegative: "Predicted negative",
+      predictedPositive: "Predicted positive",
+      actualPositive: "Actual positive",
+      actualNegative: "Actual negative",
+      routes: "routes dots into two prediction circles",
+    };
+
+const resolvedClassifierLabel = classifierLabel ?? copy.classifierLabel;
+const resolvedCaption = caption ?? copy.caption;
 
 const maximumDotsPerCircle = 50;
 
@@ -80,12 +105,15 @@ function placeDots(
 
 const negativePredictionDots = placeDots(predictedNegative, 190, 326, -0.5);
 const positivePredictionDots = placeDots(predictedPositive, 530, 326, 0.35);
-const describeActualCount = (count: number, actualClass: "positive" | "negative") =>
-  `${count} actual ${actualClass}${count === 1 ? "" : "s"}`;
-const accessibleSummary = [
-  `Predicted negative circle: ${describeActualCount(predictedNegative.negative, "negative")} and ${describeActualCount(predictedNegative.positive, "positive")}.`,
-  `Predicted positive circle: ${describeActualCount(predictedPositive.positive, "positive")} and ${describeActualCount(predictedPositive.negative, "negative")}.`,
-].join(" ");
+const accessibleSummary = locale === "pt-BR"
+  ? [
+      `Círculo de previsão negativa: ${predictedNegative.negative} negativos reais e ${predictedNegative.positive} positivos reais.`,
+      `Círculo de previsão positiva: ${predictedPositive.positive} positivos reais e ${predictedPositive.negative} negativos reais.`,
+    ].join(" ")
+  : [
+      `Predicted negative circle: ${predictedNegative.negative} actual negative${predictedNegative.negative === 1 ? "" : "s"} and ${predictedNegative.positive} actual positive${predictedNegative.positive === 1 ? "" : "s"}.`,
+      `Predicted positive circle: ${predictedPositive.positive} actual positive${predictedPositive.positive === 1 ? "" : "s"} and ${predictedPositive.negative} actual negative${predictedPositive.negative === 1 ? "" : "s"}.`,
+    ].join(" ");
 ---
 
 <figure
@@ -99,7 +127,7 @@ const accessibleSummary = [
   <svg
     viewBox="0 0 720 500"
     role="img"
-    aria-label={`${classifierLabel} routes dots into two prediction circles. ${accessibleSummary}`}
+    aria-label={`${resolvedClassifierLabel} ${copy.routes}. ${accessibleSummary}`}
   >
     <rect class="visual-field" x="1" y="1" width="718" height="498" rx="24" />
 
@@ -114,7 +142,7 @@ const accessibleSummary = [
 
     <g class="classifier-node" aria-hidden="true">
       <rect x="286" y="145" width="148" height="52" rx="13" />
-      <text x="360" y="177" text-anchor="middle">{classifierLabel}</text>
+      <text x="360" y="177" text-anchor="middle">{resolvedClassifierLabel}</text>
     </g>
 
     <g class="routing-arrows" aria-hidden="true">
@@ -135,7 +163,7 @@ const accessibleSummary = [
           <circle r="6" />
         </g>
       ))}
-      <text class="prediction-label" x="190" y="474" text-anchor="middle">Predicted negative</text>
+      <text class="prediction-label" x="190" y="474" text-anchor="middle">{copy.predictedNegative}</text>
     </g>
 
     <g class="prediction-region predicted-positive" data-prediction="positive" aria-hidden="true">
@@ -149,14 +177,14 @@ const accessibleSummary = [
           <circle r="6" />
         </g>
       ))}
-      <text class="prediction-label" x="530" y="474" text-anchor="middle">Predicted positive</text>
+      <text class="prediction-label" x="530" y="474" text-anchor="middle">{copy.predictedPositive}</text>
     </g>
   </svg>
 
   <figcaption>
-    <span class="visual-key actual-positive-key"><i aria-hidden="true"></i>Actual positive</span>
-    <span class="visual-key actual-negative-key"><i aria-hidden="true"></i>Actual negative</span>
-    <span class="visual-reading">{caption}</span>
+    <span class="visual-key actual-positive-key"><i aria-hidden="true"></i>{copy.actualPositive}</span>
+    <span class="visual-key actual-negative-key"><i aria-hidden="true"></i>{copy.actualNegative}</span>
+    <span class="visual-reading">{resolvedCaption}</span>
   </figcaption>
 </figure>
 
