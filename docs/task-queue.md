@@ -34,6 +34,16 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Develop the Markov principle article — issue #158**
+  - [x] Add the complete supplied English manuscript with the title, chapter
+    structure, formulas, and production notes on an isolated docs branch.
+  - [ ] Replace the image and playground notes iteratively after the text
+    structure has been reviewed.
+  - Keep the article in draft; translation, publication, deployment, merge,
+    and newsletter delivery remain out of scope until separately reviewed.
+  - Completion check: the complete learning experience passes focused checks
+    and rendered desktop/mobile review before staging review and merge.
+
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.
