@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1774" height="887" viewBox="0 0 1774 887" role="img" aria-labelledby="policy-update-title policy-update-desc">
+  <title id="policy-update-title">A experiência atualiza a preferência de uma política</title>
+  <desc id="policy-update-desc">O mesmo estado s entra na política pi antes e depois do aprendizado, e as mesmas ações esquerda e direita continuam disponíveis. Antes do aprendizado, direita tem apenas uma preferência fraca. A experiência D informa que ir à direita gerou um retorno maior. A atualização U transforma pi em pi linha, que dá preferência mais forte à direita. O papel da política permanece o mesmo enquanto sua preferência melhora.</desc>
+  <defs>
+    <marker id="arrow-neutral" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+      <path d="M1 1 11 6 1 11Z" fill="#65736c"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+      <path d="M1 1 11 6 1 11Z" fill="#0b8f55"/>
+    </marker>
+  </defs>
+
+  <rect width="1774" height="887" fill="#ffffff"/>
+  <rect x="20" y="20" width="1734" height="847" rx="34" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+
+  <g font-family="Inter, Arial, sans-serif">
+    <rect x="76" y="112" width="606" height="650" rx="28" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+    <text x="126" y="176" fill="#65736c" font-size="25" font-weight="600" letter-spacing="3">ANTES DO APRENDIZADO</text>
+    <text x="126" y="250" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="54" font-style="italic">π(a | s)</text>
+
+    <text x="126" y="320" fill="#65736c" font-size="22" font-weight="600" letter-spacing="2">ESTADO</text>
+    <rect x="126" y="350" width="154" height="142" rx="24" fill="#eef7f2"/>
+    <text x="203" y="425" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="58" font-style="italic" text-anchor="middle" dominant-baseline="middle">s</text>
+
+    <path d="M280 421H334M334 421V374M334 421V506M334 374H364M334 506H364" fill="none" stroke="#65736c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="364" y="320" fill="#65736c" font-size="22" font-weight="600" letter-spacing="2">AÇÕES POSSÍVEIS</text>
+
+    <text x="364" y="361" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="29" font-style="italic">a<tspan baseline-shift="sub" font-size="18">1</tspan></text>
+    <text x="414" y="361" fill="#65736c" font-size="25">esquerda</text>
+    <rect x="364" y="382" width="250" height="22" rx="11" fill="#eef7f2"/>
+    <rect x="364" y="382" width="115" height="22" rx="11" fill="#65736c" opacity="0.52"/>
+
+    <text x="364" y="493" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="29" font-style="italic">a<tspan baseline-shift="sub" font-size="18">2</tspan></text>
+    <text x="414" y="493" fill="#65736c" font-size="25">direita</text>
+    <rect x="364" y="514" width="250" height="22" rx="11" fill="#eef7f2"/>
+    <rect x="364" y="514" width="135" height="22" rx="11" fill="#65736c" opacity="0.62"/>
+
+    <text x="364" y="590" fill="#65736c" font-size="25">preferência fraca</text>
+
+    <rect x="1092" y="112" width="606" height="650" rx="28" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+    <text x="1142" y="176" fill="#157451" font-size="25" font-weight="600" letter-spacing="3">APÓS O APRENDIZADO</text>
+    <text x="1142" y="250" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="54" font-style="italic">π′(a | s)</text>
+
+    <text x="1142" y="320" fill="#65736c" font-size="22" font-weight="600" letter-spacing="2">ESTADO</text>
+    <rect x="1142" y="350" width="154" height="142" rx="24" fill="#eef7f2"/>
+    <text x="1219" y="425" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="58" font-style="italic" text-anchor="middle" dominant-baseline="middle">s</text>
+
+    <path d="M1296 421H1350M1350 421V374M1350 421V506M1350 374H1380M1350 506H1380" fill="none" stroke="#65736c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="1380" y="320" fill="#65736c" font-size="22" font-weight="600" letter-spacing="2">AÇÕES POSSÍVEIS</text>
+
+    <text x="1380" y="361" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="29" font-style="italic">a<tspan baseline-shift="sub" font-size="18">1</tspan></text>
+    <text x="1430" y="361" fill="#65736c" font-size="25">esquerda</text>
+    <rect x="1380" y="382" width="250" height="22" rx="11" fill="#eef7f2"/>
+    <rect x="1380" y="382" width="45" height="22" rx="11" fill="#65736c" opacity="0.38"/>
+
+    <text x="1380" y="493" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="29" font-style="italic">a<tspan baseline-shift="sub" font-size="18">2</tspan></text>
+    <text x="1430" y="493" fill="#157451" font-size="25" font-weight="600">direita</text>
+    <rect x="1380" y="514" width="250" height="22" rx="11" fill="#eef7f2"/>
+    <rect x="1380" y="514" width="205" height="22" rx="11" fill="#0b8f55"/>
+
+    <text x="1380" y="590" fill="#157451" font-size="25" font-weight="600">preferência mais forte</text>
+  </g>
+
+  <g font-family="Inter, Arial, sans-serif">
+    <path d="M682 438H809" fill="none" stroke="#65736c" stroke-width="3" marker-end="url(#arrow-neutral)"/>
+    <path d="M965 438H1092" fill="none" stroke="#0b8f55" stroke-width="4" marker-end="url(#arrow-green)"/>
+
+    <rect x="744" y="120" width="286" height="184" rx="24" fill="#eef7f2" stroke="#0b8f55" stroke-width="2"/>
+    <text x="887" y="166" fill="#157451" font-size="21" font-weight="700" letter-spacing="2" text-anchor="middle">EXPERIÊNCIA</text>
+    <text x="887" y="218" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="43" font-style="italic" text-anchor="middle">D</text>
+    <text x="887" y="263" fill="#17231e" font-size="23" text-anchor="middle">ir à direita gerou</text>
+    <text x="887" y="291" fill="#17231e" font-size="23" font-weight="600" text-anchor="middle">retorno maior</text>
+    <path d="M887 304V356" fill="none" stroke="#0b8f55" stroke-width="3" marker-end="url(#arrow-green)"/>
+
+    <circle cx="887" cy="438" r="72" fill="#ffffff" stroke="#0b8f55" stroke-width="4"/>
+    <text x="887" y="429" fill="#65736c" font-size="20" font-weight="700" letter-spacing="2" text-anchor="middle">ATUALIZAÇÃO</text>
+    <text x="887" y="470" fill="#157451" font-family="Georgia, 'Times New Roman', serif" font-size="43" font-style="italic" text-anchor="middle">U</text>
+
+    <text x="887" y="667" fill="#17231e" font-family="Georgia, 'Times New Roman', serif" font-size="40" font-style="italic" text-anchor="middle">π′ = U(π, D)</text>
+    <text x="887" y="812" fill="#65736c" font-size="24" text-anchor="middle">mesmo estado · mesmas ações · preferência melhor</text>
+  </g>
+</svg>

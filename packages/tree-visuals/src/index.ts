@@ -63,6 +63,23 @@ export {
   TrafficAlignedPlayground,
   TrafficProxyPlayground,
 } from "./rewardHacking/TrafficProxyPlayground";
+export { PongRewardComparison } from "./sampleBasedRl/PongRewardComparison";
+export { MdpTrajectoryMachine } from "./sampleBasedRl/MdpTrajectoryMachine";
+export {
+  advanceToNextOutcome,
+  choosePongAction,
+  createPongState,
+  PONG_GEOMETRY,
+  predictedPaddleIntercept,
+  stepPongState,
+} from "./sampleBasedRl/pongModel";
+export type {
+  PongAction,
+  PongBall,
+  PongOutcome,
+  PongPolicy,
+  PongState,
+} from "./sampleBasedRl/pongModel";
 export {
   DatasetComplexityPlayground,
   FeatureImportancePlayground,

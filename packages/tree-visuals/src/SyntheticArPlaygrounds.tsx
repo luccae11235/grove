@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useState } from "react";
-import { AutocorrelationPlayground, type TimeSeriesPoint } from "./AutocorrelationPlayground";
+import { AutocorrelationPlayground, type AcfLocale, type TimeSeriesPoint } from "./AutocorrelationPlayground";
 import { PartialAutocorrelationPlayground } from "./PartialAutocorrelationPlayground";
 import styles from "./SyntheticArPlaygrounds.module.css";
 
@@ -44,8 +44,11 @@ export function generateAr1Series(count = POINT_COUNT, seed = 2): SyntheticPoint
   return points;
 }
 
-function format(value: number): string {
-  return value.toFixed(2).replace("-", "−");
+function format(value: number, locale: AcfLocale = "en"): string {
+  return value.toLocaleString(locale === "pt-BR" ? "pt-BR" : "en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).replace("-", "−");
 }
 
 function subscriptNumber(value: number): string {
@@ -53,7 +56,8 @@ function subscriptNumber(value: number): string {
   return String(value).replace(/\d/g, (digit) => digits[Number(digit)]);
 }
 
-function SyntheticSeriesChart({ points, revealed }: { points: SyntheticPoint[]; revealed: number }) {
+function SyntheticSeriesChart({ points, revealed, locale }: { points: SyntheticPoint[]; revealed: number; locale: AcfLocale }) {
+  const pt = locale === "pt-BR";
   const plotRight = PLOT.width - PLOT.right;
   const plotBottom = PLOT.height - PLOT.bottom;
   const limit = Math.ceil(Math.max(1, ...points.map((point) => Math.abs(point.value))) * 2) / 2;
@@ -71,14 +75,14 @@ function SyntheticSeriesChart({ points, revealed }: { points: SyntheticPoint[]; 
       className={styles.chart}
       viewBox={`0 0 ${PLOT.width} ${PLOT.height}`}
       role="img"
-      aria-label={`${revealed} of ${points.length} values constructed from the recurrence X t plus one equals zero point eight X t plus a Gaussian error.`}
+      aria-label={pt ? `${revealed} de ${points.length} valores construídos pela recorrência X t mais um igual a zero vírgula oito X t mais um erro gaussiano.` : `${revealed} of ${points.length} values constructed from the recurrence X t plus one equals zero point eight X t plus a Gaussian error.`}
     >
-      <title>A synthetic AR(1) series being constructed</title>
-      <desc>Each new point uses the preceding point and a new independent Gaussian error. The current transition is highlighted.</desc>
+      <title>{pt ? "Construção de uma série AR(1) sintética" : "A synthetic AR(1) series being constructed"}</title>
+      <desc>{pt ? "Cada novo ponto usa o ponto anterior e um novo erro gaussiano independente. A transição atual está em destaque." : "Each new point uses the preceding point and a new independent Gaussian error. The current transition is highlighted."}</desc>
       {[-limit, 0, limit].map((tick) => (
         <g key={tick}>
           <line className={tick === 0 ? styles.zeroLine : styles.gridline} x1={PLOT.left} x2={plotRight} y1={y(tick)} y2={y(tick)} />
-          <text className={styles.tick} x={PLOT.left - 10} y={y(tick) + 4} textAnchor="end">{format(tick)}</text>
+          <text className={styles.tick} x={PLOT.left - 10} y={y(tick) + 4} textAnchor="end">{format(tick, locale)}</text>
         </g>
       ))}
       {[0, Math.floor((points.length - 1) / 2), points.length - 1].map((index) => (
@@ -95,12 +99,13 @@ function SyntheticSeriesChart({ points, revealed }: { points: SyntheticPoint[]; 
         />
       )}
       <circle className={styles.currentPoint} cx={x(currentIndex)} cy={y(points[currentIndex].value)} r="5" />
-      <text className={styles.axisLabel} x={(PLOT.left + plotRight) / 2} y={PLOT.height - 7} textAnchor="middle">Time t</text>
+      <text className={styles.axisLabel} x={(PLOT.left + plotRight) / 2} y={PLOT.height - 7} textAnchor="middle">{pt ? "Tempo t" : "Time t"}</text>
     </svg>
   );
 }
 
-export function SyntheticSeriesBuilder() {
+export function SyntheticSeriesBuilder({ locale = "en" }: { locale?: AcfLocale }) {
+  const pt = locale === "pt-BR";
   const points = useMemo(() => generateAr1Series(), []);
   const [revealed, setRevealed] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -134,35 +139,35 @@ export function SyntheticSeriesBuilder() {
   };
 
   return (
-    <section className={styles.builder} aria-label="Construct a synthetic AR(1) time series">
+    <section className={styles.builder} lang={locale} aria-label={pt ? "Construa uma série temporal AR(1) sintética" : "Construct a synthetic AR(1) time series"}>
       <div className={styles.header}>
-        <strong>Build the series</strong>
-        <span>{revealed} of {points.length} observations</span>
+        <strong>{pt ? "Construa a série" : "Build the series"}</strong>
+        <span>{pt ? `${revealed} de ${points.length} observações` : `${revealed} of ${points.length} observations`}</span>
       </div>
-      <SyntheticSeriesChart points={points} revealed={revealed} />
+      <SyntheticSeriesChart points={points} revealed={revealed} locale={locale} />
       <div className={styles.footer}>
         <p className={styles.step}>
           {revealed === 1
             ? <>X{subscriptNumber(1)} = 1</>
-            : <>X{subscriptNumber(revealed)} = 0.8 × {format(previous.value)} + {format(current.innovation)} = <strong>{format(current.value)}</strong></>}
+            : <>X{subscriptNumber(revealed)} = {pt ? "0,8" : "0.8"} × {format(previous.value, locale)} + {format(current.innovation, locale)} = <strong>{format(current.value, locale)}</strong></>}
         </p>
         <button type="button" className={styles.playButton} onClick={toggle} aria-describedby={liveId}>
-          {isPlaying ? "Pause" : revealed === points.length ? "Replay" : "Build series"}
+          {pt ? (isPlaying ? "Pausar" : revealed === points.length ? "Repetir" : "Construir série") : (isPlaying ? "Pause" : revealed === points.length ? "Replay" : "Build series")}
         </button>
       </div>
       <p id={liveId} className={styles.srOnly} aria-live="polite">
-        Observation {revealed} of {points.length}. Current value {format(current.value)}.
+        {pt ? `Observação ${revealed} de ${points.length}. Valor atual ${format(current.value, locale)}.` : `Observation ${revealed} of ${points.length}. Current value ${format(current.value, locale)}.`}
       </p>
     </section>
   );
 }
 
-export function SyntheticAutocorrelationPlayground() {
+export function SyntheticAutocorrelationPlayground({ locale = "en" }: { locale?: AcfLocale }) {
   const points = useMemo(() => generateAr1Series(), []);
-  return <AutocorrelationPlayground points={points} seriesKind="synthetic" />;
+  return <AutocorrelationPlayground points={points} seriesKind="synthetic" locale={locale} />;
 }
 
-export function SyntheticPartialAutocorrelationPlayground() {
+export function SyntheticPartialAutocorrelationPlayground({ locale = "en" }: { locale?: AcfLocale }) {
   const points = useMemo(() => generateAr1Series(), []);
-  return <PartialAutocorrelationPlayground points={points} />;
+  return <PartialAutocorrelationPlayground points={points} locale={locale} />;
 }

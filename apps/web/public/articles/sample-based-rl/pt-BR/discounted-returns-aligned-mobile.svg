@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1536" viewBox="0 0 1024 1536" role="img" aria-labelledby="title desc">
+  <title id="title">Dois retornos de uma mesma trajetória</title>
+  <desc id="desc">Uma trajetória com símbolos de tamanho uniforme ocupa três linhas. G um inclui as recompensas de r um a r T. G dois começa em r dois e exclui r um.</desc>
+  <rect width="1024" height="1536" fill="#ffffff"/>
+  <rect x="18" y="18" width="988" height="1500" rx="34" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+
+  <g font-family="Georgia, 'Times New Roman', serif" font-size="54" text-anchor="middle" dominant-baseline="middle">
+    <g fill="#17231e" font-style="italic">
+      <text x="130" y="205">s<tspan baseline-shift="sub" font-size="32">0</tspan></text>
+      <text x="870" y="205">s<tspan baseline-shift="sub" font-size="32">1</tspan></text>
+      <text x="870" y="360">s<tspan baseline-shift="sub" font-size="32">2</tspan></text>
+      <text x="870" y="515">s<tspan baseline-shift="sub" font-size="32">T</tspan></text>
+    </g>
+    <g fill="#65736c" font-style="italic">
+      <text x="375" y="205">a<tspan baseline-shift="sub" font-size="32">1</tspan></text>
+      <text x="375" y="360">a<tspan baseline-shift="sub" font-size="32">2</tspan></text>
+      <text x="375" y="515">a<tspan baseline-shift="sub" font-size="32">T</tspan></text>
+    </g>
+    <g fill="#157451" font-style="italic" font-weight="600">
+      <text x="625" y="205">r<tspan baseline-shift="sub" font-size="32">1</tspan></text>
+      <text x="625" y="360">r<tspan baseline-shift="sub" font-size="32">2</tspan></text>
+      <text x="625" y="515">r<tspan baseline-shift="sub" font-size="32">T</tspan></text>
+    </g>
+    <g fill="#65736c" font-family="Inter, Arial, sans-serif" font-size="42">
+      <text x="255" y="205">→</text><text x="500" y="205">→</text><text x="750" y="205">→</text>
+      <text x="112" y="360">↳</text><text x="255" y="360">→</text><text x="500" y="360">→</text><text x="750" y="360">→</text>
+      <text x="112" y="515">↳</text><text x="230" y="515">···</text><text x="300" y="515">→</text><text x="500" y="515">→</text><text x="750" y="515">→</text>
+    </g>
+  </g>
+
+  <g font-family="Georgia, 'Times New Roman', serif" fill="#157451">
+    <rect x="58" y="700" width="908" height="258" rx="26" fill="#eef7f2"/>
+    <text x="105" y="790" font-size="58" font-style="italic">G<tspan baseline-shift="sub" font-size="34">1</tspan><tspan font-style="normal"> =</tspan></text>
+    <text x="105" y="890" font-size="43" font-style="italic">r<tspan baseline-shift="sub" font-size="27">1</tspan><tspan font-style="normal"> + </tspan>γr<tspan baseline-shift="sub" font-size="27">2</tspan><tspan font-style="normal"> + </tspan>γ<tspan baseline-shift="super" font-size="25">2</tspan>r<tspan baseline-shift="sub" font-size="27">3</tspan><tspan font-style="normal"> + ··· + </tspan>γ<tspan baseline-shift="super" font-size="23">T−1</tspan>r<tspan baseline-shift="sub" font-size="27">T</tspan></text>
+
+    <rect x="58" y="1035" width="908" height="258" rx="26" fill="#eef7f2"/>
+    <text x="105" y="1125" font-size="58" font-style="italic">G<tspan baseline-shift="sub" font-size="34">2</tspan><tspan font-style="normal"> =</tspan></text>
+    <text x="270" y="1225" font-size="43" font-style="italic">r<tspan baseline-shift="sub" font-size="27">2</tspan><tspan font-style="normal"> + </tspan>γr<tspan baseline-shift="sub" font-size="27">3</tspan><tspan font-style="normal"> + ··· + </tspan>γ<tspan baseline-shift="super" font-size="23">T−2</tspan>r<tspan baseline-shift="sub" font-size="27">T</tspan></text>
+  </g>
+</svg>

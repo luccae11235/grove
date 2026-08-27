@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="320" viewBox="0 0 1000 320" role="img" aria-labelledby="title description">
+  <title id="title">Influência que se propaga por observações consecutivas</title>
+  <desc id="description">Três observações estão dispostas da esquerda para a direita. Uma seta conecta X t a X t mais um, e outra conecta X t mais um a X t mais dois.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#65736c"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="320" fill="#ffffff"/>
+  <text x="50" y="48" fill="#17231e" font-size="25" font-weight="600" font-family="Inter, ui-sans-serif, system-ui, sans-serif">A influência passa pelo meio</text>
+  <text x="50" y="76" fill="#65736c" font-size="14" font-family="Inter, ui-sans-serif, system-ui, sans-serif">A mesma relação de um passo se repete ao longo do tempo</text>
+
+  <line x1="270" y1="186" x2="432" y2="186" stroke="#65736c" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="568" y1="186" x2="730" y2="186" stroke="#65736c" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="350" y="160" fill="#65736c" font-size="13" font-weight="500" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui, sans-serif">um passo</text>
+  <text x="650" y="160" fill="#65736c" font-size="13" font-weight="500" text-anchor="middle" font-family="Inter, ui-sans-serif, system-ui, sans-serif">um passo</text>
+
+  <rect x="130" y="130" width="140" height="112" rx="16" fill="#e5f3ec" stroke="#157451" stroke-width="2"/>
+  <rect x="430" y="130" width="140" height="112" rx="16" fill="#f5f8f6" stroke="#aebbb4" stroke-width="1.5"/>
+  <rect x="730" y="130" width="140" height="112" rx="16" fill="#fbf1df" stroke="#d99b32" stroke-width="2"/>
+  <text x="200" y="198" fill="#17231e" font-size="30" font-weight="500" text-anchor="middle" font-family="STIX Two Math, Cambria Math, Georgia, serif" font-style="italic">Xₜ</text>
+  <text x="500" y="198" fill="#17231e" font-size="30" font-weight="500" text-anchor="middle" font-family="STIX Two Math, Cambria Math, Georgia, serif" font-style="italic">Xₜ₊₁</text>
+  <text x="800" y="198" fill="#17231e" font-size="30" font-weight="500" text-anchor="middle" font-family="STIX Two Math, Cambria Math, Georgia, serif" font-style="italic">Xₜ₊₂</text>
+</svg>

@@ -1,0 +1,664 @@
+---
+articleId: how-the-past-echoes-acf-pacf
+locale: pt-BR
+routeSlug: acf-e-pacf
+href: /pt-br/learn/acf-e-pacf
+title: "Como o passado ecoa: entendendo ACF e PACF"
+navTitle: Entendendo ACF e PACF
+description: "Desenvolva uma intuição para a correlação temporal combinando uma série temporal com versões defasadas dela mesma."
+eyebrow: Séries temporais · Correlação temporal
+area: Séries temporais
+topic: ACF e PACF
+summary: Comece pela correlação comum, desloque uma série no tempo e veja como relações entre lags formam uma função de autocorrelação.
+status: published
+publishedAt: 2026-08-21
+updatedAt: 2026-08-21
+readingTime: 20–25 min
+interactiveCount: 4
+staticVisualCount: 12
+difficulty: foundational
+series: time-series
+access: public
+prerequisites: []
+related: []
+implementation: mdx
+learning:
+  priorKnowledge:
+    - Ler valores organizados em linhas e colunas.
+    - Acompanhar uma sequência indexada pelo tempo.
+  likelyMisconception: Uma autocorrelação forte prova que um valor anterior causa diretamente um valor posterior.
+  transferOutcome: Comparar o que a ACF e a PACF revelam sobre a dependência entre lags e usar seus formatos como pistas diagnósticas.
+  motivatingQuestion: Quanta informação sobre o presente está contida no próprio passado de uma série?
+  conceptualBottleneck: Cada lag compara duas versões sobrepostas e deslocadas da mesma variável, e não duas características diferentes.
+  evidenceOfUnderstanding:
+    - Construir os pares de observações para um lag escolhido.
+    - Explicar por que lags maiores contêm menos pares.
+    - Interpretar uma autocorrelação relativamente alta sem afirmar causalidade.
+    - Explicar por que uma autocorrelação pode persistir depois que uma relação direta terminou.
+    - Distinguir um padrão da ACF de um padrão da PACF em um exemplo diagnóstico simples.
+---
+
+import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import AutocorrelationPlayground from "../../../components/AutocorrelationPlayground.astro";
+import SyntheticArPlayground from "../../../components/SyntheticArPlayground.astro";
+
+<header className="page-header lesson-header article-hero">
+  <p className="eyebrow">Séries temporais · Correlação temporal</p>
+  <h1>Como o passado ecoa: entendendo ACF e PACF</h1>
+  <div className="article-meta" aria-label="Informações sobre o artigo">
+    <DifficultyBadge difficulty="foundational" showDescription locale="pt-BR" />
+  </div>
+</header>
+
+<article className="lesson-body deep-article acf-article">
+  <h2 id="o-passado-e-o-futuro">O passado e o futuro</h2>
+
+  Em aprendizado de máquina, não faltam problemas que envolvem séries temporais. Neles, a ordem dos dados importa: observações feitas em momentos diferentes podem estar relacionadas. Isso difere dos dados transversais convencionais, nos quais cada ponto costuma ser tratado como independente dos demais.
+
+  <figure className="static-figure acf-data-index-figure">
+    <img
+      src="/articles/acf-pacf/pt-br/tabular-vs-time-series.png"
+      alt="Uma tabela comum com índices de linha fora de sequência ao lado de uma tabela de série temporal indexada por datas, cujos valores formam um gráfico de linha ordenado no tempo."
+      width="1774"
+      height="887"
+      loading="eager"
+      decoding="async"
+    />
+  </figure>
+
+  Embora conjuntos de dados de séries temporais possam conter várias características, como outros conjuntos usados em aprendizado de máquina, é comum começar por uma única sequência de valores observados em uma frequência fixa. Um exemplo é a temperatura média diária ao longo de um ano.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/pt-br/nyc-daily-temperature-2023.svg"
+      alt="A temperatura média diária na cidade de Nova York sobe do inverno para o verão e volta a cair em direção ao inverno ao longo de 2023."
+      width="1000"
+      height="430"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>
+      Temperatura média diária a 2 metros de altura na cidade de Nova York em 2023. Fonte: dados meteorológicos do <a href="https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M&amp;community=RE&amp;longitude=-73.97&amp;latitude=40.78&amp;start=20230101&amp;end=20231231&amp;format=JSON&amp;time-standard=LST">NASA POWER</a>, derivados do MERRA-2.
+    </figcaption>
+  </figure>
+
+  A maioria das séries temporais pode ser visualizada, e essas visualizações muitas vezes revelam padrões claros. Pode haver uma **tendência**, que indica a direção geral em que os valores se movem. Às vezes, a série cresce ou diminui com o tempo; em outros casos, permanece em torno de uma média aproximadamente constante.
+
+  Uma série também pode conter **sazonalidade**: padrões que se repetem em intervalos regulares. Movimentos sazonais semanais, por exemplo, são comuns em dados de vendas porque o comportamento do consumidor costuma mudar de maneira sistemática entre os dias da semana.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/pt-br/m5-ca1-daily-sales-2015-q1.svg"
+      alt="As vendas diárias em unidades da loja Walmart CA_1 permanecem acima de zero e sobem e descem em um ritmo recorrente de sete dias entre janeiro e março de 2015."
+      width="1000"
+      height="430"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>
+      Unidades vendidas diariamente pela loja Walmart CA_1, somadas entre todos os produtos. Fonte: <a href="https://doi.org/10.5281/zenodo.10203108">conjunto de dados M5 Forecasting</a>, publicado pela Universidade de Nicósia no Zenodo.
+    </figcaption>
+  </figure>
+
+  Em muitos casos, como no exemplo acima, conseguimos fazer mais do que identificar esses padrões. Nossa mente consegue projetá-los naturalmente no futuro. Quando tendências e sazonalidades são claras, fazer uma previsão pode parecer apenas “continuar a linha”.
+
+  O aprendizado de máquina oferece muitos métodos para automatizar essa tarefa. Antes de pensar em como as observações futuras se relacionam com o presente, porém, vale examinar como as observações que já temos se relacionam com o próprio passado.
+
+  Se entendermos como valores anteriores influenciam — ou pelo menos fornecem informação sobre — o presente, poderemos encontrar pistas importantes sobre como o estado atual da série se relaciona com seu futuro. Este artigo se concentra em duas técnicas criadas para revelar essas relações temporais.
+
+  <h2 id="dispersando-o-tempo">Dispersando o tempo</h2>
+
+  <h3 id="graficos-de-dispersao-e-correlacao">Gráficos de dispersão e correlação</h3>
+
+  Uma técnica básica para encontrar relações nos dados é o gráfico de dispersão. Escolhemos duas características de um conjunto de dados — normalmente numéricas — e traçamos seus valores em um plano $x$-$y$.
+
+  Considere, por exemplo, um conjunto de dados com a altura e o peso de várias pessoas.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/pt-br/nhanes-height-weight-youth.svg"
+      alt="Um gráfico de dispersão da altura em pé e do peso de 2.830 participantes medidos, entre 2 e 19 anos, forma uma nuvem com forte inclinação positiva e correlação de Pearson igual a 0,85."
+      width="1000"
+      height="470"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>
+      Altura em pé e peso dos 2.830 participantes do NHANES 2017–2018 entre 2 e 19 anos que tinham as duas medidas; amostra sem ponderação. Correlação de Pearson: 0,85. Fonte: <a href="https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/BMX_J.htm">CDC/NCHS NHANES Body Measures</a>.
+    </figcaption>
+  </figure>
+
+  Podemos ver que as duas características têm uma relação aproximadamente linear. Pessoas mais altas tendem, em média, a pesar mais. Portanto, as duas características são **positivamente correlacionadas**. Neste exemplo, a correlação entre elas é <strong>0,85</strong>.
+
+  A correlação mede **como duas características tendem a variar juntas**.
+
+  - **Correlação positiva:** quando uma aumenta, a outra tende a aumentar.
+  - **Correlação negativa:** quando uma aumenta, a outra tende a diminuir.
+  - **Ausência de correlação:** conhecer uma característica fornece pouca informação sobre a direção da outra.
+
+  A fórmula é relativamente simples. Ela recebe duas características e retorna um número entre $-1$ e $1$. Neste artigo, usaremos a seguinte notação:
+
+$$
+\operatorname{Corr}(X,Y)
+=
+\frac{\sum_{i=1}^{N}(x_i-\bar{x})(y_i-\bar{y})}
+{\sqrt{\sum_{i=1}^{N}(x_i-\bar{x})^2}\sqrt{\sum_{i=1}^{N}(y_i-\bar{y})^2}}.
+$$
+
+  Aqui, $\bar{x}$ e $\bar{y}$ são as médias das duas características.
+
+  Uma consequência simples, mas poderosa, da correlação muitas vezes passa despercebida. Independentemente de uma característica causar ou não a outra, uma relação suficientemente forte ainda pode conter informação preditiva.
+
+  No exemplo de altura e peso, se observarmos apenas a altura de uma pessoa, não conseguiremos determinar seu peso exato. No entanto, poderemos estimar seu peso esperado de maneira mais informada do que conseguiríamos sem conhecer sua altura.
+
+  O mesmo princípio vale para séries temporais. Se valores passados estiverem correlacionados com valores posteriores, observar o presente poderá nos dar informação sobre como a série provavelmente evoluirá. A correlação não garante o futuro, mas revela se o passado mantém com ele uma relação mensurável.
+
+  <h3 id="correlacao-temporal">Correlação temporal</h3>
+
+  O tipo de série temporal simples discutido aqui pode ser representado como uma sequência de valores indexados de $1$ a $T$:
+
+  $$
+  x_1,x_2,x_3,\ldots,x_T
+  $$
+
+  Para investigar como o passado se relaciona com o futuro, podemos reorganizar essa sequência em pares de observações vizinhas.
+
+  Percorremos a série e coletamos cada par
+
+  $$
+  (X_t,X_{t+1}),
+  $$
+
+  começando por $(X_1,X_2)$ e continuando até $(X_{T-1},X_T)$.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/pt-br/lag-one-pairing.svg"
+      alt="Três varreduras de uma sequência destacam x um com x dois, x dois com x três e x T menos um com x T. Setas associam cada par destacado a uma linha de uma tabela de vendas com duas colunas."
+      width="1000"
+      height="510"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>
+      No lag 1, cada valor de vendas se torna $X_t$, e o dia seguinte se torna $X_{t+1}$. Os valores da tabela são arredondados para exibição; os cálculos usam a precisão completa.
+    </figcaption>
+  </figure>
+
+  Agora temos um conjunto de dados com duas características numéricas. Podemos colocar $X_t$ no eixo horizontal e $X_{t+1}$ no eixo vertical.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/pt-br/lag-one-sales-scatter.svg"
+      alt="Um gráfico de dispersão com 89 pares de vendas diárias adjacentes tem uma reta ajustada ascendente e correlação de Pearson igual a 0,51."
+      width="1000"
+      height="475"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>
+      Cada ponto é um par de dias adjacentes da série de vendas diárias em unidades da loja Walmart CA_1. Correlação de Pearson: 0,51. Fonte: <a href="https://doi.org/10.5281/zenodo.10203108">conjunto de dados M5 Forecasting</a>.
+    </figcaption>
+  </figure>
+
+  Como antes, as características parecem correlacionadas porque os pontos se concentram em torno de uma reta. Se calcularmos a correlação entre elas, obteremos <strong>0,51</strong>.
+
+  A diferença é que não se trata de duas variáveis distintas, como altura e peso. São duas versões deslocadas da mesma variável: uma contém o valor no instante $t$, enquanto a outra contém o valor observado um passo depois.
+
+  Portanto, estamos medindo se valores altos tendem a ser seguidos por valores altos, se valores baixos tendem a ser seguidos por valores baixos ou se observações consecutivas têm pouca relação linear.
+
+  <h3 id="mais-lags">Mais lags</h3>
+
+  Em vez de combinar $X_t$ com $X_{t+1}$, podemos combiná-lo com $X_{t+n}$, em que $n$ é um número inteiro que representa um **lag**, ou defasagem.
+
+  Um lag descreve a distância entre duas observações da série.
+
+  Quando $n=1$, comparamos observações separadas por um passo no tempo:
+
+  $$
+  (X_t,X_{t+1}).
+  $$
+
+  Quando $n=2$, comparamos observações separadas por dois passos no tempo:
+
+  $$
+  (X_t,X_{t+2}).
+  $$
+
+  Percorremos a série como antes, mas agora as observações do par estão separadas por um valor intermediário.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/pt-br/lag-two-pairing.svg"
+      alt="Três varreduras de uma sequência destacam x um com x três, x dois com x quatro e x T menos dois com x T. Um valor não selecionado permanece entre os elementos de cada par, e setas associam cada par a uma linha de uma tabela de vendas com duas colunas."
+      width="1000"
+      height="510"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>
+      No lag 2, cada valor de vendas se torna $X_t$, e o valor de dois dias depois se torna $X_{t+2}$. O valor entre eles é ignorado.
+    </figcaption>
+  </figure>
+
+  Isso produz um novo gráfico de dispersão e um novo valor de correlação.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/pt-br/lag-two-sales-scatter.svg"
+      alt="Um gráfico de dispersão com 88 pares de vendas diárias separados por dois dias tem uma reta ajustada levemente descendente e correlação de Pearson igual a menos 0,20."
+      width="1000"
+      height="475"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>
+      Cada ponto combina as vendas em unidades de um dia da loja Walmart CA_1 com o valor de dois dias depois. Correlação de Pearson: −0,20. Fonte: <a href="https://doi.org/10.5281/zenodo.10203108">conjunto de dados M5 Forecasting</a>.
+    </figcaption>
+  </figure>
+
+  Podemos repetir esse processo para muitos lags. A partir do lag $1$, calculamos a correlação entre observações separadas por dois passos, três passos, quatro passos e assim por diante.
+
+  Em princípio, podemos continuar até que o conjunto de dados não permita formar outro par. Na prática, costumamos parar antes, quando restam poucos dados nos lags seguintes ou quando eles deixam de ser relevantes para o problema.
+
+  Toda série temporal é finita. Para uma série com $T$ observações, calcular a correlação no lag $n$ exige pares da forma
+
+  $$
+  (X_t,X_{t+n}).
+  $$
+
+  A segunda observação só existe quando
+
+  $$
+  t+n \leq T.
+  $$
+
+  Portanto,
+
+  $$
+  t \leq T-n.
+  $$
+
+  No lag $n$, apenas $T-n$ pares estão disponíveis. À medida que o lag aumenta, restam menos observações para estimar a correlação. Por isso, correlações em lags muito grandes se baseiam em menos dados e, em geral, são mais incertas.
+
+  Agora vamos executar esse processo diretamente. Na visualização a seguir, você verá a série temporal de vendas que analisamos e escolherá o lag usado no cálculo.
+
+  Você começará no lag $1$. Toda vez que aumentar o lag, a série será varrida novamente, e um novo gráfico de dispersão será construído com os pares resultantes.
+
+  À direita, um gráfico de barras resumirá os resultados. O eixo horizontal representará o lag, enquanto o eixo vertical mostrará a correlação calculada naquele lag.
+
+  Execute a simulação e observe se aparece algum padrão interessante.
+
+</article>
+
+<div className="interactive-breakout article-interactive acf-playground-breakout">
+  <AutocorrelationPlayground locale="pt-BR" />
+</div>
+
+<article className="lesson-body deep-article acf-article">
+
+  Depois de concluir a simulação, você percebeu que o lag $7$ tem correlação maior do que vários lags intermediários?
+
+  Isso nos diz que observações separadas por sete passos no tempo tendem a ter uma relação linear mais forte do que observações separadas por alguns intervalos menores. Não significa necessariamente que o valor de sete passos atrás cause diretamente o valor atual. Significa que conhecer uma dessas observações fornece informação relativamente forte sobre a outra.
+
+  Para dados de vendas diárias, esse resultado não surpreende. Uma distância de sete observações corresponde a uma semana, e os mesmos dias de semanas consecutivas costumam apresentar comportamentos de compra semelhantes. Segundas-feiras podem se parecer mais com outras segundas-feiras do que com as terças-feiras imediatamente seguintes.
+
+  A visualização talvez já tenha sugerido esse padrão semanal. Agora, o cálculo da correlação o confirma numericamente e quantifica sua intensidade.
+
+  Todo esse processo se chama **autocorrelação**. O prefixo *auto* indica que a série está sendo correlacionada com uma versão deslocada dela mesma.
+
+  Para o lag $n$, podemos escrever:
+
+  $$
+  \operatorname{ACF}(n)=\operatorname{Corr}(X_t,X_{t+n}).
+  $$
+
+  De maneira mais explícita, usando o mesmo cálculo de Pearson do playground, sejam $\bar{x}_{\mathrm{esquerda}}$ e $\bar{x}_{\mathrm{direita}}$ as médias das duas sequências sobrepostas. Então, a autocorrelação amostral no lag $n$ é
+
+  $$
+  \widehat{\rho}(n)
+  =
+  \frac{\sum_{t=1}^{T-n}(x_t-\bar{x}_{\mathrm{esquerda}})(x_{t+n}-\bar{x}_{\mathrm{direita}})}
+  {\sqrt{\sum_{t=1}^{T-n}(x_t-\bar{x}_{\mathrm{esquerda}})^2}
+  \sqrt{\sum_{t=1}^{T-n}(x_{t+n}-\bar{x}_{\mathrm{direita}})^2}}.
+  $$
+
+  Aqui, a sequência da esquerda é $x_1,\ldots,x_{T-n}$, e a da direita é $x_{1+n},\ldots,x_T$. Portanto, a fórmula é a correlação comum aplicada às duas colunas deslocadas construídas pela varredura.
+
+  O conjunto das autocorrelações calculadas para vários lags recebe o nome de **função de autocorrelação**, ou **ACF**.
+
+  A visualização oferece uma intuição de como a ACF é construída: desloque a série pelo lag escolhido, forme pares com as observações sobrepostas, meça a correlação entre elas e repita o processo para outros lags.
+
+  <h2 id="as-influencias-indiretas">As influências indiretas</h2>
+
+  Até aqui, usamos a função de autocorrelação para medir a correlação entre $X_t$ e $X_{t+n}$ para diferentes valores de $n$.
+
+  Em muitos processos de séries temporais, porém, as relações se propagam pelas observações intermediárias. Considere três valores consecutivos:
+
+  $$
+  X_t,X_{t+1},X_{t+2}.
+  $$
+
+  Se $X_t$ ajuda a determinar $X_{t+1}$, e $X_{t+1}$ ajuda a determinar $X_{t+2}$, então parte da relação entre $X_t$ e $X_{t+2}$ pode ser transmitida por $X_{t+1}$.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/pt-br/propagated-influence.svg"
+      alt="X t aponta para X t mais um, que aponta para X t mais dois, mostrando a influência que percorre observações consecutivas."
+      width="1000"
+      height="320"
+      loading="lazy"
+      decoding="async"
+    />
+  </figure>
+
+  Isso não significa que a correlação seja sempre transitiva. Em geral, saber que dois pares de variáveis são correlacionados não basta para garantir que o par restante também seja. No entanto, em um processo temporal recursivo, observações anteriores podem afetar observações posteriores por meio dos valores que existem entre elas.
+
+  A autocorrelação no lag $1$,
+
+  $$
+  \operatorname{ACF}(1)=\operatorname{Corr}(X_t,X_{t+1}),
+  $$
+
+  mede a relação entre observações consecutivas.
+
+  A autocorrelação no lag $2$,
+
+  $$
+  \operatorname{ACF}(2)=\operatorname{Corr}(X_t,X_{t+2}),
+  $$
+
+  mede a relação total entre observações separadas por dois passos. Ela não distingue uma relação específica do lag $2$ de outra que tenha se propagado por $X_{t+1}$.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/pt-br/acf-total-influence.svg"
+      alt="X t aponta para X t mais dois por meio de X t mais um, enquanto um arco de X t a X t mais dois marca a relação total medida pela ACF no lag dois."
+      width="1000"
+      height="380"
+      loading="lazy"
+      decoding="async"
+    />
+  </figure>
+
+  Isso levanta uma pergunta importante. Se $X_t$ se relaciona com $X_{t+1}$, que por sua vez se relaciona com $X_{t+2}$, quanto de $\operatorname{ACF}(2)$ representa uma relação exclusiva do lag $2$? Será que estamos medindo em parte uma informação que já apareceu no lag $1$?
+
+  A resposta é sim. A ACF mede a relação linear completa entre duas observações a uma determinada distância. Ela não separa relações transmitidas por observações intermediárias das relações que permanecem depois que esses valores intermediários são levados em conta.
+
+  Podemos enxergar isso com clareza construindo uma série temporal sintética simples com apenas um lag definido explicitamente:
+
+  $$
+  X_{t+1}=0{,}8X_t+\varepsilon_{t+1},
+  $$
+
+  em que cada $\varepsilon_{t+1}$ é amostrado de maneira independente de uma distribuição gaussiana. Inicializaremos a série com $X_1=1$, multiplicaremos o valor mais recente por $0{,}8$, somaremos um novo termo de erro e repetiremos o processo.
+
+  <div className="acf-inline-playground">
+    <SyntheticArPlayground mode="builder" locale="pt-BR" />
+  </div>
+
+  Embora a equação contenha apenas $X_t$, seu efeito se propaga para além da observação seguinte. Substituir a primeira equação na etapa posterior resulta em
+
+  $$
+  \begin{aligned}
+  X_{t+2}
+  &=0{,}8X_{t+1}+\varepsilon_{t+2} \\
+  &=0{,}8\left(0{,}8X_t+\varepsilon_{t+1}\right)+\varepsilon_{t+2} \\
+  &=0{,}8^2X_t+0{,}8\varepsilon_{t+1}+\varepsilon_{t+2}.
+  \end{aligned}
+  $$
+
+  Não há um termo $X_t$ separado na equação original para prever dois passos adiante. Mesmo assim, a influência de $X_t$ chega a $X_{t+2}$ por meio de $X_{t+1}$.
+
+  A mesma propagação continua em outros lags:
+
+  $$
+  X_{t+n}=0{,}8^nX_t+\text{termos de erro acumulados}.
+  $$
+
+  <div className="acf-inline-playground">
+    <SyntheticArPlayground mode="autocorrelation" locale="pt-BR" />
+  </div>
+
+  Depois de executar a visualização, observe que a ACF não desaparece após o lag $1$. Embora tenhamos definido apenas uma relação direta de um passo, ainda há autocorrelações relevantes nos lags $2$, $3$ e seguintes.
+
+  Para um processo estacionário dessa forma, a autocorrelação da população segue
+
+  $$
+  \rho(n)=0{,}8^n.
+  $$
+
+  Portanto,
+
+  $$
+  \rho(1)=0{,}8,
+  $$
+
+  $$
+  \rho(2)=0{,}8^2=0{,}64,
+  $$
+
+  e
+
+  $$
+  \rho(3)=0{,}8^3=0{,}512.
+  $$
+
+  Em uma amostra finita e ruidosa, os valores medidos não serão exatamente iguais a esses números, mas deverão ficar razoavelmente próximos quando a série for longa o bastante.
+
+  Esse decaimento revela como a relação de um passo se propaga ao longo do tempo. A ACF no lag $2$ contém a relação transmitida pelo lag $1$; a ACF no lag $3$ contém relações transmitidas pelas observações anteriores; e o mesmo padrão continua nos lags posteriores.
+
+  Agora que sabemos que a ACF combina relações diretas e propagadas, surge uma nova pergunta:
+
+  **Podemos isolar a relação associada a um lag específico depois de remover as relações transmitidas pelos valores intermediários?**
+
+  <h3 id="removendo-a-influencia">Removendo a influência</h3>
+
+  Para separar relações diretas das relações transmitidas ao longo do tempo, precisamos de mais uma ideia familiar do aprendizado de máquina: o resíduo.
+
+  Suponha que um modelo linear prediga $Y_t$ a partir de um conjunto de características:
+
+  $$
+  Y_t=\beta_0+\beta_1X_{1,t}+\cdots+\beta_pX_{p,t}+\varepsilon_t.
+  $$
+
+  Depois de ajustar o modelo, obtemos uma previsão $\widehat{Y}_t$. A diferença entre o valor observado e o valor previsto pelo modelo é o **resíduo**:
+
+  $$
+  e_t=Y_t-\widehat{Y}_t.
+  $$
+
+  Isso nos permite separar uma observação em dois componentes:
+
+  $$
+  Y_t
+  =
+  \underbrace{\widehat{Y}_t}_{\text{explicado pelo modelo}}
+  +
+  \underbrace{e_t}_{\text{não explicado pelo modelo}}.
+  $$
+
+  Aqui, “não explicado” não significa aleatório nem impossível de compreender. Significa apenas que o modelo não capturou essa parte usando os preditores que fornecemos. O resíduo é útil porque nos deixa conservar aquilo que sobra depois que esses preditores fazem seu trabalho.
+
+  Antes de generalizar essa ideia, considere uma janela de lag $2$ da série sintética acima. Suas três observações, arredondadas para exibição, são
+
+  $$
+  \begin{aligned}
+  X_t &= 0{,}14, \\
+  X_{t+1} &= -0{,}03, \\
+  X_{t+2} &= -0{,}27.
+  \end{aligned}
+  $$
+
+  Em todas as janelas disponíveis no lag $2$, ajustamos um modelo que usa o valor intermediário para predizer o extremo esquerdo e outro que o usa para predizer o extremo direito. Para esta janela, esses modelos predizem $-0{,}09$ à esquerda e $-0{,}08$ à direita. Portanto, os resíduos são
+
+  $$
+  \begin{aligned}
+  r_t^{\text{esquerda}} &= 0{,}14-(-0{,}09)=0{,}23, \\
+  r_t^{\text{direita}} &= -0{,}27-(-0{,}08)=-0{,}19.
+  \end{aligned}
+  $$
+
+  Essa janela acrescenta o ponto $(0{,}23,-0{,}19)$ ao gráfico de dispersão dos resíduos. Os extremos originais não entram diretamente no gráfico. Restam apenas as partes que a observação intermediária não conseguiu predizer.
+
+  Voltemos agora a duas observações separadas por $n$ passos: $X_t$ e $X_{t+n}$. Entre elas estão as observações
+
+  $$
+  X_{t+1},X_{t+2},\ldots,X_{t+n-1}.
+  $$
+
+  Esses valores intermediários são precisamente o caminho pelo qual uma observação anterior pode ecoar em uma posterior. Por isso, damos a eles uma tarefa: predizer os dois extremos.
+
+  <figure className="static-figure acf-series-figure">
+    <img
+      src="/articles/acf-pacf/pt-br/middle-predicts-endpoints.svg"
+      alt="As observações entre X t e X t mais n estão destacadas em conjunto, com setas mostrando que os mesmos valores intermediários predizem separadamente os extremos esquerdo e direito."
+      width="1000"
+      height="420"
+      loading="lazy"
+      decoding="async"
+    />
+  </figure>
+
+  Para uma janela da série, reúna as observações intermediárias em um vetor de características:
+
+  $$
+  \mathbf{M}_t=\left(X_{t+1},X_{t+2},\ldots,X_{t+n-1}\right).
+  $$
+
+  Use o mesmo vetor em dois modelos lineares. Um prediz o extremo à esquerda,
+
+  $$
+  \widehat{X}_t=f(\mathbf{M}_t),
+  $$
+
+  e o outro prediz o extremo à direita:
+
+  $$
+  \widehat{X}_{t+n}=g(\mathbf{M}_t).
+  $$
+
+  Agora subtraia cada previsão do extremo observado correspondente:
+
+  $$
+  r_t^{\text{esquerda}}=X_t-\widehat{X}_t,
+  $$
+
+  $$
+  r_t^{\text{direita}}=X_{t+n}-\widehat{X}_{t+n}.
+  $$
+
+  Cada janela nos dá um par de resíduos. O par contém o que os valores intermediários não conseguiram predizer à esquerda e o que não conseguiram predizer à direita. São esses resíduos — e não as observações originais — que colocamos no gráfico de dispersão.
+
+  Deslize a janela adiante e repita. À medida que os valores intermediários destacados percorrem a série, cada posição acrescenta um par de resíduos. A correlação entre eles é
+
+  $$
+  \operatorname{Corr}\left(r_t^{\text{esquerda}},r_t^{\text{direita}}\right).
+  $$
+
+  Se os resíduos ainda se alinharem, os extremos conservam uma relação linear que as observações entre eles não explicaram. Se a nuvem perder sua direção, a relação aparente era transmitida principalmente pelos valores intermediários.
+
+  <div className="prediction-prompt">
+    <p className="lesson-stage">Antes da varredura</p>
+    <h3>O que deve restar depois do lag 1?</h3>
+    <p>A ACF da nossa série sintética permaneceu alta nos lags $2$ e $3$, embora o processo tenha sido definido apenas por uma relação de um passo. Preveja o que acontecerá depois que as observações intermediárias puderem explicar os dois extremos.</p>
+  </div>
+
+</article>
+
+<div className="interactive-breakout article-interactive acf-playground-breakout">
+  <SyntheticArPlayground mode="partial-autocorrelation" locale="pt-BR" />
+</div>
+
+<article className="lesson-body deep-article acf-article">
+
+  No lag $1$, não há observação intermediária para remover. Por isso, o gráfico de dispersão dos resíduos preserva a mesma relação que vimos na ACF, e a correlação parcial permanece próxima de $0{,}8$.
+
+  No lag $2$, a faixa móvel contém $X_{t+1}$. Depois que esse valor intermediário é usado para predizer $X_t$ e $X_{t+2}$, a nuvem de resíduos perde quase toda a inclinação. A barra cai para perto de zero. Os lags posteriores se comportam de maneira semelhante nesta série.
+
+  Essa é a distinção que procurávamos. A ACF mostrou que uma relação alcança vários passos no tempo. A varredura dos resíduos revela que a maior parte dessa relação posterior percorre as observações intermediárias.
+
+  A relação que resta é a **autocorrelação parcial** no lag $n$:
+
+  $$
+  \operatorname{PACF}(n)
+  =
+  \operatorname{Corr}\left(
+  r_t^{\text{esquerda}},
+  r_t^{\text{direita}}
+  \right),
+  $$
+
+  em que os dois resíduos vêm de previsões feitas com as observações intermediárias
+
+  $$
+  X_{t+1},\ldots,X_{t+n-1}.
+  $$
+
+  Agora, as duas funções respondem a perguntas relacionadas, porém diferentes.
+
+  A ACF pergunta:
+
+  > Qual é a correlação entre duas observações separadas por $n$ passos no tempo?
+
+  A PACF faz uma pergunta mais específica:
+
+  > Qual é a correlação entre essas observações depois de remover as relações lineares explicadas por tudo o que existe entre elas?
+
+  No lag $1$, não há observações intermediárias para remover. Portanto,
+
+  $$
+  \operatorname{PACF}(1)=\operatorname{ACF}(1).
+  $$
+
+  Para lags maiores, a distinção importa. A ACF enxerga a relação completa através do intervalo. A PACF pergunta quanto dessa relação sobrevive depois que o caminho pelos valores intermediários é removido.
+
+  <h2 id="lendo-os-ecos">Lendo os ecos</h2>
+
+  Agora podemos ler a ACF e a PACF como duas visões da mesma memória temporal.
+
+  A **ACF mostra como a dependência se propaga**. Se uma informação entra na série em certo ponto e é carregada adiante por observações posteriores, seu eco pode permanecer visível por vários lags. Uma ACF que decai lentamente sugere que essa informação persiste. Picos que retornam em distâncias regulares podem revelar sazonalidade. Uma ACF próxima de zero depois de uma distância curta sugere que o eco linear não viaja muito longe.
+
+  Esse é o ponto forte da ACF: ela mostra a relação total em cada intervalo. Sua limitação é não separar uma relação que pertence ao lag $n$ de outra que apenas chegou até ali pelos lags intermediários.
+
+  A **PACF procura a relação acrescentada por um lag específico**. Uma autocorrelação parcial alta no lag $n$ indica que esse lag ainda contribui com informação linear depois que os lags intermediários são levados em conta. Nesse sentido, a PACF costuma oferecer uma visão mais clara quando queremos identificar relações individuais entre lags.
+
+  Essa diferença se torna útil ao diagnosticar duas famílias clássicas de modelos de séries temporais.
+
+  Um **modelo autorregressivo**, ou **modelo AR**, prediz o presente a partir de valores anteriores da mesma série. Como um valor influencia o seguinte e essa influência pode continuar adiante, sua ACF costuma se dissipar aos poucos. A PACF pode apresentar um ponto de corte mais claro depois dos lags usados diretamente pelo modelo.
+
+  Um **modelo de médias móveis**, ou **modelo MA**, constrói cada valor a partir dos choques aleatórios atual e recentes. Aqui, “médias móveis” nomeia um modelo probabilístico; não é o suavizador por média móvel frequentemente usado em gráficos. Como apenas um conjunto limitado de choques se sobrepõe entre as observações, a ACF pode mostrar o ponto de corte mais nítido, enquanto a PACF se dissipa aos poucos.
+
+  <figure className="static-figure acf-series-figure acf-diagnostic-figure">
+    <img
+      src="/articles/acf-pacf/pt-br/acf-pacf-diagnostic-clues.svg"
+      alt="Quatro gráficos de barras idealizados comparam processos AR um e MA um. Para o AR um, a ACF decai ao longo dos lags, enquanto a PACF para depois do lag um. Para o MA um, a ACF para depois do lag um, enquanto a PACF alterna e se dissipa."
+      width="1000"
+      height="640"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>
+      Padrões idealizados da população para processos AR(1) e MA(1). Estimativas de uma amostra finita serão mais ruidosas e raramente pararão exatamente em zero.
+    </figcaption>
+  </figure>
+
+  <div className="prediction-prompt">
+    <p className="lesson-stage">Tente sem os rótulos</p>
+    <h3>Com qual família esse padrão se parece?</h3>
+    <p>Imagine uma série desconhecida cuja ACF se dissipa gradualmente ao longo de vários lags, enquanto a PACF tem um pico claro e depois cai para perto de zero. Essa evidência é mais compatível com um processo semelhante a AR ou a MA? Que característica dos dois gráficos sustenta sua resposta?</p>
+  </div>
+
+  Essa é a pista clássica de um processo semelhante a AR: a ACF carrega adiante a relação propagada, enquanto a PACF isola o primeiro lag como a principal relação individual. Se a ACF tivesse um corte claro e a PACF se dissipasse, o padrão seria mais compatível com um processo semelhante a MA.
+
+  Esses padrões são pistas, não regras automáticas de seleção de modelos. Séries reais podem combinar comportamentos autorregressivos e de médias móveis, conter tendências ou sazonalidades, mudar ao longo do tempo ou produzir picos isolados por ruído amostral. Os gráficos ajudam a formular uma hipótese; a validação e o conhecimento do domínio ainda determinam se essa hipótese é útil.
+
+  O valor diagnóstico das duas funções também vai além dos modelos AR e MA clássicos. Antes da modelagem, a ACF pode revelar persistência e distâncias sazonais recorrentes, enquanto a PACF pode sugerir quais lags individuais merecem mais atenção. Depois da modelagem, as duas funções podem ser aplicadas aos resíduos. Se ainda houver correlações fortes, o modelo deixou parte da estrutura temporal sem explicação.
+
+  Isso continua útil mesmo quando o modelo final de previsão é um modelo de espaço de estados, um sistema baseado em árvores ou uma rede neural. ACF e PACF são maneiras compactas de perguntar se o passado ainda deixa um sinal linear detectável — e se esse sinal se propaga pela série ou se concentra em lags específicos.
+
+  <div className="mental-model">
+    <p className="lesson-stage">Guarde a menor distinção útil</p>
+    <p><strong>A ACF acompanha o eco ao longo do tempo. A PACF pergunta qual lag ainda fala depois que as observações intermediárias são levadas em conta.</strong></p>
+  </div>
+</article>

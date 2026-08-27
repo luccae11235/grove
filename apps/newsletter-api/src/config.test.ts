@@ -12,6 +12,7 @@ const environment = {
   NEWSLETTER_RECIPIENT_ALLOWLIST: "",
   NEWSLETTER_PUBLIC_SIGNUP: "true",
   NEWSLETTER_FROM: "Grove <letters@grove.example>",
+  NEWSLETTER_TRANSACTIONAL_FROM: "",
   NEWSLETTER_REPLY_TO: "",
   WEB_URL: "https://grove.example",
   API_PUBLIC_URL: "https://letters.grove.example",
@@ -26,12 +27,22 @@ test("runtime config accepts explicit HTTPS origins and empty optional values", 
   assert.deepEqual(config.allowedOrigins, ["https://grove.example"]);
   assert.equal(config.resendTopicId, undefined);
   assert.equal(config.newsletterReplyTo, undefined);
+  assert.equal(config.newsletterTransactionalFrom, environment.NEWSLETTER_FROM);
   assert.equal(config.recipientAllowlist, undefined);
   assert.equal(config.publicSignup, true);
   assert.equal(config.deploymentEnvironment, "production");
   assert.equal(config.observabilityLinkSecret, undefined);
   assert.equal(config.actionTtlHours, 24);
   assert.equal(config.resendCooldownSeconds, 60);
+});
+
+test("runtime config supports a separate transactional sender", () => {
+  const config = loadConfig({
+    ...environment,
+    NEWSLETTER_TRANSACTIONAL_FROM: "Grove <confirm@confirm.grove.example>",
+  });
+  assert.equal(config.newsletterFrom, "Grove <letters@grove.example>");
+  assert.equal(config.newsletterTransactionalFrom, "Grove <confirm@confirm.grove.example>");
 });
 
 test("runtime config normalizes and validates the recipient allowlist", () => {
