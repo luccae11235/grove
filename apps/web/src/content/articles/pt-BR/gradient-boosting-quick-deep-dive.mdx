@@ -1,0 +1,980 @@
+---
+articleId: gradient-boosting-quick-deep-dive
+locale: pt-BR
+routeSlug: gradient-boosting-quick-deep-dive
+href: /pt-br/learn/gradient-boosting-quick-deep-dive
+title: "Gradient Boosting: Uma Visão Rápida e Aprofundada"
+navTitle: Uma visão rápida e aprofundada de gradient boosting
+description: "Construa o gradient boosting a partir de correções dos resíduos e conecte o mesmo procedimento aditivo à classificação e à otimização no espaço de funções."
+eyebrow: Árvores de decisão · Gradient boosting
+area: Aprendizado supervisionado
+topic: Árvores de decisão com gradient boosting
+summary: Comece com uma predição constante, ajuste árvores pequenas às correções restantes e descubra como uma loss transforma boosting em gradient descent no espaço de funções.
+status: draft
+readingTime: 30–35 min
+interactiveCount: 6
+staticVisualCount: 13
+difficulty: intermediate
+series: tree-based-machine-learning
+access: public
+prerequisites:
+  - regression-trees-from-scratch
+related:
+  - bagging-reduces-tree-variance
+implementation: mdx
+learning:
+  priorKnowledge:
+    - Reconhecer a predição constante por partes produzida por uma árvore de regressão.
+    - Interpretar um resíduo como a diferença entre um target e uma predição.
+    - Entender uma derivada como uma direção local de mudança de uma loss.
+  likelyMisconception: O gradient boosting diferencia através de cada árvore de decisão ou treina todas as árvores de forma independente no target original.
+  transferOutcome: Explicar como um modelo de árvores de decisão com gradient boosting transforma gradientes de uma loss em uma sequência de pequenas correções preditivas para regressão ou classificação.
+  motivatingQuestion: Como muitas árvores pequenas podem cooperar para melhorar uma predição sem que nenhuma delas resolva sozinha o problema completo?
+  conceptualBottleneck: A loss define uma correção desejada para cada predição de treino, enquanto uma nova árvore generaliza essa correção como função das features de input.
+  evidenceOfUnderstanding:
+    - Acompanhar uma rodada de boosting com erro quadrático desde o baseline, passando pelo ajuste dos resíduos, até a predição atualizada.
+    - Prever como a learning rate e o número de árvores mudam a trajetória do ensemble.
+    - Explicar por que a classificação binária realiza atualizações aditivas no espaço logit.
+    - Distinguir gradientes em relação às predições atuais de gradientes em relação aos parâmetros de split das árvores.
+---
+
+import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import BoostingSequenceVisual from "../../../components/BoostingSequenceVisual.astro";
+import GradientBoostingLab from "../../../components/GradientBoostingLab.astro";
+
+<header className="page-header lesson-header article-hero">
+  <p className="eyebrow">Árvores de decisão · Gradient boosting</p>
+  <h1>Gradient Boosting: Uma Visão Rápida e Aprofundada</h1>
+  <p className="lede">Construa o gradient boosting a partir de correções dos resíduos e conecte o mesmo procedimento aditivo à classificação e à otimização no espaço de funções.</p>
+  <div className="article-meta" aria-label="Informações sobre o artigo">
+    <DifficultyBadge difficulty="intermediate" locale="pt-BR" />
+  </div>
+</header>
+
+<article className="lesson-body deep-article gradient-boosting-article">
+
+## Introdução
+
+O aprendizado de máquina costuma ser apresentado por meio de redes neurais, mas os dados tabulares seguiram um caminho um pouco diferente.
+
+Quando os inputs são colunas como idade, renda, saldo em conta, categoria de produto ou número de transações, modelos baseados em árvores continuam extremamente competitivos. As árvores se adaptam naturalmente a esse tipo de dado porque um padrão útil muitas vezes pode ser expresso por perguntas como se uma feature está acima de um limiar, se outra está dentro de um intervalo ou se duas condições ocorrem juntas.
+
+Gradient Boosted Decision Trees, ou GBDTs, combinam essa força das árvores de decisão com uma ideia muito mais próxima da otimização numérica clássica.
+
+Em vez de treinar uma única árvore grande para resolver o problema inteiro, construímos um modelo sequencialmente. Começamos com uma predição rudimentar, inspecionamos como ela deveria mudar para reduzir a loss, treinamos um modelo pequeno para generalizar essas correções pelo espaço de input e então adicionamos esse modelo ao que já temos.
+
+O resultado é um modelo aditivo:
+
+$$
+F_M(x)
+=
+F_0(x)
++
+\eta h_1(x)
++
+\eta h_2(x)
++\cdots+
+\eta h_M(x)
+$$
+
+em que $F_0$ é a predição inicial, cada $h_m$ é um novo learner e $\eta$ controla o quanto cada learner pode modificar o modelo atual.
+
+Isso cria uma ponte interessante entre árvores de decisão e gradient descent. Em uma rede neural, normalmente definimos uma função parametrizada $f(x;\theta)$ e modificamos repetidamente seus parâmetros $\theta$ para reduzir uma loss. No gradient boosting, o próprio preditor atual é modificado gradualmente pela adição de novas funções.
+
+Outra forma de pensar nisso é que deixamos de pedir a um único modelo que aprenda de uma vez o mapeamento completo de $X$ para $y$. Em cada iteração, estudamos o padrão das correções de que o modelo atual ainda precisa. Um weak learner generaliza essa correção, nós o adicionamos ao modelo e então inspecionamos o que ainda resta.
+
+Com iterações suficientes, funções surpreendentemente complexas podem surgir de muitas árvores individualmente simples.
+
+<BoostingSequenceVisual locale="pt-BR" />
+
+## Intuição
+
+### Começando pelo mais simples
+
+Algoritmos complexos costumam ser muito mais fáceis de entender quando primeiro removemos tudo o que não é essencial. Portanto, vamos começar com um problema de regressão intencionalmente simples.
+
+Suponha que nosso dataset contenha apenas uma feature de input $x$. O target segue um pequeno sinal sintético com uma tendência gradual, uma onda, duas mudanças de nível e algum ruído aleatório:
+
+$$
+y \approx f(x) + \epsilon
+$$
+
+O problema ainda é pequeno o bastante para que tanto os dados quanto as predições do modelo sejam visualizados diretamente em duas dimensões. As mudanças adicionais fazem diferentes partes do espaço de input terem erros genuinamente diferentes para as árvores descobrirem.
+
+Se treinássemos uma árvore de regressão nesse dataset, sua predição seria constante por partes. Diferentes intervalos do eixo $x$ cairiam em diferentes folhas, e todos os pontos dentro de uma folha receberiam a mesma predição.
+
+<GradientBoostingLab kind="standalone-tree" locale="pt-BR" />
+
+Agora vamos mudar a maneira como pensamos sobre o problema.
+
+Em vez de perguntar como construir uma árvore de regressão que prediga $y$, suponha que decidamos de antemão treinar vários modelos sequencialmente. Cada novo modelo se concentrará apenas em corrigir o que o modelo anterior ainda não capturou.
+
+Antes de treinar qualquer árvore, precisamos de uma predição inicial.
+
+Para regressão com erro quadrático, um ponto de partida natural é a média do target:
+
+$$
+F_0(x)=\bar y
+$$
+
+Assim, cada input recebe exatamente a mesma predição no início. Graficamente, o modelo é apenas uma linha horizontal.
+
+Para cada observação, podemos agora medir o quanto o verdadeiro target está distante desse baseline:
+
+$$
+r_i = y_i - F_0(x_i)
+$$
+
+<GradientBoostingLab kind="baseline-residuals" locale="pt-BR" />
+
+Os segmentos verticais representam exatamente essas diferenças. Se um ponto está acima do baseline, seu resíduo é positivo; se está abaixo, seu resíduo é negativo.
+
+Nesse momento, esses resíduos se tornam o novo problema de predição.
+
+Em vez de manter os valores originais de $y$ como nosso target, nós os substituímos temporariamente pelo quanto o modelo atual precisa se mover em cada observação de treino.
+
+Como este problema de exemplo tem apenas uma feature, podemos visualizar esses resíduos como outro dataset.
+
+<GradientBoostingLab kind="residual-pattern" locale="pt-BR" />
+
+Esse gráfico de resíduos deve parecer quase idêntico ao gráfico original do target. Subtrair a mesma constante, $\bar y$, desloca todos os pontos verticalmente sem mudar sua coordenada de input nem o formato do dataset. Os valores deslocados agora têm média zero, mas seu padrão ao longo de $x$ permanece.
+
+A observação importante é que os resíduos não são necessariamente aleatórios.
+
+Se o baseline subestima sistematicamente uma região da curva e superestima outra, os próprios resíduos contêm estrutura. Uma árvore de decisão pode aprender parte dessa estrutura.
+
+Então treinamos uma árvore de regressão $h_1(x)$, mas agora seu target é o resíduo:
+
+$$
+h_1(x) \approx y-F_0(x)
+$$
+
+<GradientBoostingLab kind="residual-tree" locale="pt-BR" />
+
+A semelhança com a primeira árvore que desenhamos também é esperada. Subtrair uma única constante de todos os targets não muda quais limites de split mais reduzem o erro quadrático. Com as mesmas configurações, uma árvore treinada em $y-\bar y$ aprende, portanto, as mesmas regiões que uma árvore treinada diretamente em $y$; somente os valores de suas folhas são deslocados. Essa equivalência especial pertence à primeira rodada. Depois que $F_1(x)$ passa a variar pelo espaço de input, os resíduos seguintes deixam de ser um deslocamento constante dos targets originais.
+
+Quando essa árvore aprende uma aproximação útil da correção, nós a adicionamos ao baseline:
+
+$$
+F_1(x)=F_0(x)+h_1(x)
+$$
+
+Uma predição, portanto, já não vem de uma única árvore. Ela é a soma de um valor inicial e uma correção aprendida.
+
+<GradientBoostingLab kind="first-update" locale="pt-BR" />
+
+Mesmo esse único passo já contém a maior parte da intuição por trás do boosting. O primeiro modelo não precisa resolver o problema inteiro. Ele apenas nos dá um ponto de partida. O modelo seguinte estuda o que ainda está errado e aprende uma função que move as predições em uma direção melhor.
+
+### Nada é tão simples assim
+
+Há um problema em aplicar imediatamente a correção inteira.
+
+Uma árvore de regressão é, ela própria, uma aproximação. Ela não conhece a verdadeira função de correção; apenas a estima a partir de um conjunto de treino finito. Se confiarmos completamente em cada árvore e adicionarmos suas predições em magnitude total, o ensemble poderá reagir agressivamente demais a padrões que existem apenas nos dados de treino.
+
+Considere pontos de um conjunto de teste que nunca foram usados para treinar a árvore. Ela pode estimar bem as correções em algumas regiões e produzir correções desnecessariamente grandes em outras.
+
+Uma maneira simples de tornar o processo mais conservador é reduzir cada correção antes de adicioná-la.
+
+Em vez de
+
+$$
+F_1(x)=F_0(x)+h_1(x),
+$$
+
+usamos
+
+$$
+F_1(x)=F_0(x)+\eta h_1(x),
+$$
+
+em que $\eta$ é a **learning rate**, normalmente escolhida em algum ponto entre 0 e 1.
+
+Se $\eta=0{,}1$, por exemplo, uma árvore que propõe uma correção de $+4$ move a predição atual apenas em $+0{,}4$.
+
+Isso significa que cada árvore individual tem menos influência, mas também que as árvores posteriores terão a oportunidade de continuar corrigindo o erro restante.
+
+Mesmo antes de adicionarmos mais árvores, a learning rate determina quanto dessa primeira correção chega ao modelo. Um valor grande move as quatro predições regionais para mais longe do baseline. Um valor pequeno preserva as mesmas regiões, mas mantém cada passo mais próximo de $F_0$.
+
+A interação abaixo mantém tanto $F_0$ quanto a árvore já ajustada $h_1$ fixos. Ela muda apenas o multiplicador em $F_1(x)=F_0+\eta h_1(x)$. Antes de mover o slider, preveja que parte da linha em degraus pode mudar: os locais dos splits, suas alturas ou ambos.
+
+<GradientBoostingLab kind="learning-rate" locale="pt-BR" />
+
+Nesta amostra específica de validação, um valor um pouco abaixo de $1$ tem desempenho ligeiramente melhor do que usar a primeira correção inteira. Isso basta para mostrar que reduzir uma correção aprendida pode ajudar, mas não torna esse valor universalmente ideal. Em ensembles completos, valores em torno de $0{,}1$ são pontos de partida comuns porque as árvores posteriores continuam trabalhando no que resta. A learning rate apropriada depende do dataset, da complexidade das árvores, do número de iterações de boosting, da regularização e do comportamento de validação.
+
+### Mais árvores
+
+Depois de treinar a primeira árvore, temos um modelo melhor:
+
+$$
+F_1(x)=F_0(x)+\eta h_1(x)
+$$
+
+mas, em geral, não um modelo perfeito.
+
+Então repetimos o mesmo procedimento.
+
+Calculamos um novo resíduo para cada observação de treino:
+
+$$
+r_i^{(2)} = y_i-F_1(x_i)
+$$
+
+Esses resíduos descrevem o que o ensemble ainda precisa corrigir depois que a primeira árvore já contribuiu.
+
+<GradientBoostingLab kind="round-two-residuals" locale="pt-BR" />
+
+Agora podemos treinar outra árvore,
+
+$$
+h_2(x)\approx r^{(2)},
+$$
+
+e atualizar o modelo novamente:
+
+$$
+F_2(x)
+=
+F_1(x)+\eta h_2(x)
+=
+F_0(x)+\eta h_1(x)+\eta h_2(x)
+$$
+
+Para tornar essa atualização concreta, a figura seguinte isola três observações do mesmo conjunto de treino. Ela não mostra a curva ajustada inteira. Cada exemplo começa no baseline compartilhado $F_0$, acompanha a correção âmbar da primeira árvore até $F_1$ e depois acompanha a correção verde da segunda árvore até $F_2$. O círculo preto é o target observado, que nunca se move.
+
+<GradientBoostingLab kind="correction-reversal" locale="pt-BR" />
+
+Nos exemplos à esquerda e à direita, ainda há erro na mesma direção após a primeira atualização, por isso a segunda árvore continua movendo a predição em direção ao target. No exemplo central, a primeira árvore passou do ponto, então a segunda correção aponta de volta. Aqui, os segundos passos são menores porque foram ajustados ao que restou depois da primeira árvore, e não porque a segunda árvore seja inerentemente mais fraca.
+
+Esses são três recortes locais de um único modelo ajustado, não três modelos separados. O ensemble não está construindo uma decomposição fixa do target; cada novo learner responde às predições produzidas por todos os learners anteriores.
+
+É por isso que a sequência importa.
+
+A árvore $h_2$ resolve um problema diferente de $h_1$, porque $h_1$ já mudou as predições. A árvore $h_3$ resolverá outro problema mais uma vez.
+
+Depois de $M$ iterações:
+
+$$
+F_M(x)
+=
+F_0(x)
++
+\eta\sum_{m=1}^{M}h_m(x)
+$$
+
+A animação seguinte expande esse processo iterativo em suas três ações recorrentes. Os eixos e as observações permanecem fixos. Apenas o target residual atual, a árvore ajustada a ele e o modelo acumulado mudam. Use as rodadas numeradas para inspecionar diretamente qualquer estado ou reproduza a sequência completa.
+
+<GradientBoostingLab kind="boosting-process" locale="pt-BR" />
+
+Há outra maneira útil de observar o mesmo processo.
+
+Em vez de nos concentrarmos nas próprias árvores, podemos monitorar a distribuição dos erros restantes. No início do treino, os resíduos podem estar amplamente dispersos. Conforme correções úteis são adicionadas, esperamos que essa distribuição se concentre mais em torno de zero, pelo menos nos dados em que o modelo realmente está melhorando.
+
+O histograma de resíduos e o traço do erro abaixo usam exatamente as mesmas quatro atualizações. Observe a distribuição se estreitar em torno de zero enquanto a raiz do erro quadrático médio diminui. Isso é evidência para esta execução de treino, não uma garantia de que o erro de validação sempre diminuirá.
+
+<GradientBoostingLab kind="error-contraction" locale="pt-BR" />
+
+A interação entre a learning rate e o número de árvores se torna particularmente importante aqui.
+
+Com uma learning rate muito pequena e poucas árvores, o ensemble pode quase não se afastar de seu baseline. Com uma learning rate grande, as primeiras árvores podem passar bastante do ponto, forçando árvores posteriores a aprender correções na direção oposta. Entre esses extremos existe um regime em que cada árvore contribui o bastante para ser útil sem dominar o ensemble inteiro.
+
+Agora varie as duas quantidades. Mantenha o número de árvores pequeno o bastante para que cada contribuição continue inspecionável. Uma learning rate muito pequena deve deixar estrutura visível nos resíduos depois de quatro rodadas. Uma taxa agressiva pode fazer uma árvore posterior apontar na direção oposta. Passe o cursor sobre o gráfico de predições, ou focalize-o e use as setas, para decompor uma predição em seu baseline e nas contribuições das árvores.
+
+<GradientBoostingLab kind="tree-rate" locale="pt-BR" />
+
+A learning rate desempenha dois papéis ao longo de várias rodadas. Ela escala diretamente cada contribuição e, ao mudar a predição atual, também muda o target residual usado para ajustar todas as árvores posteriores. É por isso que as próprias árvores podem mudar quando você move esse slider; diferentemente do playground anterior com uma única árvore, isso já não é uma árvore fixa vista em diferentes escalas.
+
+### Aumentando a complexidade
+
+Nosso primeiro sinal unidimensional era intencionalmente esparso. Quatro árvores rasas bastavam para tornar cada contribuição inspecionável, mas não para mostrar o que um grande modelo aditivo pode construir.
+
+No próximo experimento, preservaremos a visualização unidimensional, mas tornaremos o target muito mais rico. O novo sinal combina uma tendência global, ondas amplas, uma ondulação fina, duas características localizadas, duas mudanças de nível e ruído aleatório. Uma única árvore pequena não consegue expressar todas essas escalas ao mesmo tempo.
+
+Antes de mexer nos controles, preveja o que um ensemble limitado aprenderá primeiro. Ele gastará suas primeiras árvores com a forma ampla ou com a elevação e a queda estreitas?
+
+<GradientBoostingLab kind="complexity" locale="pt-BR" />
+
+A estrutura ampla aparece com relativamente poucas árvores porque responde por erros grandes e repetidos. Detalhes locais menores precisam de um orçamento maior: só passam a valer a pena depois que o ensemble remove estrutura suficiente do padrão dominante.
+
+O erro de validação também impõe um limite à intuição de que mais árvores são sempre melhores. O erro de treino continua caindo conforme o ensemble ganha capacidade. O erro de validação pode estabilizar ou eventualmente subir porque as árvores posteriores são cada vez mais capazes de modelar peculiaridades das observações de treino. Portanto, o número de árvores é uma escolha de regularização, e não apenas um pedido por mais acurácia.
+
+Modelos reais de gradient boosting podem conter centenas ou milhares de learners. Cada novo learner observa a correção exigida pelo modelo em seu estágio atual e tenta generalizá-la.
+
+Com muitas features de input, a árvore decide quais são úteis por meio de seus splits. Um ramo pode particionar os dados segundo a idade, outro segundo o saldo em conta e outro segundo a interação entre várias decisões anteriores. Não precisamos especificar manualmente qual feature deve responder por cada correção.
+
+Essa é uma razão pela qual as árvores são especialmente atraentes como base learners para dados tabulares. Elas representam naturalmente limiares, não linearidades e interações entre features sem exigir que toda relação seja expressa como uma transformação suave em um espaço de representações contínuas.
+
+As árvores individuais usadas em boosting costumam ser mantidas relativamente pequenas.
+
+Se cada learner fosse uma árvore extremamente profunda, capaz de ajustar quase perfeitamente os resíduos atuais, então cada passo de boosting poderia memorizar grande parte do conjunto de treino. Árvores rasas fornecem, em vez disso, uma classe de funções restrita: cada atualização pode capturar apenas parte da estrutura restante.
+
+Isso cria uma interação importante entre a complexidade das árvores, a learning rate e o número de rodadas de boosting. Centenas de árvores com uma learning rate suficientemente pequena podem construir gradualmente uma função útil, enquanto centenas de árvores altamente expressivas combinadas com atualizações agressivas podem eventualmente causar overfitting.
+
+Também não há nada na definição matemática do gradient boosting que diga que os learners precisam ser árvores.
+
+Em princípio, poderíamos usar modelos lineares, splines, pequenas redes neurais ou outras classes de funções. As árvores de decisão se tornaram a escolha dominante porque combinam uma capacidade de aproximação útil com um viés indutivo que funciona muito bem para muitos datasets estruturados.
+
+### O que fazemos quando queremos classificar?
+
+Até aqui, nosso exemplo teve uma propriedade especialmente conveniente: a predição pode ser qualquer número real.
+
+Se o target é contínuo, não há problema em predizer
+
+$$
+-4.2,\quad 0.7,\quad 38.1
+$$
+
+ou qualquer outro valor em
+
+$$
+(-\infty,\infty).
+$$
+
+Com erro quadrático, também podemos calcular uma correção particularmente intuitiva:
+
+$$
+y-\hat y
+$$
+
+e adicionar um modelo que a prediga.
+
+A classificação binária é diferente.
+
+Agora, a quantidade final que queremos é uma probabilidade:
+
+$$
+p(y=1\mid x)\in[0,1].
+$$
+
+Adicionar correções arbitrárias diretamente às probabilidades seria problemático. Uma probabilidade de $0{,}9$, por exemplo, não pode simplesmente receber uma correção de $+0{,}4$, porque $1{,}3$ não é uma probabilidade válida.
+
+Uma solução conveniente é realizar o boosting em outro espaço numérico.
+
+Em vez de construir o modelo aditivo diretamente no espaço de probabilidade, transformamos probabilidades de $(0,1)$ em valores que podem ir de $-\infty$ a $+\infty$. As árvores operam nesse espaço sem restrições e, quando precisamos de uma probabilidade, transformamos a saída do modelo de volta para $(0,1)$.
+
+<GradientBoostingLab kind="classification-bridge" locale="pt-BR" />
+
+#### Sigmoid e logits
+
+As duas funções que conectam esses espaços são a **sigmoid** e o **logit**.
+
+A sigmoid recebe qualquer número real $z$ e o mapeia para um valor entre zero e um:
+
+$$
+\sigma(z)
+=
+\frac{1}{1+e^{-z}}.
+$$
+
+Quando $z\rightarrow-\infty$, a sigmoid se aproxima de zero. Quando $z\rightarrow+\infty$, ela se aproxima de um.
+
+Sua inversa é o logit:
+
+$$
+\operatorname{logit}(p)
+=
+\log\left(\frac{p}{1-p}\right).
+$$
+
+O logit recebe uma probabilidade $p\in(0,1)$ e a mapeia para toda a reta real.
+
+<GradientBoostingLab kind="classification-links" locale="pt-BR" />
+
+Portanto, essas funções formam uma ponte de duas direções:
+
+$$
+p
+\overset{\text{logit}}{\longrightarrow}
+z
+\overset{\text{sigmoid}}{\longrightarrow}
+p.
+$$
+
+Uma probabilidade de $0{,}5$ corresponde a um logit de $0$. Probabilidades acima de $0{,}5$ têm logits positivos, enquanto probabilidades abaixo de $0{,}5$ têm logits negativos.
+
+O gradient boosting pode construir um modelo aditivo nesse espaço logit:
+
+$$
+F_M(x)
+=
+F_0(x)
++
+\eta h_1(x)
++\cdots+
+\eta h_M(x),
+$$
+
+e a probabilidade final é
+
+$$
+p(x)=\sigma(F_M(x)).
+$$
+
+#### Juntando as peças
+
+Considere um dataset de classificação unidimensional com quarenta observações. Ele mantém o mesmo intervalo de input do problema de regressão, mas agora cada target é a classe $0$ ou a classe $1$. Dezesseis observações pertencem à classe $1$, e vinte e quatro pertencem à classe $0$.
+
+As tabelas abaixo destacam cinco observações desse dataset. Manteremos o problema completo com quarenta linhas fixo em todas as tabelas, curvas, árvores e animações desta seção.
+
+Antes de treinar a primeira árvore, precisamos novamente de um baseline.
+
+A probabilidade empírica da classe $1$ é
+
+$$
+p_0=\frac{16}{40}=0.4.
+$$
+
+Como nosso modelo aditivo opera no espaço logit, o valor inicial do modelo é
+
+$$
+F_0
+=
+\operatorname{logit}(0.4)
+=
+\log\left(\frac{0.4}{0.6}\right)
+\approx -0.405.
+$$
+
+Cada observação recebe inicialmente esse mesmo logit, que corresponde, por meio da sigmoid, a uma probabilidade de $0{,}4$.
+
+Agora precisamos decidir o que a próxima árvore deve aprender.
+
+Com entropia cruzada binária, a quantidade relevante é
+
+$$
+r_i=y_i-p_i.
+$$
+
+Se $y_i=1$ enquanto o modelo atual prediz $p_i=0{,}4$, então
+
+$$
+r_i=1-0.4=0.6.
+$$
+
+O modelo precisa se mover em uma direção que aumente o logit e, portanto, aumente a probabilidade.
+
+Se $y_i=0$,
+
+$$
+r_i=0-0.4=-0.4,
+$$
+
+então a correção aponta na direção oposta.
+
+Esses valores costumam ser chamados de **pseudo-resíduos** porque desempenham o mesmo papel que os resíduos comuns desempenharam na regressão com erro quadrático, embora surjam do gradiente de uma loss diferente.
+
+Vamos derivar isso formalmente mais adiante. Por enquanto, a ideia importante é que a loss nos fornece um sinal de correção para cada observação de treino.
+
+<GradientBoostingLab kind="classification-residuals" locale="pt-BR" />
+
+Na construção de primeira ordem usada pelos playgrounds deste artigo, uma nova árvore modela esse sinal de correção pelo espaço de features. Algumas implementações de produção refinam depois os valores das folhas usando a curvatura da loss. Isso muda o tamanho da atualização, e não o próprio loop de correção.
+
+Para a observação C16, a primeira árvore ajustada e uma learning rate de $0{,}8$ contribuem com aproximadamente $+0{,}292$ no espaço logit. Partindo de
+
+$$
+F_0=-0.405,
+$$
+
+o score atualizado se torna
+
+$$
+F_1\approx-0.405+0.292\approx-0.114.
+$$
+
+Para convertê-lo de volta em probabilidade:
+
+$$
+p_1
+=
+\sigma(-0.114)
+=
+\frac{1}{1+e^{0.114}}
+\approx 0.472.
+$$
+
+Assim, a probabilidade passa de $0{,}4$ para cerca de $0{,}472$.
+
+Se essa observação pertence à classe $1$, essa é uma correção útil. Para observações da classe $0$, atualizações úteis devem, em geral, mover seus logits para baixo e, consequentemente, reduzir suas probabilidades.
+
+<GradientBoostingLab kind="classification-update" locale="pt-BR" />
+
+Observe que a árvore não corrige cada observação de forma independente. Ela aprende um único padrão regional. Uma observação ruidosa da classe $0$ pode, portanto, se mover para cima junto de observações próximas da classe $1$, mesmo enquanto a entropia cruzada total diminui. O boosting melhora o modelo compartilhado, não necessariamente cada linha em cada rodada.
+
+Depois da atualização, o modelo deve atribuir probabilidades menores a pelo menos alguns exemplos da classe $0$ e probabilidades maiores a pelo menos alguns exemplos da classe $1$. Podemos então calcular uma nova probabilidade para cada observação, obter um novo conjunto de pseudo-resíduos, treinar outra árvore e repetir o processo.
+
+A arquitetura geral é, portanto, quase a mesma da regressão.
+
+O que muda é a loss e, como a loss muda, também muda o sinal de correção produzido em cada iteração.
+
+#### Um exemplo mais concreto
+
+As cinco linhas destacadas expõem a aritmética, mas o dataset completo torna visível o padrão regional de decisão.
+
+As mesmas quarenta observações agora aparecem sobre duas linhas de classe. Em vez de aprender um target contínuo de regressão, o modelo precisa aprender como a probabilidade da classe $1$ muda pelo espaço de input.
+
+Antes de pressionar **Reproduzir**, preveja o que permanecerá igual à regressão e o que precisará mudar. Depois, acompanhe os rótulos de classe, o sinal de correção $y-p$ e as contribuições aditivas no espaço logit ao longo de quatro árvores rasas.
+
+<GradientBoostingLab kind="classification-playground" locale="pt-BR" />
+
+A diferença importante é o que a curva representa.
+
+Na regressão, o ensemble aproximava diretamente o target numérico. Na classificação binária, o ensemble aditivo constrói um score no espaço logit, enquanto a sigmoid transforma esse score na curva de probabilidade que realmente interpretamos.
+
+Uma árvore que produz uma correção positiva em algum intervalo aumenta ali o log-odds da classe $1$. Uma correção negativa o reduz. Repetir esses ajustes locais pode, com o tempo, formar uma fronteira de classificação altamente não linear, embora cada árvore individual continue pequena.
+
+Antes de adicionar mais notação, comprima toda a jornada em um único loop. O modelo atual produz predições. A loss escolhida transforma essas predições em um sinal de correção. Uma árvore pequena aprende a parte desse sinal que pode ser explicada pelos inputs. Reduzimos e adicionamos a árvore, obtemos um novo modelo e consultamos a loss novamente.
+
+Regressão e classificação diferem no espaço de predição e no sinal de correção, mas não nessa sequência.
+
+## Matemática
+
+### Regressão
+
+A explicação baseada em resíduos acima é exata para um caso particularmente importante: regressão com erro quadrático.
+
+Suponha que nosso conjunto de treino seja
+
+$$
+\{(x_i,y_i)\}_{i=1}^{n},
+$$
+
+e que nosso modelo atual seja $F(x)$.
+
+Queremos minimizar uma loss empírica
+
+$$
+\mathcal{L}(F)
+=
+\sum_{i=1}^{n}
+L(y_i,F(x_i)).
+$$
+
+Para o erro quadrático, podemos escrever
+
+$$
+L(y_i,F(x_i))
+=
+\frac{1}{2}
+\left(y_i-F(x_i)\right)^2.
+$$
+
+A derivada em relação à **predição** $F(x_i)$ é
+
+$$
+\frac{\partial L}{\partial F(x_i)}
+=
+F(x_i)-y_i.
+$$
+
+Portanto, a derivada negativa é
+
+$$
+-\frac{\partial L}{\partial F(x_i)}
+=
+y_i-F(x_i),
+$$
+
+que é exatamente o resíduo.
+
+Isso nos dá uma interpretação mais geral do que fazíamos antes.
+
+Na iteração de boosting $m$, calculamos
+
+$$
+r_{im}
+=
+-
+\left[
+\frac{\partial L(y_i,F(x_i))}
+{\partial F(x_i)}
+\right]_{F=F_{m-1}}.
+$$
+
+Esses são os **gradientes negativos da loss em relação às predições atuais**.
+
+Então ajustamos um learner $h_m(x)$ de modo que
+
+$$
+h_m(x_i)\approx r_{im}.
+$$
+
+Por fim, atualizamos a função preditiva:
+
+$$
+F_m(x)
+=
+F_{m-1}(x)
++
+\eta h_m(x).
+$$
+
+Para o erro quadrático, isso se reduz ao procedimento intuitivo com resíduos que já vimos, porque o gradiente negativo é justamente $y-\hat y$.
+
+Para outra loss diferenciável, o gradiente negativo geralmente será outra coisa.
+
+É nesse ponto que a palavra **gradient** em gradient boosting se torna precisa.
+
+O gradiente não é calculado em relação aos limiares de split de uma árvore de decisão, e não estamos diferenciando através da árvore. Em vez disso, em cada observação de treino, perguntamos como a loss mudaria se a predição atual se movesse um pouco.
+
+Se o modelo atual produz o vetor
+
+$$
+\mathbf F
+=
+\begin{bmatrix}
+F(x_1)\\
+F(x_2)\\
+\vdots\\
+F(x_n)
+\end{bmatrix},
+$$
+
+então a loss define um vetor gradiente
+
+$$
+\nabla_{\mathbf F}\mathcal L
+=
+\begin{bmatrix}
+\frac{\partial \mathcal L}{\partial F(x_1)}\\
+\frac{\partial \mathcal L}{\partial F(x_2)}\\
+\vdots\\
+\frac{\partial \mathcal L}{\partial F(x_n)}
+\end{bmatrix}.
+$$
+
+O gradient descent comum gostaria de mover as predições na direção
+
+$$
+-\nabla_{\mathbf F}\mathcal L.
+$$
+
+Mas simplesmente armazenar uma correção independente para cada ponto de treino não nos daria um modelo capaz de produzir predições para inputs nunca vistos.
+
+Por isso, o gradient boosting introduz uma aproximação crucial: ele treina um learner $h_m(x)$ para **generalizar a direção desejada do gradiente como função das features**.
+
+Essa é a ponte central entre otimização e aprendizado supervisionado.
+
+O gradiente nos diz como as predições deveriam mudar no conjunto de treino. O weak learner procura estrutura nessas mudanças e as transforma em uma função que também pode ser avaliada em novos valores de $x$.
+
+Essa perspectiva costuma ser descrita como **otimização no espaço de funções**.
+
+No gradient descent comum, poderíamos ter
+
+$$
+f(x;\theta)
+$$
+
+e atualizar um vetor de parâmetros com dimensão finita:
+
+$$
+\theta_m
+=
+\theta_{m-1}
+-
+\eta\nabla_\theta\mathcal L.
+$$
+
+No gradient boosting, construímos a função preditiva de forma aditiva:
+
+$$
+F_m
+=
+F_{m-1}
++
+\eta h_m.
+$$
+
+A direção de busca é, portanto, representada por uma nova função, e não por uma perturbação direta de um vetor de parâmetros existente.
+
+Uma versão mais completa da atualização também pode incluir um tamanho de passo $\gamma_m$:
+
+$$
+F_m(x)
+=
+F_{m-1}(x)
++
+\eta\gamma_m h_m(x),
+$$
+
+em que
+
+$$
+\gamma_m
+=
+\arg\min_\gamma
+\sum_{i=1}^{n}
+L\left(
+y_i,
+F_{m-1}(x_i)+\gamma h_m(x_i)
+\right).
+$$
+
+Diferentes implementações aproximam ou otimizam essas atualizações de formas diferentes, mas a estrutura fundamental permanece a mesma: obter uma direção a partir da loss, aproximar essa direção com um learner e adicionar o learner à função atual.
+
+<GradientBoostingLab kind="gradient-framework" locale="pt-BR" />
+
+Quando formulamos o boosting dessa maneira, a regressão com erro quadrático deixa de ser um algoritmo especial e se torna uma instância de um framework geral.
+
+Mude a loss, e o gradiente muda com ela. O mesmo procedimento aditivo pode, portanto, ser adaptado a objetivos semelhantes ao erro absoluto, regressão de Poisson, classificação binária, classificação multiclasse e muitas outras tarefas.
+
+### Classificação
+
+Vamos agora formalizar o procedimento de classificação binária.
+
+Para um target binário
+
+$$
+y_i\in\{0,1\},
+$$
+
+deixamos o ensemble produzir um score bruto
+
+$$
+F(x_i)\in\mathbb R.
+$$
+
+Esse score representa um logit. A probabilidade correspondente é
+
+$$
+p_i
+=
+\sigma(F(x_i))
+=
+\frac{1}{1+e^{-F(x_i)}}.
+$$
+
+Podemos otimizar a entropia cruzada binária:
+
+$$
+L(y_i,F(x_i))
+=
+-
+\left[
+y_i\log p_i
++
+(1-y_i)\log(1-p_i)
+\right].
+$$
+
+Embora a loss seja escrita em termos de $p_i$, essa probabilidade depende do score bruto do modelo por meio de
+
+$$
+p_i=\sigma(F(x_i)).
+$$
+
+Calcular a derivada em relação ao score bruto resulta em
+
+$$
+\frac{\partial L}{\partial F(x_i)}
+=
+p_i-y_i.
+$$
+
+Portanto, o gradiente negativo é
+
+$$
+-\frac{\partial L}{\partial F(x_i)}
+=
+y_i-p_i.
+$$
+
+Esse é precisamente o pseudo-resíduo apresentado antes.
+
+Na iteração $m$,
+
+$$
+p_{im}
+=
+\sigma(F_{m-1}(x_i)),
+$$
+
+e calculamos
+
+$$
+r_{im}
+=
+y_i-p_{im}.
+$$
+
+Uma árvore é então ajustada usando esses sinais de gradiente como targets.
+
+Conceitualmente:
+
+$$
+h_m(x_i)\approx y_i-p_{im}.
+$$
+
+O ensemble é atualizado em seguida no espaço de score bruto,
+
+$$
+F_m(x)
+=
+F_{m-1}(x)
++
+\eta\,\text{correction}_m(x),
+$$
+
+e a nova probabilidade é
+
+$$
+p_m(x)
+=
+\sigma(F_m(x)).
+$$
+
+Isso torna muito mais clara a semelhança com a regressão.
+
+Para regressão com erro quadrático:
+
+$$
+r_i=y_i-F(x_i).
+$$
+
+Para classificação logística:
+
+$$
+r_i=y_i-\sigma(F(x_i)).
+$$
+
+Nos dois casos, essas quantidades são gradientes negativos da loss escolhida em relação à representação atual da predição.
+
+<details className="notation-depth">
+  <summary>Nota opcional de implementação: usando a curvatura para escolher os valores das folhas</summary>
+
+  Dizer que uma árvore de classificação prediz $y-p$ é a descrição de primeira ordem usada pelos playgrounds deste artigo. Muitos algoritmos práticos de gradient boosting não calculam simplesmente a média desses pseudo-resíduos dentro de uma folha para adicionar diretamente esse valor. Depois que uma árvore define suas regiões, o valor atribuído a cada folha pode ser escolhido para minimizar a loss. Isso pode usar informações de curvatura da segunda derivada.
+
+  Para a loss logística, considere
+
+  $$
+  g_i
+  =
+  \frac{\partial L}{\partial F(x_i)}
+  =
+  p_i-y_i,
+  $$
+
+  enquanto
+
+  $$
+  H_i
+  =
+  \frac{\partial^2L}{\partial F(x_i)^2}
+  =
+  p_i(1-p_i).
+  $$
+
+  Uma aproximação de segunda ordem da loss em torno da predição atual tem a forma
+
+  $$
+  L(F+\Delta)
+  \approx
+  L(F)
+  +
+  g\Delta
+  +
+  \frac{1}{2}H\Delta^2.
+  $$
+
+  Minimizar essa aproximação quadrática local produz uma correção semelhante à de Newton
+
+  $$
+  \Delta
+  \approx
+  -\frac{g}{H}.
+  $$
+
+  Quando várias observações caem em uma folha $R_j$ da árvore, um passo de Newton agregado correspondente tem a forma geral
+
+  $$
+  w_j
+  \approx
+  -
+  \frac{\sum_{i\in R_j}g_i}
+  {\sum_{i\in R_j}H_i},
+  $$
+
+  antes de considerar termos adicionais de regularização que uma implementação específica pode introduzir.
+
+  Como
+
+  $$
+  -\sum_i g_i
+  =
+  \sum_i(y_i-p_i),
+  $$
+
+  as explicações de primeira e de segunda ordem não competem entre si. O pseudo-resíduo fornece a direção em que a loss quer mover cada predição. A curvatura pode ajudar a escolher o tamanho da atualização. Essa é a ideia por trás de métodos de boosting de segunda ordem, como o XGBoost, embora cada implementação acrescente sua própria regularização, seus critérios de split e sua estrutura computacional.
+</details>
+
+A predição inicial da classificação também decorre diretamente da loss.
+
+Se o conjunto de treino contém uma fração
+
+$$
+\bar y
+=
+\frac{1}{n}\sum_{i=1}^{n}y_i
+$$
+
+de exemplos positivos, então a probabilidade constante que minimiza a entropia cruzada binária é
+
+$$
+p_0=\bar y.
+$$
+
+Como o ensemble opera no espaço logit, o score bruto inicial correspondente é
+
+$$
+F_0
+=
+\log\left(
+\frac{\bar y}{1-\bar y}
+\right).
+$$
+
+A partir daí, o boosting calcula repetidamente probabilidades, deriva gradientes da loss, ajusta árvores a padrões úteis de correção e atualiza o score aditivo.
+
+O mesmo princípio geral se estende para além da classificação binária. Problemas multiclasse exigem vários scores de classe e uma transformação softmax, enquanto outros objetivos estatísticos produzem seus próprios gradientes e Hessianas. A mecânica se torna mais elaborada, mas o procedimento central permanece o mesmo.
+
+## Conclusão e ressalvas
+
+O gradient boosting se torna consideravelmente mais fácil de entender quando deixamos de pensar nele como uma sequência misteriosa de árvores.
+
+O ensemble começa com uma função simples:
+
+$$
+F_0(x).
+$$
+
+A loss nos diz como as predições atuais deveriam mudar. Um weak learner observa essas correções desejadas pelo conjunto de treino e tenta generalizá-las a partir das features de input. Reduzimos sua contribuição, adicionamos ao modelo atual, calculamos o que ainda está errado e repetimos.
+
+Para regressão com erro quadrático, essas correções são os resíduos conhecidos
+
+$$
+y-\hat y.
+$$
+
+De forma mais geral, são gradientes negativos
+
+$$
+-\frac{\partial L}{\partial F(x)}.
+$$
+
+É isso que permite ao mesmo framework passar da regressão para a classificação e para muitos outros objetivos apenas pela mudança da loss.
+
+Árvores de decisão são especialmente eficazes como learners dentro desse processo porque conseguem capturar limiares, interações e estruturas não lineares que aparecem com frequência em dados tabulares. Ao mesmo tempo, manter as árvores individuais fracas força o ensemble a construir a função final gradualmente, em vez de permitir que um learner domine o ajuste.
+
+Essa construção gradual introduz vários trade-offs. A learning rate controla a magnitude de cada atualização. A profundidade da árvore controla a complexidade disponível em uma única atualização. O número de rodadas de boosting controla quantas oportunidades o ensemble recebe para se corrigir. Aumentar qualquer um deles indiscriminadamente pode, com o tempo, fazer o modelo ajustar estruturas específicas do treino em vez de padrões generalizáveis, razão pela qual o desempenho de validação e o early stopping são importantes na prática.
+
+A interpretação pela otimização também tem uma limitação importante. Uma árvore não reproduz de forma independente o vetor exato do gradiente negativo para cada observação. Ela aproxima esse vetor usando uma classe de funções restrita. Pontos atribuídos à mesma folha compartilham uma correção, e a qualidade de cada passo de boosting depende, portanto, de a árvore conseguir encontrar estrutura significativa nos gradientes.
+
+Essa restrição também é parte do que torna o método útil. Em vez de memorizar uma atualização arbitrária para cada observação de treino, o gradient boosting procura repetidamente correções que possam ser expressas como regras reutilizáveis sobre o espaço de features.
+
+Depois de iterações suficientes, o modelo final pode conter centenas de árvores, mas cada uma resolve um problema relativamente modesto:
+
+$$
+\text{Dado o que o ensemble prediz agora, qual correção sistemática deve vir em seguida?}
+$$
+
+Gradient Boosted Decision Trees transformam essa sequência de pequenas perguntas em uma poderosa função preditiva.
+
+</article>
