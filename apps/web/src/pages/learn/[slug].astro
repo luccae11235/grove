@@ -79,7 +79,7 @@ const translations = entry.data.articleId === "reward-hacking-three-mdps"
         <h1>{entry.data.title}</h1>
         <div class="article-meta" aria-label="Article information">
           <DifficultyBadge difficulty={entry.data.difficulty} showDescription />
-          <span><strong>Draft</strong></span>
+          {entry.data.status === "draft" && <span><strong>Draft</strong></span>}
         </div>
       </header>
       <article class="lesson-body deep-article sample-based-rl-article">
