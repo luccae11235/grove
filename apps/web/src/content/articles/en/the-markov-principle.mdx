@@ -12,8 +12,8 @@ topic: The Markov principle and MDP state design
 summary: Compare Markovian and non-Markovian state representations in Pong, a door-and-key gridworld, and an ordered-checkpoint task.
 status: draft
 readingTime: 18–22 min
-interactiveCount: 0
-staticVisualCount: 1
+interactiveCount: 1
+staticVisualCount: 3
 difficulty: foundational
 series: reinforcement-learning
 access: public
@@ -38,6 +38,8 @@ learning:
 ---
 
 import MarkovPropertyComparison from "../../../components/MarkovPropertyComparison.astro";
+import MarkovPongLab from "../../../components/MarkovPongLab.astro";
+import PongConceptFigure from "../../../components/PongConceptFigure.astro";
 
 <header className="page-header lesson-header article-hero">
   <p className="eyebrow">Reinforcement learning · State representation</p>
@@ -72,11 +74,11 @@ Our first MDP is a simplified Pong environment where a ball moves continuously a
 
 We will compare two representations of this environment. In the non-Markovian representation, the agent only observes the position of the ball and the paddle, so the state is $z_t=(x_t,y_t,p_t)$. This information is insufficient to determine the next transition. A ball at a specific position could be moving up or moving down. If the agent knew the previous positions, it could infer the trajectory and predict the future. In the Markovian representation, we add the ball's velocity, forming the state $z_t=(x_t,y_t,v_t^x,v_t^y,p_t)$. Now, the position and velocity fully describe the relevant dynamics at that instant. Knowing the previous positions adds no necessary information for determining the next transition.
 
-[IMAGE: an illustration of the agent and environment. A horizontal paddle that can move left or right inside a box, where there is a ball that bounces off the walls. Hitting the ball with the paddle is +1 reward, losing the ball is -1. Otherwise it is 0]
+<PongConceptFigure kind="environment" />
 
 The first representation violates the Markov principle because, without the direction of movement, we cannot predict the next state deterministically. The distribution of the next state becomes probabilistically spread across possible trajectories. If we were to include the ball's last position in our transition function, we would know exactly where it came from and where it is going. Including the history changes the transition function from a probabilistic spread to a deterministic update.
 
-[IMAGE: In the left corner, a stationary ball above the paddle, with numerous arrows pointing in all directions indicating that we do not know where it is going. At the top of this image, I want the formula for S, which is the position of the ball + paddle. In the right corner, a similar image, but now the formula incorporates velocity, and therefore we can know where the ball is going]
+<PongConceptFigure kind="state" />
 
 In mathematical terms, the first representation yields a transition function that returns a broad probability distribution. Supplying the history narrows this distribution, meaning that the probability equality is broken.
 
@@ -84,19 +86,19 @@ In the second case, providing the history offers no advantage. The velocity alre
 
 ### Learning
 
-We can test this by deploying an algorithm to learn how to return the ball. Initially, we will withhold the velocity information from the agent's state representation.
+We can test this by deploying an algorithm to learn how to return the ball. The playground uses a quantized 11-by-9 version of the continuous arena so that a real Q-learning experiment can run quickly in the browser. The quantization, underlying dynamics, reward, launch sequence, learning algorithm, and hyperparameters remain identical for both agents. Only the observation changes.
 
-[PLAYGROUND: In the left corner, the ping pong described earlier. The paddle moves left and right. In the top right corner: a small graph of rewards per episode. Below the graph: parameters to control the learning speed of the agent. In the footer of the playground, I want a drop down that briefly explains the algorithm behind the learning, just for the curious]
+<MarkovPongLab />
 
-Under these conditions, the agent struggles. It manages to learn a suboptimal policy, but the process takes significantly longer than necessary because it cannot perceive the full dynamics of the environment.
+Begin with **Position only** selected. Under these conditions, the agent struggles. It manages to learn a suboptimal policy, but the process is unstable because the same observed state can demand opposing actions.
 
-We can then run the exact same playground, but provide the agent with the ball's velocity.
+Then select **Position + velocity** and replay the learned policy in the exact same environment. The direction arrow is now part of the agent's current observation rather than information inferred from earlier frames.
 
-[PLAYGROUND: same playground as before, but now the agent receives the velocity. The goal is to see that the agent learns faster]
+The chart evaluates both greedy policies on every one of the 176 possible launch states at regular training checkpoints. It does not plot noisy rewards gathered while the agents are still exploring.
 
-With the Markovian representation, the agent learns the task much faster.
+With the Markovian representation, the agent learns the task much faster. In the reproducible run shown here, the velocity-aware policy reaches a 100% hit rate while the position-only policy remains inconsistent at roughly half of the launch states.
 
-[IMAGE: Compare the two learning curves]
+The gap is computed from the learned Q-values, not drawn in advance. Resetting the experiment reproduces the same result because the seed, launch schedule, and evaluation set are fixed.
 
 This scenario exemplifies what we can call **Missing dynamics**, where the state fails to capture the instantaneous motion required to predict physical transitions.
 

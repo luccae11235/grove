@@ -80,6 +80,27 @@ export type {
   PongPolicy,
   PongState,
 } from "./sampleBasedRl/pongModel";
+export { MarkovPongPlayground } from "./markovPong/MarkovPongPlayground";
+export {
+  createPongEpisode as createMarkovPongEpisode,
+  DEFAULT_PONG_TRAINING,
+  enumeratePongStarts,
+  evaluatePongPolicy as evaluateMarkovPongPolicy,
+  MARKOV_PONG,
+  pongObservationIndex,
+  pongPolicyAction as markovPongPolicyAction,
+  stepMarkovPong,
+  trainMarkovPong,
+  trainPongPair,
+} from "./markovPong/experiment";
+export type {
+  PongAction as MarkovPongAction,
+  PongCurvePoint as MarkovPongCurvePoint,
+  PongObservationMode,
+  PongPairResult as MarkovPongPairResult,
+  PongTrainingResult as MarkovPongTrainingResult,
+  PongTrueState as MarkovPongTrueState,
+} from "./markovPong/experiment";
 export {
   DatasetComplexityPlayground,
   FeatureImportancePlayground,
