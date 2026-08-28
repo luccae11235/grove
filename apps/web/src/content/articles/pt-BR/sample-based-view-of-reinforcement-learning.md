@@ -10,7 +10,8 @@ eyebrow: Aprendizado por reforço · Aprendizado baseado em amostras
 area: Aprendizado por reforço
 topic: Aprendizado por reforço baseado em amostras
 summary: Acompanhe a experiência ao longo de um MDP e compare como algoritmos de aprendizado por reforço coletam amostras, atualizam grandezas aprendidas e representam o que aprendem.
-status: draft
+status: published
+publishedAt: 2026-08-28
 readingTime: 35–45 min
 interactiveCount: 2
 staticVisualCount: 12

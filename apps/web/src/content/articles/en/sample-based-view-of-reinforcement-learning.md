@@ -10,7 +10,8 @@ eyebrow: Reinforcement learning · Sample-based learning
 area: Reinforcement learning
 topic: Sample-based reinforcement learning
 summary: Follow experience through an MDP, then compare how reinforcement learning algorithms collect samples, update learned quantities, and represent what they learn.
-status: draft
+status: published
+publishedAt: 2026-08-28
 readingTime: 35–45 min
 interactiveCount: 2
 staticVisualCount: 12

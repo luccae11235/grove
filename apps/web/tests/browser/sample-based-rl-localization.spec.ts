@@ -26,6 +26,7 @@ for (const viewport of [
       level: 1,
       name: "Uma visão do aprendizado por reforço baseada em amostras",
     })).toBeVisible();
+    await expect(page.getByText("Rascunho", { exact: true })).toHaveCount(0);
 
     if (viewport.name === "desktop") {
       for (const suffix of ["", "-mobile"]) {

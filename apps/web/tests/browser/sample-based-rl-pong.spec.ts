@@ -21,6 +21,7 @@ for (const viewport of [
     page.on("pageerror", (error) => pageErrors.push(error.message));
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.setViewportSize(viewport);
+    await expect(page.getByText("Draft", { exact: true })).toHaveCount(0);
     const transitionFigure = page.locator(
       ".sample-based-rl-transition-dynamics",
     );
