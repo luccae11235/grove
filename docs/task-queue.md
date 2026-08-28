@@ -34,6 +34,14 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Publish the sample-based reinforcement-learning article — issue #160**
+  - Publish the reviewed English and Brazilian Portuguese article on 2026-08-28
+    while keeping every other queued article in draft.
+  - Prepare Issue 005 as a repository draft only; do not create, test, schedule,
+    or send a provider broadcast without separate authorization.
+  - Completion check: the full repository gate passes, exact-SHA staging and
+    production verification pass, and both canonical locale routes are public.
+
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.

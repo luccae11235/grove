@@ -72,7 +72,7 @@ const translations = entry.data.articleId === "sample-based-view-of-reinforcemen
         <h1>{entry.data.title}</h1>
         <div class="article-meta" aria-label="Informações sobre o artigo">
           <DifficultyBadge difficulty={entry.data.difficulty} locale="pt-BR" showDescription />
-          <span><strong>Rascunho</strong></span>
+          {entry.data.status === "draft" && <span><strong>Rascunho</strong></span>}
         </div>
       </header>
       <article class="lesson-body deep-article sample-based-rl-article">
