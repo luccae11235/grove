@@ -14,7 +14,7 @@ for (const viewport of [
   { name: "desktop", width: 1_440, height: 960 },
   { name: "mobile", width: 390, height: 844 },
 ]) {
-  test(`the shared Pong experiment stays playable on ${viewport.name}`, async ({ page }) => {
+  test(`the matched Pong experiments stay playable on ${viewport.name}`, async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
     await page.setViewportSize(viewport);
@@ -27,37 +27,51 @@ for (const viewport of [
         .click();
     }
 
-    const lab = page.getByRole("region", {
-      name: "What changes when the agent can see velocity?",
+    const positionLab = page.getByRole("region", {
+      name: "Can a position-only agent learn to return the ball?",
     });
-    await expect(lab).toBeVisible();
-    await expect(lab).toHaveAttribute("data-mode", "position");
-    await expect(lab.getByText("velocity hidden")).toBeVisible();
+    const velocityLab = page.getByRole("region", {
+      name: "What changes when velocity is part of the state?",
+    });
+    await expect(positionLab).toBeVisible();
+    await expect(velocityLab).toBeVisible();
+    await expect(positionLab).toHaveAttribute("data-mode", "position");
+    await expect(velocityLab).toHaveAttribute("data-mode", "velocity");
+    await expect(positionLab.getByText("Velocity hidden", { exact: true })).toBeVisible();
+    await expect(velocityLab.getByText("Velocity observed", { exact: true })).toBeVisible();
 
-    const ball = lab.locator("[data-ball-x]");
-    const paddle = lab.locator("[data-paddle-x]");
+    const ball = positionLab.locator("[data-ball-x]");
+    const paddle = positionLab.locator("[data-paddle-x]");
     const initialBallX = await ball.getAttribute("data-ball-x");
     const initialPaddleX = await paddle.getAttribute("data-paddle-x");
-    await lab.getByRole("button", { name: "Move paddle right" }).click();
+    await positionLab.getByRole("button", { name: "Move paddle right" }).click();
     await expect(ball).not.toHaveAttribute("data-ball-x", initialBallX ?? "");
     await expect(paddle).not.toHaveAttribute("data-paddle-x", initialPaddleX ?? "");
 
-    await lab.getByLabel("Playback speed").selectOption("fast");
-    await lab.getByRole("button", { name: "Train both agents" }).click();
+    await positionLab.getByLabel("Playback speed").selectOption("fast");
+    await positionLab.getByRole("button", { name: "Train position-only agent" }).click();
     await expect
-      .poll(async () => Number(await lab.locator("[data-training-episodes]").getAttribute("data-training-episodes")))
+      .poll(async () => Number(await positionLab.locator("[data-training-episodes]").getAttribute("data-training-episodes")), { timeout: 15_000 })
       .toBe(5_000);
-    await expect(lab.getByText("Position only · 36%")).toBeVisible();
-    await expect(lab.getByText("+ velocity · 100%")).toBeVisible();
+    await expect(positionLab.locator("[data-training-episodes]")).toHaveAttribute("data-active-hit-rate", "36");
+    await expect(positionLab.getByText("Position only · 36%")).toBeVisible();
+    await expect(positionLab.getByRole("button", { name: "Replay final policy" })).toBeEnabled();
 
-    await lab.getByLabel(/^Position \+ velocity/).check();
-    await expect(lab).toHaveAttribute("data-mode", "velocity");
-    await expect(lab.getByText(/velocity \(\+1, \+1\)/)).toBeVisible();
-    await expect(lab.getByRole("button", { name: "Watch learned policy" })).toBeEnabled();
-    await lab.getByRole("button", { name: "Watch learned policy" }).click();
-    await expect.poll(async () => lab.getAttribute("data-mode")).toBe("velocity");
+    await velocityLab.getByLabel("Playback speed").selectOption("fast");
+    await velocityLab.getByRole("button", { name: "Train velocity-aware agent" }).click();
+    await expect
+      .poll(async () => Number(await velocityLab.locator("[data-training-episodes]").getAttribute("data-training-episodes")), { timeout: 15_000 })
+      .toBe(5_000);
+    await expect(velocityLab.locator("[data-training-episodes]")).toHaveAttribute("data-active-hit-rate", "100");
+    await expect(velocityLab.getByText("Position + velocity · 100%")).toBeVisible();
 
-    const bounds = await lab.evaluate((element) => {
+    const comparison = page.locator("[data-markov-pong-comparison]");
+    await expect(comparison).toContainText("Position only");
+    await expect(comparison).toContainText("36%");
+    await expect(comparison).toContainText("Position + velocity");
+    await expect(comparison).toContainText("100%");
+
+    const bounds = await velocityLab.evaluate((element) => {
       const rect = element.getBoundingClientRect();
       return {
         left: rect.left,

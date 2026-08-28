@@ -80,7 +80,7 @@ export type {
   PongPolicy,
   PongState,
 } from "./sampleBasedRl/pongModel";
-export { MarkovPongPlayground } from "./markovPong/MarkovPongPlayground";
+export { MarkovPongComparison, MarkovPongPlayground } from "./markovPong/MarkovPongPlayground";
 export {
   createPongEpisode as createMarkovPongEpisode,
   DEFAULT_PONG_TRAINING,

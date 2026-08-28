@@ -56,6 +56,9 @@ describe("Markov Pong experiment", () => {
     const second = trainPongPair({ episodes: 250, evaluationInterval: 125 });
     expect(first.position.curve).toEqual(second.position.curve);
     expect(first.velocity.curve).toEqual(second.velocity.curve);
+    expect(first.position.qSnapshots).toEqual(second.position.qSnapshots);
+    expect(first.velocity.qSnapshots).toEqual(second.velocity.qSnapshots);
+    expect(first.velocity.qSnapshots).toHaveLength(first.velocity.curve.length);
   });
 
   it("evaluates without mutating a learned policy", () => {

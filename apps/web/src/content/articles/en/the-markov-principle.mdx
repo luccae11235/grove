@@ -12,8 +12,8 @@ topic: The Markov principle and MDP state design
 summary: Compare Markovian and non-Markovian state representations in Pong, a door-and-key gridworld, and an ordered-checkpoint task.
 status: draft
 readingTime: 18–22 min
-interactiveCount: 1
-staticVisualCount: 3
+interactiveCount: 2
+staticVisualCount: 4
 difficulty: foundational
 series: reinforcement-learning
 access: public
@@ -39,6 +39,7 @@ learning:
 
 import MarkovPropertyComparison from "../../../components/MarkovPropertyComparison.astro";
 import MarkovPongLab from "../../../components/MarkovPongLab.astro";
+import MarkovPongComparison from "../../../components/MarkovPongComparison.astro";
 import PongConceptFigure from "../../../components/PongConceptFigure.astro";
 
 <header className="page-header lesson-header article-hero">
@@ -86,19 +87,25 @@ In the second case, providing the history offers no advantage. The velocity alre
 
 ### Learning
 
-We can test this by deploying an algorithm to learn how to return the ball. The playground uses a quantized 11-by-9 version of the continuous arena so that a real Q-learning experiment can run quickly in the browser. The quantization, underlying dynamics, reward, launch sequence, learning algorithm, and hyperparameters remain identical for both agents. Only the observation changes.
+We can test this by deploying an algorithm to learn how to return the ball. The playgrounds use a quantized 11-by-9 version of the continuous arena so that a real Q-learning experiment can run quickly in the browser. The quantization, underlying dynamics, reward, launch sequence, learning algorithm, and hyperparameters remain identical for both agents. Only the observation changes.
 
-<MarkovPongLab />
+<MarkovPongLab mode="position" />
 
-Begin with **Position only** selected. Under these conditions, the agent struggles. It manages to learn a suboptimal policy, but the process is unstable because the same observed state can demand opposing actions.
+In the first environment, velocity is hidden. Press **Train position-only agent** and watch the court: at every checkpoint, it replays the greedy policy that exists at that moment. The curve advances only after that visible policy check. The agent improves, but it settles on an inconsistent policy because the same observed state can demand opposing actions.
 
-Then select **Position + velocity** and replay the learned policy in the exact same environment. The direction arrow is now part of the agent's current observation rather than information inferred from earlier frames.
+Now repeat the experiment with the only changed ingredient: velocity is included in the state.
 
-The chart evaluates both greedy policies on every one of the 176 possible launch states at regular training checkpoints. It does not plot noisy rewards gathered while the agents are still exploring.
+<MarkovPongLab mode="velocity" />
+
+The second court, transition rules, reward, launch sequence, and Q-learning procedure are the same. The direction arrow marks information available to this agent at the current instant. Press **Train velocity-aware agent** to see its checkpoint policies become reliable.
+
+Each curve evaluates its greedy policy on every one of the 176 possible launch states at regular training checkpoints. It does not plot noisy rewards gathered while the agent is still exploring.
 
 With the Markovian representation, the agent learns the task much faster. In the reproducible run shown here, the velocity-aware policy reaches a 100% hit rate while the position-only policy remains inconsistent at roughly half of the launch states.
 
-The gap is computed from the learned Q-values, not drawn in advance. Resetting the experiment reproduces the same result because the seed, launch schedule, and evaluation set are fixed.
+The gap is computed from the learned Q-values, not drawn in advance. Resetting either experiment reproduces the same result because the seed, launch schedule, and evaluation set are fixed.
+
+<MarkovPongComparison />
 
 This scenario exemplifies what we can call **Missing dynamics**, where the state fails to capture the instantaneous motion required to predict physical transitions.
 

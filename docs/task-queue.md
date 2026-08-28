@@ -41,11 +41,12 @@ references for longer-term editorial direction.
     structure has been reviewed.
     - [x] Add the opening comparison showing when history changes the predicted
       transition and when the current state makes history irrelevant.
-    - [ ] Build the Pong learning experience — issue #161.
+    - [x] Build the Pong learning experience — issue #161.
       - [x] Add the environment and state-representation figures.
-      - [x] Implement the shared playable Pong environment and paired Q-learning
-        experiment with real, reproducible evaluation curves.
-      - [ ] Complete focused tests and rendered desktop/mobile review.
+      - [x] Implement two matched playable Pong environments and paired Q-learning
+        experiments that differ only in state representation, with real,
+        reproducible evaluation curves.
+      - [x] Complete focused tests and rendered desktop/mobile review.
     - [ ] Design and implement the remaining image and playground notes.
   - Keep the article in draft; translation, publication, deployment, merge,
     and newsletter delivery remain out of scope until separately reviewed.

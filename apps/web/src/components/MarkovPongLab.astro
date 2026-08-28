@@ -1,7 +1,13 @@
 ---
 import { MarkovPongPlayground } from "@grove/tree-visuals";
+
+interface Props {
+  mode: "position" | "velocity";
+}
+
+const { mode } = Astro.props;
 ---
 
-<div data-analytics-lab="markov-pong">
-  <MarkovPongPlayground client:load />
+<div data-analytics-lab={`markov-pong-${mode}`}>
+  <MarkovPongPlayground mode={mode} client:load />
 </div>

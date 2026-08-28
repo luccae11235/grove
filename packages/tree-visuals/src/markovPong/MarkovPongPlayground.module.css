@@ -59,53 +59,33 @@
   line-height: 1.5;
 }
 
-.modeControl {
+.experimentBand {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0;
-  border: 0;
   border-bottom: 1px solid var(--border);
   background: var(--surface-subtle);
   padding: 12px 24px;
 }
 
-.modeControl legend {
-  float: left;
-  margin-right: 4px;
+.experimentBand strong,
+.experimentBand span {
   color: var(--text-muted);
   font-size: 0.72rem;
   font-weight: 700;
 }
 
-.modeControl label {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 38px;
-  cursor: pointer;
+.experimentBand code {
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 8px;
   background: var(--surface-raised);
-  padding: 6px 12px;
+  padding: 5px 8px;
+  color: var(--text);
   font-size: 0.75rem;
-  font-weight: 680;
 }
 
-.modeControl label span {
-  color: var(--text-muted);
-  font-weight: 520;
-}
-
-.modeControl .selectedMode {
-  border-color: var(--accent);
-  box-shadow: inset 0 0 0 1px var(--accent);
-}
-
-.modeControl input {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--accent);
+.experimentBand > span:last-child {
+  margin-left: auto;
 }
 
 .body {
@@ -265,6 +245,11 @@
   color: var(--accent);
 }
 
+.playControls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .replayRow {
   display: flex;
   flex-wrap: wrap;
@@ -306,6 +291,17 @@
   color: var(--text-muted);
   font-size: 0.68rem;
   line-height: 1.45;
+}
+
+.policyChecks {
+  margin: 7px 0 0 38px;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.policyChecks strong {
+  color: var(--accent);
 }
 
 .learningColumn {
@@ -477,6 +473,74 @@
   white-space: nowrap;
 }
 
+.comparison {
+  padding-bottom: 20px;
+}
+
+.comparisonHeader {
+  padding: 22px 24px 12px;
+}
+
+.comparisonHeader p,
+.comparisonHeader h3 {
+  margin: 0;
+}
+
+.comparisonHeader h3 {
+  margin-top: 5px;
+  font-size: clamp(1.12rem, 2.2vw, 1.42rem);
+}
+
+.comparisonHeader > p:last-child {
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.comparisonHeader .kicker {
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 760;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.comparisonBody {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(190px, 0.65fr);
+  gap: 20px;
+  align-items: center;
+  padding: 0 24px;
+}
+
+.comparisonStats {
+  display: grid;
+  gap: 10px;
+}
+
+.comparisonStats > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.comparisonStats span,
+.comparisonStats small {
+  font-size: 0.7rem;
+}
+
+.comparisonStats strong {
+  grid-row: span 2;
+  font-size: 1.65rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.comparisonStats small {
+  color: var(--text-muted);
+}
+
 .srOnly {
   position: absolute;
   width: 1px;
@@ -495,18 +559,14 @@
     padding: 18px 18px 15px;
   }
 
-  .modeControl {
+  .experimentBand {
     align-items: stretch;
     flex-direction: column;
     padding: 12px 18px;
   }
 
-  .modeControl legend {
-    margin-bottom: 7px;
-  }
-
-  .modeControl label {
-    justify-content: center;
+  .experimentBand > span:last-child {
+    margin-left: 0;
   }
 
   .body {
@@ -522,18 +582,14 @@
     width: 100%;
     margin-left: 0;
   }
+
+  .comparisonBody {
+    grid-template-columns: 1fr;
+    padding: 0 14px;
+  }
 }
 
 @container (max-width: 390px) {
-  .modeControl label {
-    justify-content: flex-start;
-    border-radius: 13px;
-  }
-
-  .modeControl label span {
-    display: none;
-  }
-
   .chartHeader {
     align-items: stretch;
     flex-direction: column;

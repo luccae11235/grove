@@ -29,6 +29,7 @@ export interface PongCurvePoint {
 export interface PongTrainingResult {
   mode: PongObservationMode;
   curve: PongCurvePoint[];
+  qSnapshots: Float64Array[];
   qValues: Float64Array;
   finalHitRate: number;
   episodes: number;
@@ -297,6 +298,7 @@ export function trainMarkovPong(
   const curve: PongCurvePoint[] = [
     { episode: 0, hitRate: evaluatePongPolicy(qValues, mode, evaluationStarts) },
   ];
+  const qSnapshots: Float64Array[] = [new Float64Array(qValues)];
 
   for (let episode = 1; episode <= options.episodes; episode += 1) {
     const decayProgress = Math.min(
@@ -320,12 +322,14 @@ export function trainMarkovPong(
         episode,
         hitRate: evaluatePongPolicy(qValues, mode, evaluationStarts),
       });
+      qSnapshots.push(new Float64Array(qValues));
     }
   }
 
   return {
     mode,
     curve,
+    qSnapshots,
     qValues,
     finalHitRate: curve[curve.length - 1].hitRate,
     episodes: options.episodes,
