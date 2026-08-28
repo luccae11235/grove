@@ -47,6 +47,8 @@ references for longer-term editorial direction.
         experiments that differ only in state representation, with real,
         reproducible evaluation curves.
       - [x] Complete focused tests and rendered desktop/mobile review.
+      - [x] Simplify both playgrounds to the state, training court, learning
+        result, and an episodes-per-second speed control.
     - [ ] Design and implement the remaining image and playground notes.
   - Keep the article in draft; translation, publication, deployment, merge,
     and newsletter delivery remain out of scope until separately reviewed.
