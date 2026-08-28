@@ -34,15 +34,13 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
-- [ ] **Craft and test Issue 005 for sample-based reinforcement learning — issue #167**
-  - Polish the issue copy and include one representative visual from the
-    published article.
-  - Keep the issue at `ready`, create exactly one protected provider draft, and
-    send a test only to `luccaemmanuel@gmail.com`.
-  - Verify web, HTML, plain text, links, Gmail placement, and authentication;
-    do not send or schedule a subscriber broadcast.
-  - Completion check: the source change passes staging and production gates,
-    the Resend draft is reviewed, and the received Gmail test passes.
+- [ ] **Reduce the Issue 005 email image footprint — issue #171**
+  - Replace the portrait conceptual-shortcut asset with its compact landscape
+    variant while preserving the representative learning path and alt text.
+  - Verify desktop and mobile email dimensions, then update the existing Resend
+    draft in place without creating or sending another broadcast.
+  - Completion check: source and provider draft match, the email remains
+    responsive, and no additional test or subscriber email is sent.
 
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
@@ -235,6 +233,17 @@ references for longer-term editorial direction.
     production verification passed on `8b2b127` and `891b7da`, respectively.
 
 ### Publishing and content
+
+- [x] **Craft and test Issue 005 for sample-based reinforcement learning — issue #167** — 2026-08-28
+  - Reframed the issue around the shared sample-based learning loop and added
+    the article's mobile conceptual-shortcut visual for legible email rendering.
+  - Kept Issue 005 at `ready`, validated it in workflow run `33194644323`, and
+    created protected Resend draft `c2987098-1e8c-4604-af3f-7c01f83be81c`
+    exactly once in run `33194729235`.
+  - Sent one provider test only to `luccaemmanuel@gmail.com`. Gmail placed it in
+    Inbox/Updates with SPF, DKIM, and DMARC passing; the requested copy was then
+    moved to Primary and verified absent from Spam and Promotions.
+  - No subscriber broadcast was sent or scheduled.
 
 - [x] **Publish the sample-based reinforcement-learning article — issue #160** — 2026-08-28
   - Published the reviewed English and Brazilian Portuguese article while every
