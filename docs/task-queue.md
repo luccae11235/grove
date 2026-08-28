@@ -34,6 +34,16 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Craft and test Issue 005 for sample-based reinforcement learning — issue #167**
+  - Polish the issue copy and include one representative visual from the
+    published article.
+  - Keep the issue at `ready`, create exactly one protected provider draft, and
+    send a test only to `luccaemmanuel@gmail.com`.
+  - Verify web, HTML, plain text, links, Gmail placement, and authentication;
+    do not send or schedule a subscriber broadcast.
+  - Completion check: the source change passes staging and production gates,
+    the Resend draft is reviewed, and the received Gmail test passes.
+
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.
