@@ -52,15 +52,6 @@ references for longer-term editorial direction.
     and newsletter delivery remain out of scope until separately reviewed.
   - Completion check: the complete learning experience passes focused checks
     and rendered desktop/mobile review before staging review and merge.
-
-- [ ] **Publish the sample-based reinforcement-learning article — issue #160**
-  - Publish the reviewed English and Brazilian Portuguese article on 2026-08-28
-    while keeping every other queued article in draft.
-  - Prepare Issue 005 as a repository draft only; do not create, test, schedule,
-    or send a provider broadcast without separate authorization.
-  - Completion check: the full repository gate passes, exact-SHA staging and
-    production verification pass, and both canonical locale routes are public.
-
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.
@@ -252,6 +243,19 @@ references for longer-term editorial direction.
     production verification passed on `8b2b127` and `891b7da`, respectively.
 
 ### Publishing and content
+
+- [x] **Publish the sample-based reinforcement-learning article — issue #160** — 2026-08-28
+  - Published the reviewed English and Brazilian Portuguese article while every
+    other queued article remained unavailable in the production build.
+  - Added Issue 005 as a repository draft only; no provider draft, test email,
+    schedule, or subscriber send was created.
+  - PR #162 passed the full gate and exact-SHA staging verification on
+    `acd36a7c6fde3d8c2974a3e165bd3c3719e83b7d`; release PR #164 passed the
+    production policy and all quality checks.
+  - Production SHA `a380fb5e24d057d1c46211a4a618155bf333b899` passed exact-SHA
+    verification run `33171587204`; both canonical locale routes, language
+    alternates, RSS, and sitemap were checked publicly, while Issue 005 and all
+    queued draft routes returned HTTP 404.
 
 - [x] **Add foundational metadata and Portuguese locale parity to model evaluation — issue #155** — 2026-08-27
   - Added the foundational badge and prior-knowledge description to both article headers.
