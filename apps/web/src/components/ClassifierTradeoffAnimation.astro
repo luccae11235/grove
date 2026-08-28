@@ -1,0 +1,489 @@
+---
+interface Props {
+  mode: "recall" | "precision";
+  locale?: "en" | "pt-BR";
+}
+
+const { mode, locale = "en" } = Astro.props;
+const totalPositive = 16;
+const totalNegative = 16;
+const total = totalPositive + totalNegative;
+
+const englishCopy = mode === "recall"
+  ? {
+      title: "Move toward higher recall",
+      model: "Screening threshold",
+      description: "As the model predicts positive more often, fewer actual positives are missed—but more actual negatives become false alarms.",
+      stages: [
+        { id: "cautious", label: "Cautious", tp: 7, fp: 1 },
+        { id: "balanced", label: "Balanced", tp: 12, fp: 4 },
+        { id: "target", label: "Capture more", tp: 15, fp: 8 },
+      ],
+    }
+  : {
+      title: "Move toward higher precision",
+      model: "Spam threshold",
+      description: "As the model becomes more selective, fewer legitimate messages become false alarms—but more actual spam is missed.",
+      stages: [
+        { id: "broad", label: "Broad", tp: 15, fp: 8 },
+        { id: "balanced", label: "Balanced", tp: 12, fp: 4 },
+        { id: "target", label: "More selective", tp: 8, fp: 1 },
+      ],
+    };
+
+const portugueseCopy = mode === "recall"
+  ? {
+      title: "Avance em direção a um recall maior",
+      model: "Limiar de triagem",
+      description: "À medida que o modelo prevê positivo com mais frequência, menos positivos reais são perdidos — mas mais negativos reais viram alarmes falsos.",
+      stages: [
+        { id: "cautious", label: "Cauteloso", tp: 7, fp: 1 },
+        { id: "balanced", label: "Equilibrado", tp: 12, fp: 4 },
+        { id: "target", label: "Capturar mais", tp: 15, fp: 8 },
+      ],
+    }
+  : {
+      title: "Avance em direção a uma precisão maior",
+      model: "Limiar de spam",
+      description: "À medida que o modelo se torna mais seletivo, menos mensagens legítimas viram alarmes falsos — mas mais mensagens de spam deixam de ser detectadas.",
+      stages: [
+        { id: "broad", label: "Abrangente", tp: 15, fp: 8 },
+        { id: "balanced", label: "Equilibrado", tp: 12, fp: 4 },
+        { id: "target", label: "Mais seletivo", tp: 8, fp: 1 },
+      ],
+    };
+
+const copy = locale === "pt-BR" ? portugueseCopy : englishCopy;
+const labels = locale === "pt-BR"
+  ? {
+      context: mode === "recall" ? "Modelo de triagem" : "Filtro de spam",
+      play: "Reproduzir",
+      playAria: `Reproduzir animação do limiar de ${mode === "recall" ? "recall" : "precisão"}`,
+      stages: "etapas",
+      predictedNegative: "Previu negativo",
+      predictedPositive: "Previu positivo",
+      metric: mode === "recall" ? "Recall" : "Precisão",
+    }
+  : {
+      context: mode === "recall" ? "Screening model" : "Spam filter",
+      play: "Play",
+      playAria: `Play ${mode} threshold animation`,
+      stages: "stages",
+      predictedNegative: "Predicted negative",
+      predictedPositive: "Predicted positive",
+      metric: mode === "recall" ? "Recall" : "Precision",
+    };
+
+function slot(index: number, centerX: number, centerY: number, rotation: number) {
+  const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+  const radius = 78 * Math.sqrt((index + 0.5) / total);
+  const angle = rotation + index * goldenAngle;
+  return {
+    x: centerX + Math.cos(angle) * radius,
+    y: centerY + Math.sin(angle) * radius,
+  };
+}
+
+const dots = Array.from({ length: total }, (_, index) => ({
+  id: index < totalPositive ? `positive-${index}` : `negative-${index - totalPositive}`,
+  actual: index < totalPositive ? "positive" as const : "negative" as const,
+  classIndex: index < totalPositive ? index : index - totalPositive,
+  left: slot(index, 168, 194, -0.45),
+  right: slot(index, 472, 194, 0.32),
+}));
+
+const stageData = copy.stages.map((stage) => ({
+  ...stage,
+  falseNegatives: totalPositive - stage.tp,
+  trueNegatives: totalNegative - stage.fp,
+  recall: (stage.tp / totalPositive) * 100,
+  precision: (stage.tp / (stage.tp + stage.fp)) * 100,
+}));
+
+const initialStage = stageData[0];
+const initialSummary = locale === "pt-BR"
+  ? mode === "recall"
+    ? `${initialStage.tp} de 16 positivos reais encontrados · ${initialStage.fp} alarme falso`
+    : `${initialStage.tp} de ${initialStage.tp + initialStage.fp} previsões positivas corretas · ${initialStage.falseNegatives} positivos não detectados`
+  : mode === "recall"
+    ? `${initialStage.tp} of 16 actual positives found · ${initialStage.fp} false alarm`
+    : `${initialStage.tp} of ${initialStage.tp + initialStage.fp} positive predictions correct · ${initialStage.falseNegatives} missed positives`;
+const dotPosition = (dot: typeof dots[number], stage: typeof stageData[number]) => {
+  const predictedPositive = dot.actual === "positive"
+    ? dot.classIndex < stage.tp
+    : dot.classIndex < stage.fp;
+  return predictedPositive ? dot.right : dot.left;
+};
+---
+
+<figure
+  class="classifier-tradeoff"
+  data-classifier-tradeoff
+  data-mode={mode}
+  data-stage={initialStage.id}
+>
+  <header>
+    <div>
+      <span>{labels.context}</span>
+      <h3>{copy.title}</h3>
+    </div>
+    <button type="button" class="tradeoff-play" data-tradeoff-play aria-label={labels.playAria}>
+      {labels.play}
+    </button>
+  </header>
+
+  <div class="tradeoff-stage-controls" role="group" aria-label={`${copy.title}: ${labels.stages}`}>
+    {stageData.map((stage, index) => (
+      <button
+        type="button"
+        data-tradeoff-stage={stage.id}
+        data-stage-index={index}
+        aria-pressed={index === 0 ? "true" : "false"}
+      >
+        {stage.label}
+      </button>
+    ))}
+  </div>
+
+  <svg
+    class="tradeoff-canvas"
+    viewBox="0 0 640 330"
+    role="img"
+    aria-label={`${copy.title}. ${copy.description}`}
+  >
+    <text class="tradeoff-model-label" x="320" y="28" text-anchor="middle">{copy.model}</text>
+    <path class="tradeoff-route" d="M304 39 218 74M336 39l86 35" />
+    <path class="tradeoff-arrow" d="M226 72L218 74L222 66M414 72L422 74L418 66" />
+
+    <circle class="tradeoff-region predicted-negative" cx="168" cy="194" r="108" />
+    <circle class="tradeoff-region predicted-positive" cx="472" cy="194" r="108" />
+    <text class="tradeoff-region-label negative-label" x="168" y="320" text-anchor="middle">{labels.predictedNegative}</text>
+    <text class="tradeoff-region-label positive-label" x="472" y="320" text-anchor="middle">{labels.predictedPositive}</text>
+
+    {dots.map((dot) => {
+      const initial = dotPosition(dot, initialStage);
+      return (
+        <g
+          class={`tradeoff-dot actual-${dot.actual}`}
+          data-tradeoff-dot={dot.id}
+          style={`--dot-x:${initial.x.toFixed(2)}px;--dot-y:${initial.y.toFixed(2)}px`}
+          {...Object.fromEntries(stageData.flatMap((stage) => {
+            const position = dotPosition(dot, stage);
+            return [
+              [`data-${stage.id}-x`, position.x.toFixed(2)],
+              [`data-${stage.id}-y`, position.y.toFixed(2)],
+            ];
+          }))}
+        >
+          <circle r="5.8" />
+        </g>
+      );
+    })}
+  </svg>
+
+  <div class="tradeoff-readout" aria-live="polite" aria-atomic="true">
+    <div>
+      <span>{labels.metric}</span>
+      <strong data-primary-metric>{(mode === "recall" ? initialStage.recall : initialStage.precision).toFixed(1)}%</strong>
+    </div>
+    <p data-tradeoff-summary>
+      {initialSummary}
+    </p>
+  </div>
+
+  <figcaption>{copy.description}</figcaption>
+</figure>
+
+<script is:inline define:vars={{ stageData, mode, locale }}>
+  (() => {
+    const roots = document.querySelectorAll(`[data-classifier-tradeoff][data-mode="${mode}"]`);
+    const root = roots[roots.length - 1];
+    if (!(root instanceof HTMLElement) || root.dataset.ready === "true") return;
+    root.dataset.ready = "true";
+
+    const dots = [...root.querySelectorAll("[data-tradeoff-dot]")];
+    const buttons = [...root.querySelectorAll("[data-tradeoff-stage]")];
+    const play = root.querySelector("[data-tradeoff-play]");
+    const metric = root.querySelector("[data-primary-metric]");
+    const summary = root.querySelector("[data-tradeoff-summary]");
+    let currentIndex = 0;
+    let timer;
+
+    const plural = (count, singular, pluralForm) => `${count} ${count === 1 ? singular : pluralForm}`;
+    const setStage = (index) => {
+      currentIndex = index;
+      const stage = stageData[index];
+      root.dataset.stage = stage.id;
+      buttons.forEach((button, buttonIndex) => {
+        button.setAttribute("aria-pressed", String(buttonIndex === index));
+      });
+      dots.forEach((dot) => {
+        const x = dot.getAttribute(`data-${stage.id}-x`);
+        const y = dot.getAttribute(`data-${stage.id}-y`);
+        if (x && y && dot instanceof SVGElement) {
+          dot.style.setProperty("--dot-x", `${x}px`);
+          dot.style.setProperty("--dot-y", `${y}px`);
+        }
+      });
+      if (metric) metric.textContent = `${(mode === "recall" ? stage.recall : stage.precision).toFixed(1)}%`;
+      if (summary) {
+        summary.textContent = locale === "pt-BR"
+          ? mode === "recall"
+            ? `${stage.tp} de 16 positivos reais encontrados · ${plural(stage.fp, "alarme falso", "alarmes falsos")}`
+            : `${stage.tp} de ${stage.tp + stage.fp} previsões positivas corretas · ${plural(stage.falseNegatives, "positivo não detectado", "positivos não detectados")}`
+          : mode === "recall"
+            ? `${stage.tp} of 16 actual positives found · ${plural(stage.fp, "false alarm", "false alarms")}`
+            : `${stage.tp} of ${stage.tp + stage.fp} positive predictions correct · ${plural(stage.falseNegatives, "missed positive", "missed positives")}`;
+      }
+    };
+
+    const stop = () => {
+      if (timer) window.clearInterval(timer);
+      timer = undefined;
+      if (play instanceof HTMLButtonElement) {
+        play.textContent = locale === "pt-BR" ? "Reproduzir" : "Play";
+        play.setAttribute("aria-label", locale === "pt-BR"
+          ? `Reproduzir animação do limiar de ${mode === "recall" ? "recall" : "precisão"}`
+          : `Play ${mode} threshold animation`);
+      }
+    };
+
+    buttons.forEach((button, index) => button.addEventListener("click", () => {
+      stop();
+      setStage(index);
+    }));
+
+    play?.addEventListener("click", () => {
+      if (timer) {
+        stop();
+        return;
+      }
+      if (play instanceof HTMLButtonElement) {
+        play.textContent = locale === "pt-BR" ? "Pausar" : "Pause";
+        play.setAttribute("aria-label", locale === "pt-BR"
+          ? `Pausar animação do limiar de ${mode === "recall" ? "recall" : "precisão"}`
+          : `Pause ${mode} threshold animation`);
+      }
+      setStage((currentIndex + 1) % stageData.length);
+      timer = window.setInterval(() => setStage((currentIndex + 1) % stageData.length), 1700);
+    });
+  })();
+</script>
+
+<style>
+  .classifier-tradeoff {
+    --positive: var(--accent);
+    --positive-dark: var(--accent-hover);
+    --negative: #b44332;
+    width: min(640px, 100%);
+    margin: 34px auto 42px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--surface-raised);
+    box-shadow: 0 16px 44px rgb(22 56 43 / 7%);
+    overflow: hidden;
+  }
+
+  .classifier-tradeoff > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid var(--border);
+    padding: 15px 17px;
+  }
+
+  .classifier-tradeoff header span {
+    color: var(--accent);
+    font-size: 0.64rem;
+    font-weight: 760;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .classifier-tradeoff h3 {
+    margin: 2px 0 0;
+    font-size: 1rem;
+  }
+
+  .tradeoff-play,
+  .tradeoff-stage-controls button {
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: var(--surface-raised);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-weight: 680;
+  }
+
+  .tradeoff-play {
+    min-width: 62px;
+    padding: 7px 13px;
+  }
+
+  .tradeoff-play:hover,
+  .tradeoff-stage-controls button:hover,
+  .tradeoff-stage-controls button[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent-hover);
+  }
+
+  .tradeoff-play:focus-visible,
+  .tradeoff-stage-controls button:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--focus) 45%, transparent);
+    outline-offset: 2px;
+  }
+
+  .tradeoff-stage-controls {
+    display: flex;
+    justify-content: center;
+    gap: 7px;
+    padding: 13px 14px 0;
+  }
+
+  .tradeoff-stage-controls button {
+    padding: 6px 11px;
+  }
+
+  .tradeoff-canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .tradeoff-model-label,
+  .tradeoff-region-label {
+    fill: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
+  }
+
+  .tradeoff-model-label {
+    font-size: 14px;
+  }
+
+  .tradeoff-route,
+  .tradeoff-arrow {
+    fill: none;
+    stroke: var(--ink);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+  }
+
+  .tradeoff-region {
+    stroke-width: 2;
+  }
+
+  .tradeoff-region.predicted-negative {
+    fill: color-mix(in srgb, var(--negative) 3%, var(--surface-raised));
+    stroke: var(--negative);
+  }
+
+  .tradeoff-region.predicted-positive {
+    fill: color-mix(in srgb, var(--positive) 4%, var(--surface-raised));
+    stroke: var(--positive);
+  }
+
+  .tradeoff-region-label {
+    font-size: 15px;
+  }
+
+  .negative-label {
+    fill: var(--negative);
+  }
+
+  .positive-label {
+    fill: var(--positive-dark);
+  }
+
+  .tradeoff-dot {
+    transform: translate(var(--dot-x), var(--dot-y));
+    transition: transform 680ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .tradeoff-dot circle {
+    stroke-width: 2;
+  }
+
+  .tradeoff-dot.actual-positive circle {
+    fill: color-mix(in srgb, var(--positive) 22%, var(--surface-raised));
+    stroke: var(--positive-dark);
+  }
+
+  .tradeoff-dot.actual-negative circle {
+    fill: color-mix(in srgb, var(--negative) 5%, var(--surface-raised));
+    stroke: var(--negative);
+  }
+
+  .tradeoff-readout {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-subtle);
+    padding: 12px 16px;
+  }
+
+  .tradeoff-readout > div {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    white-space: nowrap;
+  }
+
+  .tradeoff-readout span {
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .tradeoff-readout strong {
+    color: var(--text);
+    font-size: 1.05rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tradeoff-readout p {
+    margin: 0;
+    color: var(--text-muted);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.72rem;
+    line-height: 1.5;
+  }
+
+  .classifier-tradeoff figcaption {
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 11px 16px;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.7rem;
+    line-height: 1.55;
+  }
+
+  @media (max-width: 520px) {
+    .classifier-tradeoff > header,
+    .tradeoff-readout {
+      align-items: flex-start;
+    }
+
+    .tradeoff-readout {
+      display: grid;
+      gap: 4px;
+    }
+
+    .tradeoff-stage-controls {
+      overflow-x: auto;
+      justify-content: flex-start;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tradeoff-dot {
+      transition: none;
+    }
+  }
+</style>

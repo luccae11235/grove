@@ -1,0 +1,470 @@
+---
+articleId: is-my-model-good
+locale: pt-BR
+routeSlug: meu-modelo-e-bom
+href: /pt-br/learn/meu-modelo-e-bom
+title: Meu modelo é bom?
+navTitle: Entenda acurácia, precisão e recall
+description: "Entenda por que a acurácia, sozinha, não descreve um classificador binário e use o custo dos erros para escolher entre precisão e recall."
+eyebrow: Aprendizado supervisionado · Avaliação de modelos
+area: Aprendizado supervisionado
+topic: Acurácia, precisão e recall
+summary: Compare o que acurácia, precisão e recall revelam sobre as mesmas previsões e escolha a métrica que corresponde ao erro que mais importa.
+status: draft
+readingTime: 15–18 min
+interactiveCount: 3
+staticVisualCount: 4
+difficulty: foundational
+access: public
+prerequisites: []
+related: []
+implementation: mdx
+learning:
+  priorKnowledge:
+    - Comparar contagens e porcentagens comuns.
+    - Entender que um modelo pode atribuir um exemplo a um de dois grupos.
+  likelyMisconception: Um classificador com acurácia alta também deve ser bom para encontrar casos positivos e fazer previsões positivas confiáveis.
+  transferOutcome: Diante de um problema de classificação binária, explicar se acurácia, precisão ou recall representa melhor o erro que importa e justificar a escolha.
+  motivatingQuestion: Dois modelos podem ter a mesma acurácia e, ainda assim, ser úteis de maneiras completamente diferentes?
+  conceptualBottleneck: Precisão e recall contam os mesmos casos verdadeiros positivos, mas respondem a perguntas diferentes porque usam grupos de comparação diferentes.
+  evidenceOfUnderstanding:
+    - Distinguir a classe real de um exemplo da classe prevista pelo modelo.
+    - Explicar acurácia, precisão e recall como três perguntas sobre as mesmas previsões.
+    - Prever qual métrica piora quando aumentam os falsos positivos ou os falsos negativos.
+    - Escolher uma métrica a partir do custo real dos erros de um modelo.
+---
+
+import ClassificationOutcomeVisual from "../../../components/ClassificationOutcomeVisual.astro";
+import ClassificationMetricsPlayground from "../../../components/ClassificationMetricsPlayground.astro";
+import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import ScenarioOutcomeVisual from "../../../components/ScenarioOutcomeVisual.astro";
+import ScenarioModelComparison from "../../../components/ScenarioModelComparison.astro";
+import ClassifierTradeoffAnimation from "../../../components/ClassifierTradeoffAnimation.astro";
+import PrecisionRecallComparison from "../../../components/PrecisionRecallComparison.astro";
+
+<header className="page-header lesson-header article-hero">
+  <p className="eyebrow">Aprendizado supervisionado · Avaliação de modelos</p>
+  <h1>Meu modelo é bom?</h1>
+  <p className="lede">
+    A acurácia mostra com que frequência um classificador acerta. Precisão e
+    recall revelam quais erros esse único número pode esconder.
+  </p>
+  <div className="article-meta" aria-label="Informações sobre o artigo">
+    <DifficultyBadge difficulty="foundational" locale="pt-BR" showDescription />
+  </div>
+</header>
+
+<article className="lesson-body deep-article model-evaluation-article">
+Um classificador pode acertar 95% das vezes e, ainda assim, deixar passar a maioria dos casos que nos importam.
+
+Isso só parece contraditório quando esperamos que um único número descreva todo tipo de acerto e de erro. Problemas de previsão diferentes exigem formas diferentes de avaliação, e até um mesmo problema pode exigir várias métricas, pois cada uma responde a uma pergunta diferente.
+
+Aqui, vamos nos concentrar em **classificação binária**: o modelo precisa colocar cada exemplo em uma de duas classes.
+
+Para tornar o problema visual, vamos representar cada datapoint como um ponto. Esse ponto pode corresponder a tipos muito diferentes de dado: um texto classificado por emoção, uma linha de um dataset tabular com várias features sobre um cliente ou uma imagem classificada conforme contenha ou não determinado objeto.
+
+O classificador não vê de fato um ponto verde ou vermelho. Ele vê o datapoint e suas features e precisa prever a qual das duas classes ele pertence. Antes dessa previsão, podemos pensar no ponto como cinza: sua classe é desconhecida para o modelo.
+
+Como estamos avaliando o classificador com dados rotulados de teste, porém, **nós** conhecemos a classe real depois. Por isso, vamos colorir cada ponto de verde ou vermelho para mostrar o que ele realmente era. As cores existem para avaliarmos as previsões, não como informação fornecida ao modelo.
+
+Agora imagine que nosso test set contenha pontos verdes e vermelhos. O classificador recebe cada datapoint e o coloca em um de dois círculos:
+
+* o círculo verde significa que o modelo previu **positivo**;
+* o círculo vermelho significa que o modelo previu **negativo**.
+
+A cor do ponto representa sua classe real. O círculo representa a previsão do modelo.
+
+<ClassificationOutcomeVisual
+  locale="pt-BR"
+  predictedNegative={{ positive: 6, negative: 18 }}
+  predictedPositive={{ positive: 21, negative: 3 }}
+/>
+
+A forma mais imediata de avaliar esse classificador é contar quantas vezes o ponto terminou no círculo correto.
+
+$$
+\text{Acurácia} =
+
+\frac{\text{classificações corretas}}
+{\text{todas as classificações}}
+$$
+
+Se um ponto verde cai no círculo verde, o modelo acertou. Se um ponto vermelho cai no círculo vermelho, ele também acertou.
+
+Portanto, a acurácia responde a uma pergunta útil:
+
+**Com que frequência o modelo acerta?**
+
+Entretanto, saber com que frequência um modelo acerta não revela tudo o que pode nos importar. Em muitas aplicações, também precisamos entender **como o modelo erra**.
+
+Duas perguntas vão orientar o restante deste artigo.
+
+**Precisão:** entre os exemplos que eu **disse** serem positivos, quantos realmente eram positivos?
+
+**Recall:** entre os exemplos que **realmente eram** positivos, quantos consegui identificar como positivos?
+
+À primeira vista, essas perguntas podem parecer semelhantes, mas elas examinam as mesmas previsões a partir de duas direções muito diferentes.
+
+Antes de vermos as fórmulas, é mais útil entender por que faríamos cada uma dessas perguntas.
+
+Métricas como ROC-AUC, F1, PR-AUC, especificidade e muitas outras oferecem formas adicionais de avaliar classificadores. Vamos deixar a maioria delas de lado e nos concentrar em construir uma intuição clara para acurácia, precisão e recall.
+
+---
+
+## Quando deixar um caso passar é perigoso
+
+Imagine um teste médico usado para rastreamento de câncer.
+
+Cada paciente é representado por um ponto:
+
+* verde significa que a pessoa realmente tem câncer;
+* vermelho significa que ela não tem.
+
+O classificador usa informações sobre a pessoa e toma uma decisão simples:
+
+* círculo verde → investigar o caso mais a fundo;
+* círculo vermelho → não investigar o caso mais a fundo.
+
+<ClassificationOutcomeVisual
+  locale="pt-BR"
+  predictedNegative={{ positive: 1, negative: 18 }}
+  predictedPositive={{ positive: 15, negative: 7 }}
+  classifierLabel="Modelo de triagem"
+  caption="Os círculos mostram quem passa por uma investigação adicional e quem não passa."
+/>
+
+Esse classificador pode errar de duas maneiras.
+
+A primeira é encaminhar uma pessoa saudável para uma investigação adicional.
+
+Ela pode precisar fazer outro exame, passar mais tempo no sistema de saúde e sentir uma preocupação desnecessária. Esse erro claramente tem um custo.
+
+O segundo erro é mais grave: uma pessoa que realmente tem câncer é classificada como saudável.
+
+Ela pode sair do processo de rastreamento sem receber a investigação adicional de que precisava.
+
+Os dois erros importam, mas sistemas de rastreamento costumam ter uma assimetria clara entre eles. Deixar um caso real passar pode custar muito mais do que investigar alguém que, no fim, se mostra saudável.
+
+Por isso, talvez aceitemos deliberadamente que alguns pontos vermelhos entrem no círculo verde se isso impedir que pontos verdes escapem para o círculo vermelho.
+
+<ClassifierTradeoffAnimation mode="recall" locale="pt-BR" />
+
+Agora ignore os pontos vermelhos por um momento e destaque todas as pessoas que realmente têm câncer, independentemente do círculo no qual o classificador as colocou.
+
+Isso nos leva naturalmente à pergunta que importa:
+
+> Entre todas as pessoas que realmente têm câncer, quantas detectamos?
+
+Essa quantidade é chamada de **recall** e, em contextos médicos, também costuma ser chamada de **sensibilidade**.
+
+$$
+\text{Recall} =
+
+\frac{\text{pontos verdes no círculo verde}}
+{\text{todos os pontos realmente verdes}}
+$$
+
+O denominador inclui todos os pontos verdes do dataset. Alguns podem estar no círculo verde e outros, no círculo vermelho.
+
+O numerador mantém apenas os pontos verdes que o classificador enviou corretamente ao círculo verde.
+
+Visualmente, o recall começa pela **realidade**.
+
+Antes de olhar o que o modelo previu, perguntamos: *Quais pontos são realmente positivos?* Depois, medimos quantos deles o classificador encontrou.
+
+Assim, um classificador pode ter recall alto mesmo quando alguns pontos vermelhos também são enviados ao círculo verde. Se quase todos os pontos genuinamente verdes forem capturados, o recall será alto.
+
+Isso não significa que o classificador seja necessariamente bom de modo geral. Recall alto nos diz algo mais específico: **poucos positivos reais deixaram de ser detectados**.
+
+---
+
+## Quando uma previsão positiva precisa ser confiável
+
+Agora considere um problema completamente diferente.
+
+Suponha que um filtro de e-mail possa enviar automaticamente mensagens classificadas como spam para uma área de quarentena ou removê-las da caixa de entrada principal.
+
+Novamente, cada e-mail é representado por um ponto:
+
+* verde → é realmente spam;
+* vermelho → é realmente legítimo.
+
+O classificador decide:
+
+* círculo verde → classificado como spam;
+* círculo vermelho → classificado como legítimo.
+
+<ClassificationOutcomeVisual
+  locale="pt-BR"
+  predictedNegative={{ positive: 8, negative: 20 }}
+  predictedPositive={{ positive: 10, negative: 1 }}
+  classifierLabel="Filtro de spam"
+  caption="Os círculos mostram quais mensagens vão para o spam e quais permanecem na caixa de entrada."
+/>
+
+Mais uma vez, há dois tipos de erro.
+
+O primeiro acontece quando uma mensagem de spam é classificada como legítima. Um e-mail indesejado chega à caixa de entrada. Isso incomoda, mas costuma ser recuperável.
+
+O segundo acontece quando uma mensagem legítima é classificada como spam. Um e-mail importante pode nunca ser visto ou pode até ser removido.
+
+Agora, a assimetria aponta para a direção oposta.
+
+Podemos preferir deixar passar algum spam se, com isso, quase nada que o modelo classifique como spam for na verdade uma mensagem legítima.
+
+Em termos visuais, o classificador se torna mais conservador ao colocar pontos no círculo verde.
+
+<ClassifierTradeoffAnimation mode="precision" locale="pt-BR" />
+
+Em vez de destacar todos os pontos genuinamente verdes, olhe agora apenas para o conteúdo do círculo que o modelo chamou de positivo.
+
+A pergunta relevante passa a ser:
+
+> Entre as mensagens que o modelo chamou de spam, quantas realmente eram spam?
+
+Isso é **precisão**.
+
+$$
+\text{Precisão} =
+
+\frac{\text{pontos verdes no círculo verde}}
+{\text{todos os pontos no círculo verde}}
+$$
+
+Agora, o denominador é determinado inteiramente pelas previsões do modelo. Observamos tudo o que está dentro do círculo previsto como positivo, sejam os pontos verdes ou vermelhos.
+
+O numerador mantém apenas os pontos que realmente são verdes.
+
+Portanto, a precisão começa pela **afirmação do modelo**.
+
+Primeiro perguntamos: *Quais pontos o classificador disse serem positivos?* Depois, examinamos com que frequência essa afirmação estava correta.
+
+Isso nos dá a distinção central entre precisão e recall:
+
+**Recall:** olhe para todos os pontos verdes e pergunte quantos encontramos.
+
+**Precisão:** olhe para tudo o que chamamos de verde e pergunte quanto disso realmente era verde.
+
+<PrecisionRecallComparison locale="pt-BR" />
+
+O numerador é o mesmo nas duas métricas: pontos verdes colocados corretamente no círculo verde.
+
+O que muda é o denominador e, portanto, a pergunta que fazemos.
+
+---
+
+## Cenários
+
+Agora podemos remover completamente câncer, pacientes, e-mail e spam.
+
+Só precisamos dos pontos verdes e vermelhos e dos dois círculos.
+
+Cada arranjo abaixo poderia ser o resultado produzido por algum classificador binário.
+
+As quatro combinações possíveis também correspondem aos termos conhecidos da matriz de confusão:
+
+* um ponto verde no círculo verde é um **verdadeiro positivo**;
+* um ponto vermelho no círculo verde é um **falso positivo**;
+* um ponto verde no círculo vermelho é um **falso negativo**;
+* um ponto vermelho no círculo vermelho é um **verdadeiro negativo**.
+
+Vamos comparar precisão e recall com a acurácia, que mede a fração de todos os pontos colocados no círculo correto.
+
+### Cenário 1 — Uma acurácia alta pode esconder um modelo ruim
+
+Considere 100 pontos:
+
+* 5 são realmente verdes;
+* 95 são realmente vermelhos.
+
+O classificador produz:
+
+* círculo verde: 1 verde + 1 vermelho;
+* círculo vermelho: 4 verdes + 94 vermelhos.
+
+<ScenarioOutcomeVisual locale="pt-BR" label="Cenário 1" predictedRed={{ green: 4, red: 94 }} predictedGreen={{ green: 1, red: 1 }} />
+
+$$
+\text{Acurácia}=95\%
+$$
+
+$$
+\text{Precisão}=50\%
+$$
+
+$$
+\text{Recall}=20\%
+$$
+
+Se olhássemos apenas para a afirmação **95% de acurácia**, esse classificador poderia parecer excelente.
+
+No entanto, entre os cinco pontos genuinamente verdes, ele encontrou apenas um.
+
+A acurácia alta vem principalmente do fato de que os pontos vermelhos dominam o dataset. Classificar corretamente 94 dos 95 pontos vermelhos basta para fazer a acurácia geral parecer impressionante, embora o classificador tenha um desempenho ruim na rara classe positiva.
+
+Um classificador ainda mais simples, que previsse vermelho para todos os pontos, também teria 95% de acurácia. Nosso classificador encontrou um ponto verde, mas o ponto vermelho adicional que ele classificou incorretamente anulou esse ganho na acurácia.
+
+Esse é um dos motivos pelos quais a acurácia pode ser especialmente enganosa em datasets desbalanceados. A prevalência de cada classe afeta o quanto cada tipo de previsão correta contribui para o número final.
+
+---
+
+### Cenário 2 — Precisão perfeita, recall muito baixo
+
+Agora mantenha os 100 pontos, com 10 verdes e 90 vermelhos. Esse classificador prevê verde apenas duas vezes, e as duas previsões estão corretas. Os outros 8 pontos verdes e todos os 90 pontos vermelhos vão para o círculo vermelho.
+
+<ScenarioOutcomeVisual locale="pt-BR" label="Cenário 2" predictedRed={{ green: 8, red: 90 }} predictedGreen={{ green: 2, red: 0 }} />
+
+O resultado é **92% de acurácia, 100% de precisão e 20% de recall**. Toda vez que o classificador diz verde, ele acerta — mas encontra apenas 2 dos 10 pontos genuinamente verdes.
+
+Portanto, é possível alcançar precisão perfeita com um comportamento muito conservador: fazer pouquíssimas previsões positivas, mas fazê-las apenas quando o modelo está muito confiante.
+
+O preço é deixar passar muitos positivos reais.
+
+Há um limite importante para essa ideia. Se o modelo não fizer nenhuma previsão positiva, o denominador da precisão será zero. Nesse caso, a precisão é **indefinida**, não 100%.
+
+---
+
+### Cenário 3 — Recall perfeito, precisão baixa
+
+Mantenha os mesmos 10 pontos verdes e 90 vermelhos, mas torne o classificador muito mais disposto a prever verde. Ele envia todos os 10 pontos verdes e 30 pontos vermelhos ao círculo verde, deixando 60 pontos vermelhos no círculo vermelho.
+
+<ScenarioOutcomeVisual locale="pt-BR" label="Cenário 3" predictedRed={{ green: 0, red: 60 }} predictedGreen={{ green: 10, red: 30 }} />
+
+Agora, **a acurácia é 70%, a precisão é 25% e o recall é 100%**. Nenhum ponto verde escapa, mas apenas 10 dos 40 pontos chamados de verde realmente são verdes.
+
+Assim, o classificador encontra todos os positivos ao custo de produzir muitos alarmes falsos.
+
+Da mesma forma que podemos aumentar a precisão sendo mais conservadores, podemos levar o recall em direção a 100% sendo cada vez mais agressivos ao prever a classe positiva.
+
+---
+
+### Cenário 4 — Um modelo equilibrado
+
+Agora considere uma população equilibrada de 50 pontos verdes e 50 vermelhos. O classificador acerta 45 pontos de cada classe e comete cinco erros em cada direção.
+
+<ScenarioOutcomeVisual locale="pt-BR" label="Cenário 4" predictedRed={{ green: 5, red: 45 }} predictedGreen={{ green: 45, red: 5 }} />
+
+Esse resultado simétrico nos dá **90% de acurácia, 90% de precisão e 90% de recall**.
+
+Nessa configuração específica, acurácia, precisão e recall têm o mesmo valor. Isso é consequência da distribuição equilibrada das classes e dos erros simétricos, não uma relação geral entre as métricas.
+
+---
+
+### Cenário 5 — A mesma acurácia, comportamentos completamente diferentes
+
+Por fim, considere dois classificadores avaliados nos mesmos 50 pontos verdes e 50 vermelhos. Ambos acertam 80 observações, mas fazem promessas diferentes.
+
+<ScenarioModelComparison locale="pt-BR" models={[
+  {
+    label: "Modelo A",
+    predictedRed: { green: 20, red: 50 },
+    predictedGreen: { green: 30, red: 0 },
+  },
+  {
+    label: "Modelo B",
+    predictedRed: { green: 0, red: 30 },
+    predictedGreen: { green: 50, red: 20 },
+  },
+]} />
+
+O Modelo A é conservador. Sempre que prevê verde, ele acerta, mas deixa 20 pontos genuinamente verdes no círculo vermelho.
+
+O Modelo B se comporta quase da maneira oposta. Ele captura todos os pontos verdes, mas também envia 20 pontos vermelhos ao círculo verde.
+
+Os dois modelos acertam 80 das 100 observações, portanto têm exatamente a mesma acurácia. Ainda assim, seus comportamentos são claramente diferentes.
+
+O Modelo A evita falsos positivos ao custo de deixar passar alguns positivos reais. O Modelo B evita perder positivos ao custo de produzir mais alarmes falsos.
+
+Dependendo do problema real, qualquer um desses comportamentos pode ser preferível.
+
+Para algo semelhante ao exemplo do filtro de spam, podemos preferir a cautela do Modelo A. Para algo semelhante ao rastreamento de câncer, a capacidade do Modelo B de capturar todos os positivos pode importar mais.
+
+É por isso que uma métrica não deve ser interpretada como uma descrição absoluta da **qualidade do modelo**. Cada métrica resume uma propriedade específica do comportamento do classificador.
+
+---
+
+## Explore por conta própria
+
+Podemos tornar essas relações mais fáceis de enxergar controlando diretamente o conteúdo dos dois círculos.
+
+Em vez de alterar um classificador ou seu processo de treinamento, você controla diretamente as previsões finais.
+
+Controle quatro quantidades — duas em cada círculo:
+
+**Círculo previsto como verde**
+
+* número de pontos realmente verdes;
+* número de pontos realmente vermelhos.
+
+**Círculo previsto como vermelho**
+
+* número de pontos realmente verdes;
+* número de pontos realmente vermelhos.
+
+<ClassificationMetricsPlayground locale="pt-BR" />
+
+A partir desses quatro números, o playground calcula automaticamente as três métricas.
+
+O mais importante não é apenas ver os números mudarem, mas perceber a quais pontos cada métrica dá atenção.
+
+Para a **precisão**, destaque apenas o círculo previsto como verde.
+
+> Entre os pontos que eu disse serem verdes, quantos realmente eram verdes?
+
+Para o **recall**, esmaeça os pontos vermelhos e destaque todos os pontos realmente verdes nos dois círculos.
+
+> Entre os pontos que realmente eram verdes, quantos eu disse serem verdes?
+
+Para a **acurácia**, destaque todos os pontos cuja cor real coincide com o círculo em que estão.
+
+> Entre todos os pontos, quantos foram classificados corretamente?
+
+Depois de experimentar com as distribuições, vale tornar explícito um último detalhe.
+
+Não há nada de especial em verde ser a classe **positiva**.
+
+Escolhemos verde como positivo apenas para manter a linguagem visual consistente ao longo do artigo. Poderíamos inverter a definição e declarar vermelho como a classe positiva.
+
+Os pontos não mudariam de lugar. O classificador não mudaria. Mudaria apenas a perspectiva a partir da qual calculamos precisão e recall.
+
+Poderíamos então perguntar:
+
+> Entre os pontos que eu disse serem vermelhos, quantos realmente eram vermelhos?
+
+Essa seria a precisão para a classe vermelha.
+
+Ou:
+
+> Entre os pontos que realmente eram vermelhos, quantos classifiquei corretamente como vermelhos?
+
+Esse seria o recall para a classe vermelha.
+
+Isso revela uma propriedade importante das duas métricas:
+
+> Precisão e recall não são números únicos e universais que pertencem a um classificador independentemente de como definimos a tarefa. Eles são calculados em relação à classe que escolhemos tratar como positiva.
+
+Quando verde é a classe positiva, o recall da classe verde costuma ser chamado de **sensibilidade**.
+
+A capacidade correspondente de identificar corretamente exemplos vermelhos — o recall da classe negativa — é o que geralmente chamamos de **especificidade**:
+
+$$
+\text{Especificidade} =
+
+\frac{\text{pontos vermelhos no círculo vermelho}}
+{\text{todos os pontos realmente vermelhos}}
+$$
+
+A terminologia é útil, mas a lógica visual permanece exatamente a mesma.
+
+As duas perguntas que vale lembrar são mais simples do que as fórmulas:
+
+> **Precisão:** entre o que eu **disse** ser positivo, quanto acertei?
+
+> **Recall:** entre o que **realmente era** positivo, quanto encontrei?
+
+Nenhuma das duas é universalmente mais importante.
+
+A métrica adequada depende do uso do classificador e, principalmente, de qual tipo de erro custa mais no problema real.
+
+Essas métricas descrevem um conjunto fixo de previsões; elas não tomam sozinhas a decisão de colocar um modelo em produção. Na prática, a escolha de um limiar também pode exigir custos de erro explícitos, probabilidades calibradas e atenção à prevalência das classes — especialmente porque a precisão pode mudar quando muda a prevalência da classe positiva.
+</article>

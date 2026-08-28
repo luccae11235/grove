@@ -1,0 +1,302 @@
+---
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import "katex/dist/katex.min.css";
+import ArticleConnections from "../../../components/ArticleConnections.astro";
+import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import NewsletterSignup from "../../../components/NewsletterSignup.astro";
+import SampleBasedRlEnhancements from "../../../components/SampleBasedRlEnhancements.astro";
+import { articles } from "../../../content/articles";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+
+type ArticleEntry = CollectionEntry<"articles">;
+
+export async function getStaticPaths() {
+  const genericMdxArticleIds = new Set([
+    "gradient-boosting-quick-deep-dive",
+    "sample-based-view-of-reinforcement-learning",
+    "is-my-model-good",
+  ]);
+  const includeDrafts =
+    import.meta.env.DEV || import.meta.env.SHOW_DRAFTS === "true";
+
+  const entries = await getCollection(
+    "articles",
+    ({ data }) =>
+      genericMdxArticleIds.has(data.articleId) &&
+      data.locale === "pt-BR" &&
+      (data.status === "published" || includeDrafts),
+  );
+
+  return entries.map((entry) => ({
+    params: { slug: entry.data.routeSlug },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: ArticleEntry;
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const inCatalog = articles.some((article) => article.id === entry.data.articleId);
+const newsletterSource = `${entry.data.articleId}-article`;
+const usesRouteArticleFrame =
+  entry.data.articleId === "sample-based-view-of-reinforcement-learning";
+const translations = entry.data.articleId === "sample-based-view-of-reinforcement-learning"
+  ? {
+      en: "/learn/sample-based-view-of-reinforcement-learning/",
+      "pt-BR": "/pt-br/learn/uma-visao-do-aprendizado-por-reforco-baseada-em-amostras/",
+    }
+  : entry.data.articleId === "is-my-model-good"
+    ? { en: "/learn/is-my-model-good/", "pt-BR": "/pt-br/learn/meu-modelo-e-bom/" }
+  : entry.data.articleId === "gradient-boosting-quick-deep-dive"
+    ? {
+        en: "/learn/gradient-boosting-quick-deep-dive/",
+        "pt-BR": "/pt-br/learn/gradient-boosting-quick-deep-dive/",
+      }
+  : undefined;
+---
+
+<BaseLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  locale="pt-BR"
+  canonicalPath={entry.data.href}
+  translations={translations}
+  pageType="article"
+  analyticsContentId={entry.data.articleId}
+  publishedAt={entry.data.publishedAt}
+  updatedAt={entry.data.updatedAt}
+  noindex={entry.data.status === "draft"}
+  wide
+>
+  {usesRouteArticleFrame ? (
+    <>
+      <header class="page-header lesson-header article-hero">
+        <p class="eyebrow">{entry.data.eyebrow}</p>
+        <h1>{entry.data.title}</h1>
+        <div class="article-meta" aria-label="Informações sobre o artigo">
+          <DifficultyBadge difficulty={entry.data.difficulty} locale="pt-BR" showDescription />
+          {entry.data.status === "draft" && <span><strong>Rascunho</strong></span>}
+        </div>
+      </header>
+      <article class="lesson-body deep-article sample-based-rl-article">
+        <Content />
+      </article>
+      <SampleBasedRlEnhancements locale="pt-BR" />
+    </>
+  ) : (
+    <Content />
+  )}
+  {inCatalog && <ArticleConnections articleId={entry.data.articleId} locale="pt-BR" />}
+  <NewsletterSignup locale="pt-BR" source={newsletterSource} compact />
+</BaseLayout>
+
+<style is:global>
+  .reward-hacking-article h2,
+  .reward-hacking-article h3 {
+    scroll-margin-top: 84px;
+  }
+
+  .reward-hacking-article .article-visual-placeholder {
+    display: grid;
+    gap: 6px;
+    margin: 32px 0;
+    padding: 22px 24px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 12px;
+    background: var(--surface-subtle);
+    color: var(--text-muted);
+  }
+
+  .reward-hacking-article .article-visual-placeholder strong {
+    color: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .reward-hacking-article .article-visual-placeholder span {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .reward-hacking-article .formula > p {
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    line-height: 1.65;
+  }
+
+  :is(.bagging-article, .gradient-boosting-article, .sample-based-rl-article) .katex {
+    color: var(--text);
+    font-size: 1.06em;
+  }
+
+  :is(.bagging-article, .gradient-boosting-article, .sample-based-rl-article) .katex-display {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    margin: 28px 0 32px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 4px 8px;
+    text-align: center;
+    scrollbar-color: var(--border-strong) transparent;
+    scrollbar-width: thin;
+  }
+
+  :is(.bagging-article, .gradient-boosting-article, .sample-based-rl-article) .katex-display > .katex {
+    display: inline-block;
+    min-width: max-content;
+    font-size: clamp(1.03rem, 2.4vw, 1.26rem);
+    white-space: nowrap;
+  }
+
+  .sample-based-rl-action-values-table-wrap {
+    width: min(560px, 100%);
+    margin: 28px auto 36px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface);
+  }
+
+  .sample-based-rl-action-values-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.94rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.4;
+  }
+
+  .sample-based-rl-action-values-table th,
+  .sample-based-rl-action-values-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 14px 18px;
+    text-align: left;
+  }
+
+  .sample-based-rl-action-values-table thead th {
+    background: var(--surface-subtle);
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .sample-based-rl-action-values-table tbody th {
+    font-weight: 650;
+  }
+
+  .sample-based-rl-action-values-table th:last-child,
+  .sample-based-rl-action-values-table td:last-child {
+    text-align: right;
+  }
+
+  .sample-based-rl-action-values-table tbody tr:last-child th,
+  .sample-based-rl-action-values-table tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+.sample-based-rl-roadmap picture,
+.sample-based-rl-roadmap img,
+.sample-based-rl-learning-paradigms picture,
+.sample-based-rl-learning-paradigms img,
+.sample-based-rl-pong-policy picture,
+.sample-based-rl-pong-policy img,
+.sample-based-rl-transition-dynamics picture,
+.sample-based-rl-transition-dynamics img,
+.sample-based-rl-mdp-loop picture,
+.sample-based-rl-mdp-loop img,
+.sample-based-rl-discounted-returns picture,
+.sample-based-rl-discounted-returns img,
+.sample-based-rl-policy-update picture,
+.sample-based-rl-policy-update img,
+.sample-based-rl-learning-cycle picture,
+.sample-based-rl-learning-cycle img,
+.sample-based-rl-mc-td picture,
+.sample-based-rl-mc-td img,
+.sample-based-rl-policy-roles picture,
+.sample-based-rl-policy-roles img,
+.sample-based-rl-value-policy picture,
+.sample-based-rl-value-policy img,
+.sample-based-rl-representation picture,
+.sample-based-rl-representation img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.static-figure.sample-based-rl-roadmap,
+.static-figure.sample-based-rl-learning-paradigms {
+  width: min(720px, 100%);
+}
+
+.static-figure.sample-based-rl-pong-policy {
+  width: min(680px, 100%);
+}
+
+@media (min-width: 521px) {
+  .static-figure.sample-based-rl-roadmap {
+    aspect-ratio: 1774 / 560;
+  }
+
+  .sample-based-rl-roadmap picture,
+  .sample-based-rl-roadmap img {
+    height: 100%;
+  }
+
+  .sample-based-rl-roadmap img {
+    object-fit: cover;
+    object-position: center;
+  }
+}
+
+.static-figure.sample-based-rl-transition-dynamics {
+  width: min(760px, 100%);
+}
+
+.static-figure.sample-based-rl-mdp-loop {
+  width: min(760px, 100%);
+}
+
+.static-figure.sample-based-rl-discounted-returns,
+.static-figure.sample-based-rl-policy-update,
+.static-figure.sample-based-rl-learning-cycle,
+.static-figure.sample-based-rl-mc-td,
+.static-figure.sample-based-rl-policy-roles,
+.static-figure.sample-based-rl-value-policy,
+.static-figure.sample-based-rl-representation {
+  width: min(760px, 100%);
+}
+
+  @media (max-width: 520px) {
+    .sample-based-rl-action-values-table {
+      font-size: 0.82rem;
+    }
+
+    .sample-based-rl-action-values-table th,
+    .sample-based-rl-action-values-table td {
+      padding: 12px 10px;
+    }
+
+    .sample-based-rl-action-values-table thead th {
+      font-size: 0.62rem;
+    }
+
+    :is(.bagging-article, .gradient-boosting-article, .sample-based-rl-article) .katex-display {
+      margin-right: -8px;
+      margin-left: -8px;
+      padding-right: 8px;
+      padding-left: 8px;
+      text-align: left;
+    }
+  }
+</style>

@@ -1,0 +1,130 @@
+---
+import ScenarioOutcomeVisual from "./ScenarioOutcomeVisual.astro";
+
+interface Counts {
+  green: number;
+  red: number;
+}
+
+interface Model {
+  label: string;
+  predictedRed: Counts;
+  predictedGreen: Counts;
+}
+
+interface Props {
+  locale?: "en" | "pt-BR";
+  models: [Model, Model];
+}
+
+const { locale = "en", models } = Astro.props;
+const metricLabels = locale === "pt-BR"
+  ? { accuracy: "Acurácia", precision: "Precisão", recall: "Recall" }
+  : { accuracy: "Accuracy", precision: "Precision", recall: "Recall" };
+
+const summaries = models.map((model) => {
+  const truePositive = model.predictedGreen.green;
+  const trueNegative = model.predictedRed.red;
+  const total = model.predictedRed.green + model.predictedRed.red + model.predictedGreen.green + model.predictedGreen.red;
+  const predictedPositive = model.predictedGreen.green + model.predictedGreen.red;
+  const actualPositive = model.predictedGreen.green + model.predictedRed.green;
+  const percent = (part: number, whole: number) => whole === 0 ? "—" : `${Math.round((part / whole) * 100)}%`;
+
+  return {
+    ...model,
+    metrics: [
+      [metricLabels.accuracy, percent(truePositive + trueNegative, total)],
+      [metricLabels.precision, percent(truePositive, predictedPositive)],
+      [metricLabels.recall, percent(truePositive, actualPositive)],
+    ],
+  };
+});
+---
+
+<div class="scenario-model-comparison" data-scenario-model-comparison>
+  {summaries.map((model) => (
+    <section aria-labelledby={`comparison-${model.label.toLowerCase().replaceAll(" ", "-")}`}>
+      <h4 id={`comparison-${model.label.toLowerCase().replaceAll(" ", "-")}`}>{model.label}</h4>
+      <ScenarioOutcomeVisual
+        label={model.label}
+        locale={locale}
+        predictedRed={model.predictedRed}
+        predictedGreen={model.predictedGreen}
+      />
+      <dl>
+        {model.metrics.map(([metric, value]) => (
+          <div><dt>{metric}</dt><dd>{value}</dd></div>
+        ))}
+      </dl>
+    </section>
+  ))}
+</div>
+
+<style>
+  .scenario-model-comparison {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    width: min(720px, 100%);
+    margin: 28px auto 34px;
+  }
+
+  section {
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--surface-raised);
+    box-shadow: 0 14px 36px rgb(22 56 43 / 6%);
+  }
+
+  h4 {
+    margin: 0;
+    padding: 14px 16px 0;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.9rem;
+  }
+
+  section :global(.scenario-outcome) {
+    width: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  dl {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    margin: 0;
+    border-top: 1px solid var(--border);
+    background: var(--border);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  }
+
+  dl div {
+    display: grid;
+    gap: 2px;
+    justify-items: center;
+    padding: 10px 5px;
+    background: var(--surface-subtle);
+  }
+
+  dt {
+    color: var(--text-muted);
+    font-size: 0.62rem;
+    font-weight: 700;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--accent-hover);
+    font-size: 0.86rem;
+    font-weight: 760;
+  }
+
+  @media (max-width: 620px) {
+    .scenario-model-comparison { grid-template-columns: 1fr; }
+  }
+</style>

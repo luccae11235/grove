@@ -1,0 +1,1368 @@
+.figure,
+.playground {
+  --boost-accent: #157451;
+  --boost-warm: #bd7028;
+  --boost-ink: var(--text);
+  width: 100%;
+  margin: 32px 0 38px;
+  container-type: inline-size;
+}
+
+.figureFrame,
+.playground {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-raised);
+  box-shadow: 0 16px 42px rgb(17 45 34 / 7%);
+}
+
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.gridline {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.axis {
+  stroke: var(--text-muted);
+  stroke-width: 1.15;
+}
+
+.zeroLine {
+  stroke: var(--text-muted);
+  stroke-width: 1.25;
+  stroke-dasharray: 4 5;
+}
+
+.tick,
+.axisLabel,
+.directLabel,
+.directLabelMuted,
+.histogramLabel {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.tick {
+  fill: var(--text-muted);
+  font-size: 11px;
+}
+
+.axisLabel {
+  fill: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.directLabel,
+.directLabelMuted {
+  paint-order: stroke;
+  stroke: var(--surface-raised);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.warmDirectLabel {
+  paint-order: stroke;
+  stroke: var(--surface-raised);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+  fill: var(--boost-warm);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.directLabel {
+  fill: var(--boost-accent);
+}
+
+.directLabelMuted {
+  fill: var(--text-muted);
+}
+
+.point,
+.validationPoint,
+.residualPoint,
+.selectedPoint {
+  vector-effect: non-scaling-stroke;
+}
+
+.point {
+  fill: var(--surface-raised);
+  stroke: var(--boost-ink);
+  stroke-width: 1.7;
+}
+
+.validationPoint {
+  fill: var(--surface-raised);
+  stroke: var(--boost-ink);
+  stroke-width: 1.4;
+  opacity: 0.76;
+}
+
+.residualPoint {
+  fill: color-mix(in srgb, var(--boost-warm) 12%, var(--surface-raised));
+  stroke: var(--boost-warm);
+  stroke-width: 1.55;
+}
+
+.selectedPoint {
+  fill: var(--surface-raised);
+  stroke: var(--boost-accent);
+  stroke-width: 3;
+}
+
+.residualSegment {
+  stroke: var(--boost-warm);
+  stroke-width: 1.15;
+  stroke-opacity: 0.48;
+}
+
+.modelLine,
+.correctionLine,
+.previousLine {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+}
+
+.bridgeHeading,
+.bridgeLabel,
+.bridgeEndpoint,
+.bridgePillText,
+.bridgePillTextActive,
+.bridgeNote,
+.transformLabel,
+.transformLabelActive,
+.bridgeStateLabel,
+.bridgeStateLabelActive,
+.bridgeCorrectionLabel,
+.bridgeCorrectionLabelActive,
+.bridgeProbabilityLabel,
+.classRailLabel {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.bridgeMobile {
+  display: none;
+}
+
+.bridgeHeading {
+  fill: var(--text);
+  font-size: 18px;
+  font-weight: 780;
+}
+
+.bridgeLabel {
+  fill: var(--text);
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.bridgeEndpoint,
+.bridgeNote,
+.transformLabel,
+.transformLabelActive,
+.bridgeStateLabel,
+.bridgeStateLabelActive,
+.bridgeCorrectionLabel,
+.bridgeCorrectionLabelActive,
+.bridgeProbabilityLabel {
+  fill: var(--text-muted);
+  font-size: 11px;
+}
+
+.bridgeNote {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 13px;
+}
+
+.transformLabel {
+  font-weight: 720;
+}
+
+.transformLabelActive,
+.bridgeStateLabelActive,
+.bridgeCorrectionLabelActive,
+.bridgeProbabilityLabel {
+  fill: var(--boost-accent);
+  font-weight: 760;
+}
+
+.bridgeStateLabel,
+.bridgeStateLabelActive,
+.bridgeCorrectionLabel,
+.bridgeCorrectionLabelActive,
+.bridgeProbabilityLabel {
+  paint-order: stroke;
+  stroke: var(--surface-raised);
+  stroke-linejoin: round;
+  stroke-width: 4px;
+}
+
+.bridgeDivider,
+.bridgeLine,
+.bridgeLineShort,
+.bridgeTick,
+.transformArrow,
+.returnArrow,
+.bridgeArrow {
+  fill: none;
+  stroke: var(--text-muted);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.bridgeDivider {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.bridgeState,
+.bridgeStateActive,
+.bridgeProbability {
+  vector-effect: non-scaling-stroke;
+}
+
+.bridgeState {
+  fill: var(--surface-raised);
+  stroke: var(--text-muted);
+  stroke-width: 1.8;
+}
+
+.bridgeStateActive,
+.bridgeProbability {
+  fill: var(--surface-raised);
+  stroke: var(--boost-accent);
+  stroke-width: 2.2;
+}
+
+.firstBridgeCorrection,
+.secondBridgeCorrection {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.firstBridgeCorrection {
+  stroke: var(--boost-warm);
+}
+
+.secondBridgeCorrection {
+  stroke: var(--boost-accent);
+}
+
+.bridgePill,
+.bridgePillActive {
+  fill: var(--surface-subtle);
+  stroke: var(--border);
+}
+
+.bridgePillActive {
+  fill: color-mix(in srgb, var(--boost-accent) 8%, var(--surface-raised));
+  stroke: var(--boost-accent);
+}
+
+.bridgePillText,
+.bridgePillTextActive {
+  fill: var(--text-muted);
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.bridgePillTextActive {
+  fill: var(--boost-accent);
+}
+
+.linkGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.linkGrid section {
+  min-width: 0;
+  padding: 16px 14px 8px;
+}
+
+.linkGrid section + section {
+  border-left: 1px solid var(--border);
+}
+
+.linkGrid h4 {
+  margin: 0 0 2px 10px;
+  color: var(--text);
+  font-size: 0.72rem;
+}
+
+.linkAnchor {
+  fill: var(--surface-raised);
+  stroke: var(--boost-accent);
+  stroke-width: 2.3;
+  vector-effect: non-scaling-stroke;
+}
+
+.tableHeading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 18px;
+  padding: 18px 22px 12px;
+}
+
+.tableHeading strong {
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
+.tableHeading span {
+  color: var(--text-muted);
+  font-size: 0.64rem;
+}
+
+.tableScroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.tableScroll:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -3px;
+}
+
+.classificationTable {
+  width: 100%;
+  min-width: 430px;
+  border-collapse: collapse;
+  color: var(--text);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.classificationTable th,
+.classificationTable td {
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.classificationTable th:first-child,
+.classificationTable td:first-child {
+  padding-left: 22px;
+  text-align: left;
+}
+
+.classificationTable th:last-child,
+.classificationTable td:last-child {
+  padding-right: 22px;
+}
+
+.classificationTable thead th {
+  background: var(--surface-subtle);
+  color: var(--text-muted);
+  font-size: 0.61rem;
+  font-weight: 720;
+  letter-spacing: 0.01em;
+}
+
+.classificationTable tbody th {
+  color: var(--text-muted);
+  font-weight: 650;
+}
+
+.classZeroMark,
+.classOneMark {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  vertical-align: 1px;
+}
+
+.classZeroMark {
+  border: 1.5px solid var(--text-muted);
+  border-radius: 50%;
+}
+
+.classOneMark {
+  background: var(--boost-accent);
+  transform: rotate(45deg);
+}
+
+.positiveValue {
+  color: var(--boost-accent);
+  font-weight: 760;
+}
+
+.negativeValue {
+  color: var(--boost-warm);
+  font-weight: 760;
+}
+
+.classZeroPoint {
+  fill: var(--surface-raised);
+  stroke: var(--boost-ink);
+  stroke-width: 1.7;
+  vector-effect: non-scaling-stroke;
+}
+
+.classOnePoint,
+.classOneSelected {
+  fill: var(--boost-accent);
+  stroke: var(--surface-raised);
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+}
+
+.classOneSelected {
+  stroke: var(--boost-ink);
+  stroke-width: 2.4;
+}
+
+.classRailLabel {
+  paint-order: stroke;
+  stroke: var(--surface-raised);
+  stroke-width: 4px;
+  fill: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.classificationStrip {
+  display: flex;
+  min-height: 86px;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  border-top: 1px solid var(--border);
+  padding: 12px 22px 16px;
+  background: var(--surface-subtle);
+  scrollbar-width: thin;
+}
+
+.classificationStrip .compactTreeTerm {
+  flex-direction: column;
+  gap: 1px;
+}
+
+.classificationStrip .compactTreeTerm > span {
+  display: flex;
+  align-items: center;
+}
+
+.classificationStrip .compactTreeTerm > strong {
+  color: var(--text);
+  font-size: 0.67rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.sigmoidTerm {
+  position: relative;
+  display: flex;
+  min-width: 72px;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  border: 1px solid color-mix(in srgb, var(--boost-accent) 30%, var(--border));
+  border-radius: 10px;
+  padding: 8px 9px;
+  background: var(--surface-raised);
+  color: var(--text-muted);
+  font-size: 0.61rem;
+}
+
+.sigmoidTerm b {
+  position: absolute;
+  left: -13px;
+  top: 18px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.sigmoidTerm strong {
+  color: var(--boost-accent);
+  font-size: 0.7rem;
+}
+
+.classificationStrip > p {
+  min-width: max-content;
+  margin: 0 0 0 auto;
+  color: var(--boost-accent);
+  font-size: 0.64rem;
+  font-weight: 740;
+}
+
+.panelHeadingSvg,
+.legendText,
+.axisHint,
+.probeLabel,
+.reversalLabel {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.panelHeadingSvg {
+  fill: var(--text);
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.firstContribution,
+.secondContribution {
+  vector-effect: non-scaling-stroke;
+  stroke-width: 3;
+}
+
+.firstContribution {
+  stroke: var(--boost-warm);
+}
+
+.secondContribution {
+  stroke: var(--boost-accent);
+}
+
+.firstArrowHead {
+  fill: var(--boost-warm);
+}
+
+.secondArrowHead {
+  fill: var(--boost-accent);
+}
+
+.contributionJoint {
+  fill: var(--surface-raised);
+  stroke: var(--boost-warm);
+  stroke-width: 2;
+}
+
+.contributionEnd {
+  fill: var(--surface-raised);
+  stroke: var(--boost-accent);
+  stroke-width: 2.2;
+}
+
+.legendText,
+.axisHint,
+.probeLabel {
+  fill: var(--text-muted);
+  font-size: 10px;
+}
+
+.reversalLabel {
+  fill: var(--boost-accent);
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.modelLine {
+  stroke: var(--boost-accent);
+  stroke-width: 2.7;
+}
+
+.correctionLine {
+  stroke: var(--boost-warm);
+  stroke-width: 2.6;
+}
+
+.previousLine {
+  stroke: var(--text-muted);
+  stroke-width: 1.7;
+  stroke-dasharray: 6 5;
+}
+
+.figure figcaption {
+  max-width: 610px;
+  margin: 12px auto 0;
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.frameworkFigure {
+  padding: 22px;
+}
+
+.frameworkHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 18px;
+  margin-bottom: 16px;
+}
+
+.frameworkHeader strong {
+  color: var(--text);
+  font-size: 0.86rem;
+}
+
+.frameworkHeader span {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+}
+
+.lossChoices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lossChoice {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 11px 12px;
+  background: var(--surface-subtle);
+}
+
+.lossChoice span {
+  color: var(--text-muted);
+  font-size: 0.58rem;
+  font-weight: 720;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lossChoice strong {
+  color: var(--text);
+  font-size: 0.7rem;
+}
+
+.lossChoice > b,
+.lossChoice small {
+  color: var(--text-muted);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.lossChoice small {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 8px;
+  color: var(--boost-accent);
+  font-weight: 700;
+}
+
+.lossChoice small em {
+  color: var(--text-muted);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.52rem;
+  font-style: normal;
+  font-weight: 720;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.frameworkFlow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.frameworkStep {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  border-top: 2px solid var(--border);
+  padding: 13px 12px 11px;
+}
+
+.frameworkStep span {
+  color: var(--text-muted);
+  font-size: 0.59rem;
+  font-weight: 720;
+}
+
+.frameworkStep strong {
+  color: var(--text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.frameworkStep small {
+  color: var(--text-muted);
+  font-size: 0.59rem;
+}
+
+.frameworkArrow {
+  align-self: center;
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+.frameworkReturn {
+  margin: 10px 4px 0 auto;
+  color: var(--text-muted);
+  font-size: 0.61rem;
+  text-align: right;
+}
+
+.frameworkReturn span {
+  margin-right: 5px;
+  color: var(--boost-accent);
+  font-size: 0.9rem;
+}
+
+.playground {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.playground button,
+.playground input {
+  font: inherit;
+}
+
+.playground input:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.playgroundHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 5px 18px;
+  padding: 18px 22px 10px;
+}
+
+.playgroundHeader strong {
+  color: var(--text);
+  font-size: 0.84rem;
+}
+
+.playgroundHeader span {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.comparisonGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(180px, 0.65fr);
+}
+
+.predictionPanel,
+.histogramPanel {
+  min-width: 0;
+  padding: 2px 18px 16px;
+}
+
+.residualPanel {
+  min-width: 0;
+  border-left: 1px solid var(--border);
+  padding: 2px 18px 16px;
+}
+
+.histogramPanel {
+  border-left: 1px solid var(--border);
+}
+
+.panelTitle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 4px 2px;
+}
+
+.panelTitle strong {
+  color: var(--text);
+  font-size: 0.74rem;
+}
+
+.panelTitle span {
+  color: var(--text-muted);
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.histogramBar {
+  fill: color-mix(in srgb, var(--boost-warm) 72%, var(--surface-raised));
+}
+
+.histogramZero {
+  stroke: var(--text-muted);
+  stroke-width: 1.2;
+}
+
+.processGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.stageNarration {
+  min-height: 2.7em;
+  margin: 0;
+  padding: 0 22px 10px;
+  color: var(--text-muted);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.contributionStrip {
+  position: relative;
+  display: flex;
+  min-height: 86px;
+  align-items: center;
+  gap: 11px;
+  overflow-x: auto;
+  border-top: 1px solid var(--border);
+  padding: 12px 22px 16px;
+  background: var(--surface-subtle);
+  scrollbar-width: thin;
+}
+
+.baseTerm,
+.treeTerm,
+.totalTerm {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: var(--text-muted);
+  font-size: 0.61rem;
+}
+
+.baseTerm strong,
+.treeTerm strong,
+.totalTerm strong {
+  color: var(--text);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.baseTerm,
+.totalTerm {
+  min-width: 68px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 9px;
+  background: var(--surface-raised);
+}
+
+.treeTerm {
+  position: relative;
+  min-width: 74px;
+}
+
+.treeTerm > b,
+.totalTerm > b {
+  position: absolute;
+  left: -12px;
+  top: 20px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.treeTerm > span {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.treeGlyph,
+.treeGlyphActive {
+  width: 32px;
+  height: 27px;
+  overflow: visible;
+}
+
+.treeGlyph path,
+.treeGlyph circle,
+.treeGlyphActive path,
+.treeGlyphActive circle {
+  fill: var(--surface-raised);
+  stroke: var(--text-muted);
+  stroke-width: 1.5;
+}
+
+.treeGlyphActive path,
+.treeGlyphActive circle {
+  stroke: var(--boost-accent);
+  stroke-width: 2;
+}
+
+.totalTerm {
+  position: relative;
+  border-color: color-mix(in srgb, var(--boost-accent) 30%, var(--border));
+}
+
+.inspectLabel {
+  position: sticky;
+  right: 0;
+  min-width: max-content;
+  margin: 0 0 0 auto;
+  color: var(--boost-accent);
+  font-size: 0.65rem;
+  font-weight: 740;
+}
+
+.roundControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid var(--border);
+  padding: 13px 22px;
+}
+
+.roundControls > span {
+  color: var(--text-muted);
+  font-size: 0.66rem;
+}
+
+.playButton,
+.nextStepButton,
+.roundButton,
+.roundButtonActive,
+.treeCountButton,
+.treeCountButtonActive {
+  min-width: 38px;
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-raised);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.complexityIntro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 18px;
+  margin: 0 22px 10px;
+  padding: 9px 12px;
+  border-left: 3px solid var(--boost-accent);
+  background: var(--surface-subtle);
+}
+
+.complexityIntro strong {
+  color: var(--text);
+  font-size: 0.7rem;
+}
+
+.complexityIntro span {
+  color: var(--text-muted);
+  font-size: 0.62rem;
+}
+
+.complexityStrip {
+  display: flex;
+  min-height: 86px;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  border-top: 1px solid var(--border);
+  padding: 12px 22px 16px;
+  background: var(--surface-subtle);
+  scrollbar-width: thin;
+}
+
+.compactTreeTerm {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 0.62rem;
+}
+
+.compactTreeTerm > b {
+  margin-right: 3px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.compactTreeTerm > span {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.ellipsisTerm {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+}
+
+.complexityStrip > p {
+  min-width: max-content;
+  margin: 0 0 0 auto;
+  color: var(--boost-accent);
+  font-size: 0.64rem;
+  font-weight: 740;
+}
+
+.complexityTicks {
+  position: relative;
+  height: 0.8rem;
+  margin: 5px 0 17px;
+  color: var(--text-muted);
+  font-size: 0.61rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.complexityTicks span {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.complexityTicks span:first-child {
+  transform: none;
+}
+
+.complexityTicks span:last-child {
+  transform: translateX(-100%);
+}
+
+.playButton {
+  min-width: 68px;
+  border-color: var(--boost-accent);
+  background: var(--boost-accent);
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.nextStepButton {
+  min-width: 126px;
+  border-color: color-mix(in srgb, var(--boost-accent) 38%, var(--border));
+  color: var(--boost-accent);
+  padding: 0 12px;
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.nextStepButton:disabled {
+  border-color: var(--border);
+  background: var(--surface-subtle);
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.roundButtons {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.roundButton,
+.roundButtonActive {
+  min-width: 34px;
+  min-height: 32px;
+  font-size: 0.67rem;
+}
+
+.roundButtonActive,
+.treeCountButtonActive {
+  border-color: var(--boost-accent);
+  background: var(--boost-accent);
+  color: white;
+  font-weight: 760;
+}
+
+.errorAnimationGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(220px, 0.7fr);
+  grid-template-rows: repeat(2, minmax(0, auto));
+}
+
+.errorAnimationGrid > .predictionPanel {
+  grid-row: 1 / span 2;
+}
+
+.smallEvidencePanel {
+  min-width: 0;
+  border-left: 1px solid var(--border);
+  padding: 2px 12px 16px;
+}
+
+.errorAnimationGrid > .smallEvidencePanel:last-child {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+.errorLine {
+  fill: none;
+  stroke: var(--boost-accent);
+  stroke-width: 2.4;
+  vector-effect: non-scaling-stroke;
+}
+
+.errorPoint,
+.errorPointActive {
+  fill: var(--surface-raised);
+  stroke: var(--boost-accent);
+  stroke-width: 1.8;
+}
+
+.errorPointActive {
+  fill: var(--boost-accent);
+}
+
+.treeCountControl {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 15px;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+.treeCountButtons {
+  display: flex;
+  gap: 6px;
+}
+
+.treeCountButton,
+.treeCountButtonActive {
+  min-height: 32px;
+  font-size: 0.68rem;
+}
+
+.playground button:focus-visible,
+.playground svg[tabindex="0"]:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.histogramLabel {
+  fill: var(--text-muted);
+  font-size: 10px;
+}
+
+.controlArea {
+  border-top: 1px solid var(--border);
+  background: var(--surface-subtle);
+  padding: 15px 22px 18px;
+}
+
+.guidance {
+  margin: 0 0 13px;
+  color: var(--text-muted);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.sliderLabel {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 7px 16px;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+.sliderLabel strong {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.sliderLabel input {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 0;
+  accent-color: var(--boost-accent);
+  cursor: ew-resize;
+}
+
+.sliderTicks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 0.62rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+@container (max-width: 560px) {
+  .bridgeDesktop {
+    display: none;
+  }
+
+  .bridgeMobile {
+    display: block;
+  }
+
+  .comparisonGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .histogramPanel {
+    border-top: 1px solid var(--border);
+    border-left: 0;
+    padding-top: 14px;
+  }
+
+  .processGrid,
+  .errorAnimationGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .errorAnimationGrid > .predictionPanel {
+    grid-row: auto;
+  }
+
+  .linkGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .linkGrid section + section {
+    border-top: 1px solid var(--border);
+    border-left: 0;
+  }
+
+  .residualPanel,
+  .smallEvidencePanel {
+    border-top: 1px solid var(--border);
+    border-left: 0;
+    padding-top: 14px;
+  }
+
+  .errorAnimationGrid .smallEvidencePanel {
+    display: grid;
+    grid-template-columns: minmax(110px, 0.5fr) minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .errorAnimationGrid > .smallEvidencePanel:last-child {
+    padding-top: 14px;
+  }
+
+  .roundControls {
+    flex-wrap: wrap;
+  }
+
+  .roundButtons {
+    width: 100%;
+    justify-content: space-between;
+    margin-left: 0;
+  }
+
+  .roundButton,
+  .roundButtonActive {
+    flex: 1;
+  }
+
+  .frameworkFigure {
+    padding: 18px;
+  }
+
+  .frameworkFlow {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .frameworkStep {
+    border-top: 0;
+    border-left: 2px solid var(--border);
+    padding: 9px 12px;
+  }
+
+  .frameworkArrow {
+    margin-left: 17px;
+    justify-self: start;
+    transform: rotate(90deg);
+  }
+}
+
+@container (max-width: 430px) {
+  .playgroundHeader,
+  .controlArea {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .predictionPanel,
+  .histogramPanel,
+  .residualPanel {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .contributionStrip,
+  .roundControls,
+  .complexityStrip,
+  .classificationStrip {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .complexityIntro {
+    margin-right: 14px;
+    margin-left: 14px;
+  }
+
+  .tableHeading {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .errorAnimationGrid .smallEvidencePanel {
+    display: block;
+  }
+
+  .guidance {
+    font-size: 0.8rem;
+  }
+
+  .frameworkFigure {
+    padding: 15px 14px;
+  }
+
+  .lossChoice {
+    padding: 9px 10px;
+  }
+
+  .lossChoices {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .playground * {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

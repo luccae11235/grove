@@ -34,24 +34,13 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
-- [ ] **Restore Portuguese locale parity for the production ACF/PACF article — issue #145**
-  - Add a professional Brazilian Portuguese translation with the same learning
-    progression, equations, references, and diagnostic guidance as the English article.
-  - Localize every static visual, animation, playground control, accessible
-    description, metadata field, and article route without changing the underlying data.
-  - Keep the English article unchanged and require owner review of the complete
-    Portuguese rendering before any production merge.
-  - Keep newsletter creation and delivery out of scope.
-  - Completion check: locale-parity browser coverage, focused checks, the full
-    repository gate, and desktop/mobile rendered review pass before production approval.
-
-- [ ] **Update and deliver the approved Issue 004 email — issue #141**
-  - Move the approved introductory copy and weekly sales chart into the
-    canonical newsletter source.
-  - Preserve the controlled production delivery safeguards and send only after
-    the exact artifact has passed review.
-  - Completion check: the canonical test is received, the subscriber broadcast
-    is sent once, and the delivery report is reviewed.
+- [ ] **Publish the sample-based reinforcement-learning article — issue #160**
+  - Publish the reviewed English and Brazilian Portuguese article on 2026-08-28
+    while keeping every other queued article in draft.
+  - Prepare Issue 005 as a repository draft only; do not create, test, schedule,
+    or send a provider broadcast without separate authorization.
+  - Completion check: the full repository gate passes, exact-SHA staging and
+    production verification pass, and both canonical locale routes are public.
 
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
@@ -140,6 +129,19 @@ references for longer-term editorial direction.
       `f2058f1`; production smoke passed all ten checks on `8d07633`.
   - [ ] Make signup and confirmation feedback immediate on a real iPhone.
   - [ ] Review a received issue in one non-Gmail mailbox provider.
+  - [x] Separate transactional confirmation reputation from broadcasts — issue #152.
+    - [x] Add a dedicated, verified transactional sending subdomain and keep
+      tracking disabled for confirmation and subscription-management mail.
+    - [x] Verify a real received confirmation passes SPF, DKIM, and DMARC and
+      review its placement before enabling the new identity in production.
+    - Completed 2026-08-21: `confirm.aflora.page` was verified in Resend with
+      dedicated DKIM, SPF, return-path MX, and monitored DMARC. Exact staging
+      revision `24ba23f7bd8f87a2960b4dad16d1064ee5135fe3` sent untracked
+      transactional messages that Gmail authenticated and placed in Personal.
+  - [ ] Require explicit reader action before confirmation — issue #154.
+    - A staging proof subscriber changed from pending to active 18 seconds after
+      delivery without an intentional link click; replace the confirmation
+      page's automatic redirect with an explicit, scanner-safe action.
   - Completion check: real readers can subscribe, confirm, receive, and
     unsubscribe safely.
 
@@ -194,6 +196,17 @@ references for longer-term editorial direction.
 
 ### Learning experience
 
+- [x] **Complete the gradient boosting visual system — issue #136** — 2026-08-24
+  - Built the regression and classification figures, animations, and
+    playgrounds from two locked, deterministic one-dimensional experiments.
+  - Added the complete Brazilian Portuguese article with localized figures,
+    controls, interaction states, and accessible descriptions.
+  - Finished the sequence with a compact loss-agnostic framework image that
+    preserves the shared gradient → tree → additive-update engine.
+  - Completion check: no visual specifications remain; the full repository
+    gate passed and desktop, tablet, and mobile rendered reviews confirmed the
+    artifacts are accessible, responsive, and contained.
+
 - [x] **Rebalance Article 2 regression-tree playgrounds — issue #104** — 2026-08-02
   - Kept Playground 2's prediction plot and growing tree side by side on desktop
     with continuous connectors between every visible parent and child.
@@ -220,6 +233,68 @@ references for longer-term editorial direction.
     production verification passed on `8b2b127` and `891b7da`, respectively.
 
 ### Publishing and content
+
+- [x] **Add foundational metadata and Portuguese locale parity to model evaluation — issue #155** — 2026-08-27
+  - Added the foundational badge and prior-knowledge description to both article headers.
+  - Added the complete Brazilian Portuguese prose, metadata, visual, animation,
+    playground, accessible-copy, routing, and language-switcher experience.
+  - Kept both locales in draft and kept publication, deployment, merge, and
+    newsletter delivery out of scope.
+  - Completion check: typecheck and the draft-inclusive production build passed;
+    eleven focused browser tests and rendered desktop/mobile review confirmed
+    locale parity, calculations, interactions, and containment.
+
+- [x] **Apply beta-reader revisions to model evaluation — issue #155** — 2026-08-26
+  - Tightened the opening and repeated scenarios while preserving the applied recall and precision stories.
+  - Added precision's zero-denominator boundary, the trivial accuracy baseline, and operational metric caveats.
+  - Compared equal-accuracy models directly and clarified positive-class switching in the playground.
+  - Completion check: typecheck and production build passed; eight focused browser tests
+    and rendered review confirmed calculations, interaction, direct comparison, and containment.
+
+- [x] **Refine the model-evaluation playground — issue #155** — 2026-08-26
+  - Enlarged the classifier circles and dots while keeping the complete playground visible.
+  - Replaced the scrolling preset pills with one selector and removed redundant explanatory labels.
+  - Completion check: typecheck and production build passed; seven focused browser tests
+    and responsive rendered review confirmed calculations, interaction, and containment.
+
+- [x] **Draft the model-evaluation article — issue #155** — 2026-08-25
+  - Added exact-count classifier visuals for every scenario so each stated distribution
+    can be inspected directly.
+  - Compacted the metrics playground and replaced typed point counts with accessible sliders.
+  - Kept translation, publication, deployment, and newsletter delivery outside this draft step.
+  - Completion check: typecheck and production build passed; seven focused browser
+    tests verified exact scenario counts, slider calculations, interactions, and
+    desktop/mobile containment; rendered review confirmed the compact hierarchy.
+
+- [x] **Restore Portuguese locale parity for the production ACF/PACF article — issue #145** — 2026-08-21
+  - Added a professional Brazilian Portuguese translation with the same learning
+    progression, equations, references, and diagnostic guidance as the English article.
+  - Localized all 12 static visuals, four interactive experiences, controls,
+    accessible descriptions, metadata, article routing, and language alternates.
+  - Full local and GitHub gates passed; the owner approved the rendered article,
+    and exact-SHA production verification passed on `452b71c` before the public
+    desktop and mobile routes were checked.
+  - Kept newsletter creation and delivery outside the hotfix.
+
+- [x] **Draft a sample-based introduction to reinforcement learning — issue #132** — 2026-08-21
+  - Preserved and standardized the English draft and added the reviewed Brazilian
+    Portuguese version with equivalent localized visuals and interactions.
+  - Completed twelve accessible, responsive visuals, including the computed MDP
+    trajectory and Pong reward-comparison interactions on desktop and mobile.
+  - Kept the article in draft with `noindex`; production publication and newsletter
+    delivery remain separate and were not performed.
+  - Completion check: `pnpm check`, eight focused browser scenarios, PR #147, and
+    post-merge CI passed; Railway staging verification run `32510468079` proved
+    implementation SHA `ac29c0849920f8ae377a1fa000935b72db1c601a`, with both
+    localized routes returning HTTP 200.
+
+- [x] **Update and deliver the approved Issue 004 email — issue #141** — 2026-08-21
+  - Moved the approved introductory copy and weekly sales chart into the
+    canonical newsletter source and verified its HTML and plain-text forms.
+  - Exact-SHA staging and production verification passed on `af815a0` and
+    `df3a66a`, respectively, before the controlled subscriber send.
+  - The Issue 004 report confirmed 8 sent, 8 delivered, 0 bounced, and 0
+    complained without a duplicate broadcast.
 
 - [x] **Publish How the Past Echoes and prepare Issue 004 — issue #137** — 2026-08-21
   - Published the reviewed English ACF/PACF article and short Issue 004 while
@@ -284,6 +359,19 @@ references for longer-term editorial direction.
     retention behavior.
 
 ### Learning experience
+
+- [x] **Create a token-efficient beta reader skill — issue #124** — 2026-08-13
+  - Added bounded initial, intermediate, and advanced reader passes with clear
+    ownership of flow, mathematics, writing, examples, and technical validity.
+  - Limited screen exploration to one designated reader, three meaningful
+    interaction states, and one representative viewport by default.
+  - Capped notes and synthesis while preserving evidence, disagreements,
+    audience-specific judgments, and strengths worth protecting.
+  - Moved the repository copy to the canonical `.agents/skills` discovery path
+    on 2026-08-26 so it is available from branches containing `develop`.
+  - Completion check: both repository and user-level copies validate, and three
+    parallel fresh-context readers produced distinct, evidence-backed feedback
+    while the sole explorer respected the interaction budget.
 
 - [x] **Fix article navigation and split-preview discoverability** — 2026-07-24
   - Moved the fixed chapter panel below the site header so its close and reopen

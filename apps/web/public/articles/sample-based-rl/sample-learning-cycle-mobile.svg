@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1380" viewBox="0 0 1024 1380" role="img" aria-labelledby="slcm-title slcm-desc">
+  <title id="slcm-title">The sample-based reinforcement learning cycle</title>
+  <desc id="slcm-desc">In a vertical sequence, a policy pi acts inside an agent-environment MDP loop. The loop produces multiple sampled trajectories, each alternating states, actions, and rewards. Update rule U learns from those samples and produces a better policy pi prime. One arrow returns the improved policy to the same MDP so the cycle repeats.</desc>
+
+  <defs>
+    <marker id="slcm-arrow-green" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M1 1L11 6L1 11Z" fill="#0b8f55"/>
+    </marker>
+  </defs>
+
+  <rect width="1024" height="1380" fill="#ffffff"/>
+  <rect x="18" y="18" width="988" height="1344" rx="34" fill="#ffffff" stroke="#e1e9e4" stroke-width="3"/>
+
+  <g font-family="Inter, Arial, sans-serif">
+    <text x="500" y="91" fill="#17231e" font-size="36" font-weight="650" text-anchor="middle">MDP</text>
+
+    <rect x="126" y="153" width="286" height="140" rx="28" fill="#eef7f2" stroke="#157451" stroke-width="3"/>
+    <text x="269" y="205" fill="#17231e" font-size="34" text-anchor="middle">Agent</text>
+    <rect x="222" y="230" width="94" height="48" rx="24" fill="#ffffff" stroke="#0b8f55" stroke-width="2.5"/>
+    <text x="269" y="256" fill="#0b8f55" font-family="Georgia, 'Times New Roman', serif" font-size="36" font-style="italic" text-anchor="middle" dominant-baseline="middle">π</text>
+
+    <rect x="588" y="153" width="286" height="140" rx="28" fill="#eef7f2" stroke="#157451" stroke-width="3"/>
+    <text x="731" y="233" fill="#17231e" font-size="34" text-anchor="middle">Environment</text>
+
+    <path d="M412 184C485 133 515 133 588 184" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#slcm-arrow-green)"/>
+    <text x="500" y="131" fill="#65736c" font-size="22" text-anchor="middle">action</text>
+    <path d="M588 269C515 320 485 320 412 269" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#slcm-arrow-green)"/>
+    <text x="500" y="343" fill="#65736c" font-size="22" text-anchor="middle">state + reward</text>
+  </g>
+
+  <path d="M500 366V410" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#slcm-arrow-green)"/>
+
+  <g font-family="Inter, Arial, sans-serif">
+    <text x="500" y="458" fill="#17231e" font-size="34" font-weight="650" text-anchor="middle">sampled trajectories</text>
+
+    <g fill="none" stroke="#e1e9e4" stroke-width="2">
+      <line x1="116" y1="543" x2="884" y2="543"/>
+      <line x1="116" y1="707" x2="884" y2="707"/>
+    </g>
+
+    <g font-family="Georgia, 'Times New Roman', serif" font-size="31" font-style="italic" text-anchor="middle" dominant-baseline="middle">
+      <g fill="#17231e">
+        <text x="130" y="514">s₀</text><text x="430" y="514">s₁</text><text x="730" y="514">s₂</text>
+        <text x="130" y="678">s₀</text><text x="430" y="678">s₁</text><text x="730" y="678">s₂</text>
+      </g>
+      <g fill="#65736c">
+        <text x="280" y="514">a₀</text><text x="580" y="514">a₁</text>
+        <text x="280" y="678">a₀</text><text x="580" y="678">a₁</text>
+      </g>
+      <g fill="#157451" font-weight="650">
+        <text x="355" y="514">r₁</text><text x="655" y="514">r₂</text>
+        <text x="355" y="678">r₁</text><text x="655" y="678">r₂</text>
+      </g>
+      <g fill="#65736c" font-family="Inter, Arial, sans-serif" font-size="25" font-style="normal">
+        <text x="205" y="514">→</text><text x="318" y="514">→</text><text x="393" y="514">→</text><text x="505" y="514">→</text><text x="618" y="514">→</text><text x="693" y="514">→</text><text x="820" y="514">…</text>
+        <text x="500" y="597" font-size="36">⋮</text>
+        <text x="205" y="678">→</text><text x="318" y="678">→</text><text x="393" y="678">→</text><text x="505" y="678">→</text><text x="618" y="678">→</text><text x="693" y="678">→</text><text x="820" y="678">…</text>
+      </g>
+    </g>
+  </g>
+
+  <path d="M500 735V779" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#slcm-arrow-green)"/>
+
+  <g>
+    <circle cx="500" cy="849" r="62" fill="#eef7f2" stroke="#0b8f55" stroke-width="3"/>
+    <text x="500" y="853" fill="#157451" font-family="Georgia, 'Times New Roman', serif" font-size="58" font-style="italic" text-anchor="middle" dominant-baseline="middle">U</text>
+    <text x="500" y="938" fill="#65736c" font-family="Inter, Arial, sans-serif" font-size="24" text-anchor="middle">update</text>
+  </g>
+
+  <path d="M500 960V1000" fill="none" stroke="#0b8f55" stroke-width="4" stroke-linecap="round" marker-end="url(#slcm-arrow-green)"/>
+
+  <g>
+    <rect x="330" y="1030" width="340" height="166" rx="30" fill="#eef7f2" stroke="#0b8f55" stroke-width="3"/>
+    <text x="500" y="1084" fill="#65736c" font-family="Inter, Arial, sans-serif" font-size="25" text-anchor="middle">better policy</text>
+    <text x="500" y="1150" fill="#0b8f55" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-style="italic" text-anchor="middle" dominant-baseline="middle">π′</text>
+  </g>
+
+  <path d="M694 1113H840Q916 1113 916 1037V101Q916 58 873 58H137Q94 58 94 101V253H208" fill="none" stroke="#157451" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#slcm-arrow-green)"/>
+  <text x="885" y="792" fill="#65736c" font-family="Inter, Arial, sans-serif" font-size="23" text-anchor="middle" transform="rotate(-90 885 792)">repeat</text>
+</svg>

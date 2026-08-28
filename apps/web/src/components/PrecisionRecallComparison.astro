@@ -1,0 +1,431 @@
+---
+export interface OutcomeCounts {
+  positive: number;
+  negative: number;
+}
+
+interface Props {
+  locale?: "en" | "pt-BR";
+  predictedNegative?: OutcomeCounts;
+  predictedPositive?: OutcomeCounts;
+}
+
+const {
+  locale = "en",
+  predictedNegative = { positive: 6, negative: 18 },
+  predictedPositive = { positive: 21, negative: 3 },
+} = Astro.props;
+
+const copy = locale === "pt-BR"
+  ? {
+      precisionEyebrow: "Comece pela afirmação do modelo",
+      recallEyebrow: "Comece pela realidade",
+      precision: "Precisão",
+      recall: "Recall",
+      predictedNegative: "Previu negativo",
+      predictedPositive: "Previu positivo",
+      precisionAria: `A precisão considera o círculo previsto como positivo: ${predictedPositive.positive} positivos reais entre ${predictedPositive.positive + predictedPositive.negative} previsões positivas.`,
+      recallAria: `O recall considera todos os pontos realmente positivos: ${predictedPositive.positive} detectados entre ${predictedPositive.positive + predictedNegative.positive} positivos reais.`,
+      dividedBy: "dividido por",
+      plus: "mais",
+      equals: "é igual a",
+      precisionQuestion: "De tudo o que chamamos de positivo, quanto realmente era positivo?",
+      recallQuestion: "De tudo o que realmente era positivo, quanto encontramos?",
+      actualPositive: "Positivo real",
+      actualNegative: "Negativo real",
+      reading: "O numerador não muda. O denominador muda a pergunta.",
+    }
+  : {
+      precisionEyebrow: "Start with the model's claim",
+      recallEyebrow: "Start with reality",
+      precision: "Precision",
+      recall: "Recall",
+      predictedNegative: "Predicted negative",
+      predictedPositive: "Predicted positive",
+      precisionAria: `Precision considers the predicted-positive circle: ${predictedPositive.positive} actual positives out of ${predictedPositive.positive + predictedPositive.negative} positive predictions.`,
+      recallAria: `Recall considers all actual-positive dots: ${predictedPositive.positive} detected out of ${predictedPositive.positive + predictedNegative.positive} actual positives.`,
+      dividedBy: "divided by",
+      plus: "plus",
+      equals: "equals",
+      precisionQuestion: "Of everything called positive, how much really was positive?",
+      recallQuestion: "Of everything truly positive, how much did we find?",
+      actualPositive: "Actual positive",
+      actualNegative: "Actual negative",
+      reading: "The numerator stays the same. The denominator changes the question.",
+    };
+
+const maximumDotsPerCircle = 50;
+
+function validateCounts(label: string, counts: OutcomeCounts) {
+  for (const [actualClass, value] of Object.entries(counts)) {
+    if (!Number.isInteger(value) || value < 0) {
+      throw new Error(`${label}.${actualClass} must be a non-negative integer.`);
+    }
+  }
+
+  if (counts.positive + counts.negative > maximumDotsPerCircle) {
+    throw new Error(`${label} supports at most ${maximumDotsPerCircle} dots.`);
+  }
+}
+
+validateCounts("predictedNegative", predictedNegative);
+validateCounts("predictedPositive", predictedPositive);
+
+type ActualClass = "positive" | "negative";
+
+interface PositionedDot {
+  actual: ActualClass;
+  x: number;
+  y: number;
+}
+
+function placeDots(counts: OutcomeCounts, centerX: number, rotation: number): PositionedDot[] {
+  const total = counts.positive + counts.negative;
+  if (total === 0) return [];
+
+  const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+  let positivesPlaced = 0;
+
+  return Array.from({ length: total }, (_, index) => {
+    const expectedPositives = Math.round(((index + 1) * counts.positive) / total);
+    const actual: ActualClass = expectedPositives > positivesPlaced ? "positive" : "negative";
+    if (actual === "positive") positivesPlaced += 1;
+
+    const radius = total === 1 ? 0 : 51 * Math.sqrt((index + 0.5) / total);
+    const angle = rotation + index * goldenAngle;
+    return {
+      actual,
+      x: centerX + Math.cos(angle) * radius,
+      y: 92 + Math.sin(angle) * radius,
+    };
+  });
+}
+
+const negativeDots = placeDots(predictedNegative, 74, -0.5);
+const positiveDots = placeDots(predictedPositive, 226, 0.35);
+const truePositives = predictedPositive.positive;
+const falsePositives = predictedPositive.negative;
+const falseNegatives = predictedNegative.positive;
+
+function percentage(numerator: number, denominator: number) {
+  if (denominator === 0) return "—";
+  return `${(numerator / denominator * 100).toFixed(1)}%`;
+}
+
+const precision = percentage(truePositives, truePositives + falsePositives);
+const recall = percentage(truePositives, truePositives + falseNegatives);
+---
+
+<figure class="metric-comparison">
+  <div class="panels">
+    <section class="metric-panel precision-panel" aria-labelledby="precision-title">
+      <header>
+        <p class="eyebrow">{copy.precisionEyebrow}</p>
+        <h3 id="precision-title">{copy.precision}</h3>
+      </header>
+
+      <svg viewBox="0 0 300 170" role="img" aria-label={copy.precisionAria}>
+        <g class="prediction-region predicted-negative faded" aria-hidden="true">
+          <circle class="prediction-disc" cx="74" cy="92" r="62" />
+          {negativeDots.map((dot) => (
+            <circle class={`classification-dot actual-${dot.actual}`} cx={dot.x} cy={dot.y} r="3.8" />
+          ))}
+          <text x="74" y="166" text-anchor="middle">{copy.predictedNegative}</text>
+        </g>
+        <g class="prediction-region predicted-positive" aria-hidden="true">
+          <circle class="prediction-disc" cx="226" cy="92" r="62" />
+          {positiveDots.map((dot) => (
+            <circle class={`classification-dot actual-${dot.actual}`} cx={dot.x} cy={dot.y} r="3.8" />
+          ))}
+          <text x="226" y="166" text-anchor="middle">{copy.predictedPositive}</text>
+        </g>
+      </svg>
+
+      <div class="calculation" aria-label={`${truePositives} ${copy.dividedBy} ${truePositives} ${copy.plus} ${falsePositives} ${copy.equals} ${precision}`}>
+        <span class="numerator">{truePositives}</span>
+        <span class="fraction-line" aria-hidden="true"></span>
+        <span class="denominator">{truePositives} + {falsePositives}</span>
+        <span class="equals">=</span>
+        <strong>{precision}</strong>
+      </div>
+      <p class="question">{copy.precisionQuestion}</p>
+    </section>
+
+    <section class="metric-panel recall-panel" aria-labelledby="recall-title">
+      <header>
+        <p class="eyebrow">{copy.recallEyebrow}</p>
+        <h3 id="recall-title">{copy.recall}</h3>
+      </header>
+
+      <svg viewBox="0 0 300 170" role="img" aria-label={copy.recallAria}>
+        <g class="prediction-region predicted-negative" aria-hidden="true">
+          <circle class="prediction-disc subdued-disc" cx="74" cy="92" r="62" />
+          {negativeDots.map((dot) => (
+            <circle class={`classification-dot actual-${dot.actual} ${dot.actual === "negative" ? "faded-dot" : ""}`} cx={dot.x} cy={dot.y} r="3.8" />
+          ))}
+          <text x="74" y="166" text-anchor="middle">{copy.predictedNegative}</text>
+        </g>
+        <g class="prediction-region predicted-positive" aria-hidden="true">
+          <circle class="prediction-disc subdued-disc" cx="226" cy="92" r="62" />
+          {positiveDots.map((dot) => (
+            <circle class={`classification-dot actual-${dot.actual} ${dot.actual === "negative" ? "faded-dot" : ""}`} cx={dot.x} cy={dot.y} r="3.8" />
+          ))}
+          <text x="226" y="166" text-anchor="middle">{copy.predictedPositive}</text>
+        </g>
+      </svg>
+
+      <div class="calculation" aria-label={`${truePositives} ${copy.dividedBy} ${truePositives} ${copy.plus} ${falseNegatives} ${copy.equals} ${recall}`}>
+        <span class="numerator">{truePositives}</span>
+        <span class="fraction-line" aria-hidden="true"></span>
+        <span class="denominator">{truePositives} + {falseNegatives}</span>
+        <span class="equals">=</span>
+        <strong>{recall}</strong>
+      </div>
+      <p class="question">{copy.recallQuestion}</p>
+    </section>
+  </div>
+
+  <figcaption>
+    <span class="visual-key actual-positive-key"><i aria-hidden="true"></i>{copy.actualPositive}</span>
+    <span class="visual-key actual-negative-key"><i aria-hidden="true"></i>{copy.actualNegative}</span>
+    <span class="reading">{copy.reading}</span>
+  </figcaption>
+</figure>
+
+<style>
+  .metric-comparison {
+    --positive: var(--accent, #157451);
+    --positive-dark: var(--accent-hover, #0f6244);
+    --negative: #b44332;
+    width: min(760px, 100%);
+    margin: 34px auto 42px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--surface-raised);
+    box-shadow: 0 16px 44px rgb(22 56 43 / 7%);
+    overflow: hidden;
+  }
+
+  .panels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metric-panel {
+    min-width: 0;
+    padding: 24px 22px 21px;
+  }
+
+  .metric-panel + .metric-panel {
+    border-left: 1px solid var(--border);
+  }
+
+  header {
+    text-align: center;
+  }
+
+  .eyebrow {
+    margin: 0 0 3px;
+    color: var(--positive-dark);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.66rem;
+    font-weight: 720;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h3 {
+    margin: 0;
+    color: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 1.45rem;
+    line-height: 1.2;
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 8px 0 4px;
+  }
+
+  .prediction-disc {
+    stroke-width: 1.6;
+  }
+
+  .predicted-negative .prediction-disc {
+    fill: color-mix(in srgb, var(--negative) 3%, var(--surface-raised));
+    stroke: var(--negative);
+  }
+
+  .predicted-positive .prediction-disc {
+    fill: color-mix(in srgb, var(--positive) 4%, var(--surface-raised));
+    stroke: var(--positive);
+  }
+
+  .classification-dot {
+    stroke-width: 1.45;
+  }
+
+  .actual-positive {
+    fill: color-mix(in srgb, var(--positive) 22%, var(--surface-raised));
+    stroke: var(--positive-dark);
+  }
+
+  .actual-negative {
+    fill: color-mix(in srgb, var(--negative) 5%, var(--surface-raised));
+    stroke: var(--negative);
+  }
+
+  .prediction-region text {
+    fill: var(--text-muted);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 9px;
+    font-weight: 680;
+  }
+
+  .faded {
+    opacity: 0.18;
+  }
+
+  .recall-panel .subdued-disc,
+  .faded-dot {
+    opacity: 0.18;
+  }
+
+  .calculation {
+    display: grid;
+    grid-template-columns: 58px 18px auto;
+    grid-template-rows: auto 1px auto;
+    justify-content: center;
+    align-items: center;
+    column-gap: 9px;
+    color: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.94rem;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .numerator {
+    grid-column: 1;
+    grid-row: 1;
+    padding-bottom: 4px;
+    text-align: center;
+  }
+
+  .fraction-line {
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+    border-top: 1.5px solid currentColor;
+  }
+
+  .denominator {
+    grid-column: 1;
+    grid-row: 3;
+    padding-top: 4px;
+    text-align: center;
+  }
+
+  .equals {
+    grid-column: 2;
+    grid-row: 1 / 4;
+  }
+
+  .calculation strong {
+    grid-column: 3;
+    grid-row: 1 / 4;
+    color: var(--positive-dark);
+    font-size: 1.15rem;
+  }
+
+  .question {
+    max-width: 30ch;
+    margin: 15px auto 0;
+    color: var(--text-muted);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.75rem;
+    line-height: 1.45;
+    text-align: center;
+  }
+
+  figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 9px 18px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-subtle);
+    color: var(--text-muted);
+    padding: 13px 16px;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.72rem;
+    line-height: 1.55;
+  }
+
+  .visual-key {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--text);
+    font-weight: 680;
+    white-space: nowrap;
+  }
+
+  .visual-key i {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .actual-positive-key i {
+    border: 2px solid var(--positive-dark);
+    background: color-mix(in srgb, var(--positive) 22%, var(--surface-raised));
+  }
+
+  .actual-negative-key i {
+    border: 2px solid var(--negative);
+    background: color-mix(in srgb, var(--negative) 5%, var(--surface-raised));
+  }
+
+  .reading {
+    flex: 1 1 260px;
+  }
+
+  @media (max-width: 620px) {
+    .metric-comparison {
+      margin: 28px 0 36px;
+      border-radius: 14px;
+    }
+
+    .panels {
+      grid-template-columns: 1fr;
+    }
+
+    .metric-panel {
+      padding: 22px 18px 20px;
+    }
+
+    .metric-panel + .metric-panel {
+      border-top: 1px solid var(--border);
+      border-left: 0;
+    }
+
+    svg {
+      max-width: 360px;
+      margin-right: auto;
+      margin-left: auto;
+    }
+
+    figcaption {
+      gap: 8px 14px;
+      padding: 12px 13px;
+    }
+
+    .reading {
+      flex-basis: 100%;
+    }
+  }
+</style>
