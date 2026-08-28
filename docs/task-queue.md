@@ -34,6 +34,14 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Reduce the Issue 005 email image footprint — issue #171**
+  - Replace the portrait conceptual-shortcut asset with its compact landscape
+    variant while preserving the representative learning path and alt text.
+  - Verify desktop and mobile email dimensions, then update the existing Resend
+    draft in place without creating or sending another broadcast.
+  - Completion check: source and provider draft match, the email remains
+    responsive, and no additional test or subscriber email is sent.
+
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.
