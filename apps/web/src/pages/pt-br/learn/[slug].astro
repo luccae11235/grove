@@ -12,6 +12,7 @@ type ArticleEntry = CollectionEntry<"articles">;
 
 export async function getStaticPaths() {
   const genericMdxArticleIds = new Set([
+    "gradient-boosting-quick-deep-dive",
     "sample-based-view-of-reinforcement-learning",
     "is-my-model-good",
   ]);
@@ -49,6 +50,11 @@ const translations = entry.data.articleId === "sample-based-view-of-reinforcemen
     }
   : entry.data.articleId === "is-my-model-good"
     ? { en: "/learn/is-my-model-good/", "pt-BR": "/pt-br/learn/meu-modelo-e-bom/" }
+  : entry.data.articleId === "gradient-boosting-quick-deep-dive"
+    ? {
+        en: "/learn/gradient-boosting-quick-deep-dive/",
+        "pt-BR": "/pt-br/learn/gradient-boosting-quick-deep-dive/",
+      }
   : undefined;
 ---
 
@@ -125,12 +131,12 @@ const translations = entry.data.articleId === "sample-based-view-of-reinforcemen
     line-height: 1.65;
   }
 
-  :is(.bagging-article, .sample-based-rl-article) .katex {
+  :is(.bagging-article, .gradient-boosting-article, .sample-based-rl-article) .katex {
     color: var(--text);
     font-size: 1.06em;
   }
 
-  :is(.bagging-article, .sample-based-rl-article) .katex-display {
+  :is(.bagging-article, .gradient-boosting-article, .sample-based-rl-article) .katex-display {
     box-sizing: border-box;
     width: 100%;
     max-width: 100%;
@@ -143,7 +149,7 @@ const translations = entry.data.articleId === "sample-based-view-of-reinforcemen
     scrollbar-width: thin;
   }
 
-  :is(.bagging-article, .sample-based-rl-article) .katex-display > .katex {
+  :is(.bagging-article, .gradient-boosting-article, .sample-based-rl-article) .katex-display > .katex {
     display: inline-block;
     min-width: max-content;
     font-size: clamp(1.03rem, 2.4vw, 1.26rem);
@@ -285,7 +291,7 @@ const translations = entry.data.articleId === "sample-based-view-of-reinforcemen
       font-size: 0.62rem;
     }
 
-    :is(.bagging-article, .sample-based-rl-article) .katex-display {
+    :is(.bagging-article, .gradient-boosting-article, .sample-based-rl-article) .katex-display {
       margin-right: -8px;
       margin-left: -8px;
       padding-right: 8px;
