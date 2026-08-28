@@ -4,10 +4,10 @@ locale: en
 issueNumber: 5
 routeSlug: "what-do-reinforcement-learning-algorithms-share"
 href: "/newsletter/2026/005/what-do-reinforcement-learning-algorithms-share"
-subject: "What do reinforcement learning algorithms have in common?"
-preheader: "Follow one sample of experience to see the shared learning process beneath Monte Carlo, TD, on-policy, off-policy, value, and policy methods."
-summary: "The fifth Aflora issue follows sampled experience through reinforcement learning, revealing a common process beneath algorithms that can otherwise feel disconnected."
-status: draft
+subject: "The common thread behind reinforcement learning"
+preheader: "Follow one sample of experience through the learning loop behind familiar reinforcement learning algorithms."
+summary: "The fifth Aflora issue follows one sample of experience through reinforcement learning and reveals the shared loop beneath familiar algorithm families."
+status: ready
 featuredArticles:
   - "sample-based-view-of-reinforcement-learning"
 tags:
@@ -15,23 +15,21 @@ tags:
   - "sample-based-learning"
   - "machine-learning"
 cta:
-  label: "Build the shared mental model"
+  label: "Follow one sample through the loop"
   href: "/learn/sample-based-view-of-reinforcement-learning"
 ---
 
-Reinforcement learning introduces a long list of methods: Monte Carlo, temporal
-difference learning, SARSA, Q-learning, actor-critic, and many more. Learned one
-at a time, they can feel like separate ideas held together only by their names.
+Monte Carlo, temporal-difference learning, SARSA, Q-learning, actor-critic. The
+list grows quickly, and learning each name separately can hide what they share.
 
-But each method begins with the same raw material: experience sampled while an
-agent interacts with an environment.
+They all learn from sampled experience.
 
-Our new visual article follows that experience from state, action, reward, and
-next state into improved behavior. Along the way, you will see the few choices
-that distinguish major algorithm families: whether learning waits or
-bootstraps, which policy generates the samples, what gets updated, and how the
-learned quantity is represented.
+![A shortcut from the reinforcement learning environment model to sample-based learning and the major algorithm families.](https://aflora.page/articles/sample-based-rl/conceptual-shortcut.png)
 
-The goal is not to memorize another taxonomy. It is to gain a compact mental
-model you can use to make sense of an unfamiliar reinforcement learning
-algorithm.
+The new visual article follows one sample—state, action, reward, next state—through
+the learning loop. You will see how familiar algorithm families emerge from a
+few choices: when to update, whose behavior produced the sample, what to
+improve, and how to represent it.
+
+Once that pattern clicks, an unfamiliar reinforcement learning algorithm stops
+looking like an isolated recipe. You have a small set of questions to ask.
