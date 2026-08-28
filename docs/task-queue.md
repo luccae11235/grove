@@ -39,6 +39,9 @@ references for longer-term editorial direction.
     structure, formulas, and production notes on an isolated docs branch.
   - [ ] Replace the image and playground notes iteratively after the text
     structure has been reviewed.
+    - [x] Add the opening comparison showing when history changes the predicted
+      transition and when the current state makes history irrelevant.
+    - [ ] Design and implement the remaining image and playground notes.
   - Keep the article in draft; translation, publication, deployment, merge,
     and newsletter delivery remain out of scope until separately reviewed.
   - Completion check: the complete learning experience passes focused checks

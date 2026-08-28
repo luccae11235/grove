@@ -13,7 +13,7 @@ summary: Compare Markovian and non-Markovian state representations in Pong, a do
 status: draft
 readingTime: 18–22 min
 interactiveCount: 0
-staticVisualCount: 0
+staticVisualCount: 1
 difficulty: foundational
 series: reinforcement-learning
 access: public
@@ -37,6 +37,8 @@ learning:
     - Propose a state variable that compresses the relevant history without retaining the entire trajectory.
 ---
 
+import MarkovPropertyComparison from "../../../components/MarkovPropertyComparison.astro";
+
 <header className="page-header lesson-header article-hero">
   <p className="eyebrow">Reinforcement learning · State representation</p>
   <h1>The Markov Principle</h1>
@@ -54,7 +56,7 @@ Mathematically, the Markov principle is satisfied when the transition probabilit
 
 $$p(s', r \mid s, a) = p(s', r \mid s, a, H)$$
 
-[IMAGE: In the left corner, it shows a vertical trajectory of S,A,R,S,A in a "branches" style showing a path the agent took. Point out that if H (set of S) is necessary to determine what will happen next, then the Markov principle was violated. In the right corner, show the opposite, that the history does not matter to determine what will happen]
+<MarkovPropertyComparison />
 
 The Markov property is a characteristic of the transition function and the state representation, rather than the agent, the policy, or the learning algorithm. It is often a matter of design. Depending on how we formulate the state space, including the history of the agent's trajectory might indeed change the prediction of the future. When we define a state representation that omits critical information, the history suddenly becomes necessary to predict the next transition.
 
