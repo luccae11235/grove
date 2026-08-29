@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./MarkovPongPlayground.module.css";
 import {
-  createPongEpisode,
   DEFAULT_PONG_TRAINING,
+  enumeratePongStarts,
   MARKOV_PONG,
   pongPolicyAction,
+  pongRandom,
   stepMarkovPong,
   trainMarkovPong,
   trainPongPair,
@@ -14,10 +15,18 @@ import {
 } from "./experiment";
 
 const CHECKPOINT_EPISODES = DEFAULT_PONG_TRAINING.evaluationInterval;
-const REPLAY_START = Object.freeze({ x: 0, y: 1, vx: -1 as const, vy: -1 as const });
+const DEMO_STARTS = (() => {
+  const starts = enumeratePongStarts();
+  const random = pongRandom(29);
+  for (let index = starts.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [starts[index], starts[swapIndex]] = [starts[swapIndex], starts[index]];
+  }
+  return starts;
+})();
 
-function freshReplay() {
-  return createPongEpisode(REPLAY_START.x, REPLAY_START.y, REPLAY_START.vx, REPLAY_START.vy);
+function demoStart(index: number) {
+  return { ...DEMO_STARTS[index % DEMO_STARTS.length] };
 }
 
 function percent(value: number) {
@@ -78,9 +87,12 @@ export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
   const results = useMemo(() => trainMarkovPong(mode), [mode]);
   const [curveIndex, setCurveIndex] = useState(0);
   const [training, setTraining] = useState(false);
+  const [running, setRunning] = useState(false);
   const [episodesPerSecond, setEpisodesPerSecond] = useState(500);
-  const [state, setState] = useState<PongTrueState>(freshReplay);
+  const [state, setState] = useState<PongTrueState>(() => demoStart(0));
+  const [runResult, setRunResult] = useState({ hits: 0, misses: 0 });
   const curveIndexRef = useRef(curveIndex);
+  const launchIndexRef = useRef(0);
   const maximumCurveIndex = results.curve.length - 1;
   const revealedCurve = results.curve.slice(0, curveIndex + 1);
   const currentPoint = revealedCurve[revealedCurve.length - 1];
@@ -106,23 +118,39 @@ export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
   }, [episodesPerSecond, maximumCurveIndex, training]);
 
   useEffect(() => {
-    if (!training) return undefined;
+    if (!training && !running) return undefined;
     const timer = window.setInterval(() => {
       setState((current) => {
-        if (current.done) return freshReplay();
-        return stepMarkovPong(current, pongPolicyAction(results.qSnapshots[curveIndexRef.current], mode, current)).state;
+        if (current.done) {
+          launchIndexRef.current = (launchIndexRef.current + 1) % DEMO_STARTS.length;
+          return demoStart(launchIndexRef.current);
+        }
+        const qValues = running
+          ? results.qValues
+          : results.qSnapshots[curveIndexRef.current];
+        const next = stepMarkovPong(current, pongPolicyAction(qValues, mode, current)).state;
+        if (running && next.done) {
+          setRunResult((result) => next.outcome === "hit"
+            ? { ...result, hits: result.hits + 1 }
+            : { ...result, misses: result.misses + 1 });
+        }
+        return next;
       });
-    }, 180);
+    }, running ? 110 : 150);
     return () => window.clearInterval(timer);
-  }, [mode, results.qSnapshots, training]);
+  }, [mode, results.qSnapshots, results.qValues, running, training]);
 
-  function toggleTraining() {
+  function toggleAgent() {
     if (curveIndex >= maximumCurveIndex) {
-      setCurveIndex(0);
-      setState(freshReplay());
-      setTraining(true);
+      if (!running) {
+        launchIndexRef.current = 0;
+        setState(demoStart(0));
+        setRunResult({ hits: 0, misses: 0 });
+      }
+      setRunning((current) => !current);
       return;
     }
+    setRunning(false);
     setTraining((current) => !current);
   }
 
@@ -145,13 +173,16 @@ export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
 
       <div className={styles.body}>
         <div className={styles.environmentColumn}>
-          <div className={styles.court} role="img" aria-label={`Pong court during training. Ball at column ${state.ballX}, row ${state.ballY}. Paddle at column ${state.paddleX}.${state.outcome ? ` The agent ${state.outcome === "hit" ? "hit" : "missed"} the ball.` : ""}`} data-outcome={state.outcome ?? "playing"}>
+          <div className={styles.court} role="img" aria-label={`Pong court. Ball at column ${state.ballX}, row ${state.ballY}. Paddle at column ${state.paddleX}.${state.outcome ? ` The agent ${state.outcome === "hit" ? "hit" : "missed"} the ball.` : ""}`} data-outcome={state.outcome ?? "playing"} data-launch-index={launchIndexRef.current}>
             <span className={styles.centerLine} aria-hidden="true" />
             <span className={styles.ball} style={{ left: `${((state.ballX + 0.5) / MARKOV_PONG.columns) * 100}%`, top: `${((state.ballY + 0.5) / MARKOV_PONG.rows) * 100}%` }} data-ball-x={state.ballX} data-ball-y={state.ballY} aria-hidden="true" />
             {visibleVelocity ? <span className={styles.velocityArrow} style={{ left: `${((state.ballX + 0.5) / MARKOV_PONG.columns) * 100}%`, top: `${((state.ballY + 0.5) / MARKOV_PONG.rows) * 100}%`, "--vx": state.ballVx, "--vy": state.ballVy } as React.CSSProperties} aria-hidden="true">↘</span> : null}
             <span className={styles.paddle} style={{ left: `${((state.paddleX + 0.5) / MARKOV_PONG.columns) * 100}%` }} data-paddle-x={state.paddleX} aria-hidden="true" />
             {state.done ? <span className={state.outcome === "hit" ? styles.hitBadge : styles.missBadge}>{state.outcome === "hit" ? "Hit" : "Miss"}</span> : null}
           </div>
+          {curveIndex >= maximumCurveIndex ? <div className={styles.runScore} aria-live="polite" data-run-hits={runResult.hits} data-run-misses={runResult.misses}>
+            <strong>{runResult.hits}</strong> hits <span>· {runResult.misses} misses</span>
+          </div> : null}
         </div>
 
         <div className={styles.learningColumn} data-training-episodes={currentPoint.episode} data-active-hit-rate={Math.round(currentPoint.hitRate * 100)}>
@@ -161,12 +192,14 @@ export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
             <small>{currentPoint.episode.toLocaleString()} / 5,000 episodes</small>
           </div>
           <LearningChart points={revealedCurve} mode={mode} />
-          <label className={styles.speedControl}>
+          {curveIndex < maximumCurveIndex ? <label className={styles.speedControl}>
             <span>Training speed <strong>{episodesPerSecond.toLocaleString()} episodes/s</strong></span>
             <input type="range" min="100" max="2000" step="100" value={episodesPerSecond} onChange={(event) => setEpisodesPerSecond(Number(event.target.value))} aria-label="Training speed in episodes per second" />
-          </label>
-          <button type="button" className={styles.trainButton} onClick={toggleTraining}>
-            {training ? "Pause" : curveIndex >= maximumCurveIndex ? "Run again" : curveIndex === 0 ? "Train agent" : "Continue"}
+          </label> : null}
+          <button type="button" className={styles.trainButton} onClick={toggleAgent}>
+            {curveIndex >= maximumCurveIndex
+              ? running ? "Stop agent" : "Run agent"
+              : training ? "Pause" : curveIndex === 0 ? "Train agent" : "Continue"}
           </button>
         </div>
       </div>

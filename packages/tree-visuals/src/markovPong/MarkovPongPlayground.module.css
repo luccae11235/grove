@@ -173,6 +173,21 @@
   color: var(--text-muted);
 }
 
+.runScore {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.runScore strong {
+  color: var(--accent);
+  font-size: 0.95rem;
+}
+
 .learningColumn {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

@@ -49,6 +49,8 @@ references for longer-term editorial direction.
       - [x] Complete focused tests and rendered desktop/mobile review.
       - [x] Simplify both playgrounds to the state, training court, learning
         result, and an episodes-per-second speed control.
+      - [x] Vary training launches and let readers run each trained agent with
+        a live hit/miss count while keeping the paddle agent-controlled.
     - [ ] Design and implement the remaining image and playground notes.
   - Keep the article in draft; translation, publication, deployment, merge,
     and newsletter delivery remain out of scope until separately reviewed.

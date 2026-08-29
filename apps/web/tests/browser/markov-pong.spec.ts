@@ -42,6 +42,7 @@ for (const viewport of [
 
     const ball = positionLab.locator("[data-ball-x]");
     const initialBallX = await ball.getAttribute("data-ball-x");
+    const positionCourt = positionLab.locator("[data-launch-index]");
     await expect(positionLab.getByRole("button", { name: "Move paddle right" })).toHaveCount(0);
     await expect(positionLab.getByRole("button", { name: "Replay final policy" })).toHaveCount(0);
 
@@ -53,6 +54,16 @@ for (const viewport of [
       .toBe(5_000);
     await expect(positionLab.locator("[data-training-episodes]")).toHaveAttribute("data-active-hit-rate", "36");
     await expect(positionLab.getByText("36%", { exact: true })).toBeVisible();
+    await expect(positionCourt).not.toHaveAttribute("data-launch-index", "0");
+    await positionLab.getByRole("button", { name: "Run agent" }).click();
+    const positionRun = positionLab.locator("[data-run-hits]");
+    await expect.poll(async () =>
+      Number(await positionRun.getAttribute("data-run-hits")) +
+      Number(await positionRun.getAttribute("data-run-misses")),
+    { timeout: 15_000 }).toBeGreaterThanOrEqual(2);
+    await expect.poll(async () => Number(await positionRun.getAttribute("data-run-hits"))).toBeGreaterThanOrEqual(1);
+    await expect.poll(async () => Number(await positionRun.getAttribute("data-run-misses"))).toBeGreaterThanOrEqual(1);
+    await positionLab.getByRole("button", { name: "Stop agent" }).click();
 
     await velocityLab.getByLabel("Training speed in episodes per second").fill("2000");
     await velocityLab.getByRole("button", { name: "Train agent" }).click();
@@ -61,6 +72,11 @@ for (const viewport of [
       .toBe(5_000);
     await expect(velocityLab.locator("[data-training-episodes]")).toHaveAttribute("data-active-hit-rate", "100");
     await expect(velocityLab.getByText("100%", { exact: true })).toBeVisible();
+    await velocityLab.getByRole("button", { name: "Run agent" }).click();
+    const velocityRun = velocityLab.locator("[data-run-hits]");
+    await expect.poll(async () => Number(await velocityRun.getAttribute("data-run-hits")), { timeout: 15_000 }).toBeGreaterThanOrEqual(2);
+    await expect(velocityRun).toHaveAttribute("data-run-misses", "0");
+    await velocityLab.getByRole("button", { name: "Stop agent" }).click();
 
     const comparison = page.locator("[data-markov-pong-comparison]");
     await expect(comparison).toContainText("Position only");

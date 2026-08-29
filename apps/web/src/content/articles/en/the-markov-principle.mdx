@@ -91,13 +91,13 @@ We can test this by deploying an algorithm to learn how to return the ball. The 
 
 <MarkovPongLab mode="position" />
 
-In the first environment, velocity is hidden. Press **Train agent** and watch how learning changes the policy and hit rate. The agent improves, but it settles on an inconsistent policy because the same observed state can demand opposing actions.
+In the first environment, velocity is hidden. Press **Train agent** and watch how learning changes the policy and hit rate across varied launches. Once training ends, press **Run agent** to watch the learned policy continue playing while its hits and misses accumulate. The agent improves, but it settles on an inconsistent policy because the same observed state can demand opposing actions.
 
 Now repeat the experiment with the only changed ingredient: velocity is included in the state.
 
 <MarkovPongLab mode="velocity" />
 
-The second court, transition rules, reward, launch sequence, and Q-learning procedure are the same. The direction arrow marks information available to this agent at the current instant. Press **Train agent** to see its policy become reliable.
+The second court, transition rules, reward, launch sequence, and Q-learning procedure are the same. The direction arrow marks information available to this agent at the current instant. Train and run this agent in the same way to see its policy become reliable across those launches.
 
 Each curve evaluates its greedy policy on every one of the 176 possible launch states at regular training checkpoints. It does not plot noisy rewards gathered while the agent is still exploring.
 
