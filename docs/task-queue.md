@@ -34,13 +34,13 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
-- [ ] **Reduce the Issue 005 email image footprint — issue #171**
-  - Replace the portrait conceptual-shortcut asset with its compact landscape
-    variant while preserving the representative learning path and alt text.
-  - Verify desktop and mobile email dimensions, then update the existing Resend
-    draft in place without creating or sending another broadcast.
-  - Completion check: source and provider draft match, the email remains
-    responsive, and no additional test or subscriber email is sent.
+- [ ] **Remove the Issue 005 email image — issue #171**
+  - Remove the conceptual-shortcut image while preserving the prose, CTA, and
+    required legal content.
+  - Verify the text-only email on desktop and mobile, update the existing Resend
+    draft in place, and send one user-requested follow-up test only.
+  - Completion check: source and provider draft match, Gmail receives the test,
+    and no subscriber broadcast is sent or scheduled.
 
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
