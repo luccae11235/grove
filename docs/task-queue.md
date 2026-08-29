@@ -34,14 +34,6 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
-- [ ] **Publish and deliver Issue 005 — issue #176**
-  - Publish only Issue 005 for the sample-based reinforcement-learning article;
-    preserve every other draft and ready issue.
-  - Verify the exact staging and production revisions and both public email links
-    before delivering the approved text-only Resend draft.
-  - Completion check: the public issue and article links resolve, an explicitly
-    authorized production broadcast is delivered once, and its report is verified.
-
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.
@@ -195,6 +187,18 @@ references for longer-term editorial direction.
 ## Done
 
 ### Publishing and content
+
+- [x] **Publish and deliver Issue 005 — issue #176** — 2026-08-29
+  - Published only Issue 005 through implementation PR #177 and release PR #178;
+    exact staging revision `5b9c239` and production revision `feb0523` passed
+    deployment verification.
+  - Verified the public issue and sample-based reinforcement-learning article
+    links returned 200 before delivery.
+  - Sent the existing text-only Resend broadcast
+    `c2987098-1e8c-4604-af3f-7c01f83be81c` once to the nine-contact
+    `aflora-production` segment after explicit action-time approval.
+  - Completion check: Resend marks the broadcast sent, and Gmail received the
+    production copy in Inbox/Updates rather than Spam or Promotions.
 
 - [x] **Remove the Issue 005 email image — issue #171** — 2026-08-29
   - Removed the conceptual-shortcut image while preserving the prose, CTA, and
