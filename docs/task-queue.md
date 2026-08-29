@@ -34,13 +34,13 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
-- [ ] **Remove the Issue 005 email image — issue #171**
-  - Remove the conceptual-shortcut image while preserving the prose, CTA, and
-    required legal content.
-  - Verify the text-only email on desktop and mobile, update the existing Resend
-    draft in place, and send one user-requested follow-up test only.
-  - Completion check: source and provider draft match, Gmail receives the test,
-    and no subscriber broadcast is sent or scheduled.
+- [ ] **Publish and deliver Issue 005 — issue #176**
+  - Publish only Issue 005 for the sample-based reinforcement-learning article;
+    preserve every other draft and ready issue.
+  - Verify the exact staging and production revisions and both public email links
+    before delivering the approved text-only Resend draft.
+  - Completion check: the public issue and article links resolve, an explicitly
+    authorized production broadcast is delivered once, and its report is verified.
 
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
@@ -193,6 +193,16 @@ references for longer-term editorial direction.
     reader semantics, contrast, reduced motion, and small-screen behavior.
 
 ## Done
+
+### Publishing and content
+
+- [x] **Remove the Issue 005 email image — issue #171** — 2026-08-29
+  - Removed the conceptual-shortcut image while preserving the prose, CTA, and
+    required legal content.
+  - Updated the existing Resend draft in place and verified the text-only test in
+    Gmail before any subscriber broadcast was sent or scheduled.
+  - Completion check: source and provider draft match, Gmail received the test,
+    and the exact production revision passed verification.
 
 ### Learning experience
 
