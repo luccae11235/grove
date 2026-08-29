@@ -54,14 +54,6 @@ references for longer-term editorial direction.
     and newsletter delivery remain out of scope until separately reviewed.
   - Completion check: the complete learning experience passes focused checks
     and rendered desktop/mobile review before staging review and merge.
-
-- [ ] **Reduce the Issue 005 email image footprint — issue #171**
-  - Replace the portrait conceptual-shortcut asset with its compact landscape
-    variant while preserving the representative learning path and alt text.
-  - Verify desktop and mobile email dimensions, then update the existing Resend
-    draft in place without creating or sending another broadcast.
-  - Completion check: source and provider draft match, the email remains
-    responsive, and no additional test or subscriber email is sent.
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.
@@ -213,6 +205,28 @@ references for longer-term editorial direction.
     reader semantics, contrast, reduced motion, and small-screen behavior.
 
 ## Done
+
+### Publishing and content
+
+- [x] **Publish and deliver Issue 005 — issue #176** — 2026-08-29
+  - Published only Issue 005 through implementation PR #177 and release PR #178;
+    exact staging revision `5b9c239` and production revision `feb0523` passed
+    deployment verification.
+  - Verified the public issue and sample-based reinforcement-learning article
+    links returned 200 before delivery.
+  - Sent the existing text-only Resend broadcast
+    `c2987098-1e8c-4604-af3f-7c01f83be81c` once to the nine-contact
+    `aflora-production` segment after explicit action-time approval.
+  - Completion check: Resend marks the broadcast sent, and Gmail received the
+    production copy in Inbox/Updates rather than Spam or Promotions.
+
+- [x] **Remove the Issue 005 email image — issue #171** — 2026-08-29
+  - Removed the conceptual-shortcut image while preserving the prose, CTA, and
+    required legal content.
+  - Updated the existing Resend draft in place and verified the text-only test in
+    Gmail before any subscriber broadcast was sent or scheduled.
+  - Completion check: source and provider draft match, Gmail received the test,
+    and the exact production revision passed verification.
 
 ### Learning experience
 
