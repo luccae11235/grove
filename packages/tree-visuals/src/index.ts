@@ -82,6 +82,7 @@ export type {
 } from "./sampleBasedRl/pongModel";
 export { MarkovPongComparison, MarkovPongPlayground } from "./markovPong/MarkovPongPlayground";
 export {
+  continuePongRally,
   createPongEpisode as createMarkovPongEpisode,
   DEFAULT_PONG_TRAINING,
   enumeratePongStarts,
@@ -101,6 +102,29 @@ export type {
   PongTrainingResult as MarkovPongTrainingResult,
   PongTrueState as MarkovPongTrueState,
 } from "./markovPong/experiment";
+export {
+  DoorKeyComparison,
+  DoorKeyFigure,
+  DoorKeyPlayground,
+} from "./markovDoor/DoorKeyPlayground";
+export {
+  createDoorEpisode,
+  DEFAULT_DOOR_TRAINING,
+  doorObservationIndex,
+  doorPolicyAction,
+  evaluateDoorPolicy,
+  MARKOV_DOOR,
+  stepMarkovDoor,
+  trainDoorPair,
+  trainMarkovDoor,
+} from "./markovDoor/experiment";
+export type {
+  DoorAction as MarkovDoorAction,
+  DoorCurvePoint as MarkovDoorCurvePoint,
+  DoorObservationMode as MarkovDoorObservationMode,
+  DoorTrainingResult as MarkovDoorTrainingResult,
+  DoorTrueState as MarkovDoorTrueState,
+} from "./markovDoor/experiment";
 export {
   DatasetComplexityPlayground,
   FeatureImportancePlayground,

@@ -61,8 +61,8 @@ for (const viewport of [
       Number(await positionRun.getAttribute("data-run-hits")) +
       Number(await positionRun.getAttribute("data-run-misses")),
     { timeout: 15_000 }).toBeGreaterThanOrEqual(2);
-    await expect.poll(async () => Number(await positionRun.getAttribute("data-run-hits"))).toBeGreaterThanOrEqual(1);
     await expect.poll(async () => Number(await positionRun.getAttribute("data-run-misses"))).toBeGreaterThanOrEqual(1);
+    await expect.poll(async () => Number(await positionCourt.getAttribute("data-launch-index"))).toBeGreaterThan(0);
     await positionLab.getByRole("button", { name: "Stop agent" }).click();
 
     await velocityLab.getByLabel("Training speed in episodes per second").fill("2000");
@@ -76,6 +76,10 @@ for (const viewport of [
     const velocityRun = velocityLab.locator("[data-run-hits]");
     await expect.poll(async () => Number(await velocityRun.getAttribute("data-run-hits")), { timeout: 15_000 }).toBeGreaterThanOrEqual(2);
     await expect(velocityRun).toHaveAttribute("data-run-misses", "0");
+    const velocityCourt = velocityLab.locator("[data-launch-index]");
+    await expect(velocityCourt).toHaveAttribute("data-launch-index", "0");
+    await expect(velocityCourt).toHaveAttribute("data-ball-vy", "-1");
+    await expect(velocityLab.locator("[data-velocity-x][data-velocity-y]")).toHaveCount(1);
     await velocityLab.getByRole("button", { name: "Stop agent" }).click();
 
     const comparison = page.locator("[data-markov-pong-comparison]");

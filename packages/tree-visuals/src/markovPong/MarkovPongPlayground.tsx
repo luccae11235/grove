@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./MarkovPongPlayground.module.css";
 import {
+  continuePongRally,
   DEFAULT_PONG_TRAINING,
   enumeratePongStarts,
   MARKOV_PONG,
@@ -88,11 +89,15 @@ export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
   const [curveIndex, setCurveIndex] = useState(0);
   const [training, setTraining] = useState(false);
   const [running, setRunning] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [newRally, setNewRally] = useState(false);
   const [episodesPerSecond, setEpisodesPerSecond] = useState(500);
   const [state, setState] = useState<PongTrueState>(() => demoStart(0));
   const [runResult, setRunResult] = useState({ hits: 0, misses: 0 });
   const curveIndexRef = useRef(curveIndex);
   const launchIndexRef = useRef(0);
+  const resetFrameRef = useRef<number | null>(null);
+  const newRallyTimerRef = useRef<number | null>(null);
   const maximumCurveIndex = results.curve.length - 1;
   const revealedCurve = results.curve.slice(0, curveIndex + 1);
   const currentPoint = revealedCurve[revealedCurve.length - 1];
@@ -121,10 +126,7 @@ export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
     if (!training && !running) return undefined;
     const timer = window.setInterval(() => {
       setState((current) => {
-        if (current.done) {
-          launchIndexRef.current = (launchIndexRef.current + 1) % DEMO_STARTS.length;
-          return demoStart(launchIndexRef.current);
-        }
+        if (current.done) return current;
         const qValues = running
           ? results.qValues
           : results.qSnapshots[curveIndexRef.current];
@@ -140,12 +142,43 @@ export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
     return () => window.clearInterval(timer);
   }, [mode, results.qSnapshots, results.qValues, running, training]);
 
+  useEffect(() => {
+    if ((!training && !running) || !state.done) return undefined;
+
+    if (state.outcome === "hit") {
+      const hitPause = window.setTimeout(() => {
+        setState((current) => continuePongRally(current));
+      }, 260);
+      return () => window.clearTimeout(hitPause);
+    }
+
+    const missPause = window.setTimeout(() => {
+      launchIndexRef.current = (launchIndexRef.current + 1) % DEMO_STARTS.length;
+      setResetting(true);
+      setNewRally(true);
+      setState(demoStart(launchIndexRef.current));
+      resetFrameRef.current = window.requestAnimationFrame(() => {
+        resetFrameRef.current = window.requestAnimationFrame(() => setResetting(false));
+      });
+      if (newRallyTimerRef.current !== null) window.clearTimeout(newRallyTimerRef.current);
+      newRallyTimerRef.current = window.setTimeout(() => setNewRally(false), 520);
+    }, 520);
+    return () => window.clearTimeout(missPause);
+  }, [running, state.done, state.outcome, training]);
+
+  useEffect(() => () => {
+    if (resetFrameRef.current !== null) window.cancelAnimationFrame(resetFrameRef.current);
+    if (newRallyTimerRef.current !== null) window.clearTimeout(newRallyTimerRef.current);
+  }, []);
+
   function toggleAgent() {
     if (curveIndex >= maximumCurveIndex) {
       if (!running) {
         launchIndexRef.current = 0;
         setState(demoStart(0));
         setRunResult({ hits: 0, misses: 0 });
+        setResetting(false);
+        setNewRally(false);
       }
       setRunning((current) => !current);
       return;
@@ -157,6 +190,7 @@ export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
   const title = visibleVelocity
     ? "What changes when velocity is part of the state?"
     : "Can a position-only agent learn to return the ball?";
+  const velocityAngle = Math.atan2(state.ballVy, state.ballVx) * (180 / Math.PI);
 
   return (
     <section className={styles.lab} role="region" aria-labelledby={titleId} data-markov-pong-lab data-mode={mode}>
@@ -173,12 +207,13 @@ export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
 
       <div className={styles.body}>
         <div className={styles.environmentColumn}>
-          <div className={styles.court} role="img" aria-label={`Pong court. Ball at column ${state.ballX}, row ${state.ballY}. Paddle at column ${state.paddleX}.${state.outcome ? ` The agent ${state.outcome === "hit" ? "hit" : "missed"} the ball.` : ""}`} data-outcome={state.outcome ?? "playing"} data-launch-index={launchIndexRef.current}>
+          <div className={`${styles.court} ${resetting ? styles.resetting : ""}`} role="img" aria-label={`Pong court. Ball at column ${state.ballX}, row ${state.ballY}, moving ${state.ballVx < 0 ? "left" : "right"} and ${state.ballVy < 0 ? "up" : "down"}. Paddle at column ${state.paddleX}.${state.outcome ? ` The agent ${state.outcome === "hit" ? "hit" : "missed"} the ball.` : newRally ? " A new rally has started." : ""}`} data-outcome={state.outcome ?? "playing"} data-launch-index={launchIndexRef.current} data-ball-vx={state.ballVx} data-ball-vy={state.ballVy} data-resetting={String(resetting)}>
             <span className={styles.centerLine} aria-hidden="true" />
             <span className={styles.ball} style={{ left: `${((state.ballX + 0.5) / MARKOV_PONG.columns) * 100}%`, top: `${((state.ballY + 0.5) / MARKOV_PONG.rows) * 100}%` }} data-ball-x={state.ballX} data-ball-y={state.ballY} aria-hidden="true" />
-            {visibleVelocity ? <span className={styles.velocityArrow} style={{ left: `${((state.ballX + 0.5) / MARKOV_PONG.columns) * 100}%`, top: `${((state.ballY + 0.5) / MARKOV_PONG.rows) * 100}%`, "--vx": state.ballVx, "--vy": state.ballVy } as React.CSSProperties} aria-hidden="true">↘</span> : null}
+            {visibleVelocity ? <span className={styles.velocityArrow} style={{ left: `${((state.ballX + 0.5) / MARKOV_PONG.columns) * 100}%`, top: `${((state.ballY + 0.5) / MARKOV_PONG.rows) * 100}%`, "--velocity-angle": `${velocityAngle}deg` } as React.CSSProperties} data-velocity-x={state.ballVx} data-velocity-y={state.ballVy} aria-hidden="true" /> : null}
             <span className={styles.paddle} style={{ left: `${((state.paddleX + 0.5) / MARKOV_PONG.columns) * 100}%` }} data-paddle-x={state.paddleX} aria-hidden="true" />
             {state.done ? <span className={state.outcome === "hit" ? styles.hitBadge : styles.missBadge}>{state.outcome === "hit" ? "Hit" : "Miss"}</span> : null}
+            {newRally && !state.done ? <span className={styles.newRallyBadge}>New rally</span> : null}
           </div>
           {curveIndex >= maximumCurveIndex ? <div className={styles.runScore} aria-live="polite" data-run-hits={runResult.hits} data-run-misses={runResult.misses}>
             <strong>{runResult.hits}</strong> hits <span>· {runResult.misses} misses</span>

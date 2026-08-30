@@ -51,6 +51,12 @@ references for longer-term editorial direction.
         result, and an episodes-per-second speed control.
       - [x] Vary training launches and let readers run each trained agent with
         a live hit/miss count while keeping the paddle agent-controlled.
+      - [x] Preserve rally continuity after a hit, make miss resets explicit and
+        non-animated, and anchor the velocity vector to the ball in every
+        direction.
+    - [x] Build the door-and-key learning experience with a minimal route figure,
+      an aliased-state comparison, and matched position-only and key-aware
+      Q-learning playgrounds with runnable learned policies.
     - [ ] Design and implement the remaining image and playground notes.
   - Keep the article in draft; translation, publication, deployment, merge,
     and newsletter delivery remain out of scope until separately reviewed.

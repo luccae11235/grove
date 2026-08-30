@@ -119,20 +119,43 @@
   border-radius: 50%;
   background: var(--text);
   box-shadow: 0 0 0 5px var(--accent-soft);
-  transition: top 160ms linear, left 160ms linear;
+  transition: top 100ms linear, left 100ms linear;
 }
 
 .velocityArrow {
   position: absolute;
   z-index: 3;
-  width: 35px;
-  height: 35px;
-  transform: translate(-50%, -50%) translate(18px, 18px) scaleX(var(--vx)) scaleY(var(--vy));
-  color: var(--accent);
-  font-size: 1.15rem;
-  font-weight: 800;
-  line-height: 1;
-  transition: top 160ms linear, left 160ms linear;
+  width: 36px;
+  height: 3px;
+  transform: translateY(-50%) rotate(var(--velocity-angle));
+  transform-origin: left center;
+  background: transparent;
+  transition: top 100ms linear, left 100ms linear, transform 100ms linear;
+}
+
+.velocityArrow::before,
+.velocityArrow::after {
+  position: absolute;
+  content: "";
+}
+
+.velocityArrow::before {
+  top: 0;
+  left: 8px;
+  width: 28px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.velocityArrow::after {
+  top: 50%;
+  right: -1px;
+  width: 8px;
+  height: 8px;
+  transform: translateY(-50%) rotate(45deg);
+  border-top: 3px solid var(--accent);
+  border-right: 3px solid var(--accent);
 }
 
 .paddle {
@@ -146,7 +169,7 @@
   border-radius: 999px;
   background: var(--accent);
   box-shadow: 0 5px 0 var(--accent-soft);
-  transition: left 160ms linear;
+  transition: left 100ms linear;
 }
 
 .hitBadge,
@@ -171,6 +194,27 @@
 .missBadge {
   border: 1px solid var(--border-strong);
   color: var(--text-muted);
+}
+
+.newRallyBadge {
+  position: absolute;
+  z-index: 4;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-raised) 94%, transparent);
+  padding: 5px 9px;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 720;
+}
+
+.resetting .ball,
+.resetting .velocityArrow,
+.resetting .paddle {
+  transition: none;
 }
 
 .runScore {

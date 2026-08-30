@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  continuePongRally,
   createPongEpisode,
   enumeratePongStarts,
   evaluatePongPolicy,
   pongObservationCount,
   pongObservationIndex,
+  pongPolicyAction,
   stepMarkovPong,
   trainPongPair,
 } from "./experiment";
@@ -27,6 +29,19 @@ describe("Markov Pong experiment", () => {
     expect(hit.state.paddleX).toBe(5);
     expect(hit.reward).toBe(1);
     expect(hit.done).toBe(true);
+    expect(hit.state.ballVy).toBe(-1);
+  });
+
+  it("keeps the same ball moving after a successful return", () => {
+    const hit = stepMarkovPong(createPongEpisode(4, 7, 1, 1), 1).state;
+    const continued = continuePongRally(hit);
+
+    expect(continued.ballX).toBe(hit.ballX);
+    expect(continued.ballY).toBe(hit.ballY);
+    expect(continued.paddleX).toBe(hit.paddleX);
+    expect(continued.ballVy).toBe(-1);
+    expect(continued.done).toBe(false);
+    expect(continued.outcome).toBeNull();
   });
 
   it("only adds velocity to the Markov observation", () => {
@@ -73,6 +88,28 @@ describe("Markov Pong experiment", () => {
     expect(pair.velocity.finalHitRate).toBeGreaterThanOrEqual(0.98);
     expect(pair.position.finalHitRate).toBeLessThan(0.62);
     expect(pair.velocity.finalHitRate - pair.position.finalHitRate).toBeGreaterThan(0.35);
+  });
+
+  it("learns velocity-aware rebound states for continuous rallies", () => {
+    const pair = trainPongPair();
+
+    for (const start of enumeratePongStarts().slice(0, 16)) {
+      let state = { ...start };
+      let contacts = 0;
+      while (contacts < 3) {
+        const next = stepMarkovPong(
+          state,
+          pongPolicyAction(pair.velocity.qValues, "velocity", state),
+        ).state;
+        if (next.done) {
+          expect(next.outcome).toBe("hit");
+          contacts += 1;
+          state = continuePongRally(next);
+        } else {
+          state = next;
+        }
+      }
+    }
   });
 
   it("preserves the result across several training seeds", () => {

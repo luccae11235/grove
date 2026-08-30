@@ -43,6 +43,7 @@ export interface PongPairResult {
 export interface PongTrainingOptions {
   episodes: number;
   evaluationInterval: number;
+  successfulReturnsPerEpisode: number;
   learningRate: number;
   discount: number;
   epsilonStart: number;
@@ -56,18 +57,19 @@ export const MARKOV_PONG = Object.freeze({
   rows: 9,
   paddleStart: 5,
   actionCount: 3,
-  maxSteps: 12,
+  maxSteps: 20,
 });
 
 export const DEFAULT_PONG_TRAINING: Readonly<PongTrainingOptions> = Object.freeze({
   episodes: 5_000,
   evaluationInterval: 250,
+  successfulReturnsPerEpisode: 3,
   learningRate: 0.2,
   discount: 0.98,
   epsilonStart: 1,
   epsilonEnd: 0.03,
   epsilonDecayEpisodes: 2_500,
-  seed: 7,
+  seed: 34,
 });
 
 /** Deterministic PRNG so every reader sees the same real experiment. */
@@ -156,6 +158,7 @@ export function stepMarkovPong(
   if (reachedPaddle || timedOut) {
     const hit = reachedPaddle && ballX === paddleX;
     const outcome: PongOutcome = hit ? "hit" : "miss";
+    if (hit) ballVy = -1;
     const next: PongTrueState = {
       ballX,
       ballY: Math.min(MARKOV_PONG.rows - 1, ballY),
@@ -180,6 +183,18 @@ export function stepMarkovPong(
     outcome: null,
   };
   return { state: next, reward: 0, done: false, outcome: null };
+}
+
+/** Continue the same physical rally after a successful paddle contact. */
+export function continuePongRally(state: PongTrueState): PongTrueState {
+  if (!state.done || state.outcome !== "hit") return state;
+  return {
+    ...state,
+    ballVy: -1,
+    step: 0,
+    done: false,
+    outcome: null,
+  };
 }
 
 export function pongObservationCount(mode: PongObservationMode) {
@@ -224,19 +239,28 @@ function trainEpisode(
   random: () => number,
   learningRate: number,
   discount: number,
+  successfulReturnsPerEpisode: number,
 ) {
   let state = initialState;
-  while (!state.done) {
+  let successfulReturns = 0;
+  while (true) {
     const stateIndex = pongObservationIndex(state, mode);
     const action =
       random() < epsilon
         ? (Math.floor(random() * MARKOV_PONG.actionCount) as PongAction)
         : greedyAction(qValues, stateIndex, random);
     const result = stepMarkovPong(state, action);
+    if (result.outcome === "hit") successfulReturns += 1;
+    const episodeDone =
+      result.outcome === "miss" ||
+      successfulReturns >= successfulReturnsPerEpisode;
+    const nextState = result.outcome === "hit"
+      ? continuePongRally(result.state)
+      : result.state;
     const offset = stateIndex * MARKOV_PONG.actionCount + action;
-    const nextIndex = pongObservationIndex(result.state, mode);
+    const nextIndex = pongObservationIndex(nextState, mode);
     const nextOffset = nextIndex * MARKOV_PONG.actionCount;
-    const bestNext = result.done
+    const bestNext = episodeDone
       ? 0
       : Math.max(
           qValues[nextOffset],
@@ -245,7 +269,8 @@ function trainEpisode(
         );
     const target = result.reward + discount * bestNext;
     qValues[offset] += learningRate * (target - qValues[offset]);
-    state = result.state;
+    if (episodeDone) break;
+    state = nextState;
   }
 }
 
@@ -316,6 +341,7 @@ export function trainMarkovPong(
       exploreRandom,
       options.learningRate,
       options.discount,
+      options.successfulReturnsPerEpisode,
     );
     if (episode % options.evaluationInterval === 0 || episode === options.episodes) {
       curve.push({

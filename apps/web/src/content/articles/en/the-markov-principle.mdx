@@ -12,8 +12,8 @@ topic: The Markov principle and MDP state design
 summary: Compare Markovian and non-Markovian state representations in Pong, a door-and-key gridworld, and an ordered-checkpoint task.
 status: draft
 readingTime: 18–22 min
-interactiveCount: 2
-staticVisualCount: 4
+interactiveCount: 4
+staticVisualCount: 7
 difficulty: foundational
 series: reinforcement-learning
 access: public
@@ -41,6 +41,9 @@ import MarkovPropertyComparison from "../../../components/MarkovPropertyComparis
 import MarkovPongLab from "../../../components/MarkovPongLab.astro";
 import MarkovPongComparison from "../../../components/MarkovPongComparison.astro";
 import PongConceptFigure from "../../../components/PongConceptFigure.astro";
+import DoorKeyComparison from "../../../components/DoorKeyComparison.astro";
+import DoorKeyFigure from "../../../components/DoorKeyFigure.astro";
+import DoorKeyLab from "../../../components/DoorKeyLab.astro";
 
 <header className="page-header lesson-header article-hero">
   <p className="eyebrow">Reinforcement learning · State representation</p>
@@ -87,11 +90,11 @@ In the second case, providing the history offers no advantage. The velocity alre
 
 ### Learning
 
-We can test this by deploying an algorithm to learn how to return the ball. The playgrounds use a quantized 11-by-9 version of the continuous arena so that a real Q-learning experiment can run quickly in the browser. The quantization, underlying dynamics, reward, launch sequence, learning algorithm, and hyperparameters remain identical for both agents. Only the observation changes.
+We can test this by deploying an algorithm to learn how to return the ball. The playgrounds use a quantized 11-by-9 version of the continuous arena so that a real Q-learning experiment can run quickly in the browser. A successful contact reflects the same ball upward, while a miss ends the rally; each training episode allows up to three successful returns. The quantization, underlying dynamics, reward, launch sequence, learning algorithm, and hyperparameters remain identical for both agents. Only the observation changes.
 
 <MarkovPongLab mode="position" />
 
-In the first environment, velocity is hidden. Press **Train agent** and watch how learning changes the policy and hit rate across varied launches. Once training ends, press **Run agent** to watch the learned policy continue playing while its hits and misses accumulate. The agent improves, but it settles on an inconsistent policy because the same observed state can demand opposing actions.
+In the first environment, velocity is hidden. Press **Train agent** and watch how learning changes the policy and hit rate across varied launches. Once training ends, press **Run agent** to watch the learned policy continue playing while its hits and misses accumulate. A hit sends the same ball upward for another return; only a miss starts a new rally. The agent improves, but it settles on an inconsistent policy because the same observed state can demand opposing actions.
 
 Now repeat the experiment with the only changed ingredient: velocity is included in the state.
 
@@ -117,7 +120,7 @@ Our second environment is a small gridworld where the agent must retrieve a key 
 
 The complete state in this MDP is $s_t=(p_t,k_t)$, where $p_t$ represents the agent's position and $k_t \in \{0, 1\}$ indicates whether the key has been collected. The available actions are $A=\{\text{up}, \text{down}, \text{left}, \text{right}\}$. The door acts as a solid wall when $k_t=0$ and allows passage when $k_t=1$. Reaching the goal yields a positive reward and ends the episode.
 
-[IMAGE: simple gridworld with the agent initially in the center, a key at one end, a door at the other and the objective behind the door. Visually highlight that the agent needs to go to the key and then return towards the door]
+<DoorKeyFigure kind="environment" />
 
 We evaluate two representations. In the first, $z_t=p_t$, meaning the agent only knows its current position. In the second, $z_t=(p_t,k_t)$, it knows its position and whether it holds the key.
 
@@ -133,7 +136,7 @@ $$p(z_{t+1},r_{t+1}\mid z_t,a_t,H_t) \neq p(z_{t+1},r_{t+1}\mid z_t,a_t)$$
 
 This shows the position-only representation violates the Markov property. Adding $k_t$ to the state resolves the issue by compressing a potentially distant historical event into a single current variable. Once $k_t$ is known, the exact path the agent took to get there adds no further relevant information for predicting the next transition.
 
-[IMAGE: show the same cell near the door twice. On the left, agent without key and closed door; on the right, agent with key and open door. In representation (z=p), both cases appear to be exactly the same state. In representation (z=(p,k)), they become different states]
+<DoorKeyFigure kind="state" />
 
 We can refer to this as **Missing memory**. Unlike Pong, the hidden information does not describe physical momentum, but rather summarizes a critical milestone that occurred earlier in the episode.
 
@@ -141,21 +144,23 @@ We can refer to this as **Missing memory**. Unlike Pong, the hidden information 
 
 We will train the same learning algorithm, keeping the reward structure, transition dynamics, and hyperparameters constant. The only variable is the state representation provided to the agent.
 
-[PLAYGROUND: key and door gridworld on the left. On the right, graph of reward or success rate per episode and training parameter controls. The agent receives only (z_t=p_t). In the footer, an optional dropdown explaining the algorithm used]
+<DoorKeyLab mode="position" />
 
 When the agent observes only its position, it receives conflicting learning signals. Prior to collecting the key and after collecting the key, it perceives itself to be in the exact same state when crossing the center of the map. However, the optimal action in that shared space depends entirely on an event that happened many steps ago.
 
-The agent might eventually stumble to the goal through random exploration, but it tends to converge on a highly inefficient and unstable policy.
+During exploratory training, the agent may stumble to the goal. Its final greedy policy cannot reliably reproduce that route: at the shared corridor cells, one fixed action cannot point toward the key before collection and toward the door afterward. Train the agent, then press **Run agent** to watch the learned route and count completed goals and timeouts.
 
 We can run the identical experiment while including $k_t$ in the state.
 
-[PLAYGROUND: same environment and same parameters, but using (z_t=(p_t,k_t)). Visually indicate whether has_key=0 or has_key=1]
+<DoorKeyLab mode="memory" />
 
 The agent is now capable of distinguishing the state of being in the center before getting the key from being in the center after getting the key. States that demand different decisions are no longer aliased into a single representation.
 
-Comparing the learning curves confirms that the Markovian representation converges much faster to a consistent and optimal policy.
+The key-aware agent can learn two policies over the same corridor: move left while $k_t=0$, then move right while $k_t=1$. Its current position, key status, and the chosen action are sufficient to predict whether the door blocks the move. Train and run it in the same way to compare the completed route directly.
 
-[IMAGE: learning curves of the two representations side by side or superimposed]
+Each curve evaluates the current greedy policy from the same central start. The final comparison is computed from the learned Q-values using the same 3,000-episode budget, not drawn in advance.
+
+<DoorKeyComparison />
 
 In Pong, we added a variable to capture current momentum. Here, we added a variable to compress relevant past events.
 
