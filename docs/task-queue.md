@@ -57,6 +57,10 @@ references for longer-term editorial direction.
     - [x] Build the door-and-key learning experience with a minimal route figure,
       an aliased-state comparison, and matched position-only and key-aware
       Q-learning playgrounds with runnable learned policies.
+    - [x] Build the ordered-checkpoint learning experience with a minimal hub
+      figure, a same-movement/different-reward comparison, and matched
+      position-only and progress-aware Q-learning playgrounds with runnable
+      learned policies.
     - [ ] Design and implement the remaining image and playground notes.
   - Keep the article in draft; translation, publication, deployment, merge,
     and newsletter delivery remain out of scope until separately reviewed.

@@ -1,0 +1,375 @@
+.lab,
+.figure {
+  margin: 32px 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface-raised);
+  color: var(--text);
+  container-type: inline-size;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.lab button,
+.lab input { font: inherit; }
+
+.lab button:focus-visible,
+.lab input:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.header,
+.figure > figcaption { padding: 22px 24px 18px; }
+
+.kicker,
+.header h3,
+.figure h3,
+.comparisonHeader p,
+.comparisonHeader h3 { margin: 0; }
+
+.kicker {
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 760;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.header h3,
+.figure h3,
+.comparisonHeader h3 {
+  max-width: 620px;
+  margin-top: 7px;
+  font-size: clamp(1.12rem, 2.2vw, 1.42rem);
+  line-height: 1.2;
+}
+
+.experimentBand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border-block: 1px solid var(--border);
+  background: var(--surface-subtle);
+  padding: 11px 24px;
+}
+
+.experimentBand span,
+.experimentBand strong {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.experimentBand code,
+.stateLabel {
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface-raised);
+  padding: 5px 8px;
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.74rem;
+}
+
+.experimentBand strong { margin-left: auto; }
+
+.body {
+  display: grid;
+  grid-template-columns: minmax(270px, 0.9fr) minmax(310px, 1.1fr);
+  gap: 24px;
+  align-items: center;
+  padding: 24px;
+}
+
+.environmentColumn,
+.learningColumn { min-width: 0; }
+
+.board {
+  --cell-x: calc(100% / 7);
+  --cell-y: calc(100% / 5);
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  width: min(100%, 390px);
+  margin: 0 auto;
+  overflow: hidden;
+  aspect-ratio: 7 / 5;
+  border: 2px solid var(--border-strong);
+  border-radius: 14px;
+  background: var(--surface-subtle);
+  box-shadow: inset 0 0 0 4px var(--surface-raised);
+}
+
+.cell { border: 0.5px solid color-mix(in srgb, var(--border) 55%, transparent); }
+.wall { background: color-mix(in srgb, var(--surface-subtle) 82%, var(--border)); }
+.path { background: var(--surface-raised); }
+.visited { background: color-mix(in srgb, var(--accent-soft) 64%, var(--surface-raised)); }
+
+.agent {
+  position: absolute;
+  z-index: 5;
+  top: calc((var(--agent-y) + 0.5) * var(--cell-y));
+  left: calc((var(--agent-x) + 0.5) * var(--cell-x));
+  width: 7%;
+  transform: translate(-50%, -50%);
+  aspect-ratio: 1;
+  border: 3px solid var(--surface-raised);
+  border-radius: 50%;
+  background: var(--text);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  transition: top 140ms linear, left 140ms linear;
+}
+
+.resetting .agent { transition: none; }
+
+.checkpoint {
+  position: absolute;
+  z-index: 3;
+  top: calc((var(--checkpoint-y) + 0.5) * var(--cell-y));
+  left: calc((var(--checkpoint-x) + 0.5) * var(--cell-x));
+  display: grid;
+  place-items: center;
+  width: 10%;
+  transform: translate(-50%, -50%);
+  aspect-ratio: 1;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: var(--surface-raised);
+  color: var(--accent);
+  font-size: clamp(0.62rem, 1.9vw, 0.78rem);
+  font-weight: 820;
+}
+
+.checkpoint.collected {
+  border-color: var(--text-muted);
+  background: var(--surface-subtle);
+  color: var(--text-muted);
+}
+
+.checkpoint.expected {
+  box-shadow: 0 0 0 5px var(--accent-soft);
+}
+
+.hub {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, 115%);
+  color: var(--text-muted);
+  font-size: clamp(0.48rem, 1.5vw, 0.64rem);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.nextBadge,
+.rewardBadge,
+.completeBadge,
+.timeoutBadge,
+.routeSequence {
+  position: absolute;
+  z-index: 7;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-raised) 94%, transparent);
+  font-size: 0.68rem;
+  font-weight: 760;
+}
+
+.nextBadge {
+  top: 10px;
+  right: 10px;
+  border: 1px solid var(--border);
+  padding: 5px 9px;
+  color: var(--accent);
+}
+
+.rewardBadge {
+  top: 10px;
+  left: 10px;
+  min-width: 34px;
+  padding: 5px 8px;
+  text-align: center;
+}
+
+.positiveReward { border: 1px solid var(--accent); color: var(--accent); }
+.zeroReward { border: 1px solid var(--border-strong); color: var(--text-muted); }
+
+.completeBadge,
+.timeoutBadge {
+  top: 16%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 11px;
+}
+
+.completeBadge { border: 1px solid var(--accent); color: var(--accent); }
+.timeoutBadge { border: 1px solid var(--border-strong); color: var(--text-muted); }
+
+.routeSequence {
+  right: 10px;
+  bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--border);
+  padding: 5px 9px;
+  color: var(--text-muted);
+}
+
+.routeSequence b { color: var(--accent); }
+.routeSequence i { font-style: normal; }
+
+.runScore {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.runScore strong { color: var(--accent); font-size: 0.95rem; }
+
+.learningColumn {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "result button" "chart chart" "speed speed";
+  gap: 10px 16px;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-subtle);
+  padding: 16px;
+}
+
+.result {
+  grid-area: result;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 7px;
+  align-items: baseline;
+  font-variant-numeric: tabular-nums;
+}
+
+.result strong { font-size: clamp(1.75rem, 4vw, 2.35rem); line-height: 1; }
+.result span { color: var(--text-muted); font-size: 0.76rem; font-weight: 700; }
+.result small { grid-column: 1 / -1; margin-top: 4px; color: var(--text-muted); font-size: 0.68rem; }
+.chartWrap { grid-area: chart; }
+.chart { display: block; width: 100%; height: auto; overflow: visible; }
+.grid line { stroke: var(--border); stroke-width: 1; }
+
+.grid text,
+.yLabel,
+.xLabel {
+  fill: var(--text-muted);
+  font-size: 9px;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.curve {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.positionCurve { stroke: var(--text-muted); stroke-dasharray: 6 5; }
+.progressCurve { stroke: var(--accent); }
+
+.speedControl { grid-area: speed; display: grid; gap: 7px; }
+.speedControl > span { display: flex; justify-content: space-between; gap: 12px; color: var(--text-muted); font-size: 0.7rem; }
+.speedControl strong { color: var(--text); font-variant-numeric: tabular-nums; }
+.speedControl input { width: 100%; cursor: pointer; accent-color: var(--accent); }
+
+.trainButton {
+  grid-area: button;
+  min-width: 105px;
+  min-height: 42px;
+  cursor: pointer;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--accent);
+  padding: 8px 16px;
+  color: white;
+  font-size: 0.76rem;
+  font-weight: 720;
+}
+
+.trainButton:hover { border-color: var(--accent-hover); background: var(--accent-hover); }
+.routeFigure .board { width: min(calc(100% - 48px), 560px); }
+.figureNote { margin: 14px 24px 20px; color: var(--text-muted); font-size: 0.78rem; text-align: center; }
+
+.rewardPair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  border-block: 1px solid var(--border);
+  background: var(--border);
+}
+
+.rewardCase {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "label label" "moment reward" "caption caption";
+  gap: 8px 16px;
+  align-items: center;
+  background: var(--surface-subtle);
+  padding: 22px;
+}
+
+.rewardCase .stateLabel { grid-area: label; justify-self: start; }
+.rewardMoment { grid-area: moment; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 72px; }
+.miniAgent { display: block; width: 26px; aspect-ratio: 1; border-radius: 50%; background: var(--text); box-shadow: 0 0 0 5px var(--accent-soft); }
+.moveArrow { color: var(--accent); font-size: 1.35rem; font-weight: 820; }
+.miniCheckpoint { display: grid; place-items: center; width: 34px; aspect-ratio: 1; border: 2px solid var(--accent); border-radius: 50%; background: var(--surface-raised); color: var(--accent); font-weight: 820; }
+.rewardCase > strong { grid-area: reward; font-size: 1.7rem; }
+.rewardPositive { color: var(--accent); }
+.rewardNeutral { color: var(--text-muted); }
+.rewardCase small { grid-area: caption; color: var(--text-muted); font-size: 0.68rem; }
+
+.comparison { padding-bottom: 20px; }
+.comparisonHeader { padding: 22px 24px 12px; }
+.comparisonHeader > p:last-child { margin-top: 6px; color: var(--text-muted); font-size: 0.8rem; }
+.comparisonBody { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(190px, 0.65fr); gap: 20px; align-items: center; padding: 0 24px; }
+.comparisonStats { display: grid; gap: 10px; }
+.comparisonStats > div { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; border-top: 1px solid var(--border); padding-top: 10px; }
+.comparisonStats span,
+.comparisonStats small { font-size: 0.7rem; }
+.comparisonStats strong { grid-row: span 2; font-size: 1.65rem; font-variant-numeric: tabular-nums; }
+.comparisonStats small { color: var(--text-muted); }
+.positionLegend { color: var(--text-muted); }
+.progressLegend { color: var(--accent); }
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@container (max-width: 650px) {
+  .header,
+  .figure > figcaption { padding: 18px; }
+  .experimentBand { align-items: flex-start; flex-direction: column; padding: 11px 18px; }
+  .experimentBand strong { margin-left: 0; }
+  .body { grid-template-columns: 1fr; padding: 18px 14px; }
+  .board { width: min(88vw, 390px); }
+  .routeFigure .board { width: min(calc(100% - 28px), 560px); }
+  .comparisonBody { grid-template-columns: 1fr; padding: 0 14px; }
+}
+
+@container (max-width: 430px) {
+  .rewardPair { grid-template-columns: 1fr; }
+  .learningColumn { grid-template-columns: 1fr; grid-template-areas: "result" "chart" "speed" "button"; }
+  .trainButton { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent { transition: none; }
+}

@@ -12,7 +12,7 @@ topic: The Markov principle and MDP state design
 summary: Compare Markovian and non-Markovian state representations in Pong, a door-and-key gridworld, and an ordered-checkpoint task.
 status: draft
 readingTime: 18–22 min
-interactiveCount: 4
+interactiveCount: 6
 staticVisualCount: 7
 difficulty: foundational
 series: reinforcement-learning
@@ -44,6 +44,9 @@ import PongConceptFigure from "../../../components/PongConceptFigure.astro";
 import DoorKeyComparison from "../../../components/DoorKeyComparison.astro";
 import DoorKeyFigure from "../../../components/DoorKeyFigure.astro";
 import DoorKeyLab from "../../../components/DoorKeyLab.astro";
+import MarkovCheckpointComparison from "../../../components/MarkovCheckpointComparison.astro";
+import MarkovCheckpointFigure from "../../../components/MarkovCheckpointFigure.astro";
+import MarkovCheckpointLab from "../../../components/MarkovCheckpointLab.astro";
 
 <header className="page-header lesson-header article-hero">
   <p className="eyebrow">Reinforcement learning · State representation</p>
@@ -174,7 +177,7 @@ Importantly, no paths are physically blocked or altered during the episode. The 
 
 The complete state for this MDP is $s_t=(p_t,q_t)$. The variable $p_t$ defines the spatial position, and $q_t \in \{A, B, C, \text{done}\}$ tracks the next expected checkpoint in the sequence. Moving the agent updates its position on the grid. The task state $q_t$ advances only when the correct checkpoint is visited, generating a positive reward.
 
-[IMAGE: central hub with three paths ending in A, B and C. Show the sequence A -> B -> C separately, without physically blocking any path]
+<MarkovCheckpointFigure kind="environment" />
 
 We evaluate the representations $z_t=p_t$ and $z_t=(p_t,q_t)$.
 
@@ -200,7 +203,7 @@ $$p(z_{t+1},r_{t+1}\mid z_t,a_t,H_t) \neq p(z_{t+1},r_{t+1}\mid z_t,a_t)$$
 
 Including $q_t$ makes the current state of the task explicit. Once we know the physical position and the expected checkpoint, the rest of the history is no longer needed to predict the full transition, including the reward.
 
-[IMAGE: show the agent entering exactly checkpoint B at two different moments. In one, (q=B) and +1 appears. In the other, (q=C) and 0 appears. Highlight that position and movement are the same; only the state of the task has changed]
+<MarkovCheckpointFigure kind="reward" />
 
 We categorize this as **Missing reward state**. We are not obscuring physical dynamics, nor are we hiding a condition that enables new physical movements. We are hiding the variable that assigns meaning to a physical transition within the context of the task.
 
@@ -208,7 +211,7 @@ We categorize this as **Missing reward state**. We are not obscuring physical dy
 
 We train the algorithm once again, maintaining the same spatial dynamics, reward logic, and hyperparameters.
 
-[PLAYGROUND: gridworld with the three checkpoints on the left. On the right, reward graph, correct checkpoints per episode or completion rate. The agent observes only (z_t=p_t). Learning parameters below and dropdown with algorithm details in the footer]
+<MarkovCheckpointLab mode="position" />
 
 The limitation of the reduced representation becomes obvious in the central hub. Being in the center requires heading to A, B, or C depending on the progress of the sequence. The agent observes all of these distinct situations as the same state.
 
@@ -216,13 +219,15 @@ Without the task context, the policy might learn an average preference across th
 
 We run the second experiment by explicitly providing $q_t$.
 
-[PLAYGROUND: exactly the same environment and training, now with (z_t=(p_t,q_t)). Discreetly show which checkpoint is currently expected]
+<MarkovCheckpointLab mode="progress" />
 
 The agent is now equipped to learn distinct policies for being in the hub while expecting A, expecting B, or expecting C, despite occupying the exact same physical position.
 
-Comparing the learning curves demonstrates a dramatic improvement in learning speed, policy stability, and task completion rate when the task state is explicitly represented.
+The progress-aware policy can choose a different path from the hub for each value of $q_t$. Train it, then run the final policy to watch A, B, and C become credited in order. The position-only policy cannot make this distinction: one greedy action at the hub must serve all three stages.
 
-[IMAGE: comparison of the two learning curves]
+Each curve evaluates the current greedy policy from the same central hub. The final comparison is computed from the learned Q-values using the same 4,000-episode budget.
+
+<MarkovCheckpointComparison />
 
 This highlights a third category of hidden information. The representation perfectly predicted the next physical state, but failed to capture the variables necessary to determine the reward process.
 

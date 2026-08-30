@@ -118,6 +118,30 @@ export {
   trainDoorPair,
   trainMarkovDoor,
 } from "./markovDoor/experiment";
+export {
+  CheckpointComparison as MarkovCheckpointComparison,
+  CheckpointFigure as MarkovCheckpointFigure,
+  CheckpointPlayground as MarkovCheckpointPlayground,
+} from "./markovCheckpoints/CheckpointPlayground";
+export {
+  checkpointObservationIndex as markovCheckpointObservationIndex,
+  checkpointPolicyAction as markovCheckpointPolicyAction,
+  createCheckpointEpisode as createMarkovCheckpointEpisode,
+  DEFAULT_CHECKPOINT_TRAINING as DEFAULT_MARKOV_CHECKPOINT_TRAINING,
+  evaluateCheckpointPolicy as evaluateMarkovCheckpointPolicy,
+  isCheckpointPath as isMarkovCheckpointPath,
+  MARKOV_CHECKPOINTS,
+  stepMarkovCheckpoint,
+  trainCheckpointPair as trainMarkovCheckpointPair,
+  trainMarkovCheckpoints,
+} from "./markovCheckpoints/experiment";
+export type {
+  CheckpointAction as MarkovCheckpointAction,
+  CheckpointCurvePoint as MarkovCheckpointCurvePoint,
+  CheckpointObservationMode as MarkovCheckpointObservationMode,
+  CheckpointTrainingResult as MarkovCheckpointTrainingResult,
+  CheckpointTrueState as MarkovCheckpointTrueState,
+} from "./markovCheckpoints/experiment";
 export type {
   DoorAction as MarkovDoorAction,
   DoorCurvePoint as MarkovDoorCurvePoint,
