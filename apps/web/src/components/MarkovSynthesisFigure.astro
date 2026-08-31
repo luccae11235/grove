@@ -1,0 +1,481 @@
+<figure class="markov-synthesis" data-markov-synthesis>
+  <div
+    class="synthesis-frame"
+    role="group"
+    aria-labelledby="markov-synthesis-title"
+    aria-describedby="markov-synthesis-description"
+  >
+    <figcaption>
+      <p class="kicker">Three MDPs · one repair</p>
+      <h3 id="markov-synthesis-title">Keep the fact that still changes the future</h3>
+    </figcaption>
+
+    <p id="markov-synthesis-description" class="sr-only">
+      Pong becomes Markovian when velocity is added to position, allowing the
+      next motion to be predicted. The door-and-key state adds whether the
+      agent has the key, allowing passage through the door to be predicted.
+      The checkpoint state adds the next required checkpoint, allowing the
+      next reward to be predicted.
+    </p>
+
+    <div class="repairs">
+      <section class="repair">
+        <div class="scene pong-scene" aria-hidden="true">
+          <span class="center-line"></span>
+          <span class="ball"></span>
+          <span class="motion-arrow">↘</span>
+          <span class="paddle"></span>
+        </div>
+        <h4>Pong</h4>
+        <div class="state-repair">
+          <span class="base-state">position</span>
+          <span class="plus" aria-hidden="true">+</span>
+          <strong>velocity</strong>
+        </div>
+        <p>predicts next motion</p>
+      </section>
+
+      <section class="repair">
+        <div class="scene door-scene" aria-hidden="true">
+          <span class="agent"></span>
+          <span class="route"></span>
+          <span class="key"><i></i><b></b></span>
+          <span class="door"><i></i></span>
+        </div>
+        <h4>Key–Door</h4>
+        <div class="state-repair">
+          <span class="base-state">position</span>
+          <span class="plus" aria-hidden="true">+</span>
+          <strong>has key</strong>
+        </div>
+        <p>predicts passage</p>
+      </section>
+
+      <section class="repair">
+        <div class="scene checkpoint-scene" aria-hidden="true">
+          <span class="hub">Hub</span>
+          <span class="path path-a"></span>
+          <span class="path path-b"></span>
+          <span class="path path-c"></span>
+          <span class="checkpoint checkpoint-a">A</span>
+          <span class="checkpoint checkpoint-b">B</span>
+          <span class="checkpoint checkpoint-c">C</span>
+        </div>
+        <h4>Checkpoints</h4>
+        <div class="state-repair">
+          <span class="base-state">position</span>
+          <span class="plus" aria-hidden="true">+</span>
+          <strong>next checkpoint</strong>
+        </div>
+        <p>predicts next reward</p>
+      </section>
+    </div>
+  </div>
+
+  <p class="figure-note">
+    A sufficient state does not remember everything. It keeps the smallest
+    summary of the past that can still change what happens next.
+  </p>
+</figure>
+
+<style>
+  .markov-synthesis {
+    position: relative;
+    left: 50%;
+    width: min(900px, calc(100vw - 48px));
+    margin: 38px 0 44px;
+    transform: translateX(-50%);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .synthesis-frame {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--surface-raised);
+    box-shadow: 0 16px 44px rgb(22 56 43 / 7%);
+  }
+
+  figcaption {
+    padding: 24px 24px 22px;
+    text-align: center;
+  }
+
+  .kicker {
+    margin: 0 0 5px;
+    color: var(--accent);
+    font-size: 0.66rem;
+    font-weight: 760;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  h3 {
+    margin: 0;
+    color: var(--text);
+    font-size: clamp(1.08rem, 2.4vw, 1.42rem);
+    line-height: 1.25;
+  }
+
+  .repairs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    border-top: 1px solid var(--border);
+    background: var(--border);
+  }
+
+  .repair {
+    min-width: 0;
+    padding: 25px 20px 23px;
+    background: var(--surface-raised);
+    text-align: center;
+  }
+
+  .scene {
+    position: relative;
+    width: 120px;
+    height: 72px;
+    margin: 0 auto 17px;
+    color: var(--text);
+  }
+
+  .pong-scene {
+    overflow: hidden;
+    border: 1px solid var(--border-strong);
+    border-radius: 11px;
+    background: var(--surface-subtle);
+  }
+
+  .center-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    border-left: 1px dashed var(--border-strong);
+  }
+
+  .ball {
+    position: absolute;
+    top: 18px;
+    left: 33px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--text);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+  }
+
+  .motion-arrow {
+    position: absolute;
+    top: 23px;
+    left: 50px;
+    color: var(--accent);
+    font-size: 1.05rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .paddle {
+    position: absolute;
+    right: 20px;
+    bottom: 8px;
+    width: 32px;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--accent);
+  }
+
+  .door-scene {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .door-scene .route {
+    position: absolute;
+    right: 18px;
+    left: 18px;
+    height: 1px;
+    background: var(--border-strong);
+  }
+
+  .agent {
+    z-index: 1;
+    width: 18px;
+    height: 18px;
+    margin-left: 7px;
+    border: 4px solid var(--surface-raised);
+    border-radius: 50%;
+    background: var(--text);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+  }
+
+  .key {
+    position: absolute;
+    top: 19px;
+    left: 46px;
+    width: 13px;
+    height: 13px;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+  }
+
+  .key i,
+  .key b {
+    position: absolute;
+    display: block;
+    background: var(--accent);
+    content: "";
+  }
+
+  .key i {
+    top: 9px;
+    left: 9px;
+    width: 17px;
+    height: 2px;
+    transform: rotate(42deg);
+    transform-origin: left center;
+  }
+
+  .key b {
+    top: 17px;
+    left: 20px;
+    width: 2px;
+    height: 6px;
+    transform: rotate(42deg);
+  }
+
+  .door {
+    z-index: 1;
+    position: relative;
+    width: 22px;
+    height: 39px;
+    margin-right: 7px;
+    border: 2px solid var(--accent);
+    border-bottom: 0;
+    border-radius: 9px 9px 0 0;
+    background: var(--surface-raised);
+  }
+
+  .door i {
+    position: absolute;
+    top: 18px;
+    right: 4px;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .checkpoint-scene {
+    color: var(--border-strong);
+  }
+
+  .hub,
+  .checkpoint {
+    position: absolute;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--surface-raised);
+    font-size: 0.56rem;
+    font-weight: 780;
+  }
+
+  .hub {
+    top: 27px;
+    left: 47px;
+    width: 27px;
+    height: 27px;
+    border: 1px solid var(--border-strong);
+    color: var(--text-muted);
+    font-size: 0.46rem;
+  }
+
+  .checkpoint {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--accent);
+    color: var(--accent);
+  }
+
+  .checkpoint-a { top: 28px; left: 3px; }
+  .checkpoint-b { top: 0; left: 49px; }
+  .checkpoint-c { top: 28px; right: 3px; }
+
+  .path {
+    position: absolute;
+    top: 39px;
+    left: 60px;
+    width: 39px;
+    height: 2px;
+    background: currentColor;
+    transform-origin: left center;
+  }
+
+  .path-a { transform: rotate(180deg); }
+  .path-b { transform: rotate(-90deg); }
+  .path-c { transform: rotate(0deg); }
+
+  h4 {
+    margin: 0 0 14px;
+    color: var(--text);
+    font-size: 0.9rem;
+    line-height: 1.2;
+  }
+
+  .state-repair {
+    display: flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    white-space: nowrap;
+  }
+
+  .base-state,
+  .state-repair strong {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.68rem;
+    line-height: 1;
+  }
+
+  .base-state {
+    border: 1px solid var(--border);
+    background: var(--surface-subtle);
+    color: var(--text-muted);
+  }
+
+  .state-repair strong {
+    border: 1px solid var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent-hover);
+    font-weight: 760;
+  }
+
+  .plus {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .repair > p {
+    margin: 11px 0 0;
+    color: var(--text-muted);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.76rem;
+    line-height: 1.4;
+  }
+
+  .figure-note {
+    max-width: 650px;
+    margin: 12px auto 0;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    line-height: 1.55;
+    text-align: center;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 720px) {
+    .repairs {
+      grid-template-columns: 1fr;
+    }
+
+    .repair {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr);
+      grid-template-rows: auto auto auto;
+      column-gap: 18px;
+      padding: 20px;
+      text-align: left;
+    }
+
+    .scene {
+      grid-row: 1 / 4;
+      width: 96px;
+      height: 64px;
+      margin: auto 0;
+    }
+
+    .pong-scene .paddle { right: 13px; }
+    .checkpoint-scene { transform: scale(0.8); transform-origin: left center; }
+
+    h4 {
+      margin-bottom: 8px;
+    }
+
+    .state-repair {
+      min-width: 0;
+      justify-content: flex-start;
+    }
+
+    .repair > p {
+      margin-top: 7px;
+    }
+  }
+
+  @media (max-width: 430px) {
+    .markov-synthesis {
+      width: min(100%, calc(100vw - 28px));
+      margin: 32px 0 38px;
+    }
+
+    figcaption {
+      padding: 20px 18px 18px;
+    }
+
+    .repair {
+      grid-template-columns: 74px minmax(0, 1fr);
+      column-gap: 14px;
+      padding: 18px 16px;
+    }
+
+    .scene {
+      width: 74px;
+      height: 56px;
+    }
+
+    .ball { top: 13px; left: 18px; }
+    .motion-arrow { top: 18px; left: 35px; }
+    .pong-scene .paddle { right: 9px; width: 24px; }
+
+    .door-scene .route { right: 10px; left: 10px; }
+    .agent { margin-left: 0; }
+    .door { margin-right: 0; }
+    .key { left: 28px; }
+
+    .checkpoint-scene {
+      transform: scale(0.62);
+    }
+
+    .state-repair {
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .base-state,
+    .state-repair strong {
+      min-height: 28px;
+      padding: 5px 8px;
+      font-size: 0.61rem;
+    }
+  }
+</style>

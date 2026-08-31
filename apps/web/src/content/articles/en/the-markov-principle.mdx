@@ -13,7 +13,7 @@ summary: Compare Markovian and non-Markovian state representations in Pong, a do
 status: draft
 readingTime: 18–22 min
 interactiveCount: 6
-staticVisualCount: 7
+staticVisualCount: 11
 difficulty: foundational
 series: reinforcement-learning
 access: public
@@ -47,6 +47,7 @@ import DoorKeyLab from "../../../components/DoorKeyLab.astro";
 import MarkovCheckpointComparison from "../../../components/MarkovCheckpointComparison.astro";
 import MarkovCheckpointFigure from "../../../components/MarkovCheckpointFigure.astro";
 import MarkovCheckpointLab from "../../../components/MarkovCheckpointLab.astro";
+import MarkovSynthesisFigure from "../../../components/MarkovSynthesisFigure.astro";
 
 <header className="page-header lesson-header article-hero">
   <p className="eyebrow">Reinforcement learning · State representation</p>
@@ -241,7 +242,7 @@ In the second case, **Missing memory**, position failed to indicate whether a cr
 
 In the third case, **Missing reward state**, position perfectly predicted the next movement but failed to determine the reward. The history revealed the agent's progress within the task sequence.
 
-[IMAGE: three columns — Pong / Key–Door / Checkpoints. In each, respectively highlight Velocity, Has Key and Next Checkpoint as the information added to the representation]
+<MarkovSynthesisFigure />
 
 These three distinct examples are manifestations of the exact same mathematical condition. If any detail from the history modifies the predicted distribution of the next state or reward, even after we know the current state and action, then what we are calling the state is simply not sufficient:
 

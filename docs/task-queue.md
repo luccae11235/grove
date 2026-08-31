@@ -37,7 +37,7 @@ references for longer-term editorial direction.
 - [ ] **Develop the Markov principle article — issue #158**
   - [x] Add the complete supplied English manuscript with the title, chapter
     structure, formulas, and production notes on an isolated docs branch.
-  - [ ] Replace the image and playground notes iteratively after the text
+  - [x] Replace the image and playground notes iteratively after the text
     structure has been reviewed.
     - [x] Add the opening comparison showing when history changes the predicted
       transition and when the current state makes history irrelevant.
@@ -61,7 +61,9 @@ references for longer-term editorial direction.
       figure, a same-movement/different-reward comparison, and matched
       position-only and progress-aware Q-learning playgrounds with runnable
       learned policies.
-    - [ ] Design and implement the remaining image and playground notes.
+    - [x] Add the final synthesis figure aligning the three state repairs:
+      velocity, key memory, and next-checkpoint progress.
+    - [x] Design and implement the remaining image and playground notes.
   - Keep the article in draft; translation, publication, deployment, merge,
     and newsletter delivery remain out of scope until separately reviewed.
   - Completion check: the complete learning experience passes focused checks

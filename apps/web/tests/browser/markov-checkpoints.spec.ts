@@ -76,6 +76,15 @@ for (const viewport of [
     await expect(comparison).toContainText("Position + next");
     await expect(comparison).toContainText("100%");
 
+    const synthesis = page.locator("[data-markov-synthesis]");
+    await expect(synthesis).toContainText("Keep the fact that still changes the future");
+    await expect(synthesis).toContainText("Pong");
+    await expect(synthesis).toContainText("velocity");
+    await expect(synthesis).toContainText("Key–Door");
+    await expect(synthesis).toContainText("has key");
+    await expect(synthesis).toContainText("Checkpoints");
+    await expect(synthesis).toContainText("next checkpoint");
+
     const bounds = await progressLab.evaluate((element) => {
       const rect = element.getBoundingClientRect();
       return {
@@ -88,6 +97,13 @@ for (const viewport of [
     expect(bounds.left).toBeGreaterThanOrEqual(0);
     expect(bounds.right).toBeLessThanOrEqual(bounds.viewportWidth);
     expect(bounds.scrollWidth).toBe(bounds.viewportWidth);
+
+    const synthesisBounds = await synthesis.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { left: rect.left, right: rect.right };
+    });
+    expect(synthesisBounds.left).toBeGreaterThanOrEqual(0);
+    expect(synthesisBounds.right).toBeLessThanOrEqual(bounds.viewportWidth);
     expect(pageErrors).toEqual([]);
   });
 }
