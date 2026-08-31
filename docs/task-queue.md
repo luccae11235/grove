@@ -61,8 +61,8 @@ references for longer-term editorial direction.
       figure, a same-movement/different-reward comparison, and matched
       position-only and progress-aware Q-learning playgrounds with runnable
       learned policies.
-    - [x] Add the final synthesis figure aligning the three state repairs:
-      velocity, key memory, and next-checkpoint progress.
+    - [x] Add the final synthesis figure aligning missing dynamics, missing
+      memory, and missing reward state with their minimal state repairs.
     - [x] Make all three training simulations visibly rapid and responsive to
       their episodes-per-second controls while preserving normal-speed policy
       playback after training.

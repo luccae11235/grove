@@ -81,7 +81,11 @@ for (const viewport of [
     await expect(comparison).toContainText("100%");
 
     const synthesis = page.locator("[data-markov-synthesis]");
-    await expect(synthesis).toContainText("Keep the fact that still changes the future");
+    await expect(synthesis).not.toContainText("Three MDPs · one repair");
+    await expect(synthesis).not.toContainText("Keep the fact that still changes the future");
+    await expect(synthesis).toContainText("Missing dynamics");
+    await expect(synthesis).toContainText("Missing memory");
+    await expect(synthesis).toContainText("Missing reward state");
     await expect(synthesis).toContainText("Pong");
     await expect(synthesis).toContainText("velocity");
     await expect(synthesis).toContainText("Key–Door");

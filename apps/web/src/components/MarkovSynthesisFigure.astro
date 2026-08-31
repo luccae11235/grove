@@ -2,20 +2,14 @@
   <div
     class="synthesis-frame"
     role="group"
-    aria-labelledby="markov-synthesis-title"
+    aria-label="Three examples of missing Markov state"
     aria-describedby="markov-synthesis-description"
   >
-    <figcaption>
-      <p class="kicker">Three MDPs · one repair</p>
-      <h3 id="markov-synthesis-title">Keep the fact that still changes the future</h3>
-    </figcaption>
-
     <p id="markov-synthesis-description" class="sr-only">
-      Pong becomes Markovian when velocity is added to position, allowing the
-      next motion to be predicted. The door-and-key state adds whether the
-      agent has the key, allowing passage through the door to be predicted.
-      The checkpoint state adds the next required checkpoint, allowing the
-      next reward to be predicted.
+      Pong is missing dynamics, repaired by adding velocity to position. The
+      door-and-key environment is missing memory, repaired by adding whether
+      the agent has the key. The checkpoint environment is missing reward
+      state, repaired by adding the next required checkpoint.
     </p>
 
     <div class="repairs">
@@ -26,13 +20,13 @@
           <span class="motion-arrow">↘</span>
           <span class="paddle"></span>
         </div>
-        <h4>Pong</h4>
+        <p class="example-name">Pong</p>
+        <h3>Missing dynamics</h3>
         <div class="state-repair">
           <span class="base-state">position</span>
           <span class="plus" aria-hidden="true">+</span>
           <strong>velocity</strong>
         </div>
-        <p>predicts next motion</p>
       </section>
 
       <section class="repair">
@@ -42,13 +36,13 @@
           <span class="key"><i></i><b></b></span>
           <span class="door"><i></i></span>
         </div>
-        <h4>Key–Door</h4>
+        <p class="example-name">Key–Door</p>
+        <h3>Missing memory</h3>
         <div class="state-repair">
           <span class="base-state">position</span>
           <span class="plus" aria-hidden="true">+</span>
           <strong>has key</strong>
         </div>
-        <p>predicts passage</p>
       </section>
 
       <section class="repair">
@@ -61,13 +55,13 @@
           <span class="checkpoint checkpoint-b">B</span>
           <span class="checkpoint checkpoint-c">C</span>
         </div>
-        <h4>Checkpoints</h4>
+        <p class="example-name">Checkpoints</p>
+        <h3>Missing reward state</h3>
         <div class="state-repair">
           <span class="base-state">position</span>
           <span class="plus" aria-hidden="true">+</span>
           <strong>next checkpoint</strong>
         </div>
-        <p>predicts next reward</p>
       </section>
     </div>
   </div>
@@ -96,32 +90,10 @@
     box-shadow: 0 16px 44px rgb(22 56 43 / 7%);
   }
 
-  figcaption {
-    padding: 24px 24px 22px;
-    text-align: center;
-  }
-
-  .kicker {
-    margin: 0 0 5px;
-    color: var(--accent);
-    font-size: 0.66rem;
-    font-weight: 760;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-  }
-
-  h3 {
-    margin: 0;
-    color: var(--text);
-    font-size: clamp(1.08rem, 2.4vw, 1.42rem);
-    line-height: 1.25;
-  }
-
   .repairs {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1px;
-    border-top: 1px solid var(--border);
     background: var(--border);
   }
 
@@ -319,7 +291,17 @@
   .path-b { transform: rotate(-90deg); }
   .path-c { transform: rotate(0deg); }
 
-  h4 {
+  .example-name {
+    margin: 0 0 4px;
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    font-weight: 720;
+    letter-spacing: 0.06em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  h3 {
     margin: 0 0 14px;
     color: var(--text);
     font-size: 0.9rem;
@@ -366,14 +348,6 @@
     font-weight: 700;
   }
 
-  .repair > p {
-    margin: 11px 0 0;
-    color: var(--text-muted);
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 0.76rem;
-    line-height: 1.4;
-  }
-
   .figure-note {
     max-width: 650px;
     margin: 12px auto 0;
@@ -418,7 +392,7 @@
     .pong-scene .paddle { right: 13px; }
     .checkpoint-scene { transform: scale(0.8); transform-origin: left center; }
 
-    h4 {
+    h3 {
       margin-bottom: 8px;
     }
 
@@ -427,19 +401,12 @@
       justify-content: flex-start;
     }
 
-    .repair > p {
-      margin-top: 7px;
-    }
   }
 
   @media (max-width: 430px) {
     .markov-synthesis {
       width: min(100%, calc(100vw - 28px));
       margin: 32px 0 38px;
-    }
-
-    figcaption {
-      padding: 20px 18px 18px;
     }
 
     .repair {
