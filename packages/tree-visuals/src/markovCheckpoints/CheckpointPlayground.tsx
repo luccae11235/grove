@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./CheckpointPlayground.module.css";
+import { trainingFrameDelay } from "../markovTrainingMotion";
 import {
   checkpointPolicyAction,
   createCheckpointEpisode,
@@ -198,6 +199,7 @@ export function CheckpointPlayground({ mode }: { mode: CheckpointObservationMode
   const revealedCurve = results.curve.slice(0, curveIndex + 1);
   const currentPoint = revealedCurve[revealedCurve.length - 1];
   const seesProgress = mode === "progress";
+  const trainingFrameMs = trainingFrameDelay(episodesPerSecond);
 
   useEffect(() => {
     curveIndexRef.current = curveIndex;
@@ -244,9 +246,9 @@ export function CheckpointPlayground({ mode }: { mode: CheckpointObservationMode
         }
         return next;
       });
-    }, 140);
+    }, running ? 140 : trainingFrameMs);
     return () => window.clearInterval(timer);
-  }, [mode, results.qSnapshots, results.qValues, running, training]);
+  }, [mode, results.qSnapshots, results.qValues, running, training, trainingFrameMs]);
 
   function toggleAgent() {
     if (curveIndex >= maximumCurveIndex) {
@@ -263,7 +265,16 @@ export function CheckpointPlayground({ mode }: { mode: CheckpointObservationMode
   }
 
   return (
-    <section className={styles.lab} role="region" aria-labelledby={titleId} data-markov-checkpoint-lab data-mode={mode}>
+    <section
+      className={styles.lab}
+      role="region"
+      aria-labelledby={titleId}
+      data-markov-checkpoint-lab
+      data-mode={mode}
+      data-training={String(training)}
+      data-training-frame-ms={trainingFrameMs}
+      style={{ "--training-frame-ms": `${trainingFrameMs}ms` } as React.CSSProperties}
+    >
       <header className={styles.header}>
         <p className={styles.kicker}>{seesProgress ? "Experiment 2 · Markov state" : "Experiment 1 · Broken state"}</p>
         <h3 id={titleId}>{seesProgress ? "What changes when task progress is part of the state?" : "Can position alone learn the ordered route?"}</h3>

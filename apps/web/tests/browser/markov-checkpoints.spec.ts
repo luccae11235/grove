@@ -47,10 +47,13 @@ for (const viewport of [
     await expect(progressLab.getByText("Next checkpoint observed", { exact: true })).toBeVisible();
 
     await positionLab.getByLabel("Checkpoint training speed in episodes per second").fill("2000");
+    await expect(positionLab).toHaveAttribute("data-training-frame-ms", "18");
     await positionLab.getByRole("button", { name: "Train agent" }).click();
+    await expect(positionLab).toHaveAttribute("data-training", "true");
     await expect
       .poll(async () => Number(await positionLab.locator("[data-training-episodes]").getAttribute("data-training-episodes")), { timeout: 10_000 })
       .toBe(4_000);
+    await expect(positionLab).toHaveAttribute("data-training", "false");
     await expect(positionLab.locator("[data-training-episodes]")).toHaveAttribute("data-active-completion-rate", "0");
     await positionLab.getByRole("button", { name: "Run agent" }).click();
     const positionRun = positionLab.locator("[data-run-complete]");
@@ -59,6 +62,7 @@ for (const viewport of [
     await positionLab.getByRole("button", { name: "Stop agent" }).click();
 
     await progressLab.getByLabel("Checkpoint training speed in episodes per second").fill("2000");
+    await expect(progressLab).toHaveAttribute("data-training-frame-ms", "18");
     await progressLab.getByRole("button", { name: "Train agent" }).click();
     await expect
       .poll(async () => Number(await progressLab.locator("[data-training-episodes]").getAttribute("data-training-episodes")), { timeout: 10_000 })

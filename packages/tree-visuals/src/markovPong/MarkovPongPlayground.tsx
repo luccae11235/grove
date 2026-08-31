@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./MarkovPongPlayground.module.css";
+import { trainingFrameDelay } from "../markovTrainingMotion";
 import {
   continuePongRally,
   DEFAULT_PONG_TRAINING,
@@ -102,6 +103,7 @@ export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
   const revealedCurve = results.curve.slice(0, curveIndex + 1);
   const currentPoint = revealedCurve[revealedCurve.length - 1];
   const visibleVelocity = mode === "velocity";
+  const trainingFrameMs = trainingFrameDelay(episodesPerSecond);
 
   useEffect(() => {
     curveIndexRef.current = curveIndex;
@@ -138,9 +140,9 @@ export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
         }
         return next;
       });
-    }, running ? 110 : 150);
+    }, running ? 110 : trainingFrameMs);
     return () => window.clearInterval(timer);
-  }, [mode, results.qSnapshots, results.qValues, running, training]);
+  }, [mode, results.qSnapshots, results.qValues, running, training, trainingFrameMs]);
 
   useEffect(() => {
     if ((!training && !running) || !state.done) return undefined;
@@ -148,21 +150,23 @@ export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
     if (state.outcome === "hit") {
       const hitPause = window.setTimeout(() => {
         setState((current) => continuePongRally(current));
-      }, 260);
+      }, running ? 260 : 18);
       return () => window.clearTimeout(hitPause);
     }
 
     const missPause = window.setTimeout(() => {
       launchIndexRef.current = (launchIndexRef.current + 1) % DEMO_STARTS.length;
       setResetting(true);
-      setNewRally(true);
+      setNewRally(running);
       setState(demoStart(launchIndexRef.current));
       resetFrameRef.current = window.requestAnimationFrame(() => {
         resetFrameRef.current = window.requestAnimationFrame(() => setResetting(false));
       });
-      if (newRallyTimerRef.current !== null) window.clearTimeout(newRallyTimerRef.current);
-      newRallyTimerRef.current = window.setTimeout(() => setNewRally(false), 520);
-    }, 520);
+      if (running) {
+        if (newRallyTimerRef.current !== null) window.clearTimeout(newRallyTimerRef.current);
+        newRallyTimerRef.current = window.setTimeout(() => setNewRally(false), 520);
+      }
+    }, running ? 520 : 18);
     return () => window.clearTimeout(missPause);
   }, [running, state.done, state.outcome, training]);
 
@@ -193,7 +197,16 @@ export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
   const velocityAngle = Math.atan2(state.ballVy, state.ballVx) * (180 / Math.PI);
 
   return (
-    <section className={styles.lab} role="region" aria-labelledby={titleId} data-markov-pong-lab data-mode={mode}>
+    <section
+      className={styles.lab}
+      role="region"
+      aria-labelledby={titleId}
+      data-markov-pong-lab
+      data-mode={mode}
+      data-training={String(training)}
+      data-training-frame-ms={trainingFrameMs}
+      style={{ "--training-frame-ms": `${trainingFrameMs}ms` } as React.CSSProperties}
+    >
       <header className={styles.header}>
         <p className={styles.kicker}>{visibleVelocity ? "Experiment 2 · Markov state" : "Experiment 1 · Broken state"}</p>
         <h3 id={titleId}>{title}</h3>

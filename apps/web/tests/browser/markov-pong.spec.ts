@@ -47,11 +47,14 @@ for (const viewport of [
     await expect(positionLab.getByRole("button", { name: "Replay final policy" })).toHaveCount(0);
 
     await positionLab.getByLabel("Training speed in episodes per second").fill("2000");
+    await expect(positionLab).toHaveAttribute("data-training-frame-ms", "18");
     await positionLab.getByRole("button", { name: "Train agent" }).click();
+    await expect(positionLab).toHaveAttribute("data-training", "true");
     await expect(ball).not.toHaveAttribute("data-ball-x", initialBallX ?? "");
     await expect
       .poll(async () => Number(await positionLab.locator("[data-training-episodes]").getAttribute("data-training-episodes")), { timeout: 15_000 })
       .toBe(5_000);
+    await expect(positionLab).toHaveAttribute("data-training", "false");
     await expect(positionLab.locator("[data-training-episodes]")).toHaveAttribute("data-active-hit-rate", "36");
     await expect(positionLab.getByText("36%", { exact: true })).toBeVisible();
     await expect(positionCourt).not.toHaveAttribute("data-launch-index", "0");
@@ -66,6 +69,7 @@ for (const viewport of [
     await positionLab.getByRole("button", { name: "Stop agent" }).click();
 
     await velocityLab.getByLabel("Training speed in episodes per second").fill("2000");
+    await expect(velocityLab).toHaveAttribute("data-training-frame-ms", "18");
     await velocityLab.getByRole("button", { name: "Train agent" }).click();
     await expect
       .poll(async () => Number(await velocityLab.locator("[data-training-episodes]").getAttribute("data-training-episodes")), { timeout: 15_000 })

@@ -172,6 +172,12 @@
   transition: left 100ms linear;
 }
 
+.lab[data-training="true"] .ball,
+.lab[data-training="true"] .velocityArrow,
+.lab[data-training="true"] .paddle {
+  transition-duration: var(--training-frame-ms);
+}
+
 .hitBadge,
 .missBadge {
   position: absolute;

@@ -63,6 +63,9 @@ references for longer-term editorial direction.
       learned policies.
     - [x] Add the final synthesis figure aligning the three state repairs:
       velocity, key memory, and next-checkpoint progress.
+    - [x] Make all three training simulations visibly rapid and responsive to
+      their episodes-per-second controls while preserving normal-speed policy
+      playback after training.
     - [x] Design and implement the remaining image and playground notes.
   - Keep the article in draft; translation, publication, deployment, merge,
     and newsletter delivery remain out of scope until separately reviewed.

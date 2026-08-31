@@ -121,6 +121,10 @@
   transition: top 140ms linear, left 140ms linear;
 }
 
+.lab[data-training="true"] .agent {
+  transition-duration: var(--training-frame-ms);
+}
+
 .resetting .agent { transition: none; }
 
 .checkpoint {

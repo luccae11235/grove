@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./DoorKeyPlayground.module.css";
+import { trainingFrameDelay } from "../markovTrainingMotion";
 import {
   createDoorEpisode,
   DEFAULT_DOOR_TRAINING,
@@ -177,6 +178,7 @@ export function DoorKeyPlayground({ mode }: { mode: DoorObservationMode }) {
   const revealedCurve = results.curve.slice(0, curveIndex + 1);
   const currentPoint = revealedCurve[revealedCurve.length - 1];
   const remembersKey = mode === "memory";
+  const trainingFrameMs = trainingFrameDelay(episodesPerSecond);
 
   useEffect(() => {
     curveIndexRef.current = curveIndex;
@@ -215,9 +217,9 @@ export function DoorKeyPlayground({ mode }: { mode: DoorObservationMode }) {
         }
         return next;
       });
-    }, 120);
+    }, running ? 120 : trainingFrameMs);
     return () => window.clearInterval(timer);
-  }, [mode, results.qSnapshots, results.qValues, running, training]);
+  }, [mode, results.qSnapshots, results.qValues, running, training, trainingFrameMs]);
 
   function toggleAgent() {
     if (curveIndex >= maximumCurveIndex) {
@@ -234,7 +236,16 @@ export function DoorKeyPlayground({ mode }: { mode: DoorObservationMode }) {
   }
 
   return (
-    <section className={styles.lab} role="region" aria-labelledby={titleId} data-markov-door-lab data-mode={mode}>
+    <section
+      className={styles.lab}
+      role="region"
+      aria-labelledby={titleId}
+      data-markov-door-lab
+      data-mode={mode}
+      data-training={String(training)}
+      data-training-frame-ms={trainingFrameMs}
+      style={{ "--training-frame-ms": `${trainingFrameMs}ms` } as React.CSSProperties}
+    >
       <header className={styles.header}>
         <p className={styles.kicker}>{remembersKey ? "Experiment 2 · Markov state" : "Experiment 1 · Broken state"}</p>
         <h3 id={titleId}>{remembersKey ? "What changes when the key is part of the state?" : "Can position alone encode the return route?"}</h3>

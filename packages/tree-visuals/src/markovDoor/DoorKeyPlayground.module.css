@@ -143,6 +143,10 @@
   transition: left 140ms linear;
 }
 
+.lab[data-training="true"] .agent {
+  transition-duration: var(--training-frame-ms);
+}
+
 .agent .keyShape {
   position: absolute;
   top: -10px;
