@@ -34,16 +34,6 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
-- [ ] **Publish How Bagging Removes Variance — issue #180**
-  - Publish only the reviewed English `bagging-reduces-tree-variance` article
-    on 2026-09-04 while keeping Gradient Boosting and later work in draft.
-  - Record the missing Brazilian Portuguese counterpart under issue #181 as an
-    explicit translation-parity limitation for this release.
-  - Keep the source email, provider draft, test email, and subscriber delivery
-    outside this website-publication task and behind their separate gates.
-  - Completion check: the full repository gate passes and exact-SHA staging and
-    production verification expose the canonical article, RSS, and sitemap.
-
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.
@@ -207,6 +197,18 @@ references for longer-term editorial direction.
 ## Done
 
 ### Publishing and content
+
+- [x] **Publish How Bagging Removes Variance — issue #180** — 2026-09-04
+  - Published only the reviewed English `bagging-reduces-tree-variance` article
+    through implementation PR #183 and production release PR #184.
+  - Full checks passed; exact staging revision `bf35fa4` and production revision
+    `4e3d97a` passed deployment verification in runs `33870316442` and
+    `33871040497`, respectively.
+  - Verified the canonical article, latest-library position, RSS, sitemap,
+    desktop/mobile layout, and continued exclusion of the two later drafts.
+  - Recorded Brazilian Portuguese translation parity under issue #181 and the
+    separate Issue 006 email draft/test work under issue #182; no provider
+    broadcast was created, sent, or scheduled.
 
 - [x] **Publish and deliver Issue 005 — issue #176** — 2026-08-29
   - Published only Issue 005 through implementation PR #177 and release PR #178;
