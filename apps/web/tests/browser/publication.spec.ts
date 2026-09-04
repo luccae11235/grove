@@ -12,7 +12,7 @@ test("the production article library excludes drafts", async ({ page }) => {
   })).toBeVisible();
   await expect(page.getByRole("link", {
     name: /Why averaging trees makes predictions more stable/,
-  })).toHaveCount(0);
+  })).toBeVisible();
   await expect(page.getByRole("link", {
     name: /How the Past Echoes: Understanding ACF and PACF/,
   })).toBeVisible();
@@ -36,7 +36,10 @@ test("the production article library excludes drafts", async ({ page }) => {
   })).toBeVisible();
 
   await page.goto("/learn/bagging-reduces-tree-variance/");
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("heading", {
+    level: 1,
+    name: "Why averaging trees makes predictions more stable",
+  })).toBeVisible();
 });
 
 test("the published reading flow is complete in Brazilian Portuguese", async ({ page }) => {
