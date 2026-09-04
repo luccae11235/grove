@@ -34,6 +34,16 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Publish How Bagging Removes Variance — issue #180**
+  - Publish only the reviewed English `bagging-reduces-tree-variance` article
+    on 2026-09-04 while keeping Gradient Boosting and later work in draft.
+  - Record the missing Brazilian Portuguese counterpart under issue #181 as an
+    explicit translation-parity limitation for this release.
+  - Keep the source email, provider draft, test email, and subscriber delivery
+    outside this website-publication task and behind their separate gates.
+  - Completion check: the full repository gate passes and exact-SHA staging and
+    production verification expose the canonical article, RSS, and sitemap.
+
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.
@@ -155,6 +165,16 @@ references for longer-term editorial direction.
 ## Ready
 
 ### Public release
+
+- [ ] **Draft and test Issue 006 about bagging variance — issue #182**
+  - Start after issue #180 verifies the article in production, then write a
+    short invitation around the article's central stability question.
+  - Review the web, HTML email, and plain-text forms before creating exactly one
+    protected Resend draft and sending only an owner test.
+  - Keep subscriber send or scheduling behind a separate explicit approval and
+    the exact `SEND:2026-006` confirmation.
+  - Completion check: source and provider draft match, the inbox test passes,
+    and no production subscriber broadcast has been sent or scheduled.
 
 - [ ] **Finalize public-release essentials**
   - Replace publication placeholders required for newsletter sending, including
