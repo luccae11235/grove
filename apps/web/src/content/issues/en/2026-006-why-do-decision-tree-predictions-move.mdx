@@ -1,0 +1,36 @@
+---
+issueId: "2026-006"
+locale: en
+issueNumber: 6
+routeSlug: "why-do-decision-tree-predictions-move"
+href: "/newsletter/2026/006/why-do-decision-tree-predictions-move"
+subject: "Why do decision-tree predictions move?"
+preheader: "Hold one input fixed, retrain on new samples, and watch averaging narrow the spread."
+summary: "The sixth Aflora issue holds one input fixed and asks why a decision-tree prediction changes when its training data changes—and how averaging varied trees can make that prediction more stable."
+status: published
+publishedAt: 2026-09-04
+featuredArticles:
+  - "bagging-reduces-tree-variance"
+tags:
+  - "decision-trees"
+  - "bagging"
+  - "model-variance"
+cta:
+  label: "See why averaging stabilizes trees"
+  href: "/learn/bagging-reduces-tree-variance"
+---
+
+A hospital retrains the same kind of mortality-risk model every six months. One
+stored patient record receives an estimated risk of **18%**, then **29%**, then
+**21%**.
+
+The patient did not change. The training data did—and a decision tree can react
+sharply to small differences in that evidence.
+
+What if, instead of trusting one tree, we let many varied trees answer and
+average their predictions?
+
+In this week's interactive article, you'll keep one input fixed, watch
+predictions move across training samples, and test how bagging narrows that
+distribution. You'll also see why adding more trees eventually helps less when
+their predictions move together.
