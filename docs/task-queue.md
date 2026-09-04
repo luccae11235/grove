@@ -34,16 +34,6 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
-- [ ] **Draft and test Issue 006 about bagging variance — issue #182**
-  - Start after issue #180 verifies the article in production, then write a
-    short invitation around the article's central stability question.
-  - Review the web, HTML email, and plain-text forms before creating exactly one
-    protected Resend draft and sending only an owner test.
-  - Keep subscriber send or scheduling behind a separate explicit approval and
-    the exact `SEND:2026-006` confirmation.
-  - Completion check: source and provider draft match, the inbox test passes,
-    and no production subscriber broadcast has been sent or scheduled.
-
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.
@@ -197,6 +187,16 @@ references for longer-term editorial direction.
 ## Done
 
 ### Publishing and content
+
+- [x] **Publish and deliver Issue 006 about bagging variance — issue #182** — 2026-09-04
+  - Published the reviewed text-only issue through implementation PR #186 and
+    release PR #187; exact staging revision `cde06c6` and production revision
+    `9368938` passed deployment verification.
+  - Verified the public issue, HTML email, plain-text email, and article routes;
+    the production email artifact contains no image tags.
+  - Created Resend broadcast `42d40431-33e8-42e5-885f-ed99f8008ba5`, sent the
+    owner test, and delivered it once to the production audience only after the
+    owner supplied the exact `SEND:2026-006` confirmation.
 
 - [x] **Publish How Bagging Removes Variance — issue #180** — 2026-09-04
   - Published only the reviewed English `bagging-reduces-tree-variance` article
