@@ -34,6 +34,16 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Draft and test Issue 006 about bagging variance — issue #182**
+  - Start after issue #180 verifies the article in production, then write a
+    short invitation around the article's central stability question.
+  - Review the web, HTML email, and plain-text forms before creating exactly one
+    protected Resend draft and sending only an owner test.
+  - Keep subscriber send or scheduling behind a separate explicit approval and
+    the exact `SEND:2026-006` confirmation.
+  - Completion check: source and provider draft match, the inbox test passes,
+    and no production subscriber broadcast has been sent or scheduled.
+
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.
@@ -155,16 +165,6 @@ references for longer-term editorial direction.
 ## Ready
 
 ### Public release
-
-- [ ] **Draft and test Issue 006 about bagging variance — issue #182**
-  - Start after issue #180 verifies the article in production, then write a
-    short invitation around the article's central stability question.
-  - Review the web, HTML email, and plain-text forms before creating exactly one
-    protected Resend draft and sending only an owner test.
-  - Keep subscriber send or scheduling behind a separate explicit approval and
-    the exact `SEND:2026-006` confirmation.
-  - Completion check: source and provider draft match, the inbox test passes,
-    and no production subscriber broadcast has been sent or scheduled.
 
 - [ ] **Finalize public-release essentials**
   - Replace publication placeholders required for newsletter sending, including
