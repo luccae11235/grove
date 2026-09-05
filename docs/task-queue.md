@@ -131,6 +131,10 @@ references for longer-term editorial direction.
       revision `24ba23f7bd8f87a2960b4dad16d1064ee5135fe3` sent untracked
       transactional messages that Gmail authenticated and placed in Personal.
   - [ ] Require explicit reader action before confirmation — issue #154.
+    - In progress: add an explicit POST confirmation, scanner regression tests,
+      and a manual, audited expired-link reminder pipeline for the three
+      owner-selected pending recipients. Production release and recipient delivery
+      remain separate completion gates.
     - A staging proof subscriber changed from pending to active 18 seconds after
       delivery without an intentional link click; replace the confirmation
       page's automatic redirect with an explicit, scanner-safe action.

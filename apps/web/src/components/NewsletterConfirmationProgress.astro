@@ -14,15 +14,15 @@ const invalidHref = locale === "pt-BR"
 const copy = locale === "pt-BR"
   ? {
       eyebrow: "Confirmação da newsletter",
-      title: "Confirmando sua inscrição…",
-      message: "Isso normalmente leva só alguns segundos. Você será encaminhado automaticamente.",
-      manual: "Continuar confirmação",
+      title: "Confirme sua inscrição",
+      message: "Para receber a newsletter da Aflora, confirme sua inscrição no botão abaixo.",
+      manual: "Confirmar inscrição",
     }
   : {
       eyebrow: "Newsletter confirmation",
-      title: "Confirming your subscription…",
-      message: "This normally takes only a few seconds. You will continue automatically.",
-      manual: "Continue confirmation",
+      title: "Confirm your subscription",
+      message: "To receive Aflora’s newsletter, confirm your subscription using the button below.",
+      manual: "Confirm subscription",
     };
 ---
 
@@ -35,8 +35,11 @@ const copy = locale === "pt-BR"
   <p class="eyebrow">{copy.eyebrow}</p>
   <h1>{copy.title}</h1>
   <p class="lede">{copy.message}</p>
-  <span class="confirmation-progress-indicator" aria-hidden="true"></span>
-  <a class="quiet-link" data-confirmation-link hidden>{copy.manual}</a>
+  <form method="post" action={`${apiBase}/v1/subscriptions/confirm`} data-confirmation-form>
+    <input type="hidden" name="token" />
+    <button type="submit" class="button-link" disabled>{copy.manual}</button>
+  </form>
+  <noscript>{locale === "pt-BR" ? "Ative o JavaScript para confirmar sua inscrição." : "Enable JavaScript to confirm your subscription."}</noscript>
 </header>
 
 <script>
@@ -44,23 +47,18 @@ const copy = locale === "pt-BR"
     const apiBase = panel.dataset.apiBase;
     const invalidHref = panel.dataset.invalidHref ?? "/newsletter/confirmed?status=invalid";
     const token = new URLSearchParams(window.location.search).get("token");
-    const link = panel.querySelector<HTMLAnchorElement>("[data-confirmation-link]");
+    const form = panel.querySelector<HTMLFormElement>("[data-confirmation-form]");
 
     if (!apiBase || !token || token.length > 200) {
       window.location.replace(invalidHref);
       return;
     }
 
-    const confirmationUrl =
-      `${apiBase}/v1/subscriptions/confirm?token=${encodeURIComponent(token)}`;
-    if (link) link.href = confirmationUrl;
-
-    window.setTimeout(() => {
-      window.location.replace(confirmationUrl);
-    }, 120);
-
-    window.setTimeout(() => {
-      if (link) link.hidden = false;
-    }, 4_000);
+    const input = form?.querySelector<HTMLInputElement>('input[name="token"]');
+    const button = form?.querySelector<HTMLButtonElement>('button');
+    if (input && button) {
+      input.value = token;
+      button.disabled = false;
+    }
   });
 </script>
