@@ -1,0 +1,11 @@
+---
+import { DoorKeyFigure } from "@grove/tree-visuals";
+
+interface Props {
+  kind: "environment" | "state";
+}
+
+const { kind } = Astro.props;
+---
+
+<DoorKeyFigure kind={kind} />

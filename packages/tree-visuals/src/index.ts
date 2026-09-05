@@ -80,6 +80,75 @@ export type {
   PongPolicy,
   PongState,
 } from "./sampleBasedRl/pongModel";
+export { MarkovPongComparison, MarkovPongPlayground } from "./markovPong/MarkovPongPlayground";
+export {
+  continuePongRally,
+  createPongEpisode as createMarkovPongEpisode,
+  DEFAULT_PONG_TRAINING,
+  enumeratePongStarts,
+  evaluatePongPolicy as evaluateMarkovPongPolicy,
+  MARKOV_PONG,
+  pongObservationIndex,
+  pongPolicyAction as markovPongPolicyAction,
+  stepMarkovPong,
+  trainMarkovPong,
+  trainPongPair,
+} from "./markovPong/experiment";
+export type {
+  PongAction as MarkovPongAction,
+  PongCurvePoint as MarkovPongCurvePoint,
+  PongObservationMode,
+  PongPairResult as MarkovPongPairResult,
+  PongTrainingResult as MarkovPongTrainingResult,
+  PongTrueState as MarkovPongTrueState,
+} from "./markovPong/experiment";
+export {
+  DoorKeyComparison,
+  DoorKeyFigure,
+  DoorKeyPlayground,
+} from "./markovDoor/DoorKeyPlayground";
+export {
+  createDoorEpisode,
+  DEFAULT_DOOR_TRAINING,
+  doorObservationIndex,
+  doorPolicyAction,
+  evaluateDoorPolicy,
+  MARKOV_DOOR,
+  stepMarkovDoor,
+  trainDoorPair,
+  trainMarkovDoor,
+} from "./markovDoor/experiment";
+export {
+  CheckpointComparison as MarkovCheckpointComparison,
+  CheckpointFigure as MarkovCheckpointFigure,
+  CheckpointPlayground as MarkovCheckpointPlayground,
+} from "./markovCheckpoints/CheckpointPlayground";
+export {
+  checkpointObservationIndex as markovCheckpointObservationIndex,
+  checkpointPolicyAction as markovCheckpointPolicyAction,
+  createCheckpointEpisode as createMarkovCheckpointEpisode,
+  DEFAULT_CHECKPOINT_TRAINING as DEFAULT_MARKOV_CHECKPOINT_TRAINING,
+  evaluateCheckpointPolicy as evaluateMarkovCheckpointPolicy,
+  isCheckpointPath as isMarkovCheckpointPath,
+  MARKOV_CHECKPOINTS,
+  stepMarkovCheckpoint,
+  trainCheckpointPair as trainMarkovCheckpointPair,
+  trainMarkovCheckpoints,
+} from "./markovCheckpoints/experiment";
+export type {
+  CheckpointAction as MarkovCheckpointAction,
+  CheckpointCurvePoint as MarkovCheckpointCurvePoint,
+  CheckpointObservationMode as MarkovCheckpointObservationMode,
+  CheckpointTrainingResult as MarkovCheckpointTrainingResult,
+  CheckpointTrueState as MarkovCheckpointTrueState,
+} from "./markovCheckpoints/experiment";
+export type {
+  DoorAction as MarkovDoorAction,
+  DoorCurvePoint as MarkovDoorCurvePoint,
+  DoorObservationMode as MarkovDoorObservationMode,
+  DoorTrainingResult as MarkovDoorTrainingResult,
+  DoorTrueState as MarkovDoorTrueState,
+} from "./markovDoor/experiment";
 export {
   DatasetComplexityPlayground,
   FeatureImportancePlayground,
