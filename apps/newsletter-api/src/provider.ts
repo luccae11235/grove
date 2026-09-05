@@ -4,6 +4,8 @@ export interface ConfirmationMessage {
   email: string;
   locale: "en" | "pt-BR";
   confirmationUrl: string;
+  reminder?: boolean;
+  idempotencyKey?: string;
 }
 
 export interface SubscriptionManagementMessage {
@@ -24,7 +26,7 @@ export interface BroadcastMessage {
 }
 
 export interface NewsletterProvider {
-  sendConfirmation(message: ConfirmationMessage): Promise<void>;
+  sendConfirmation(message: ConfirmationMessage): Promise<string | void>;
   sendSubscriptionManagement(message: SubscriptionManagementMessage): Promise<void>;
   upsertContact(email: string): Promise<string>;
   unsubscribeContact(email: string): Promise<void>;
@@ -72,6 +74,14 @@ export class ResendNewsletterProvider implements NewsletterProvider {
           button: "Confirm subscription",
           note: "If you did not request this, you can ignore this email.",
         };
+    if (message.reminder) {
+      copy.subject = message.locale === "pt-BR"
+        ? "Sua inscrição na Aflora ainda está pendente"
+        : "Your Aflora subscription is still pending";
+      copy.body = message.locale === "pt-BR"
+        ? "Você pediu para receber a newsletter da Aflora, mas sua inscrição ainda não foi confirmada. Se ainda quiser receber, abra o link abaixo e confirme sua inscrição na página. Este novo link vale por 48 horas."
+        : "You requested Aflora’s newsletter, but your subscription has not been confirmed. If you would still like to receive it, open the link below and confirm on the page. This new link is valid for 48 hours.";
+    }
     const url = escapeHtml(message.confirmationUrl);
     const response = await this.resend.emails.send({
       from: this.options.transactionalFrom,
@@ -81,8 +91,9 @@ export class ResendNewsletterProvider implements NewsletterProvider {
       html: `<!doctype html><html><body style="font-family:Arial,sans-serif;line-height:1.6;color:#18251c"><h1>${copy.heading}</h1><p>${copy.body}</p><p><a href="${url}" style="background:#245f3d;color:#fff;padding:12px 18px;text-decoration:none;border-radius:6px">${copy.button}</a></p><p style="color:#5d685f;font-size:14px">${copy.note}</p></body></html>`,
       text: `${copy.heading}\n\n${copy.body}\n\n${message.confirmationUrl}\n\n${copy.note}\n`,
       tags: [{ name: "kind", value: "confirmation" }],
-    });
+    }, message.idempotencyKey ? { idempotencyKey: message.idempotencyKey } : undefined);
     assertResendResponse(response, "send confirmation email");
+    return response.data.id;
   }
 
   async sendSubscriptionManagement(message: SubscriptionManagementMessage) {
