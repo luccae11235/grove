@@ -41,6 +41,8 @@ references for longer-term editorial direction.
     structure has been reviewed.
     - [x] Add the opening comparison showing when history changes the predicted
       transition and when the current state makes history irrelevant.
+    - [x] Refactor the opening history comparison into a concrete previous-frame
+      example with plain state labels; verify desktop and mobile rendering.
     - [x] Build the Pong learning experience — issue #161.
       - [x] Add the environment and state-representation figures.
       - [x] Implement two matched playable Pong environments and paired Q-learning

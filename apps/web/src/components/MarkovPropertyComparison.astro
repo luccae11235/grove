@@ -1,448 +1,107 @@
-<figure class="markov-comparison">
-  <div
-    class="comparison-frame"
-    role="img"
-    aria-labelledby="markov-comparison-title markov-comparison-description"
-  >
-    <div class="comparison-intro">
-      <p class="comparison-kicker">The test</p>
-      <h3 id="markov-comparison-title">Does history change the prediction?</h3>
-    </div>
+---
+// Learner question: does the previous frame change what we can predict now?
+// Keep the ball, action, and actual motion fixed; vary only available information.
+const rows = [
+  { id: "position", title: "Position alone", velocity: false, conclusion: "History changes the prediction.", before: "Either direction is possible.", after: "The previous position reveals the direction." },
+  { id: "velocity", title: "Position + velocity", velocity: true, conclusion: "History adds no new information.", before: "Velocity already gives the direction.", after: "The prediction stays the same." },
+];
+---
 
-    <p id="markov-comparison-description" class="sr-only">
-      Two diagrams compare different histories that arrive at the same current
-      representation and action. In the non-Markovian representation, the histories lead
-      to different predictions for the next representation and reward. In the Markovian
-      representation, both histories lead to the same prediction because the
-      current state already contains every relevant fact from the past.
-    </p>
-
-    <div class="comparison-panels" aria-hidden="true">
-      <section class="comparison-panel comparison-panel-broken">
-        <header>
-          <span class="status-mark">×</span>
-          <span>
-            <small>History still matters</small>
-            <strong>Not Markovian</strong>
-          </span>
+<figure class="markov-comparison" aria-labelledby="markov-comparison-title">
+  <header class="intro">
+    <h3 id="markov-comparison-title">Does the previous frame change your prediction?</h3>
+    <p>A ball travels up-right or down-right at a fixed speed, away from the walls. The paddle stays still.</p>
+  </header>
+  <div class="comparison-frame">
+    {rows.map((row) => (
+      <section class="comparison-row" aria-labelledby={`history-${row.id}`}>
+        <header class="row-heading">
+          <h4 id={`history-${row.id}`}>{row.title}</h4>
+          <p>{row.conclusion}</p>
         </header>
-
-        <svg viewBox="0 0 360 348">
-          <defs>
-            <marker id="broken-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-              <path d="M0 0 10 5 0 10Z" />
-            </marker>
-          </defs>
-
-          <text class="micro-label" x="180" y="25" text-anchor="middle">TWO DIFFERENT HISTORIES</text>
-
-          <g class="history history-one">
-            <rect x="40" y="42" width="112" height="36" rx="18" />
-            <text x="96" y="65" text-anchor="middle">z₀  ·  a₀  ·  r₁  ·  …</text>
-            <text class="history-label" x="27" y="65">H₁</text>
-          </g>
-          <g class="history history-two">
-            <rect x="208" y="42" width="112" height="36" rx="18" />
-            <text x="264" y="65" text-anchor="middle">z₀  ·  a₀  ·  r₁  ·  …</text>
-            <text class="history-label" x="333" y="65">H₂</text>
-          </g>
-
-          <path class="history-path" d="M96 79 C96 111 144 111 164 132" />
-          <path class="history-path" d="M264 79 C264 111 216 111 196 132" />
-
-          <g class="present-state">
-            <rect x="126" y="124" width="108" height="54" rx="14" />
-            <text class="box-label" x="180" y="145" text-anchor="middle">CURRENT INPUT</text>
-            <text class="math-label" x="180" y="166" text-anchor="middle">zₜ</text>
-          </g>
-
-          <path class="flow-path" d="M180 179 V207" marker-end="url(#broken-arrow)" />
-          <g class="action-node">
-            <rect x="148" y="211" width="64" height="34" rx="17" />
-            <text x="180" y="233" text-anchor="middle">action aₜ</text>
-          </g>
-
-          <path class="broken-path" d="M180 246 V260 C180 274 112 271 97 286" marker-end="url(#broken-arrow)" />
-          <path class="broken-path" d="M180 246 V260 C180 274 248 271 263 286" marker-end="url(#broken-arrow)" />
-
-          <g class="outcome outcome-one">
-            <rect x="39" y="291" width="116" height="40" rx="12" />
-            <text x="97" y="316" text-anchor="middle">prediction 1</text>
-          </g>
-          <g class="outcome outcome-two">
-            <rect x="205" y="291" width="116" height="40" rx="12" />
-            <text x="263" y="316" text-anchor="middle">prediction 2</text>
-          </g>
-          <text class="history-decides" x="180" y="344" text-anchor="middle">H changes what comes next</text>
-        </svg>
-
-        <p class="panel-equation">p(z′, r | z, a, H) ≠ p(z′, r | z, a)</p>
+        <div class="scenes">
+          {[false, true].map((history) => {
+            const ambiguous = !row.velocity && !history;
+            const arrowId = `prediction-${row.id}-${history}`;
+            return (
+              <div class="scene">
+                <p class="scene-heading">{history ? "Now, reveal the previous frame" : "Use only the current state"}</p>
+                <svg viewBox="0 0 280 200" role="img" aria-label={ambiguous
+                  ? "The ball is at the center. Its next position could be up and right or down and right; position alone does not distinguish them."
+                  : history
+                    ? `The previous ball position is down and left of its current position, so the next position is up and right. ${row.velocity ? "The current velocity already predicted this." : "History removes the downward possibility."}`
+                    : "The ball is at the center with a velocity arrow pointing up and right. Its next position is up and right."}>
+                  <defs>
+                    <marker id={arrowId} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M1 1 9 5 1 9" fill="none" stroke="currentColor" stroke-width="1.5" />
+                    </marker>
+                  </defs>
+                  {history && <>
+                    <path class="trail" d="M60 144 130 106" />
+                    <circle class="past" cx="50" cy="150" r="10" />
+                    <text x="50" y="182" text-anchor="middle">Previous</text>
+                  </>}
+                  <path class="prediction" d="M154 92 213 59" marker-end={`url(#${arrowId})`} />
+                  <circle class="future" cx="230" cy="50" r="10" />
+                  <text x="230" y="25" text-anchor="middle">{ambiguous ? "Possible next" : "Next"}</text>
+                  {ambiguous && <>
+                    <path class="prediction" d="M154 108 213 141" marker-end={`url(#${arrowId})`} />
+                    <circle class="future" cx="230" cy="150" r="10" />
+                    <text x="230" y="182" text-anchor="middle">Possible next</text>
+                  </>}
+                  <circle class="present" cx="140" cy="100" r="11" />
+                  <text class="now-label" x="140" y="132" text-anchor="middle">Now</text>
+                  {row.velocity && <>
+                    <path class="velocity" d="M141 81 172 64" marker-end={`url(#${arrowId})`} />
+                    <text class="velocity-label" x="137" y="52" text-anchor="middle">Velocity</text>
+                  </>}
+                </svg>
+                <p class="prediction-note">{history ? row.after : row.before}</p>
+              </div>
+            );
+          })}
+        </div>
       </section>
-
-      <section class="comparison-panel comparison-panel-valid">
-        <header>
-          <span class="status-mark">✓</span>
-          <span>
-            <small>History adds nothing</small>
-            <strong>Markovian</strong>
-          </span>
-        </header>
-
-        <svg viewBox="0 0 360 348">
-          <defs>
-            <marker id="valid-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-              <path d="M0 0 10 5 0 10Z" />
-            </marker>
-          </defs>
-
-          <text class="micro-label" x="180" y="25" text-anchor="middle">TWO DIFFERENT HISTORIES</text>
-
-          <g class="history history-one">
-            <rect x="40" y="42" width="112" height="36" rx="18" />
-            <text x="96" y="65" text-anchor="middle">z₀  ·  a₀  ·  r₁  ·  …</text>
-            <text class="history-label" x="27" y="65">H₁</text>
-          </g>
-          <g class="history history-two">
-            <rect x="208" y="42" width="112" height="36" rx="18" />
-            <text x="264" y="65" text-anchor="middle">z₀  ·  a₀  ·  r₁  ·  …</text>
-            <text class="history-label" x="333" y="65">H₂</text>
-          </g>
-
-          <path class="history-path" d="M96 79 C96 111 144 111 164 132" />
-          <path class="history-path" d="M264 79 C264 111 216 111 196 132" />
-
-          <g class="present-state">
-            <rect x="126" y="124" width="108" height="54" rx="14" />
-            <text class="box-label" x="180" y="145" text-anchor="middle">CURRENT INPUT</text>
-            <text class="math-label" x="180" y="166" text-anchor="middle">zₜ</text>
-          </g>
-
-          <text class="state-note" x="248" y="149">holds every</text>
-          <text class="state-note" x="248" y="164">relevant fact</text>
-
-          <path class="flow-path" d="M180 179 V207" marker-end="url(#valid-arrow)" />
-          <g class="action-node">
-            <rect x="148" y="211" width="64" height="34" rx="17" />
-            <text x="180" y="233" text-anchor="middle">action aₜ</text>
-          </g>
-
-          <path class="valid-path" d="M180 246 V286" marker-end="url(#valid-arrow)" />
-          <g class="outcome outcome-shared">
-            <rect x="111" y="291" width="138" height="40" rx="12" />
-            <text x="180" y="316" text-anchor="middle">same prediction</text>
-          </g>
-          <text class="history-irrelevant" x="180" y="344" text-anchor="middle">H cannot change what comes next</text>
-        </svg>
-
-        <p class="panel-equation">p(z′, r | z, a, H) = p(z′, r | z, a)</p>
-      </section>
-    </div>
+    ))}
   </div>
-
-  <figcaption>
-    The test is not whether the histories differ. It is whether knowing which
-    history occurred changes the predicted next state or reward after the
-    current representation and action are already known.
-  </figcaption>
+  <figcaption>History matters when it changes what we can predict from the current state and action. Here, velocity keeps the information we needed from the previous frame.</figcaption>
 </figure>
 
 <style>
   .markov-comparison {
-    position: relative;
-    left: 50%;
-    width: min(900px, calc(100vw - 48px));
-    margin: 38px 0 44px;
-    transform: translateX(-50%);
+    margin: 2rem 0;
+    color: var(--text);
     font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   }
-
-  .comparison-frame {
-    overflow: hidden;
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    background: var(--surface-raised);
-    box-shadow: 0 16px 44px rgb(22 56 43 / 7%);
-  }
-
-  .comparison-intro {
-    padding: 22px 24px 20px;
-    text-align: center;
-  }
-
-  .comparison-kicker {
-    margin: 0 0 4px;
-    color: var(--accent);
-    font-size: 0.66rem;
-    font-weight: 760;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-  }
-
-  .comparison-intro h3 {
+  .markov-comparison p, .markov-comparison figcaption { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+  #markov-comparison-title { scroll-margin-top: 100px; }
+  .intro { margin-bottom: 1.25rem; }
+  .intro h3 { margin: 0 0 0.5rem; font-size: 1.15rem; line-height: 1.35; }
+  .intro p, .row-heading p, .prediction-note, figcaption {
     margin: 0;
-    color: var(--text);
-    font-size: clamp(1.08rem, 2.4vw, 1.42rem);
-    line-height: 1.25;
-  }
-
-  .comparison-panels {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1px;
-    border-top: 1px solid var(--border);
-    background: var(--border);
-  }
-
-  .comparison-panel {
-    min-width: 0;
-    background: var(--surface-raised);
-  }
-
-  .comparison-panel header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-height: 64px;
-    padding: 13px 18px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .comparison-panel header span:last-child,
-  .comparison-panel header small,
-  .comparison-panel header strong {
-    display: block;
-  }
-
-  .comparison-panel header small {
-    margin-bottom: 2px;
     color: var(--text-muted);
-    font-size: 0.64rem;
-    font-weight: 650;
+    font-size: 0.85rem;
+    line-height: 1.6;
   }
-
-  .comparison-panel header strong {
-    color: var(--text);
-    font-size: 0.88rem;
-  }
-
-  .status-mark {
-    display: grid;
-    width: 28px;
-    height: 28px;
-    flex: 0 0 auto;
-    place-items: center;
-    border: 1px solid var(--border-strong);
-    border-radius: 50%;
-    font-size: 0.92rem;
-    font-weight: 800;
-  }
-
-  .comparison-panel-broken .status-mark {
-    border-color: #d8a49c;
-    background: #fbefec;
-    color: #9e4538;
-  }
-
-  .comparison-panel-valid .status-mark {
-    border-color: #90c2aa;
-    background: var(--accent-soft);
-    color: var(--accent-hover);
-  }
-
-  svg {
-    display: block;
-    width: 100%;
-    height: auto;
-    color: var(--text-muted);
-  }
-
-  svg text {
-    fill: currentColor;
-    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-    font-size: 10px;
-  }
-
-  svg path {
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .micro-label,
-  .box-label {
-    fill: var(--text-muted);
-    font-size: 8px;
-    font-weight: 760;
-    letter-spacing: 0.08em;
-  }
-
-  .history rect {
-    fill: var(--surface-subtle);
-    stroke: var(--border-strong);
-  }
-
-  .history text:not(.history-label) {
-    fill: var(--text-muted);
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 11px;
-  }
-
-  .history-label {
-    fill: var(--text-muted);
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 11px;
-    font-style: italic;
-  }
-
-  .history-path {
-    stroke: var(--border-strong);
-    stroke-dasharray: 3 5;
-    stroke-width: 1.5;
-  }
-
-  .present-state rect {
-    fill: var(--surface-raised);
-    stroke: var(--text);
-    stroke-width: 1.4;
-  }
-
-  .math-label {
-    fill: var(--text);
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 18px;
-    font-style: italic;
-  }
-
-  .state-note {
-    fill: var(--accent-hover);
-    font-size: 8px;
-    font-weight: 650;
-  }
-
-  .flow-path,
-  .valid-path {
-    stroke: var(--accent);
-    stroke-width: 1.8;
-  }
-
-  .comparison-panel-valid marker path {
-    fill: var(--accent);
-  }
-
-  .comparison-panel-broken marker path {
-    fill: #a95a4d;
-  }
-
-  .action-node rect {
-    fill: var(--accent-soft);
-    stroke: var(--accent);
-  }
-
-  .action-node text {
-    fill: var(--accent-hover);
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 10px;
-    font-style: italic;
-  }
-
-  .broken-path {
-    stroke: #a95a4d;
-    stroke-width: 1.8;
-  }
-
-  .outcome rect {
-    fill: var(--surface-subtle);
-    stroke: var(--border-strong);
-  }
-
-  .outcome text {
-    fill: var(--text);
-    font-size: 10px;
-    font-weight: 680;
-  }
-
-  .outcome-one rect,
-  .outcome-two rect {
-    fill: #fbf4f2;
-    stroke: #d8a49c;
-  }
-
-  .outcome-shared rect {
-    fill: var(--accent-soft);
-    stroke: var(--accent);
-  }
-
-  .outcome-shared text,
-  .history-irrelevant {
-    fill: var(--accent-hover);
-  }
-
-  .history-decides {
-    fill: #9e4538;
-  }
-
-  .history-decides,
-  .history-irrelevant {
-    font-size: 9px;
-    font-weight: 700;
-  }
-
-  .panel-equation {
-    margin: 0;
-    border-top: 1px solid var(--border);
-    background: var(--surface-subtle);
-    padding: 13px 12px 14px;
-    color: var(--text);
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: clamp(0.72rem, 1.6vw, 0.86rem);
-    line-height: 1.3;
-    text-align: center;
-  }
-
-  figcaption {
-    max-width: 660px;
-    margin: 12px auto 0;
-    color: var(--text-muted);
-    font-size: 0.72rem;
-    line-height: 1.55;
-    text-align: center;
-  }
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
-  @media (max-width: 640px) {
-    .markov-comparison {
-      width: min(100%, calc(100vw - 28px));
-      margin: 32px 0 38px;
-    }
-
-    .comparison-intro {
-      padding: 19px 18px 17px;
-    }
-
-    .comparison-panels {
-      grid-template-columns: 1fr;
-    }
-
-    .comparison-panel + .comparison-panel {
-      border-top: 1px solid var(--border);
-    }
-
-    .comparison-panel header {
-      padding-inline: 16px;
-    }
-
-    .panel-equation {
-      font-size: 0.78rem;
-    }
+  .comparison-frame { border-block: 1px solid var(--border); }
+  .comparison-row { padding: 1.4rem 0; }
+  .comparison-row + .comparison-row { border-top: 1px solid var(--border); }
+  .row-heading h4 { margin: 0 0 0.2rem; font-size: 1rem; line-height: 1.4; }
+  .scenes { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.25rem; }
+  .scene { min-width: 0; }
+  .scene-heading { margin: 0; font-size: 0.8rem; line-height: 1.5; font-weight: 650; }
+  svg { display: block; width: 100%; max-width: 320px; height: auto; margin: 0.25rem auto; overflow: visible; }
+  svg text { fill: var(--text-muted); font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 12px; }
+  .present { fill: var(--text); }
+  .past { fill: none; stroke: var(--text-muted); stroke-width: 1.5; stroke-dasharray: 3 3; }
+  .trail { fill: none; stroke: var(--text-muted); stroke-width: 1.5; stroke-dasharray: 4 4; }
+  .prediction { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 4 4; color: var(--accent); }
+  .future { fill: none; stroke: var(--accent); stroke-width: 2; }
+  .velocity { fill: none; stroke: var(--text); stroke-width: 2.5; color: var(--text); }
+  .now-label, .velocity-label { fill: var(--text); font-weight: 650; }
+  figcaption { margin: 1rem auto 0; max-width: 65ch; }
+  @media (max-width: 540px) {
+    .scenes { grid-template-columns: 1fr; gap: 1.25rem; }
+    svg { max-width: 280px; }
   }
 </style>
