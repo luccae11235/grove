@@ -35,6 +35,7 @@
     "test:operations": "node --test 'scripts/operations/*.test.mjs'",
     "test": "pnpm test:python && pnpm test:operations && pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
-    "check": "pnpm typecheck && pnpm test && pnpm projects:validate && pnpm build && pnpm newsletter:prepare"
+    "check": "pnpm typecheck && pnpm test && pnpm projects:validate && pnpm build && pnpm newsletter:prepare",
+    "newsletter:remind": "pnpm --filter @grove/newsletter-api remind"
   }
 }

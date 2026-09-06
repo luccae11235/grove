@@ -14,7 +14,8 @@
     "broadcast": "tsx src/cli/broadcast.ts",
     "report": "tsx src/cli/report.ts",
     "retention": "tsx src/cli/retention.ts",
-    "prove:staging": "tsx src/cli/proveStaging.ts"
+    "prove:staging": "tsx src/cli/proveStaging.ts",
+    "remind": "tsx src/cli/remind.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.0.10",

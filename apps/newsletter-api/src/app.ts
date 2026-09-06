@@ -93,6 +93,7 @@ export function createApp(options: AppOptions) {
         status: "ok",
         releaseSha: options.releaseSha ?? "development",
         audienceMode: recipientAllowlist ? "restricted" : "public",
+        confirmationMode: "explicit-post",
       });
     } catch (error) {
       log("health_failed", { error: errorName(error) });
@@ -194,11 +195,38 @@ export function createApp(options: AppOptions) {
     return managementAccepted(context);
   });
 
+  // Legacy email links may point directly at the API. Reading them never grants consent.
   app.get("/v1/subscriptions/confirm", async (context) => {
+    context.header("Cache-Control", "no-store");
+    context.header("Referrer-Policy", "no-referrer");
     const token = context.req.query("token");
-    if (!token || token.length > 200) {
+    const lookup = token && token.length <= 200
+      ? await options.repository.findConfirmationByTokenHash(hashToken(token), now())
+      : null;
+    const prefix = lookup?.subscriber.locale === "pt-BR" ? "/pt-br" : "";
+    if (!lookup || lookup.expired) {
+      return context.redirect(`${options.webUrl}${prefix}/newsletter/confirmed?status=${lookup ? "expired" : "invalid"}`, 303);
+    }
+    return context.redirect(`${options.webUrl}${prefix}/newsletter/confirm?token=${encodeURIComponent(token!)}`, 303);
+  });
+
+  app.post("/v1/subscriptions/confirm", async (context) => {
+    context.header("Cache-Control", "no-store");
+    context.header("Referrer-Policy", "no-referrer");
+    if (!origins.has(context.req.header("origin") ?? "")) {
+      return context.json({ ok: false, status: "invalid" }, 403);
+    }
+    let body: unknown;
+    try {
+      body = await context.req.parseBody();
+    } catch {
       return context.redirect(`${options.webUrl}/newsletter/confirmed?status=invalid`, 303);
     }
+    const parsed = actionTokenSchema.safeParse(body);
+    if (!parsed.success) {
+      return context.redirect(`${options.webUrl}/newsletter/confirmed?status=invalid`, 303);
+    }
+    const token = parsed.data.token;
     const lookup = await options.repository.findConfirmationByTokenHash(hashToken(token), now());
     if (!lookup) {
       return context.redirect(`${options.webUrl}/newsletter/confirmed?status=invalid`, 303);
