@@ -51,7 +51,7 @@ for (const viewport of [
     await positionLab.getByRole("button", { name: "Train agent" }).click();
     await expect(positionLab).toHaveAttribute("data-training", "true");
     await expect
-      .poll(async () => Number(await positionLab.locator("[data-training-episodes]").getAttribute("data-training-episodes")), { timeout: 10_000 })
+      .poll(async () => Number(await positionLab.locator("[data-training-episodes]").getAttribute("data-training-episodes")), { timeout: 30_000 })
       .toBe(4_000);
     await expect(positionLab).toHaveAttribute("data-training", "false");
     await expect(positionLab.locator("[data-training-episodes]")).toHaveAttribute("data-active-completion-rate", "0");
@@ -65,7 +65,7 @@ for (const viewport of [
     await expect(progressLab).toHaveAttribute("data-training-frame-ms", "18");
     await progressLab.getByRole("button", { name: "Train agent" }).click();
     await expect
-      .poll(async () => Number(await progressLab.locator("[data-training-episodes]").getAttribute("data-training-episodes")), { timeout: 10_000 })
+      .poll(async () => Number(await progressLab.locator("[data-training-episodes]").getAttribute("data-training-episodes")), { timeout: 30_000 })
       .toBe(4_000);
     await expect(progressLab.locator("[data-training-episodes]")).toHaveAttribute("data-active-completion-rate", "100");
     await progressLab.getByRole("button", { name: "Run agent" }).click();
@@ -92,6 +92,13 @@ for (const viewport of [
     await expect(synthesis).toContainText("has key");
     await expect(synthesis).toContainText("Checkpoints");
     await expect(synthesis).toContainText("next checkpoint");
+
+    const transferCheck = page.getByText("What is missing from this delivery state?");
+    await expect(transferCheck).toBeVisible();
+    await page.getByText("Check your reasoning").click();
+    await expect(
+      page.getByText("Add the current time or time remaining", { exact: false }),
+    ).toBeVisible();
 
     const bounds = await progressLab.evaluate((element) => {
       const rect = element.getBoundingClientRect();

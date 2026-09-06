@@ -11,8 +11,8 @@
 
     <p id="markov-comparison-description" class="sr-only">
       Two diagrams compare different histories that arrive at the same current
-      state and action. In the non-Markovian representation, the histories lead
-      to different predictions for the next state and reward. In the Markovian
+      representation and action. In the non-Markovian representation, the histories lead
+      to different predictions for the next representation and reward. In the Markovian
       representation, both histories lead to the same prediction because the
       current state already contains every relevant fact from the past.
     </p>
@@ -38,12 +38,12 @@
 
           <g class="history history-one">
             <rect x="40" y="42" width="112" height="36" rx="18" />
-            <text x="96" y="65" text-anchor="middle">s₀  ·  a₀  ·  r₁  ·  …</text>
+            <text x="96" y="65" text-anchor="middle">z₀  ·  a₀  ·  r₁  ·  …</text>
             <text class="history-label" x="27" y="65">H₁</text>
           </g>
           <g class="history history-two">
             <rect x="208" y="42" width="112" height="36" rx="18" />
-            <text x="264" y="65" text-anchor="middle">s₀  ·  a₀  ·  r₁  ·  …</text>
+            <text x="264" y="65" text-anchor="middle">z₀  ·  a₀  ·  r₁  ·  …</text>
             <text class="history-label" x="333" y="65">H₂</text>
           </g>
 
@@ -52,8 +52,8 @@
 
           <g class="present-state">
             <rect x="126" y="124" width="108" height="54" rx="14" />
-            <text class="box-label" x="180" y="145" text-anchor="middle">CURRENT STATE</text>
-            <text class="math-label" x="180" y="166" text-anchor="middle">sₜ</text>
+            <text class="box-label" x="180" y="145" text-anchor="middle">CURRENT INPUT</text>
+            <text class="math-label" x="180" y="166" text-anchor="middle">zₜ</text>
           </g>
 
           <path class="flow-path" d="M180 179 V207" marker-end="url(#broken-arrow)" />
@@ -76,7 +76,7 @@
           <text class="history-decides" x="180" y="344" text-anchor="middle">H changes what comes next</text>
         </svg>
 
-        <p class="panel-equation">p(s′, r | s, a, H) ≠ p(s′, r | s, a)</p>
+        <p class="panel-equation">p(z′, r | z, a, H) ≠ p(z′, r | z, a)</p>
       </section>
 
       <section class="comparison-panel comparison-panel-valid">
@@ -99,12 +99,12 @@
 
           <g class="history history-one">
             <rect x="40" y="42" width="112" height="36" rx="18" />
-            <text x="96" y="65" text-anchor="middle">s₀  ·  a₀  ·  r₁  ·  …</text>
+            <text x="96" y="65" text-anchor="middle">z₀  ·  a₀  ·  r₁  ·  …</text>
             <text class="history-label" x="27" y="65">H₁</text>
           </g>
           <g class="history history-two">
             <rect x="208" y="42" width="112" height="36" rx="18" />
-            <text x="264" y="65" text-anchor="middle">s₀  ·  a₀  ·  r₁  ·  …</text>
+            <text x="264" y="65" text-anchor="middle">z₀  ·  a₀  ·  r₁  ·  …</text>
             <text class="history-label" x="333" y="65">H₂</text>
           </g>
 
@@ -113,8 +113,8 @@
 
           <g class="present-state">
             <rect x="126" y="124" width="108" height="54" rx="14" />
-            <text class="box-label" x="180" y="145" text-anchor="middle">CURRENT STATE</text>
-            <text class="math-label" x="180" y="166" text-anchor="middle">sₜ</text>
+            <text class="box-label" x="180" y="145" text-anchor="middle">CURRENT INPUT</text>
+            <text class="math-label" x="180" y="166" text-anchor="middle">zₜ</text>
           </g>
 
           <text class="state-note" x="248" y="149">holds every</text>
@@ -134,7 +134,7 @@
           <text class="history-irrelevant" x="180" y="344" text-anchor="middle">H cannot change what comes next</text>
         </svg>
 
-        <p class="panel-equation">p(s′, r | s, a, H) = p(s′, r | s, a)</p>
+        <p class="panel-equation">p(z′, r | z, a, H) = p(z′, r | z, a)</p>
       </section>
     </div>
   </div>
@@ -142,7 +142,7 @@
   <figcaption>
     The test is not whether the histories differ. It is whether knowing which
     history occurred changes the predicted next state or reward after the
-    current state and action are already known.
+    current representation and action are already known.
   </figcaption>
 </figure>
 

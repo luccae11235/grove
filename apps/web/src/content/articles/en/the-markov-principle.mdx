@@ -56,61 +56,76 @@ import MarkovSynthesisFigure from "../../../components/MarkovSynthesisFigure.ast
 
 <article className="lesson-body deep-article markov-principle-article">
 
-Every problem in reinforcement learning is rigorously defined by a Markov decision process (MDP). An MDP brings together a set of states, actions, rewards, and a transition function that dictates how the environment evolves. The transition function takes a state and an action, and returns a new state and a reward.
+Freeze a game of Pong while the ball is halfway down the court. Its position is visible, but its direction is not. The same picture could have come from a ball moving upward or a ball moving downward. If the paddle takes the same action in both cases, should we expect the same thing to happen next?
 
-We can write this transition as a probability distribution: $p(s', r \mid s, a)$. This formulation raises a natural question. Why does the transition function rely solely on the current state and action, rather than the entire history of states the agent has traversed?
+The previous frame resolves the ambiguity because it reveals the ball's direction. That gives us a practical test for a state representation:
 
-If we were to condition this distribution on the history $H$, which represents the sequence of all past states and actions leading up to the current moment, we would write $p(s', r \mid s, a, H)$. The Markov principle provides the answer. It states that the current state must contain all the information from the past that remains relevant to determining what can happen next. The state $S$ can take any form we design, as long as this condition holds.
+> **After the current representation and action are known, can any detail from the history still change our prediction of the next representation or reward?**
 
-Mathematically, the Markov principle is satisfied when the transition probabilities are identical whether we condition on the history or not:
+A Markov decision process, or MDP, is the standard starting point for formalizing many reinforcement learning problems. It brings together states, actions, rewards, and transition dynamics. At time $t$, the environment's complete state is $s_t$. After the agent chooses $a_t$, the dynamics define a distribution over the next state and reward, $p(s_{t+1},r_{t+1}\mid s_t,a_t)$.
 
-$$p(s', r \mid s, a) = p(s', r \mid s, a, H)$$
+The agent does not always receive that complete state. It may instead receive a chosen representation $z_t$: perhaps a sensor reading, a collection of features, or a summary constructed from the interaction history. Let
+
+$$H_t=(z_0,a_0,r_1,z_1,\ldots,a_{t-1},r_t,z_t)$$
+
+denote everything the agent has observed before choosing $a_t$. The representation $z_t$ is Markovian when adding that history cannot change the predicted distribution:
+
+$$p(z_{t+1},r_{t+1}\mid z_t,a_t,H_t)=p(z_{t+1},r_{t+1}\mid z_t,a_t)$$
+
+The equality is about **history**, not certainty. A transition may remain genuinely random and still be perfectly Markovian. The property fails only when two histories that produce the same $z_t$ and $a_t$ lead to different distributions over what happens next.
 
 <MarkovPropertyComparison />
 
-The Markov property is a characteristic of the transition function and the state representation, rather than the agent, the policy, or the learning algorithm. It is often a matter of design. Depending on how we formulate the state space, including the history of the agent's trajectory might indeed change the prediction of the future. When we define a state representation that omits critical information, the history suddenly becomes necessary to predict the next transition.
+The Markov property therefore belongs to the process induced by the chosen representation, not to the agent, policy, or learning algorithm. The underlying environment can stay fixed while one representation preserves the property and another aliases situations that require different predictions or decisions.
 
-We will explore three different MDPs to observe this effect. For each environment, we will construct two formulations of the state space: one that violates the Markov principle and one that respects it. By training an agent in each scenario, we can see directly how the choice of representation impacts learning.
+We will explore that effect in three environments. Each pair keeps the dynamics, rewards, algorithm, hyperparameters, and training budget fixed. Only the representation supplied to the agent changes. The examples will hide three different kinds of information: motion, a remembered event, and progress that gives a transition its reward.
 
 ## Pong
 
-Ping pong serves as an excellent case study in reinforcement learning. The objective is intuitive and the reward signal is clear, but in practice, that reward is sparse. The agent only receives feedback when it hits or misses the ball, and most steps yield a reward of zero. Because the ball's position is continuous, the state space is essentially infinite, requiring some form of function approximation to learn effectively.
+Pong gives us the smallest useful version of the opening puzzle. The objective is intuitive, but the reward is sparse: hitting the ball earns a positive reward, missing it earns a negative reward, and every intermediate step earns zero. We will use a small quantized court so that both agents can learn with the same tabular Q-learning algorithm in the browser.
 
 ### The MDP
 
-Our first MDP is a simplified Pong environment where a ball moves continuously across a rectangular arena. It bounces off the walls and must be hit by a paddle controlled by the agent at the bottom of the screen. The agent can choose to move the paddle left, stay still, or move right. The reward is positive when the ball is hit and negative when it is missed.
+Our first MDP is a simplified Pong environment where a ball crosses a rectangular arena. It bounces off the walls and must be hit by a paddle controlled by the agent at the bottom of the screen. The agent can move the paddle left, stay still, or move right.
 
-We will compare two representations of this environment. In the non-Markovian representation, the agent only observes the position of the ball and the paddle, so the state is $z_t=(x_t,y_t,p_t)$. This information is insufficient to determine the next transition. A ball at a specific position could be moving up or moving down. If the agent knew the previous positions, it could infer the trajectory and predict the future. In the Markovian representation, we add the ball's velocity, forming the state $z_t=(x_t,y_t,v_t^x,v_t^y,p_t)$. Now, the position and velocity fully describe the relevant dynamics at that instant. Knowing the previous positions adds no necessary information for determining the next transition.
+We compare two representations. The first contains the ball and paddle positions, $z_t=(x_t,y_t,p_t)$. A ball at one position could be moving up or down, so earlier positions still change the predicted next position. The second representation adds velocity, $z_t=(x_t,y_t,v_t^x,v_t^y,p_t)$. Position and velocity now describe the relevant dynamics of this simplified court; earlier frames add no further predictive information.
 
 <PongConceptFigure kind="environment" />
 
-The first representation violates the Markov principle because, without the direction of movement, we cannot predict the next state deterministically. The distribution of the next state becomes probabilistically spread across possible trajectories. If we were to include the ball's last position in our transition function, we would know exactly where it came from and where it is going. Including the history changes the transition function from a probabilistic spread to a deterministic update.
+The first representation violates the Markov property because two histories can reach the same $z_t$ with different hidden velocities. Averaging over those velocities produces a distribution over several possible next positions. That spread is not itself the violation: a stochastic transition can be Markovian. The violation is that the distribution changes when the previous position reveals which velocity is present.
 
 <PongConceptFigure kind="state" />
 
-In mathematical terms, the first representation yields a transition function that returns a broad probability distribution. Supplying the history narrows this distribution, meaning that the probability equality is broken.
-
-In the second case, providing the history offers no advantage. The velocity already dictates where the ball will go next, ensuring the equality holds perfectly.
+With position and velocity together, the relevant histories agree about the next-transition distribution. The equality now holds for the simplified dynamics.
 
 ### Learning
 
-We can test this by deploying an algorithm to learn how to return the ball. The playgrounds use a quantized 11-by-9 version of the continuous arena so that a real Q-learning experiment can run quickly in the browser. A successful contact reflects the same ball upward, while a miss ends the rally; each training episode allows up to three successful returns. The quantization, underlying dynamics, reward, launch sequence, learning algorithm, and hyperparameters remain identical for both agents. Only the observation changes.
+The two playgrounds use the same 11-by-9 court. A successful contact reflects the ball upward, while a miss ends the rally; each training episode allows up to three successful returns. The dynamics, reward, launch sequence, Q-learning algorithm, and hyperparameters are identical. Only the observation changes.
+
+<div className="prediction-prompt">
+  <p className="lesson-stage">Predict before training</p>
+  <h3>Can one action serve two hidden directions?</h3>
+  <p>
+    Hold the visible ball position, paddle position, and chosen action fixed. If
+    one history contains an upward-moving ball and another contains a
+    downward-moving ball, should one position-only Q-value be reliable in both?
+    Predict which learning curve will level off first.
+  </p>
+</div>
+
+Start with the agent that cannot observe velocity. Press **Train agent** and watch its policy and hit rate change across varied launches. When training ends, press **Run agent** to watch the learned policy continue playing while hits and misses accumulate.
 
 <MarkovPongLab mode="position" />
 
-In the first environment, velocity is hidden. Press **Train agent** and watch how learning changes the policy and hit rate across varied launches. Once training ends, press **Run agent** to watch the learned policy continue playing while its hits and misses accumulate. A hit sends the same ball upward for another return; only a miss starts a new rally. The agent improves, but it settles on an inconsistent policy because the same observed state can demand opposing actions.
-
-Now repeat the experiment with the only changed ingredient: velocity is included in the state.
+Now repeat the experiment after adding velocity to the representation. The direction arrow marks the new information available to this agent.
 
 <MarkovPongLab mode="velocity" />
 
-The second court, transition rules, reward, launch sequence, and Q-learning procedure are the same. The direction arrow marks information available to this agent at the current instant. Train and run this agent in the same way to see its policy become reliable across those launches.
-
 Each curve evaluates its greedy policy on every one of the 176 possible launch states at regular training checkpoints. It does not plot noisy rewards gathered while the agent is still exploring.
 
-With the Markovian representation, the agent learns the task much faster. In the reproducible run shown here, the velocity-aware policy reaches a 100% hit rate while the position-only policy remains inconsistent at roughly half of the launch states.
+In this reproducible run, the velocity-aware policy reaches a 100% hit rate after 5,000 episodes. The position-only policy reaches 36% because one Q-value must average situations that call for opposing actions.
 
-The gap is computed from the learned Q-values, not drawn in advance. Resetting either experiment reproduces the same result because the seed, launch schedule, and evaluation set are fixed.
+The gap is computed from the learned Q-values, not drawn in advance. Reloading the page reproduces the same curves because the seed, launch schedule, and evaluation set are fixed. This matched run demonstrates the effect in this environment; it is not a general benchmark for every algorithm or state representation.
 
 <MarkovPongComparison />
 
@@ -130,7 +145,7 @@ We evaluate two representations. In the first, $z_t=p_t$, meaning the agent only
 
 This presents a different challenge from Pong. There is no missing information regarding instantaneous movement dynamics. If the agent is in an empty cell and moves left, we know exactly which cell it will land in. Instead, the missing information relates to an event that occurred in the past.
 
-Consider the position immediately in front of the door. The same spatial position $p_t$ represents two distinct physical states: $(p_t,0)$ before the key is collected, and $(p_t,1)$ after the key is collected.
+Consider the position immediately in front of the door. The same spatial position $p_t$ represents two distinct underlying states: $(p_t,0)$ before the key is collected, and $(p_t,1)$ after the key is collected.
 
 Executing the same action in these two states produces completely different transitions. If $k_t=0$, moving toward the door results in the agent being blocked. If $k_t=1$, the agent steps through. Because the representation $z_t=p_t$ merges these two realities, the transition probability $p(z_{t+1}, r_{t+1} \mid z_t, a_t)$ is forced to represent a mixture of both possible outcomes.
 
@@ -146,23 +161,34 @@ We can refer to this as **Missing memory**. Unlike Pong, the hidden information 
 
 ### Learning
 
-We will train the same learning algorithm, keeping the reward structure, transition dynamics, and hyperparameters constant. The only variable is the state representation provided to the agent.
+We again keep the reward structure, transition dynamics, algorithm, hyperparameters, and training budget fixed.
+
+<div className="prediction-prompt">
+  <p className="lesson-stage">Predict before training</p>
+  <h3>Which way should the center point?</h3>
+  <p>
+    Before collecting the key, the agent must leave the center toward the key.
+    After collecting it, the agent must cross the same center toward the door. If
+    both moments share one position-only Q-value, can one greedy action complete
+    both halves of the route?
+  </p>
+</div>
+
+Train the position-only agent, then press **Run agent**. Watch the route and the counts of completed goals and capped rollouts.
 
 <DoorKeyLab mode="position" />
 
-When the agent observes only its position, it receives conflicting learning signals. Prior to collecting the key and after collecting the key, it perceives itself to be in the exact same state when crossing the center of the map. However, the optimal action in that shared space depends entirely on an event that happened many steps ago.
+During exploratory training, the agent may stumble to the goal. Its final greedy policy cannot reliably reproduce that route: at the shared corridor cells, one fixed action cannot point toward the key before collection and toward the door afterward.
 
-During exploratory training, the agent may stumble to the goal. Its final greedy policy cannot reliably reproduce that route: at the shared corridor cells, one fixed action cannot point toward the key before collection and toward the door afterward. Train the agent, then press **Run agent** to watch the learned route and count completed goals and timeouts.
-
-We can run the identical experiment while including $k_t$ in the state.
+Now run the matched experiment after including $k_t$ in the representation.
 
 <DoorKeyLab mode="memory" />
 
-The agent is now capable of distinguishing the state of being in the center before getting the key from being in the center after getting the key. States that demand different decisions are no longer aliased into a single representation.
+The key-aware agent can distinguish the center before collecting the key from the center afterward. It can learn two policies over the same corridor: move left while $k_t=0$, then move right while $k_t=1$. Its current position, key status, and chosen action are sufficient to predict whether the door blocks the move.
 
-The key-aware agent can learn two policies over the same corridor: move left while $k_t=0$, then move right while $k_t=1$. Its current position, key status, and the chosen action are sufficient to predict whether the door blocks the move. Train and run it in the same way to compare the completed route directly.
+Each curve checkpoint evaluates the current deterministic greedy policy once from the same central start. The displayed 0% or 100% therefore means that this single fixed route failed or succeeded; it is not an estimate across varied starts. The final comparison is computed from the learned Q-values using the same 3,000-episode budget.
 
-Each curve evaluates the current greedy policy from the same central start. The final comparison is computed from the learned Q-values using the same 3,000-episode budget, not drawn in advance.
+To keep unsuccessful demonstrations bounded, training and playback stop a rollout after 24 actions. That cap belongs to the experiment harness, not to the MDP: reaching it adds no environment transition or reward, and the agent does not need a hidden clock in its state.
 
 <DoorKeyComparison />
 
@@ -190,7 +216,7 @@ Knowing the history does not improve our ability to predict where the agent will
 
 However, an MDP defines both the next state and the reward. The current state must be sufficient to determine the reward distribution as well.
 
-Consider entering checkpoint B. If $q_t=B$, entering the cell generates a positive reward and advances the task. If the agent enters that exact same cell while $q_t=A$ or $q_t=C$, the transition yields zero reward or even a penalty. The physical position and the executed action are identical, yet the resulting reward is fundamentally different.
+Consider entering checkpoint B. If $q_t=B$, entering the cell generates a positive reward and advances the task. If the agent enters that exact same cell while $q_t=A$ or $q_t=C$, the transition yields zero reward. The physical position and the executed action are identical, yet the resulting reward is different.
 
 The variable $q_t$ is entirely dependent on the task history. Knowing which checkpoints have been visited allows us to deduce what reward a specific transition will produce.
 
@@ -210,23 +236,34 @@ We categorize this as **Missing reward state**. We are not obscuring physical dy
 
 ### Learning
 
-We train the algorithm once again, maintaining the same spatial dynamics, reward logic, and hyperparameters.
+We train the algorithm once again while keeping the spatial dynamics, reward logic, algorithm, hyperparameters, and budget fixed.
+
+<div className="prediction-prompt">
+  <p className="lesson-stage">Predict before training</p>
+  <h3>Can one hub action encode three stages?</h3>
+  <p>
+    At the hub, the agent must head toward A, B, or C depending on the next
+    expected checkpoint. If progress is hidden, which of those three actions can
+    a deterministic position-only policy choose? Predict whether exploration
+    during training can repair that limitation in the final greedy policy.
+  </p>
+</div>
+
+Train and run the position-only agent first. Watch whether its final policy can credit A, B, and C in order before the rollout cap.
 
 <MarkovCheckpointLab mode="position" />
 
-The limitation of the reduced representation becomes obvious in the central hub. Being in the center requires heading to A, B, or C depending on the progress of the sequence. The agent observes all of these distinct situations as the same state.
+Exploration can occasionally produce the right sequence during training, but it cannot repair the representation used by the final policy. At the hub, one greedy action must serve all three stages.
 
-Without the task context, the policy might learn an average preference across the paths or rely heavily on random exploration to eventually trigger the checkpoints in the correct order. It fundamentally cannot condition its decisions on the progress of the task.
-
-We run the second experiment by explicitly providing $q_t$.
+Now run the matched experiment after explicitly providing $q_t$.
 
 <MarkovCheckpointLab mode="progress" />
 
-The agent is now equipped to learn distinct policies for being in the hub while expecting A, expecting B, or expecting C, despite occupying the exact same physical position.
+The progress-aware policy can choose a different path from the hub for each value of $q_t$, despite occupying the same physical position. Run the final policy and watch A, B, and C become credited in order.
 
-The progress-aware policy can choose a different path from the hub for each value of $q_t$. Train it, then run the final policy to watch A, B, and C become credited in order. The position-only policy cannot make this distinction: one greedy action at the hub must serve all three stages.
+As in the door experiment, each curve checkpoint evaluates one deterministic greedy rollout from the same hub. Its 0% or 100% value records whether that fixed route failed or completed. The final comparison is computed from the learned Q-values using the same 4,000-episode budget.
 
-Each curve evaluates the current greedy policy from the same central hub. The final comparison is computed from the learned Q-values using the same 4,000-episode budget.
+The 42-action rollout cap is also external to this MDP. It keeps unsuccessful training and playback finite but introduces no transition or reward of its own.
 
 <MarkovCheckpointComparison />
 
@@ -242,16 +279,50 @@ In the second case, **Missing memory**, position failed to indicate whether a cr
 
 In the third case, **Missing reward state**, position perfectly predicted the next movement but failed to determine the reward. The history revealed the agent's progress within the task sequence.
 
+These labels describe what the omitted information changes; they are not mutually exclusive formal categories. Both key status and checkpoint progress, for example, summarize earlier events. The useful question is whether the hidden fact changes physical dynamics, available transitions, rewards, or some combination of them.
+
 <MarkovSynthesisFigure />
 
-These three distinct examples are manifestations of the exact same mathematical condition. If any detail from the history modifies the predicted distribution of the next state or reward, even after we know the current state and action, then what we are calling the state is simply not sufficient:
+These three examples are manifestations of the same mathematical condition. If any detail from the history modifies the predicted distribution of the next representation or reward, even after we know the current representation and action, then the representation is not sufficient:
 
-$$p(s_{t+1},r_{t+1}\mid s_t,a_t,H_t) \neq p(s_{t+1},r_{t+1}\mid s_t,a_t)$$
+$$p(z_{t+1},r_{t+1}\mid z_t,a_t,H_t) \neq p(z_{t+1},r_{t+1}\mid z_t,a_t)$$
 
-Constructing an MDP requires more than just picking out convenient variables to hand to an agent. The chosen representation must successfully condense all information from the past that continues to hold relevance for the future.
+The entire history would always preserve its own information, but carrying it verbatim is rarely useful. State design aims for a compact sufficient summary: keep the facts from the past that can still change the future, and discard the rest.
 
-Our empirical observations across the three environments reinforce a core truth. Adding the missing information never changed the actual problem the agent was trying to solve. It only changed the representation of that problem. Yet, in every instance, learning became demonstrably faster, more stable, and vastly more efficient.
+In these fixed-seed demonstrations, repairing the aliases allowed the same tabular Q-learning algorithm to produce a more successful greedy policy. That does not mean adding variables always makes learning faster. Irrelevant variables enlarge a tabular state space and can make learning less efficient. The goal is sufficiency, not maximum detail.
 
-Markovianness is fundamentally a property of the representation chosen to describe the process. The physical environment itself remains the same, but one representation might capture everything necessary to predict the future, while another hides the exact information the agent needs to succeed.
+<div className="mental-model">
+  <p className="lesson-stage">Keep the diagnostic</p>
+  <p>
+    <strong>
+      Hold the current representation and action fixed. If two compatible
+      histories still predict different next representations or rewards, find
+      the hidden fact responsible and add a current summary of it.
+    </strong>
+  </p>
+</div>
+
+<div className="reasoning-check">
+  <p className="lesson-stage">Transfer the idea</p>
+  <h3>What is missing from this delivery state?</h3>
+  <p>
+    A delivery drone observes its position, velocity, and battery level. It earns
+    +1 for reaching a clinic before 6 p.m. and 0 for the same arrival after 6
+    p.m. Two flights can have the same observation and take the same action while
+    arriving on opposite sides of the deadline. Is the proposed representation
+    Markovian? What compact variable would repair it?
+  </p>
+  <details>
+    <summary>Check your reasoning</summary>
+    <p>
+      It is not Markovian for the stated reward process. The flight history can
+      reveal whether the deadline has passed, which changes the reward even when
+      position, velocity, battery, and action match. Add the current time or time
+      remaining before the deadline; the full flight path is unnecessary.
+    </p>
+  </details>
+</div>
+
+Markovianness is a property of the representation used to describe a process. The environment can remain the same while one representation preserves every distinction that matters for the next state and reward and another hides exactly the information the agent needs.
 
 </article>

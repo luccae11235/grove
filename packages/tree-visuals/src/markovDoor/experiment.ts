@@ -5,7 +5,7 @@ export type DoorOutcome = "goal" | "timeout" | null;
 export interface DoorTrueState {
   x: number;
   hasKey: boolean;
-  step: number;
+  rolloutStep: number;
   done: boolean;
   outcome: DoorOutcome;
 }
@@ -83,7 +83,7 @@ export function createDoorEpisode(): DoorTrueState {
   return {
     x: MARKOV_DOOR.startX,
     hasKey: false,
-    step: 0,
+    rolloutStep: 0,
     done: false,
     outcome: null,
   };
@@ -106,19 +106,24 @@ export function stepMarkovDoor(
     !state.hasKey && state.x < MARKOV_DOOR.doorX && candidateX >= MARKOV_DOOR.doorX;
   const x = blockedByDoor ? state.x : candidateX;
   const hasKey = state.hasKey || x === MARKOV_DOOR.keyX;
-  const step = state.step + 1;
+  const rolloutStep = state.rolloutStep + 1;
   const reachedGoal = x === MARKOV_DOOR.goalX;
-  const timedOut = !reachedGoal && step >= MARKOV_DOOR.maxSteps;
-  const done = reachedGoal || timedOut;
-  const outcome: DoorOutcome = reachedGoal ? "goal" : timedOut ? "timeout" : null;
-  const reward = reachedGoal ? 1 : timedOut ? -0.2 : -0.01;
+  const done = reachedGoal;
+  const outcome: DoorOutcome = reachedGoal ? "goal" : null;
+  const reward = reachedGoal ? 1 : -0.01;
 
   return {
-    state: { x, hasKey, step, done, outcome },
+    state: { x, hasKey, rolloutStep, done, outcome },
     reward,
     done,
     outcome,
   };
+}
+
+/** Mark an unsuccessful visualization rollout without changing the MDP dynamics. */
+export function applyDoorRolloutLimit(state: DoorTrueState): DoorTrueState {
+  if (state.done || state.rolloutStep < MARKOV_DOOR.maxSteps) return state;
+  return { ...state, done: true, outcome: "timeout" };
 }
 
 export function doorObservationCount(mode: DoorObservationMode) {
@@ -159,7 +164,7 @@ function trainEpisode(
   discount: number,
 ) {
   let state = createDoorEpisode();
-  while (!state.done) {
+  for (let interaction = 0; interaction < MARKOV_DOOR.maxSteps && !state.done; interaction += 1) {
     const stateIndex = doorObservationIndex(state, mode);
     const action = random() < epsilon
       ? (Math.floor(random() * MARKOV_DOOR.actionCount) as DoorAction)
@@ -190,7 +195,7 @@ export function runDoorPolicy(
   mode: DoorObservationMode,
 ) {
   let state = createDoorEpisode();
-  while (!state.done) {
+  for (let interaction = 0; interaction < MARKOV_DOOR.maxSteps && !state.done; interaction += 1) {
     state = stepMarkovDoor(state, doorPolicyAction(qValues, mode, state)).state;
   }
   return state.outcome === "goal";

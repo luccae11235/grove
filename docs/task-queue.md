@@ -63,6 +63,9 @@ references for longer-term editorial direction.
       learned policies.
     - [x] Add the final synthesis figure aligning missing dynamics, missing
       memory, and missing reward state with their minimal state repairs.
+    - [x] Apply beta-reader revisions: distinguish complete state from the
+      learner's representation, keep rollout caps outside the MDP, add
+      prediction and transfer checks, and align claims with computed results.
     - [x] Make all three training simulations visibly rapid and responsive to
       their episodes-per-second controls while preserving normal-speed policy
       playback after training.

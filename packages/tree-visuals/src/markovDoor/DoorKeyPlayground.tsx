@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./DoorKeyPlayground.module.css";
 import { trainingFrameDelay } from "../markovTrainingMotion";
 import {
+  applyDoorRolloutLimit,
   createDoorEpisode,
   DEFAULT_DOOR_TRAINING,
   doorPolicyAction,
@@ -73,7 +74,7 @@ function LearningChart({ points, mode }: {
 }
 
 function KeyShape() {
-  return <span className={styles.keyShape} aria-hidden="true"><i /><b /></span>;
+  return <svg className={styles.keyShape} viewBox="0 0 32 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="8" cy="10" r="5" /><path d="M13 10h15v5m-6-5v4" /></svg>;
 }
 
 function DoorBoard({
@@ -208,7 +209,9 @@ export function DoorKeyPlayground({ mode }: { mode: DoorObservationMode }) {
           return createDoorEpisode();
         }
         const qValues = running ? results.qValues : results.qSnapshots[curveIndexRef.current];
-        const next = stepMarkovDoor(current, doorPolicyAction(qValues, mode, current)).state;
+        const next = applyDoorRolloutLimit(
+          stepMarkovDoor(current, doorPolicyAction(qValues, mode, current)).state,
+        );
         setVisited((path) => path.includes(next.x) ? path : [...path, next.x]);
         if (running && next.done) {
           setRunResult((result) => next.outcome === "goal"
@@ -284,7 +287,15 @@ export function DoorKeyPlayground({ mode }: { mode: DoorObservationMode }) {
         </div>
       </div>
 
-      <p className={styles.srOnly} aria-live="polite" aria-atomic="true">Training has reached {currentPoint.episode} episodes. Goal rate {percent(currentPoint.successRate)}.</p>
+      <p className={styles.srOnly} aria-live="polite" aria-atomic="true">
+        {training
+          ? "Training in progress."
+          : curveIndex >= maximumCurveIndex
+            ? `Training complete after ${currentPoint.episode} episodes. Final goal result ${percent(currentPoint.successRate)}.`
+            : curveIndex > 0
+              ? `Training paused after ${currentPoint.episode} episodes. Goal result ${percent(currentPoint.successRate)}.`
+              : "Training has not started."}
+      </p>
     </section>
   );
 }

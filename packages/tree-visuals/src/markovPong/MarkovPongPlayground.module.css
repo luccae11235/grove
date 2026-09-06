@@ -119,7 +119,7 @@
   border-radius: 50%;
   background: var(--text);
   box-shadow: 0 0 0 5px var(--accent-soft);
-  transition: top 100ms linear, left 100ms linear;
+  transition: top 110ms linear, left 110ms linear;
 }
 
 .velocityArrow {
@@ -130,7 +130,7 @@
   transform: translateY(-50%) rotate(var(--velocity-angle));
   transform-origin: left center;
   background: transparent;
-  transition: top 100ms linear, left 100ms linear, transform 100ms linear;
+  transition: top 110ms linear, left 110ms linear, transform 110ms linear;
 }
 
 .velocityArrow::before,
@@ -169,7 +169,7 @@
   border-radius: 999px;
   background: var(--accent);
   box-shadow: 0 5px 0 var(--accent-soft);
-  transition: left 100ms linear;
+  transition: left 110ms linear;
 }
 
 .lab[data-training="true"] .ball,

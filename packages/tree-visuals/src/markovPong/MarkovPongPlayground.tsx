@@ -128,11 +128,12 @@ export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
     if (!training && !running) return undefined;
     const timer = window.setInterval(() => {
       setState((current) => {
-        if (current.done) return current;
+        if (current.done && current.outcome !== "hit") return current;
+        const active = continuePongRally(current);
         const qValues = running
           ? results.qValues
           : results.qSnapshots[curveIndexRef.current];
-        const next = stepMarkovPong(current, pongPolicyAction(qValues, mode, current)).state;
+        const next = stepMarkovPong(active, pongPolicyAction(qValues, mode, active)).state;
         if (running && next.done) {
           setRunResult((result) => next.outcome === "hit"
             ? { ...result, hits: result.hits + 1 }
@@ -147,12 +148,7 @@ export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
   useEffect(() => {
     if ((!training && !running) || !state.done) return undefined;
 
-    if (state.outcome === "hit") {
-      const hitPause = window.setTimeout(() => {
-        setState((current) => continuePongRally(current));
-      }, running ? 260 : 18);
-      return () => window.clearTimeout(hitPause);
-    }
+    if (state.outcome === "hit") return undefined;
 
     const missPause = window.setTimeout(() => {
       launchIndexRef.current = (launchIndexRef.current + 1) % DEMO_STARTS.length;
@@ -252,7 +248,15 @@ export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
         </div>
       </div>
 
-      <p className={styles.srOnly} aria-live="polite" aria-atomic="true">Training has reached {currentPoint.episode} episodes. Hit rate {percent(currentPoint.hitRate)}.</p>
+      <p className={styles.srOnly} aria-live="polite" aria-atomic="true">
+        {training
+          ? "Training in progress."
+          : curveIndex >= maximumCurveIndex
+            ? `Training complete after ${currentPoint.episode} episodes. Final hit rate ${percent(currentPoint.hitRate)}.`
+            : curveIndex > 0
+              ? `Training paused after ${currentPoint.episode} episodes. Hit rate ${percent(currentPoint.hitRate)}.`
+              : "Training has not started."}
+      </p>
     </section>
   );
 }

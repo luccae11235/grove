@@ -9,7 +9,7 @@ export interface PongTrueState {
   ballVx: PongDirection;
   ballVy: PongDirection;
   paddleX: number;
-  step: number;
+  rolloutStep: number;
   done: boolean;
   outcome: PongOutcome;
 }
@@ -57,7 +57,6 @@ export const MARKOV_PONG = Object.freeze({
   rows: 9,
   paddleStart: 5,
   actionCount: 3,
-  maxSteps: 20,
 });
 
 export const DEFAULT_PONG_TRAINING: Readonly<PongTrainingOptions> = Object.freeze({
@@ -96,7 +95,7 @@ export function createPongEpisode(
     ballVx,
     ballVy,
     paddleX: MARKOV_PONG.paddleStart,
-    step: 0,
+    rolloutStep: 0,
     done: false,
     outcome: null,
   };
@@ -152,11 +151,10 @@ export function stepMarkovPong(
     ballY = 1;
   }
 
-  const step = state.step + 1;
+  const rolloutStep = state.rolloutStep + 1;
   const reachedPaddle = ballY >= MARKOV_PONG.rows - 1;
-  const timedOut = step >= MARKOV_PONG.maxSteps;
-  if (reachedPaddle || timedOut) {
-    const hit = reachedPaddle && ballX === paddleX;
+  if (reachedPaddle) {
+    const hit = ballX === paddleX;
     const outcome: PongOutcome = hit ? "hit" : "miss";
     if (hit) ballVy = -1;
     const next: PongTrueState = {
@@ -165,7 +163,7 @@ export function stepMarkovPong(
       ballVx,
       ballVy,
       paddleX,
-      step,
+      rolloutStep,
       done: true,
       outcome,
     };
@@ -178,7 +176,7 @@ export function stepMarkovPong(
     ballVx,
     ballVy,
     paddleX,
-    step,
+    rolloutStep,
     done: false,
     outcome: null,
   };
@@ -191,7 +189,7 @@ export function continuePongRally(state: PongTrueState): PongTrueState {
   return {
     ...state,
     ballVy: -1,
-    step: 0,
+    rolloutStep: 0,
     done: false,
     outcome: null,
   };

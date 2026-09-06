@@ -33,7 +33,7 @@
         <div class="scene door-scene" aria-hidden="true">
           <span class="agent"></span>
           <span class="route"></span>
-          <span class="key"><i></i><b></b></span>
+          <svg class="key" viewBox="0 0 32 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="10" r="5" /><path d="M13 10h15v5m-6-5v4" /></svg>
           <span class="door"><i></i></span>
         </div>
         <p class="example-name">Key–Door</p>
@@ -67,8 +67,8 @@
   </div>
 
   <p class="figure-note">
-    A sufficient state does not remember everything. It keeps the smallest
-    summary of the past that can still change what happens next.
+    A useful state does not need to remember everything. It can keep a compact,
+    sufficient summary of the past that still changes what happens next.
   </p>
 </figure>
 
@@ -186,36 +186,11 @@
   .key {
     position: absolute;
     top: 19px;
-    left: 46px;
-    width: 13px;
-    height: 13px;
-    border: 2px solid var(--accent);
-    border-radius: 50%;
-  }
-
-  .key i,
-  .key b {
-    position: absolute;
-    display: block;
-    background: var(--accent);
-    content: "";
-  }
-
-  .key i {
-    top: 9px;
-    left: 9px;
-    width: 17px;
-    height: 2px;
-    transform: rotate(42deg);
-    transform-origin: left center;
-  }
-
-  .key b {
-    top: 17px;
-    left: 20px;
-    width: 2px;
-    height: 6px;
-    transform: rotate(42deg);
+    left: 44px;
+    width: 32px;
+    height: 24px;
+    color: var(--accent);
+    background: var(--surface-raised);
   }
 
   .door {

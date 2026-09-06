@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  applyCheckpointRolloutLimit,
   checkpointObservationIndex,
   createCheckpointEpisode,
   MARKOV_CHECKPOINTS,
@@ -37,6 +38,17 @@ describe("ordered checkpoint environment", () => {
     expect(checkpointObservationIndex(expectingA, "progress")).not.toBe(
       checkpointObservationIndex(expectingC, "progress"),
     );
+  });
+
+  it("keeps the visualization rollout limit outside the MDP transition", () => {
+    const transition = stepMarkovCheckpoint(
+      { ...createCheckpointEpisode(), rolloutStep: MARKOV_CHECKPOINTS.maxSteps - 1 },
+      3,
+    ).state;
+
+    expect(transition.done).toBe(false);
+    expect(transition.outcome).toBeNull();
+    expect(applyCheckpointRolloutLimit(transition).outcome).toBe("timeout");
   });
 
   it("reproduces the completion gap from learned policies", () => {

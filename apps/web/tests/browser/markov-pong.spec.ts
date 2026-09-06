@@ -107,3 +107,27 @@ for (const viewport of [
     expect(pageErrors).toEqual([]);
   });
 }
+
+test("a paddle hit rebounds on the next playback step without a pause", async ({ page }) => {
+  const lab = page.getByRole("region", { name: "What changes when velocity is part of the state?" });
+  await lab.getByLabel("Training speed in episodes per second").fill("2000");
+  await lab.getByRole("button", { name: "Train agent" }).click();
+  await expect(lab.getByRole("button", { name: "Run agent" })).toBeVisible({ timeout: 15_000 });
+  await page.clock.install();
+  await lab.getByRole("button", { name: "Run agent" }).click();
+  const court = lab.locator("[data-launch-index]");
+  const ball = lab.locator("[data-ball-y]");
+  for (let step = 0; step < 20; step += 1) {
+    await page.clock.runFor(110);
+    if (await court.getAttribute("data-outcome") === "hit") break;
+  }
+  await expect(court).toHaveAttribute("data-outcome", "hit");
+  const contactY = Number(await ball.getAttribute("data-ball-y"));
+  await page.clock.runFor(110);
+  await lab.getByRole("button", { name: "Stop agent" }).click();
+  await expect(court).toHaveAttribute("data-outcome", "playing");
+  await expect(court).toHaveAttribute("data-ball-vy", "-1");
+  expect(Number(await ball.getAttribute("data-ball-y"))).toBeLessThan(contactY);
+  await expect(court).toHaveAttribute("data-launch-index", "0");
+  expect(Number(await lab.locator("[data-run-hits]").getAttribute("data-run-hits"))).toBeGreaterThanOrEqual(1);
+});

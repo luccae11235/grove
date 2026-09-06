@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  applyDoorRolloutLimit,
   createDoorEpisode,
   doorObservationIndex,
   MARKOV_DOOR,
@@ -32,6 +33,17 @@ describe("door and key environment", () => {
     expect(doorObservationIndex(before, "memory")).not.toBe(
       doorObservationIndex(after, "memory"),
     );
+  });
+
+  it("keeps the visualization rollout limit outside the MDP transition", () => {
+    const transition = stepMarkovDoor(
+      { ...createDoorEpisode(), rolloutStep: MARKOV_DOOR.maxSteps - 1 },
+      0,
+    ).state;
+
+    expect(transition.done).toBe(false);
+    expect(transition.outcome).toBeNull();
+    expect(applyDoorRolloutLimit(transition).outcome).toBe("timeout");
   });
 
   it("reproduces the performance gap from the learned policies", () => {

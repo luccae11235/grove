@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./CheckpointPlayground.module.css";
 import { trainingFrameDelay } from "../markovTrainingMotion";
 import {
+  applyCheckpointRolloutLimit,
   checkpointPolicyAction,
   createCheckpointEpisode,
   DEFAULT_CHECKPOINT_TRAINING,
@@ -98,7 +99,7 @@ function CheckpointBoard({
 
   return (
     <div
-      className={`${styles.board} ${state.step === 0 ? styles.resetting : ""}`}
+      className={`${styles.board} ${state.rolloutStep === 0 ? styles.resetting : ""}`}
       role="img"
       aria-label={`Ordered checkpoint grid. Agent at column ${state.x + 1}, row ${state.y + 1}.${revealProgress ? ` Next checkpoint ${expected?.label ?? "complete"}.` : " Task progress is hidden from the agent."}${state.outcome === "complete" ? " The route is complete." : state.outcome === "timeout" ? " The route timed out." : ""}`}
       data-agent-x={state.x}
@@ -134,7 +135,7 @@ function CheckpointBoard({
       />
       {revealProgress ? <span className={styles.nextBadge}>Next · {expected?.label ?? "done"}</span> : null}
       {showRoute ? <span className={styles.routeSequence} aria-hidden="true"><b>A</b><i>→</i><b>B</b><i>→</i><b>C</b></span> : null}
-      {state.step > 0 && currentCheckpoint >= 0 ? <span className={`${styles.rewardBadge} ${state.reward === 1 ? styles.positiveReward : styles.zeroReward}`}>{state.reward === 1 ? "+1" : "0"}</span> : null}
+      {state.rolloutStep > 0 && currentCheckpoint >= 0 ? <span className={`${styles.rewardBadge} ${state.reward === 1 ? styles.positiveReward : styles.zeroReward}`}>{state.reward === 1 ? "+1" : "0"}</span> : null}
       {state.outcome ? <span className={state.outcome === "complete" ? styles.completeBadge : styles.timeoutBadge}>{state.outcome === "complete" ? "Complete" : "Timed out"}</span> : null}
     </div>
   );
@@ -231,10 +232,12 @@ export function CheckpointPlayground({ mode }: { mode: CheckpointObservationMode
         const qValues = running
           ? results.qValues
           : results.qSnapshots[curveIndexRef.current];
-        const next = stepMarkovCheckpoint(
-          current,
-          checkpointPolicyAction(qValues, mode, current),
-        ).state;
+        const next = applyCheckpointRolloutLimit(
+          stepMarkovCheckpoint(
+            current,
+            checkpointPolicyAction(qValues, mode, current),
+          ).state,
+        );
         setVisited((path) => {
           const key = pointKey(next.x, next.y);
           return path.includes(key) ? path : [...path, key];
@@ -313,7 +316,15 @@ export function CheckpointPlayground({ mode }: { mode: CheckpointObservationMode
         </div>
       </div>
 
-      <p className={styles.srOnly} aria-live="polite" aria-atomic="true">Training has reached {currentPoint.episode} episodes. Completion rate {percent(currentPoint.completionRate)}.</p>
+      <p className={styles.srOnly} aria-live="polite" aria-atomic="true">
+        {training
+          ? "Training in progress."
+          : curveIndex >= maximumCurveIndex
+            ? `Training complete after ${currentPoint.episode} episodes. Final completion result ${percent(currentPoint.completionRate)}.`
+            : curveIndex > 0
+              ? `Training paused after ${currentPoint.episode} episodes. Completion result ${percent(currentPoint.completionRate)}.`
+              : "Training has not started."}
+      </p>
     </section>
   );
 }

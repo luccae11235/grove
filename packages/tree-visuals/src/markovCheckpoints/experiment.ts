@@ -6,7 +6,7 @@ export interface CheckpointTrueState {
   x: number;
   y: number;
   nextCheckpoint: number;
-  step: number;
+  rolloutStep: number;
   done: boolean;
   outcome: CheckpointOutcome;
   reward: number;
@@ -94,7 +94,7 @@ export function createCheckpointEpisode(): CheckpointTrueState {
     x: MARKOV_CHECKPOINTS.hubX,
     y: MARKOV_CHECKPOINTS.hubY,
     nextCheckpoint: 0,
-    step: 0,
+    rolloutStep: 0,
     done: false,
     outcome: null,
     reward: 0,
@@ -135,28 +135,21 @@ export function stepMarkovCheckpoint(
   const nextCheckpoint = correctCheckpoint
     ? state.nextCheckpoint + 1
     : state.nextCheckpoint;
-  const step = state.step + 1;
+  const rolloutStep = state.rolloutStep + 1;
   const completed = nextCheckpoint === MARKOV_CHECKPOINTS.checkpoints.length;
-  const timedOut = !completed && step >= MARKOV_CHECKPOINTS.maxSteps;
-  const done = completed || timedOut;
-  const outcome: CheckpointOutcome = completed
-    ? "complete"
-    : timedOut
-      ? "timeout"
-      : null;
+  const done = completed;
+  const outcome: CheckpointOutcome = completed ? "complete" : null;
   const reward = correctCheckpoint
     ? 1
     : enteredCheckpoint !== null
       ? 0
-      : timedOut
-        ? -0.2
-        : -0.01;
+      : -0.01;
 
   const nextState: CheckpointTrueState = {
     x,
     y,
     nextCheckpoint,
-    step,
+    rolloutStep,
     done,
     outcome,
     reward,
@@ -170,6 +163,14 @@ export function stepMarkovCheckpoint(
     enteredCheckpoint,
     correctCheckpoint,
   };
+}
+
+/** Mark an unsuccessful visualization rollout without changing the MDP dynamics. */
+export function applyCheckpointRolloutLimit(
+  state: CheckpointTrueState,
+): CheckpointTrueState {
+  if (state.done || state.rolloutStep < MARKOV_CHECKPOINTS.maxSteps) return state;
+  return { ...state, done: true, outcome: "timeout" };
 }
 
 function positionIndex(x: number, y: number) {
@@ -221,7 +222,11 @@ function trainEpisode(
   discount: number,
 ) {
   let state = createCheckpointEpisode();
-  while (!state.done) {
+  for (
+    let interaction = 0;
+    interaction < MARKOV_CHECKPOINTS.maxSteps && !state.done;
+    interaction += 1
+  ) {
     const stateIndex = checkpointObservationIndex(state, mode);
     const action = random() < epsilon
       ? (Math.floor(random() * MARKOV_CHECKPOINTS.actionCount) as CheckpointAction)
@@ -252,7 +257,11 @@ export function runCheckpointPolicy(
   mode: CheckpointObservationMode,
 ) {
   let state = createCheckpointEpisode();
-  while (!state.done) {
+  for (
+    let interaction = 0;
+    interaction < MARKOV_CHECKPOINTS.maxSteps && !state.done;
+    interaction += 1
+  ) {
     state = stepMarkovCheckpoint(
       state,
       checkpointPolicyAction(qValues, mode, state),
