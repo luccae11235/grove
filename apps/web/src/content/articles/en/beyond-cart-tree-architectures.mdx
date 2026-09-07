@@ -180,7 +180,7 @@ A **soft tree** replaces the hard decision with a smooth gate. One possible form
 
 $$
 
-p_R$x$=\sigma\left(\frac{x_j-t}{\tau}\right)
+p_R(x)=\sigma\left(\frac{x_j-t}{\tau}\right)
 
 $$
 
@@ -188,7 +188,7 @@ and
 
 $$
 
-p_L$x$=1-p_R$x$,
+p_L(x)=1-p_R(x),
 
 $$
 
@@ -200,7 +200,7 @@ For a depth-1 regression tree with leaf values $v_L$ and $v_R$, the prediction b
 
 $$
 
-\hat y$x$=p_L$x$v_L+p_R$x$v_R.
+\hat y(x)=p_L(x)v_L+p_R(x)v_R.
 
 $$
 
@@ -208,7 +208,7 @@ An observation close to the threshold might receive
 
 $$
 
-p_L$x$=0.55,\qquad p_R$x$=0.45,
+p_L(x)=0.55,\qquad p_R(x)=0.45,
 
 $$
 
@@ -300,7 +300,7 @@ In CART regression, once an observation reaches leaf $\ell$, its prediction is s
 
 $$
 
-f$x$=c_\ell.
+f(x)=c_\ell.
 
 $$
 
@@ -320,7 +320,7 @@ Instead of storing a constant in leaf $\ell$,
 
 $$
 
-f$x$=f_\ell$x$,
+f(x)=f_\ell(x),
 
 $$
 
@@ -330,7 +330,7 @@ For example, each leaf might contain a linear regression:
 
 $$
 
-f_\ell$x$=\beta_\ell^\top x+b_\ell.
+f_\ell(x)=\beta_\ell^\top x+b_\ell.
 
 $$
 
