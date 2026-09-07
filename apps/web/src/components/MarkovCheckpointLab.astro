@@ -1,0 +1,13 @@
+---
+import { MarkovCheckpointPlayground } from "@grove/tree-visuals";
+
+interface Props {
+  mode: "position" | "progress";
+}
+
+const { mode } = Astro.props;
+---
+
+<div data-analytics-lab={`markov-checkpoint-${mode}`}>
+  <MarkovCheckpointPlayground mode={mode} client:load />
+</div>

@@ -34,6 +34,48 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Develop the Markov principle article — issue #158**
+  - [x] Add the complete supplied English manuscript with the title, chapter
+    structure, formulas, and production notes on an isolated docs branch.
+  - [x] Replace the image and playground notes iteratively after the text
+    structure has been reviewed.
+    - [x] Add the opening comparison showing when history changes the predicted
+      transition and when the current state makes history irrelevant.
+    - [x] Refactor the opening history comparison into a concrete previous-frame
+      example with plain state labels; verify desktop and mobile rendering.
+    - [x] Build the Pong learning experience — issue #161.
+      - [x] Add the environment and state-representation figures.
+      - [x] Implement two matched playable Pong environments and paired Q-learning
+        experiments that differ only in state representation, with real,
+        reproducible evaluation curves.
+      - [x] Complete focused tests and rendered desktop/mobile review.
+      - [x] Simplify both playgrounds to the state, training court, learning
+        result, and an episodes-per-second speed control.
+      - [x] Vary training launches and let readers run each trained agent with
+        a live hit/miss count while keeping the paddle agent-controlled.
+      - [x] Preserve rally continuity after a hit, make miss resets explicit and
+        non-animated, and anchor the velocity vector to the ball in every
+        direction.
+    - [x] Build the door-and-key learning experience with a minimal route figure,
+      an aliased-state comparison, and matched position-only and key-aware
+      Q-learning playgrounds with runnable learned policies.
+    - [x] Build the ordered-checkpoint learning experience with a minimal hub
+      figure, a same-movement/different-reward comparison, and matched
+      position-only and progress-aware Q-learning playgrounds with runnable
+      learned policies.
+    - [x] Add the final synthesis figure aligning missing dynamics, missing
+      memory, and missing reward state with their minimal state repairs.
+    - [x] Apply beta-reader revisions: distinguish complete state from the
+      learner's representation, keep rollout caps outside the MDP, add
+      prediction and transfer checks, and align claims with computed results.
+    - [x] Make all three training simulations visibly rapid and responsive to
+      their episodes-per-second controls while preserving normal-speed policy
+      playback after training.
+    - [x] Design and implement the remaining image and playground notes.
+  - Keep the article in draft; translation, publication, deployment, merge,
+    and newsletter delivery remain out of scope until separately reviewed.
+  - Completion check: the complete learning experience passes focused checks
+    and rendered desktop/mobile review before staging review and merge.
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.

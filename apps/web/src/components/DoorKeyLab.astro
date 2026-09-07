@@ -1,0 +1,13 @@
+---
+import { DoorKeyPlayground } from "@grove/tree-visuals";
+
+interface Props {
+  mode: "position" | "memory";
+}
+
+const { mode } = Astro.props;
+---
+
+<div data-analytics-lab={`markov-door-${mode}`}>
+  <DoorKeyPlayground mode={mode} client:load />
+</div>

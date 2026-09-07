@@ -1,0 +1,107 @@
+---
+// Learner question: does the previous frame change what we can predict now?
+// Keep the ball, action, and actual motion fixed; vary only available information.
+const rows = [
+  { id: "position", title: "Position alone", velocity: false, conclusion: "History changes the prediction.", before: "Either direction is possible.", after: "The previous position reveals the direction." },
+  { id: "velocity", title: "Position + velocity", velocity: true, conclusion: "History adds no new information.", before: "Velocity already gives the direction.", after: "The prediction stays the same." },
+];
+---
+
+<figure class="markov-comparison" aria-labelledby="markov-comparison-title">
+  <header class="intro">
+    <h3 id="markov-comparison-title">Does the previous frame change your prediction?</h3>
+    <p>A ball travels up-right or down-right at a fixed speed, away from the walls. The paddle stays still.</p>
+  </header>
+  <div class="comparison-frame">
+    {rows.map((row) => (
+      <section class="comparison-row" aria-labelledby={`history-${row.id}`}>
+        <header class="row-heading">
+          <h4 id={`history-${row.id}`}>{row.title}</h4>
+          <p>{row.conclusion}</p>
+        </header>
+        <div class="scenes">
+          {[false, true].map((history) => {
+            const ambiguous = !row.velocity && !history;
+            const arrowId = `prediction-${row.id}-${history}`;
+            return (
+              <div class="scene">
+                <p class="scene-heading">{history ? "Now, reveal the previous frame" : "Use only the current state"}</p>
+                <svg viewBox="0 0 280 200" role="img" aria-label={ambiguous
+                  ? "The ball is at the center. Its next position could be up and right or down and right; position alone does not distinguish them."
+                  : history
+                    ? `The previous ball position is down and left of its current position, so the next position is up and right. ${row.velocity ? "The current velocity already predicted this." : "History removes the downward possibility."}`
+                    : "The ball is at the center with a velocity arrow pointing up and right. Its next position is up and right."}>
+                  <defs>
+                    <marker id={arrowId} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M1 1 9 5 1 9" fill="none" stroke="currentColor" stroke-width="1.5" />
+                    </marker>
+                  </defs>
+                  {history && <>
+                    <path class="trail" d="M60 144 130 106" />
+                    <circle class="past" cx="50" cy="150" r="10" />
+                    <text x="50" y="182" text-anchor="middle">Previous</text>
+                  </>}
+                  <path class="prediction" d="M154 92 213 59" marker-end={`url(#${arrowId})`} />
+                  <circle class="future" cx="230" cy="50" r="10" />
+                  <text x="230" y="25" text-anchor="middle">{ambiguous ? "Possible next" : "Next"}</text>
+                  {ambiguous && <>
+                    <path class="prediction" d="M154 108 213 141" marker-end={`url(#${arrowId})`} />
+                    <circle class="future" cx="230" cy="150" r="10" />
+                    <text x="230" y="182" text-anchor="middle">Possible next</text>
+                  </>}
+                  <circle class="present" cx="140" cy="100" r="11" />
+                  <text class="now-label" x="140" y="132" text-anchor="middle">Now</text>
+                  {row.velocity && <>
+                    <path class="velocity" d="M141 81 172 64" marker-end={`url(#${arrowId})`} />
+                    <text class="velocity-label" x="137" y="52" text-anchor="middle">Velocity</text>
+                  </>}
+                </svg>
+                <p class="prediction-note">{history ? row.after : row.before}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    ))}
+  </div>
+  <figcaption>History matters when it changes what we can predict from the current state and action. Here, velocity keeps the information we needed from the previous frame.</figcaption>
+</figure>
+
+<style>
+  .markov-comparison {
+    margin: 2rem 0;
+    color: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  }
+  .markov-comparison p, .markov-comparison figcaption { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+  #markov-comparison-title { scroll-margin-top: 100px; }
+  .intro { margin-bottom: 1.25rem; }
+  .intro h3 { margin: 0 0 0.5rem; font-size: 1.15rem; line-height: 1.35; }
+  .intro p, .row-heading p, .prediction-note, figcaption {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+  .comparison-frame { border-block: 1px solid var(--border); }
+  .comparison-row { padding: 1.4rem 0; }
+  .comparison-row + .comparison-row { border-top: 1px solid var(--border); }
+  .row-heading h4 { margin: 0 0 0.2rem; font-size: 1rem; line-height: 1.4; }
+  .scenes { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.25rem; }
+  .scene { min-width: 0; }
+  .scene-heading { margin: 0; font-size: 0.8rem; line-height: 1.5; font-weight: 650; }
+  svg { display: block; width: 100%; max-width: 320px; height: auto; margin: 0.25rem auto; overflow: visible; }
+  svg text { fill: var(--text-muted); font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 12px; }
+  .present { fill: var(--text); }
+  .past { fill: none; stroke: var(--text-muted); stroke-width: 1.5; stroke-dasharray: 3 3; }
+  .trail { fill: none; stroke: var(--text-muted); stroke-width: 1.5; stroke-dasharray: 4 4; }
+  .prediction { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 4 4; color: var(--accent); }
+  .future { fill: none; stroke: var(--accent); stroke-width: 2; }
+  .velocity { fill: none; stroke: var(--text); stroke-width: 2.5; color: var(--text); }
+  .now-label, .velocity-label { fill: var(--text); font-weight: 650; }
+  figcaption { margin: 1rem auto 0; max-width: 65ch; }
+  @media (max-width: 540px) {
+    .scenes { grid-template-columns: 1fr; gap: 1.25rem; }
+    svg { max-width: 280px; }
+  }
+</style>

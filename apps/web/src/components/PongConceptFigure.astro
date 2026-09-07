@@ -1,0 +1,307 @@
+---
+interface Props {
+  kind: "environment" | "state";
+}
+
+const { kind } = Astro.props;
+---
+
+{kind === "environment" ? (
+  <figure class="pong-figure environment-figure" aria-labelledby="pong-environment-title pong-environment-caption">
+    <header>
+      <p>Simplified Pong MDP</p>
+      <h3 id="pong-environment-title">Move the paddle before the ball arrives</h3>
+    </header>
+    <svg viewBox="0 0 720 360" role="img" aria-label="A ball bounces inside a rectangular Pong court toward a horizontal paddle. Moving left, staying, and moving right yield zero reward during play. Hitting yields plus one; missing yields minus one.">
+      <defs>
+        <marker id="pong-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" class="arrow-head" />
+        </marker>
+      </defs>
+      <rect class="court" x="170" y="28" width="380" height="284" rx="18" />
+      <path class="center" d="M360 34 V305" />
+      <path class="trajectory" d="M256 78 L474 142 L396 224" marker-end="url(#pong-arrow)" />
+      <circle class="past-ball" cx="256" cy="78" r="8" />
+      <circle class="past-ball" cx="474" cy="142" r="8" />
+      <circle class="ball" cx="396" cy="224" r="12" />
+      <rect class="paddle" x="314" y="282" width="92" height="12" rx="6" />
+      <path class="paddle-motion" d="M292 288 H246 M428 288 H474" marker-start="url(#pong-arrow)" marker-end="url(#pong-arrow)" />
+      <text class="action" x="360" y="332" text-anchor="middle">left · stay · right</text>
+      <g class="reward-zero">
+        <text x="70" y="139">during play</text>
+        <text class="reward-value" x="70" y="164">reward 0</text>
+        <path d="M128 152 H166" />
+      </g>
+      <g class="reward-hit">
+        <text x="604" y="227">paddle hit</text>
+        <text class="reward-value" x="604" y="252">reward +1</text>
+        <path d="M550 241 H591" />
+      </g>
+      <g class="reward-miss">
+        <text x="604" y="286">ball passes</text>
+        <text class="reward-value" x="604" y="311">reward −1</text>
+        <path d="M550 300 H591" />
+      </g>
+    </svg>
+    <figcaption id="pong-environment-caption">The reward is sparse: every intermediate move earns 0. Only the return decides +1 or −1.</figcaption>
+  </figure>
+) : (
+  <figure class="pong-figure state-figure" aria-labelledby="pong-state-title pong-state-caption">
+    <header>
+      <p>One snapshot · two state representations</p>
+      <h3 id="pong-state-title">Can this state tell us where the ball goes next?</h3>
+    </header>
+    <div class="state-panels">
+      <section class="state-panel incomplete">
+        <div class="panel-heading">
+          <span>Position only</span>
+          <strong>z = (x, y, paddle)</strong>
+        </div>
+        <svg viewBox="0 0 320 220" role="img" aria-label="Position-only observation: the same ball and paddle snapshot is consistent with four different next trajectories, so velocity remains unknown.">
+          <defs>
+            <marker id="uncertain-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" class="uncertain-head" />
+            </marker>
+          </defs>
+          <rect class="mini-court" x="63" y="12" width="194" height="176" rx="13" />
+          <circle class="mini-ball" cx="160" cy="91" r="10" />
+          <rect class="mini-paddle" x="128" y="166" width="64" height="9" rx="5" />
+          <path class="uncertain" d="M160 91 L111 47 M160 91 L209 47 M160 91 L111 136 M160 91 L209 136" marker-end="url(#uncertain-arrow)" />
+          <text class="unknown-label" x="160" y="210" text-anchor="middle">several next states fit</text>
+        </svg>
+      </section>
+      <section class="state-panel complete">
+        <div class="panel-heading">
+          <span>Position + velocity</span>
+          <strong>z = (x, y, vₓ, vᵧ, paddle)</strong>
+        </div>
+        <svg viewBox="0 0 320 220" role="img" aria-label="Position-plus-velocity observation: a labeled velocity arrow selects one specific next trajectory from the same ball and paddle snapshot.">
+          <defs>
+            <marker id="known-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" class="known-head" />
+            </marker>
+          </defs>
+          <rect class="mini-court" x="63" y="12" width="194" height="176" rx="13" />
+          <circle class="mini-ball" cx="160" cy="91" r="10" />
+          <rect class="mini-paddle" x="128" y="166" width="64" height="9" rx="5" />
+          <path class="known" d="M160 91 L213 141" marker-end="url(#known-arrow)" />
+          <text class="velocity-label" x="213" y="101">vₓ, vᵧ</text>
+          <text class="known-label" x="160" y="210" text-anchor="middle">one next state follows</text>
+        </svg>
+      </section>
+    </div>
+    <figcaption id="pong-state-caption">The picture of the present is identical. Velocity changes whether the future is ambiguous.</figcaption>
+  </figure>
+)}
+
+<style>
+  .pong-figure {
+    width: min(100%, 760px);
+    margin: 32px auto;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--surface-raised);
+    color: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .pong-figure header {
+    padding: 19px 22px 15px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pong-figure header p {
+    margin: 0 0 4px;
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 0.68rem;
+    font-weight: 760;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  .pong-figure h3 {
+    margin: 0;
+    font-size: clamp(1.05rem, 2.4vw, 1.32rem);
+    line-height: 1.25;
+  }
+
+  .environment-figure > svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: var(--surface-subtle);
+  }
+
+  .court,
+  .mini-court {
+    fill: var(--surface-raised);
+    stroke: var(--border-strong);
+    stroke-width: 2;
+  }
+
+  .center {
+    fill: none;
+    stroke: var(--border);
+    stroke-dasharray: 8 9;
+  }
+
+  .trajectory,
+  .paddle-motion,
+  .known {
+    fill: none;
+    stroke: var(--accent);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 3;
+  }
+
+  .trajectory {
+    opacity: 0.72;
+  }
+
+  .arrow-head,
+  .known-head {
+    fill: var(--accent);
+  }
+
+  .past-ball {
+    fill: var(--surface-raised);
+    stroke: var(--accent);
+    stroke-width: 2;
+    opacity: 0.5;
+  }
+
+  .ball,
+  .mini-ball {
+    fill: var(--text);
+  }
+
+  .paddle,
+  .mini-paddle {
+    fill: var(--accent);
+  }
+
+  .action,
+  .reward-zero text,
+  .reward-hit text,
+  .reward-miss text,
+  .unknown-label,
+  .known-label,
+  .velocity-label {
+    fill: var(--text-muted);
+    font-size: 12px;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .reward-zero path,
+  .reward-hit path,
+  .reward-miss path {
+    stroke: var(--border-strong);
+  }
+
+  .reward-zero .reward-value,
+  .reward-hit .reward-value {
+    fill: var(--accent);
+    font-weight: 750;
+  }
+
+  .reward-miss .reward-value {
+    fill: var(--text);
+    font-weight: 750;
+  }
+
+  .pong-figure figcaption {
+    margin: 0;
+    border-top: 1px solid var(--border);
+    padding: 13px 22px 15px;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 0.76rem;
+    line-height: 1.55;
+  }
+
+  .state-panels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    background: var(--surface-subtle);
+    padding: 18px;
+  }
+
+  .state-panel {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface-raised);
+  }
+
+  .complete {
+    border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  }
+
+  .panel-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4px 10px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-heading span {
+    font-size: 0.78rem;
+    font-weight: 750;
+  }
+
+  .panel-heading strong {
+    color: var(--text-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.64rem;
+    font-weight: 540;
+  }
+
+  .state-panel > svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .uncertain {
+    fill: none;
+    stroke: var(--text-muted);
+    stroke-dasharray: 5 5;
+    stroke-linecap: round;
+    stroke-width: 2;
+    opacity: 0.75;
+  }
+
+  .uncertain-head {
+    fill: var(--text-muted);
+  }
+
+  .velocity-label,
+  .known-label {
+    fill: var(--accent);
+    font-weight: 700;
+  }
+
+  @media (max-width: 560px) {
+    .state-panels {
+      grid-template-columns: 1fr;
+      padding: 14px;
+    }
+
+    .environment-figure > svg {
+      min-width: 620px;
+      transform: translateX(calc((100% - 620px) / 2));
+    }
+
+    .environment-figure {
+      overflow: hidden;
+    }
+  }
+</style>
