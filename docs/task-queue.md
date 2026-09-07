@@ -34,6 +34,16 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Draft Beyond CART: Decision Trees Don't Have to Look Like CART — issue #191**
+  - Add the complete English first draft as an unpublished MDX article, using
+    the supplied “Rascunho redigido” as the authored text.
+  - Keep every image, animation, and playground as a literal editorial text
+    placeholder during this first writing pass; implementation is separate work.
+  - Keep translation, publication, deployment, and newsletter delivery out of
+    scope.
+  - Completion check: the complete prose and planned section order are present,
+    and the relevant content/schema checks pass.
+
 - [ ] **Develop the Markov principle article — issue #158**
   - [x] Add the complete supplied English manuscript with the title, chapter
     structure, formulas, and production notes on an isolated docs branch.
