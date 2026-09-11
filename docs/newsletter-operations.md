@@ -240,3 +240,55 @@ sending if the sender domain, webhook ingestion, or suppression sync is unhealth
 - Duplicate delivery command: stop and inspect the stored provider broadcast id.
 - Database restore: replay newer Resend webhooks if available, then reconcile
   active and suppressed contacts before the next send.
+
+## Repeating expired confirmation reminders (issue #154)
+
+Opening a confirmation URL (including the legacy API GET URL) never activates a
+subscriber. The localized page requires the reader to press **Confirm subscription**;
+only a POST from an allowed website origin consumes the token. This prevents
+passive link previews from granting consent; it is not a claim to distinguish
+humans from bots that deliberately submit forms. Existing tokens retain their
+original expiry and recovery links.
+
+Use `pnpm newsletter:remind` in the selected Railway API environment, with
+`DATABASE_URL` set to that environment's public PostgreSQL URL for local runs.
+Run migrations and verify the explicit confirmation page and API in that
+environment before sending. Keep recipient files and command reports private,
+outside Git (they contain personal addresses). Never put tokens or credentials
+in logs or issues.
+
+1. Preview: `pnpm newsletter:remind --batch pending-YYYY-MM-DD`.
+2. Review the result and save only the intended addresses as a JSON array in a
+   private file. Preview that exact subset with `--recipients /private/path/recipients.json`.
+3. Send the reviewed subset with the same batch id and recipients file, adding
+   `--apply --confirm REMIND:production:pending-YYYY-MM-DD` (use `staging` for tests).
+4. Inspect `newsletter_confirmation_reminders` and the returned provider email
+   ids. Check Resend delivery events; `sent` here means provider accepted, not
+   delivered. Verify subscribers remain pending until explicit confirmation.
+5. Rerunning a batch skips its previous reservations. A partial run may resume
+   with the same batch and recipient file; already attempted recipients are excluded.
+
+Defaults: at most 50 recipients per invocation and one operator reminder per
+subscriber. Only pending requests created within 30 days qualify. Every previous
+confirmation must be expired and at least seven days old, with no used token.
+Active, unsubscribed, bounced, complained, and suppressed subscribers are excluded;
+the staging allowlist also applies. The original consent request is preserved.
+New reminders last 48 hours and use the transactional identity and saved locale.
+The email explains the pending request, optional confirmation, expiry, and how to
+ignore an unrecognized request. It does not claim a recent delivery change that
+might be untrue on future runs.
+
+For an intentionally reviewed later attempt, use a new batch and an explicit
+`--max-reminders 2` (maximum 3); expiry, seven-day spacing, and 30-day eligibility
+still apply. `--limit` can be raised up to 500. This is a manual operation, with
+no scheduler and no broadcast or implicit production promotion.
+
+A `reserved` or `unknown` record blocks further reminders, including new batches.
+The reservation and token commit before provider contact; concurrent runs cannot
+reserve twice. The provider also receives an action-specific idempotency key.
+If a process crashes or a provider call is uncertain, do not delete the reservation
+or run a new batch to bypass it. Reconcile the exact attempt in Resend first. Mark
+it `sent` with the verified provider email id only when acceptance is established;
+otherwise retain the block until the outcome is resolved. The raw token is not
+persisted, so this workflow deliberately favors avoiding a duplicate over an
+automatic retry after an ambiguous failure.

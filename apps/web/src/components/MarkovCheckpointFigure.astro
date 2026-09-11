@@ -1,0 +1,11 @@
+---
+import { MarkovCheckpointFigure } from "@grove/tree-visuals";
+
+interface Props {
+  kind: "environment" | "reward";
+}
+
+const { kind } = Astro.props;
+---
+
+<MarkovCheckpointFigure kind={kind} />

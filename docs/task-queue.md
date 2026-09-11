@@ -34,16 +34,58 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
-- [ ] **Draft and test Issue 006 about bagging variance — issue #182**
-  - Start after issue #180 verifies the article in production, then write a
-    short invitation around the article's central stability question.
-  - Review the web, HTML email, and plain-text forms before creating exactly one
-    protected Resend draft and sending only an owner test.
-  - Keep subscriber send or scheduling behind a separate explicit approval and
-    the exact `SEND:2026-006` confirmation.
-  - Completion check: source and provider draft match, the inbox test passes,
-    and no production subscriber broadcast has been sent or scheduled.
+- [ ] **Publish Gradient Boosting and deliver Issue 007 — issue #193**
+  - Publish the reviewed English and Brazilian Portuguese article on 2026-09-11
+    while keeping later articles in draft.
+  - Review the Issue 007 web, HTML email, and plain-text forms before the
+    production promotion.
+  - Treat the production merge, provider draft, test email, and subscriber send
+    as separate gates with explicit production and delivery approval.
+  - Completion check: exact-SHA staging and production verification pass, the
+    test email is reviewed, and the Issue 007 report confirms one delivery.
 
+- [ ] **Develop the Markov principle article — issue #158**
+  - [x] Add the complete supplied English manuscript with the title, chapter
+    structure, formulas, and production notes on an isolated docs branch.
+  - [x] Replace the image and playground notes iteratively after the text
+    structure has been reviewed.
+    - [x] Add the opening comparison showing when history changes the predicted
+      transition and when the current state makes history irrelevant.
+    - [x] Refactor the opening history comparison into a concrete previous-frame
+      example with plain state labels; verify desktop and mobile rendering.
+    - [x] Build the Pong learning experience — issue #161.
+      - [x] Add the environment and state-representation figures.
+      - [x] Implement two matched playable Pong environments and paired Q-learning
+        experiments that differ only in state representation, with real,
+        reproducible evaluation curves.
+      - [x] Complete focused tests and rendered desktop/mobile review.
+      - [x] Simplify both playgrounds to the state, training court, learning
+        result, and an episodes-per-second speed control.
+      - [x] Vary training launches and let readers run each trained agent with
+        a live hit/miss count while keeping the paddle agent-controlled.
+      - [x] Preserve rally continuity after a hit, make miss resets explicit and
+        non-animated, and anchor the velocity vector to the ball in every
+        direction.
+    - [x] Build the door-and-key learning experience with a minimal route figure,
+      an aliased-state comparison, and matched position-only and key-aware
+      Q-learning playgrounds with runnable learned policies.
+    - [x] Build the ordered-checkpoint learning experience with a minimal hub
+      figure, a same-movement/different-reward comparison, and matched
+      position-only and progress-aware Q-learning playgrounds with runnable
+      learned policies.
+    - [x] Add the final synthesis figure aligning missing dynamics, missing
+      memory, and missing reward state with their minimal state repairs.
+    - [x] Apply beta-reader revisions: distinguish complete state from the
+      learner's representation, keep rollout caps outside the MDP, add
+      prediction and transfer checks, and align claims with computed results.
+    - [x] Make all three training simulations visibly rapid and responsive to
+      their episodes-per-second controls while preserving normal-speed policy
+      playback after training.
+    - [x] Design and implement the remaining image and playground notes.
+  - Keep the article in draft; translation, publication, deployment, merge,
+    and newsletter delivery remain out of scope until separately reviewed.
+  - Completion check: the complete learning experience passes focused checks
+    and rendered desktop/mobile review before staging review and merge.
 - [ ] **Publish Reward Hacking and deliver Issue 003 — issue #129**
   - Publish the reviewed English and Brazilian Portuguese article on 2026-08-14
     while keeping Bagging and ACF/PACF in draft.
@@ -141,6 +183,10 @@ references for longer-term editorial direction.
       revision `24ba23f7bd8f87a2960b4dad16d1064ee5135fe3` sent untracked
       transactional messages that Gmail authenticated and placed in Personal.
   - [ ] Require explicit reader action before confirmation — issue #154.
+    - In progress: add an explicit POST confirmation, scanner regression tests,
+      and a manual, audited expired-link reminder pipeline for the three
+      owner-selected pending recipients. Production release and recipient delivery
+      remain separate completion gates.
     - A staging proof subscriber changed from pending to active 18 seconds after
       delivery without an intentional link click; replace the confirmation
       page's automatic redirect with an explicit, scanner-safe action.
@@ -197,6 +243,16 @@ references for longer-term editorial direction.
 ## Done
 
 ### Publishing and content
+
+- [x] **Publish and deliver Issue 006 about bagging variance — issue #182** — 2026-09-04
+  - Published the reviewed text-only issue through implementation PR #186 and
+    release PR #187; exact staging revision `cde06c6` and production revision
+    `9368938` passed deployment verification.
+  - Verified the public issue, HTML email, plain-text email, and article routes;
+    the production email artifact contains no image tags.
+  - Created Resend broadcast `42d40431-33e8-42e5-885f-ed99f8008ba5`, sent the
+    owner test, and delivered it once to the production audience only after the
+    owner supplied the exact `SEND:2026-006` confirmation.
 
 - [x] **Publish How Bagging Removes Variance — issue #180** — 2026-09-04
   - Published only the reviewed English `bagging-reduces-tree-variance` article

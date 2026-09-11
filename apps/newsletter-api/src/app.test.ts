@@ -432,5 +432,34 @@ async function webhook(app: ReturnType<typeof createApp>, id: string) {
 }
 
 function confirmationApiPath(url: URL) {
-  return `/v1/subscriptions/confirm${url.search}`;
+  return new Request("https://letters.aflora.example/v1/subscriptions/confirm", {
+    method: "POST",
+    headers: { origin: "https://aflora.example" },
+    body: new URLSearchParams({ token: url.searchParams.get("token") ?? "" }),
+  });
 }
+
+
+test("GET and HEAD scanner visits leave consent pending; only explicit POST activates", async () => {
+  const { app, provider } = testSystem();
+  await app.request("/v1/subscriptions", {
+    method: "POST", headers: { "content-type": "application/json" },
+    body: JSON.stringify({ email: "reader@example.com" }),
+  });
+  const url = new URL(provider.confirmations[0].confirmationUrl);
+  for (const method of ["GET", "HEAD"]) {
+    const response = await app.request(`/v1/subscriptions/confirm${url.search}`, { method });
+    assert.equal(response.status, 303);
+    assert.equal(response.headers.get("location"), url.href);
+    assert.equal(provider.contacts.size, 0);
+  }
+  const forbidden = await app.request("/v1/subscriptions/confirm", {
+    method: "POST", headers: { origin: "https://scanner.example" },
+    body: new URLSearchParams({ token: url.searchParams.get("token")! }),
+  });
+  assert.equal(forbidden.status, 403);
+  assert.equal(provider.contacts.size, 0);
+  const confirmed = await app.request(confirmationApiPath(url));
+  assert.equal(confirmed.status, 303);
+  assert.equal(provider.contacts.size, 1);
+});
