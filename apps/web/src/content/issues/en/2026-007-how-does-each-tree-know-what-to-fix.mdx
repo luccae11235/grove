@@ -1,0 +1,32 @@
+---
+issueId: "2026-007"
+locale: en
+issueNumber: 7
+routeSlug: "how-does-each-tree-know-what-to-fix"
+href: "/newsletter/2026/007/how-does-each-tree-know-what-to-fix"
+subject: "How does each tree know what to fix?"
+preheader: "Build gradient boosting from one baseline and a sequence of small corrections."
+summary: "The seventh Aflora issue asks how many small trees can cooperate, then follows gradient boosting from residual correction to function-space optimization."
+status: published
+publishedAt: 2026-09-11
+featuredArticles:
+  - "gradient-boosting-quick-deep-dive"
+tags:
+  - "decision-trees"
+  - "gradient-boosting"
+  - "supervised-learning"
+cta:
+  label: "Build the boosting sequence"
+  href: "/learn/gradient-boosting-quick-deep-dive"
+---
+
+One decision tree tries to solve a prediction problem in one pass. Gradient
+boosting asks a different question: what small correction would improve the
+model we already have?
+
+Begin with one constant prediction. Measure what remains wrong. Train a small
+tree to generalize that correction, add only part of it, and repeat.
+
+In this week's interactive article, you can build that sequence yourself for
+regression and classification. You will see why residual fitting is one special
+case of a broader idea: gradient descent in the space of predictive functions.

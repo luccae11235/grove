@@ -34,6 +34,16 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Publish Gradient Boosting and deliver Issue 007 — issue #193**
+  - Publish the reviewed English and Brazilian Portuguese article on 2026-09-11
+    while keeping later articles in draft.
+  - Review the Issue 007 web, HTML email, and plain-text forms before the
+    production promotion.
+  - Treat the production merge, provider draft, test email, and subscriber send
+    as separate gates with explicit production and delivery approval.
+  - Completion check: exact-SHA staging and production verification pass, the
+    test email is reviewed, and the Issue 007 report confirms one delivery.
+
 - [ ] **Develop the Markov principle article — issue #158**
   - [x] Add the complete supplied English manuscript with the title, chapter
     structure, formulas, and production notes on an isolated docs branch.
