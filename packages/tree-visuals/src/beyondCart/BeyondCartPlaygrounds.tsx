@@ -24,6 +24,30 @@ function format(value: number, digits = 2): string {
   return value.toFixed(digits).replace(/^-0(?:\.0+)?$/, (match) => match.slice(1));
 }
 
+function surfaceEvidenceSummary(architecture: TreeArchitecture): string {
+  const geometry = architecture.split === "axis-aligned"
+    ? "The surface uses horizontal and vertical boundaries."
+    : "The surface uses diagonal boundaries.";
+  const transition = architecture.routing === "hard"
+    ? "Changes at those boundaries are abrupt."
+    : "Changes blend smoothly across those boundaries.";
+  const sharing = architecture.rules === "shared-by-depth"
+    ? "The same second-depth boundary repeats on both sides of the root."
+    : "Each side of the root has its own second-depth boundary.";
+  const leaves = architecture.leaves === "constant"
+    ? "Predictions stay constant within each final region."
+    : "Predictions continue to vary within each final region.";
+
+  return `${geometry} ${transition} ${sharing} ${leaves}`;
+}
+
+function childRuleSummary(architecture: TreeArchitecture): string {
+  const rules = architectureRules(architecture);
+  return architecture.rules === "shared-by-depth"
+    ? `Both second-depth nodes use ${rules.left.label}.`
+    : `The left second-depth node uses ${rules.left.label}; the right one uses ${rules.right.label}.`;
+}
+
 function SoftRoutingDiagram({
   x,
   temperature,
@@ -242,7 +266,8 @@ function DecisionSurface({
     >
       <title id={titleId}>Decision surface for the assembled tree</title>
       <desc id={descriptionId}>
-        A fixed two-class dataset over the prediction surface produced by {summary}.
+        A fixed two-class dataset over the prediction surface produced by {summary}.{" "}
+        {surfaceEvidenceSummary(architecture)}{" "}
         Negative observations are warm diamonds; positive observations are green circles.
       </desc>
       <g data-decision-surface>
@@ -326,8 +351,7 @@ function TreeDiagram({
     >
       <title id={titleId}>The assembled depth-two tree</title>
       <desc id={descriptionId}>
-        The root uses {rules.root.label}. Its second-depth rules are
-        {architecture.rules === "shared-by-depth" ? " shared" : " independent"}.
+        The root uses {rules.root.label}. {childRuleSummary(architecture)}{" "}
         Routing is {architecture.routing}, and the four leaves are {architecture.leaves} models.
       </desc>
 
@@ -545,9 +569,10 @@ export function TreeArchitectureBuilder() {
       </div>
 
       <p className={styles.srOnly} aria-live="polite" aria-atomic="true">
-        Current architecture: {architectureSummary(architecture)}. It contains
-        {complexity.totalParameters} learned parameters and needs approximately
-        {complexity.nodeEvaluations} split evaluations for one prediction.
+        Current architecture: {architectureSummary(architecture)}.{" "}
+        {surfaceEvidenceSummary(architecture)} {childRuleSummary(architecture)} It contains
+        {" "}{complexity.totalParameters} learned parameters and needs approximately
+        {" "}{complexity.nodeEvaluations} split evaluations for one prediction.
       </p>
     </section>
   );

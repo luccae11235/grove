@@ -147,6 +147,11 @@ test("both animations support explicit steps and timed playback", async ({ page 
   await batch.getByRole("button", { name: "Next" }).click();
   await expect(batch).toHaveAttribute("data-beyond-cart-step", "2");
   await expect(batch.getByText("Depth two · 3 of 4", { exact: true })).toBeVisible();
+  await expect(batch.getByText("A + B only", { exact: true })).toBeVisible();
+  await expect(batch.getByText("C + D only", { exact: true })).toBeVisible();
+  await expect(batch.getByText("one test · A–D stay aligned", { exact: true })).toBeVisible();
+  await batch.getByRole("button", { name: "Next" }).click();
+  await expect(batch.getByText(/A reaches LL, B reaches LR, C reaches RL, and D reaches RR/)).toBeVisible();
   await batch.getByRole("button", { name: "Reset" }).click();
   await expect(batch).toHaveAttribute("data-beyond-cart-step", "0");
 });

@@ -40,12 +40,12 @@ const BATCH_STEPS = [
   {
     label: "Depth two",
     summary:
-      "CART asks age < 35 on the left and tenure < 3 on the right. The symmetric tree applies age < 35 across the entire level.",
+      "After the root, CART splits the batch: A and B use age < 35, while C and D use tenure < 3. The symmetric tree keeps A through D aligned and applies age < 35 across the level.",
   },
   {
     label: "Leaves",
     summary:
-      "This batch reaches the same leaf codes in both trees, but CART used local questions while the symmetric tree used one shared question per level.",
+      "A reaches LL, B reaches LR, C reaches RL, and D reaches RR in both trees. CART used two local second-level tests; the symmetric tree used one shared test across A through D.",
   },
 ] as const;
 
@@ -347,9 +347,18 @@ function tokenPosition(sample: BatchSample, index: number, step: number, mode: T
     };
   }
 
+  if (step === 2) {
+    return mode === "ordinary"
+      ? {
+          x: index < 2 ? 76 + index * 56 : 288 + (index - 2) * 56,
+          y: 218,
+        }
+      : { x: 120 + index * 60, y: 218 };
+  }
+
   const leafCenters = { LL: 55, LR: 155, RL: 265, RR: 365 } as const;
   const leafX = leafCenters[pathCode(sample, mode)];
-  return { x: leafX, y: step === 2 ? 245 : 283 };
+  return { x: leafX, y: 283 };
 }
 
 function BatchTree({
@@ -366,8 +375,8 @@ function BatchTree({
   const symmetric = mode === "symmetric";
   const title = symmetric ? "Depth-shared symmetric tree" : "Ordinary CART tree";
   const description = symmetric
-    ? "The root applies income less than fifty. Both nodes at depth two apply age less than thirty-five to the same batch."
-    : "The root applies income less than fifty. At depth two, the left node applies age less than thirty-five while the right node applies tenure less than three.";
+    ? "The root applies income less than fifty. At depth two, A through D remain in one aligned batch while both nodes share age less than thirty-five."
+    : "The root applies income less than fifty. At depth two, A and B form one local batch for age less than thirty-five, while C and D form another for tenure less than three.";
 
   return (
     <svg
@@ -384,7 +393,7 @@ function BatchTree({
         d="M210 92 L105 145 M210 92 L315 145"
       />
       <path
-        className={`${styles.batchEdge} ${step >= 2 ? styles.batchEdgeTraversed : ""}`}
+        className={`${styles.batchEdge} ${step >= 3 ? styles.batchEdgeTraversed : ""}`}
         d="M105 191 L55 266 M105 191 L155 266 M315 191 L265 266 M315 191 L365 266"
       />
 
@@ -406,7 +415,7 @@ function BatchTree({
         y="130"
         textAnchor="middle"
       >
-        {symmetric ? "one shared test" : "two local tests"}
+        {symmetric ? "one aligned batch" : "two local batches"}
       </text>
       {symmetric ? (
         <path
@@ -438,6 +447,25 @@ function BatchTree({
       <text className={styles.batchNodeText} x="315" y="174" textAnchor="middle">
         {symmetric ? "age < 35" : "tenure < 3"}
       </text>
+
+      <g
+        className={`${styles.executionLane} ${step === 2 ? styles.executionLaneActive : ""}`}
+        aria-hidden="true"
+      >
+        {symmetric ? (
+          <>
+            <rect x="78" y="200" width="264" height="36" rx="18" />
+            <text x="210" y="252" textAnchor="middle">one test · A–D stay aligned</text>
+          </>
+        ) : (
+          <>
+            <rect x="42" y="200" width="126" height="36" rx="18" />
+            <rect x="252" y="200" width="126" height="36" rx="18" />
+            <text x="105" y="252" textAnchor="middle">A + B only</text>
+            <text x="315" y="252" textAnchor="middle">C + D only</text>
+          </>
+        )}
+      </g>
 
       {(["LL", "LR", "RL", "RR"] as const).map((code, index) => (
         <g key={code}>
@@ -593,7 +621,7 @@ function BatchEvaluationAnimation() {
         <section className={styles.treePanel} aria-label="Ordinary CART evaluation">
           <div className={styles.panelHeading}>
             <strong>Ordinary CART</strong>
-            <span>rules specialize by branch</span>
+            <span>batch splits into local groups</span>
           </div>
           <BatchTree
             mode="ordinary"
@@ -606,7 +634,7 @@ function BatchEvaluationAnimation() {
         <section className={styles.treePanel} aria-label="Depth-shared symmetric tree evaluation">
           <div className={styles.panelHeading}>
             <strong>Symmetric tree</strong>
-            <span>one rule is shared by depth</span>
+            <span>batch stays aligned by depth</span>
           </div>
           <BatchTree
             mode="symmetric"

@@ -29,12 +29,12 @@ const SPLIT_POINTS = [
   { id: "a4", x: 0.43, y: 0.84, className: "circle" },
   { id: "a5", x: 0.57, y: 0.82, className: "circle" },
   { id: "a6", x: 0.7, y: 0.92, className: "circle" },
-  { id: "b1", x: 0.13, y: 0.16, className: "square" },
-  { id: "b2", x: 0.28, y: 0.27, className: "square" },
-  { id: "b3", x: 0.4, y: 0.36, className: "square" },
-  { id: "b4", x: 0.55, y: 0.45, className: "square" },
-  { id: "b5", x: 0.7, y: 0.56, className: "square" },
-  { id: "b6", x: 0.84, y: 0.68, className: "square" },
+  { id: "b1", x: 0.13, y: 0.04, className: "square" },
+  { id: "b2", x: 0.28, y: 0.15, className: "square" },
+  { id: "b3", x: 0.4, y: 0.2, className: "square" },
+  { id: "b4", x: 0.55, y: 0.38, className: "square" },
+  { id: "b5", x: 0.7, y: 0.53, className: "square" },
+  { id: "b6", x: 0.84, y: 0.59, className: "square" },
 ] as const;
 
 const REGRESSION_POINTS = [
@@ -150,8 +150,8 @@ function ArchitectureAnatomy({ figureId }: { figureId: string }) {
 
         <div className={`${styles.anatomyNote} ${styles.anatomyRules}`}>
           <span className={styles.noteNumber}>3</span>
-          <span><strong>Parameter sharing</strong><small>none across nodes</small></span>
-          <code>g₁ ≠ g₂</code>
+          <span><strong>Parameter sharing</strong><small>learned separately by node</small></span>
+          <code>g₁, g₂</code>
         </div>
         <div className={`${styles.anatomyNote} ${styles.anatomyLeaves}`}>
           <span className={styles.noteNumber}>4</span>
@@ -199,7 +199,7 @@ function SplitPanel({
         </title>
         <desc id={descriptionId}>
           {cart
-            ? "Circular and square observations are separated by four horizontal and vertical CART cuts that form a staircase."
+            ? "Circular observations lie above a staircase approximation made from four horizontal and vertical CART cuts; square observations lie below it."
             : "The same circular and square observations are separated by one diagonal weighted-feature split."}
         </desc>
         <rect className={styles.plotBackground} x="34" y="20" width="278" height="200" rx="8" />
@@ -249,8 +249,8 @@ function SplitGeometry({ figureId }: { figureId: string }) {
       kind="split-geometry"
       figureId={figureId}
       kicker="Change the split"
-      title="The same diagonal boundary can live in the nodes or in the tree"
-      caption="CART keeps each node simple and spends more tree structure. An oblique node spends more parameters on one split."
+      title="CART approximates a diagonal boundary; an oblique node draws it directly"
+      caption="CART keeps each node simple and spends more tree structure on an approximation. An oblique node spends more parameters on one direct split."
     >
       <div className={styles.pairBody}>
         <div className={styles.classKey} role="group" aria-label="Circles are class A; squares are class B">
@@ -543,7 +543,7 @@ function CartGlyph({ figureId }: { figureId: string }) {
       aria-labelledby={`${titleId} ${descriptionId}`}
     >
       <title id={titleId}>CART tree at the center of four trade-offs</title>
-      <desc id={descriptionId}>A root node connects to two decision nodes and four leaves.</desc>
+      <desc id={descriptionId}>A root node connects to two decision nodes and two leaves in a compact tree glyph.</desc>
       <path d="M43 11v12M43 23 20 38M43 23l23 15M20 38v10M66 38v10" />
       <circle cx="43" cy="9" r="6" />
       <circle cx="20" cy="38" r="5" />

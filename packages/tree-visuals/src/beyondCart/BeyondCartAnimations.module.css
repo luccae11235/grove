@@ -391,6 +391,28 @@
   stroke-width: 2.2;
 }
 
+.executionLane {
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.executionLaneActive {
+  opacity: 1;
+}
+
+.executionLane rect {
+  fill: color-mix(in srgb, var(--accent-soft) 46%, var(--surface-raised));
+  stroke: color-mix(in srgb, var(--beyond-cart-accent) 54%, var(--border-strong));
+  stroke-width: 1.3;
+  vector-effect: non-scaling-stroke;
+}
+
+.executionLane text {
+  fill: var(--text-muted);
+  font-size: 10px;
+  font-weight: 720;
+}
+
 .batchLeafText {
   font-size: 10.5px;
   font-weight: 680;
@@ -476,7 +498,8 @@
   .batchEdge,
   .batchNode,
   .batchLeaf,
-  .sharedBracket {
+  .sharedBracket,
+  .executionLane {
     transition: none;
   }
 }

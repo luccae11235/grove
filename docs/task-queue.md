@@ -34,16 +34,6 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
-- [ ] **Draft Beyond CART: Decision Trees Don't Have to Look Like CART — issue #191**
-  - Add the complete English first draft as an unpublished MDX article, using
-    the supplied “Rascunho redigido” as the authored text.
-  - Keep every image, animation, and playground as a literal editorial text
-    placeholder during this first writing pass; implementation is separate work.
-  - Keep translation, publication, deployment, and newsletter delivery out of
-    scope.
-  - Completion check: the complete prose and planned section order are present,
-    and the relevant content/schema checks pass.
-
 - [ ] **Develop the Markov principle article — issue #158**
   - [x] Add the complete supplied English manuscript with the title, chapter
     structure, formulas, and production notes on an isolated docs branch.
@@ -117,14 +107,6 @@ references for longer-term editorial direction.
     two decision-tree articles, with exact-SHA deployment verification passing.
 
 ### Learning experience
-
-- [ ] **Build the Beyond CART visual learning experience — issue #192**
-  - Replace all six image, two animation, and two playground placeholders with
-    minimal, computed visuals that each answer one learner question.
-  - Keep the article unpublished and preserve keyboard, text-alternative,
-    reduced-motion, mobile, and desktop learning paths.
-  - Completion check: no editorial placeholders remain; focused tests,
-    typechecks, production build, and rendered desktop/mobile review pass.
 
 - [ ] **Prepare the Reward Hacking article for release — issue #123**
   - Make the first checkpoint playground clearly explain that readers can move
@@ -252,6 +234,14 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Draft Beyond CART: Decision Trees Don't Have to Look Like CART — issue #191** — 2026-09-11
+  - Added the complete supplied English manuscript, formulas, metadata, and
+    planned section sequence as an unpublished MDX article.
+  - Kept translation, publication, deployment, and newsletter delivery outside
+    the writing scope.
+  - Completion check: the full prose is present and its content, typecheck, and
+    draft-build checks pass.
+
 - [x] **Publish Gradient Boosting and deliver Issue 007 — issue #193** — 2026-09-11
   - Published the reviewed English and Brazilian Portuguese article through PR
     #194 and release PR #190.
@@ -306,6 +296,14 @@ references for longer-term editorial direction.
     and the exact production revision passed verification.
 
 ### Learning experience
+
+- [x] **Build the Beyond CART visual learning experience — issue #192** — 2026-09-11
+  - Replaced all six image, two animation, and two playground placeholders with
+    deterministic, code-native visuals centered on one learner question each.
+  - Preserved keyboard controls, text alternatives, reduced-motion behavior,
+    and contained desktop and mobile layouts while keeping the article in draft.
+  - Completion check: 87 visual tests, seven focused browser scenarios, both
+    relevant typechecks, the draft build, and rendered desktop/mobile review pass.
 
 - [x] **Complete the gradient boosting visual system — issue #136** — 2026-08-24
   - Built the regression and classification figures, animations, and
