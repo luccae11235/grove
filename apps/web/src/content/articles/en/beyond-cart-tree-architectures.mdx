@@ -12,8 +12,8 @@ topic: Decision-tree architectures
 summary: Identify the four architectural assumptions behind CART, then reason about what oblique, soft, oblivious, and model trees gain and give up by changing them.
 status: draft
 readingTime: 15–20 min
-interactiveCount: 0
-staticVisualCount: 0
+interactiveCount: 4
+staticVisualCount: 6
 difficulty: intermediate
 series: tree-based-machine-learning
 access: public
@@ -39,6 +39,7 @@ learning:
 ---
 
 import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import BeyondCartLab from "../../../components/BeyondCartLab.astro";
 
 <header className="page-header lesson-header article-hero">
   <p className="eyebrow">Decision trees · Architecture</p>
@@ -74,7 +75,7 @@ Together, these restrictions give CART many of the properties that make trees at
 
 But what happens if we relax them individually?
 
-[IMAGE: a simple CART tree in the center. Around it, highlight four pieces independently: the equation inside a node, the left/right routing arrow, different rules across nodes, and the constant values in leaves. Label them Split geometry / Routing / Parameter sharing / Leaf model]
+<BeyondCartLab kind="architecture-anatomy" />
 
 This is a useful way to think about machine-learning models more generally. A model is often better understood as a collection of design assumptions. New model families can emerge when we relax, replace, or share those assumptions.
 
@@ -132,7 +133,7 @@ $$
 
 The node can now create a diagonal boundary.
 
-[IMAGE: same dataset twice. Left: several staircase-like CART partitions approximating a diagonal boundary. Right: one diagonal oblique split]
+<BeyondCartLab kind="split-geometry" />
 
 This changes where the model stores its representational complexity.
 
@@ -170,7 +171,7 @@ $$
 
 Even if $\epsilon$ is tiny, the first observation goes completely to one branch and the second goes completely to the other.
 
-[ANIMATION: move a single observation slowly across a threshold. In the hard tree, its selected branch suddenly switches from left to right and the prediction jumps]
+<BeyondCartLab kind="hard-routing" />
 
 This happens because CART routing is discrete. Each split produces a binary decision: left or right.
 
@@ -216,7 +217,7 @@ so both leaves contribute to the prediction.
 
 In a deeper tree, the same idea continues recursively. The weight assigned to a leaf is the product of the routing probabilities along the path leading to it.
 
-[PLAYGROUND: depth-1 regression tree. Show the threshold and two leaf predictions. Let the reader move (x) and control temperature (\tau). Display (p_L), (p_R), and the resulting prediction. As (\tau\rightarrow0), the soft tree visually becomes the hard CART tree]
+<BeyondCartLab kind="soft-routing" />
 
 The parameter $\tau$ makes the relationship with CART especially clear. With a large temperature, routing changes gradually around the threshold. As
 
@@ -252,7 +253,7 @@ That flexibility is useful because each region of the input space can develop it
 
 An **oblivious tree**, also called a **symmetric tree**, imposes a strong structural constraint: every node at the same depth uses the same splitting rule.
 
-[IMAGE: left, irregular CART tree with different questions at every node. Right, perfectly symmetric tree where all nodes on each horizontal level display the same rule]
+<BeyondCartLab kind="rule-sharing" />
 
 If the first level asks
 
@@ -286,7 +287,7 @@ The constraint can also act as regularization. By preventing different branches 
 
 This architecture is not merely theoretical. CatBoost uses symmetric trees by default. Their regular structure is particularly convenient for efficient evaluation, which matters when large numbers of trees must be executed repeatedly in production.
 
-[ANIMATION: evaluate one ordinary tree and one oblivious tree for a small batch. Show the irregular traversal of CART versus applying the same test across each level of the symmetric tree]
+<BeyondCartLab kind="batch-evaluation" />
 
 The interesting point is that we improved some properties of the model by restricting what it was allowed to do.
 
@@ -334,7 +335,7 @@ f_\ell(x)=\beta_\ell^\top x+b_\ell.
 
 $$
 
-[IMAGE: left, piecewise-constant CART approximation. Right, same partition boundaries but each region contains its own fitted line]
+<BeyondCartLab kind="model-leaves" />
 
 The resulting decomposition is useful:
 
@@ -356,16 +357,7 @@ Still, the architectural lesson is broader than model trees themselves: differen
 
 We can now return to the original CART tree and describe it as a collection of choices.
 
-[IMAGE: compact table or design-space diagram:
-
-| Design choice | CART | Relaxation |
-| --- | --- | --- |
-| Split geometry | Axis-aligned | Oblique |
-| Routing | Hard | Soft |
-| Node rules | Independent | Shared / oblivious |
-| Leaf prediction | Constant | Model-based |
-
-]
+<BeyondCartLab kind="design-space" />
 
 These dimensions are largely independent.
 
@@ -381,14 +373,7 @@ We can therefore construct combinations such as:
 
 Thinking in terms of architecture makes these combinations much easier to understand. We have not discovered four mutually exclusive algorithms. We have identified four decisions that CART happens to make in one particular way.
 
-[PLAYGROUND: **Build a Tree.** Use one small 2D dataset and a shallow fixed-depth tree. Provide four controls:
-
-- Split: Axis-aligned / Oblique
-- Routing: Hard / Soft
-- Rules: Independent / Shared by depth
-- Leaves: Constant / Linear
-
-As each control changes, update the decision surface, tree diagram, number of parameters, and approximate number of node evaluations. The purpose is not benchmarking every possible combination; it is letting the reader see that a “model” can be assembled from relatively independent architectural decisions]
+<BeyondCartLab kind="architecture-builder" />
 
 A few presets make the design space easier to navigate.
 
@@ -435,7 +420,7 @@ Each restriction was buying something:
 
 Relaxing an assumption therefore does not automatically improve the model. It changes its inductive bias and moves complexity somewhere else.
 
-[IMAGE: CART in the center with four arrows pointing outward toward Oblique / Soft / Oblivious / Model leaves. Under every arrow show **Gain ↔ Cost**, rather than presenting the variants as upgrades]
+<BeyondCartLab kind="tradeoff-map" />
 
 This gives us a more useful way to think about machine-learning architectures.
 

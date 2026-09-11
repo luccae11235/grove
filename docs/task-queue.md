@@ -118,6 +118,14 @@ references for longer-term editorial direction.
 
 ### Learning experience
 
+- [ ] **Build the Beyond CART visual learning experience — issue #192**
+  - Replace all six image, two animation, and two playground placeholders with
+    minimal, computed visuals that each answer one learner question.
+  - Keep the article unpublished and preserve keyboard, text-alternative,
+    reduced-motion, mobile, and desktop learning paths.
+  - Completion check: no editorial placeholders remain; focused tests,
+    typechecks, production build, and rendered desktop/mobile review pass.
+
 - [ ] **Prepare the Reward Hacking article for release — issue #123**
   - Make the first checkpoint playground clearly explain that readers can move
     checkpoints and watch the model learn the changed route.
