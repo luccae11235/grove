@@ -252,6 +252,17 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Publish Gradient Boosting and deliver Issue 007 — issue #193** — 2026-09-11
+  - Published the reviewed English and Brazilian Portuguese article through PR
+    #194 and release PR #190.
+  - Verified staging revision `a59e14d` in run `34603685935` and production
+    revision `08fc680` in run `34605041981`, including both article locales and
+    all Issue 007 forms.
+  - Reviewed broadcast `c522d9dc-92cb-4ed9-9568-7a6c40c06400`, confirmed the
+    owner test in Primary, and sent it once through run `34605651239`.
+  - The first report recorded 9 sent, 9 delivered, 0 bounced, 0 complained, and
+    0 suppressed.
+
 - [x] **Publish and deliver Issue 006 about bagging variance — issue #182** — 2026-09-04
   - Published the reviewed text-only issue through implementation PR #186 and
     release PR #187; exact staging revision `cde06c6` and production revision
