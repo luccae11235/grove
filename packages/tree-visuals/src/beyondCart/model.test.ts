@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ARCHITECTURE_PRESETS,
+  BUILDER_DATASETS,
   BUILDER_POINTS,
   CART_ARCHITECTURE,
   SOFT_TREE_LEFT_VALUE,
@@ -68,11 +69,20 @@ describe("the deterministic architecture builder", () => {
     },
   ];
 
-  it("uses one fixed dataset with both shape-coded classes", () => {
-    expect(BUILDER_POINTS).toHaveLength(16);
-    expect(BUILDER_POINTS.filter((point) => point.label === 0)).toHaveLength(8);
-    expect(BUILDER_POINTS.filter((point) => point.label === 1)).toHaveLength(8);
-    expect(new Set(BUILDER_POINTS.map((point) => point.id)).size).toBe(16);
+  it("offers three deterministic, balanced datasets with denser samples", () => {
+    expect(BUILDER_DATASETS.map((dataset) => dataset.id)).toEqual([
+      "diagonal",
+      "xor",
+      "offset-steps",
+    ]);
+    expect(BUILDER_POINTS).toBe(BUILDER_DATASETS[0].points);
+
+    for (const dataset of BUILDER_DATASETS) {
+      expect(dataset.points).toHaveLength(36);
+      expect(dataset.points.filter((point) => point.label === 0)).toHaveLength(18);
+      expect(dataset.points.filter((point) => point.label === 1)).toHaveLength(18);
+      expect(new Set(dataset.points.map((point) => point.id)).size).toBe(36);
+    }
   });
 
   it("shares exactly the second-depth rule in the oblivious architecture", () => {
@@ -88,13 +98,15 @@ describe("the deterministic architecture builder", () => {
   });
 
   it("produces normalized leaf weights and bounded predictions for every variant", () => {
-    for (const architecture of allArchitectures) {
-      for (const point of BUILDER_POINTS) {
-        const result = predictArchitecture(architecture, point.x1, point.x2);
-        expect(result.leafWeights.reduce((sum, weight) => sum + weight, 0)).toBeCloseTo(1, 12);
-        expect(result.leafWeights.every((weight) => weight >= 0 && weight <= 1)).toBe(true);
-        expect(result.prediction).toBeGreaterThanOrEqual(0);
-        expect(result.prediction).toBeLessThanOrEqual(1);
+    for (const dataset of BUILDER_DATASETS) {
+      for (const architecture of allArchitectures) {
+        for (const point of dataset.points) {
+          const result = predictArchitecture(architecture, point.x1, point.x2, dataset.id);
+          expect(result.leafWeights.reduce((sum, weight) => sum + weight, 0)).toBeCloseTo(1, 12);
+          expect(result.leafWeights.every((weight) => weight >= 0 && weight <= 1)).toBe(true);
+          expect(result.prediction).toBeGreaterThanOrEqual(0);
+          expect(result.prediction).toBeLessThanOrEqual(1);
+        }
       }
     }
   });
@@ -146,5 +158,16 @@ describe("the deterministic architecture builder", () => {
     expect(first).toEqual(second);
     expect(first).toHaveLength(196);
     expect(first.every((cell) => cell.bin >= 0 && cell.bin <= 5)).toBe(true);
+  });
+
+  it("recomputes rules and surfaces when the dataset changes", () => {
+    const diagonal = createDecisionSurface(CART_ARCHITECTURE, 14, "diagonal");
+    const xor = createDecisionSurface(CART_ARCHITECTURE, 14, "xor");
+    const diagonalBins = diagonal.map((cell) => cell.bin);
+    const xorBins = xor.map((cell) => cell.bin);
+
+    expect(xorBins).not.toEqual(diagonalBins);
+    expect(architectureRules(CART_ARCHITECTURE, "xor").left.label).toBe("x₂ < 0");
+    expect(architectureRules(CART_ARCHITECTURE, "offset-steps").left.label).toBe("x₂ < −0.62");
   });
 });

@@ -79,12 +79,24 @@ test("the architecture builder composes all four choices from one computed state
   ))).toBe(false);
 
   await expect(builder).toHaveAttribute("data-preset", "cart");
+  await expect(builder).toHaveAttribute("data-dataset", "diagonal");
+  await expect(builder).toHaveAttribute("data-sample-count", "36");
   await expect(builder).toHaveAttribute("data-parameter-count", "7");
   await expect(builder).toHaveAttribute("data-node-evaluations", "2");
   await expect(builder.locator("[data-surface-cell]")).toHaveCount(196);
+  await expect(builder.locator("[data-point-id]")).toHaveCount(36);
   const cartSurface = await builder.locator("[data-surface-cell]").evaluateAll((cells) => (
     cells.map((cell) => cell.getAttribute("data-prediction-bin")).join("")
   ));
+
+  await builder.getByRole("button", { name: "XOR", exact: true }).click();
+  await expect(builder).toHaveAttribute("data-dataset", "xor");
+  await expect(builder).toHaveAttribute("data-preset", "cart");
+  await expect(builder.locator('[data-point-id^="xor-"]')).toHaveCount(36);
+  const xorSurface = await builder.locator("[data-surface-cell]").evaluateAll((cells) => (
+    cells.map((cell) => cell.getAttribute("data-prediction-bin")).join("")
+  ));
+  expect(xorSurface).not.toBe(cartSurface);
 
   await builder.getByRole("button", { name: "Highly relaxed" }).click();
   await expect(builder).toHaveAttribute("data-preset", "relaxed");
@@ -112,6 +124,11 @@ test("the architecture builder composes all four choices from one computed state
   await builder.getByRole("button", { name: "CART", exact: true }).click();
   await expect(builder).toHaveAttribute("data-preset", "cart");
   await expect(builder).toHaveAttribute("data-parameter-count", "7");
+
+  await builder.getByRole("button", { name: "Offset steps", exact: true }).click();
+  await expect(builder).toHaveAttribute("data-dataset", "offset-steps");
+  await expect(builder).toHaveAttribute("data-preset", "cart");
+  await expect(builder.locator('[data-point-id^="offset-steps-"]')).toHaveCount(36);
 });
 
 test("both animations support explicit steps and timed playback", async ({ page }) => {

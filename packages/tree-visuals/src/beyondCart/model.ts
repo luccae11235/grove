@@ -7,6 +7,7 @@ export type SplitGeometry = "axis-aligned" | "oblique";
 export type RoutingMode = "hard" | "soft";
 export type RuleSharing = "independent" | "shared-by-depth";
 export type LeafModel = "constant" | "linear";
+export type BuilderDatasetId = "diagonal" | "xor" | "offset-steps";
 
 export interface TreeArchitecture {
   split: SplitGeometry;
@@ -32,6 +33,22 @@ export interface ArchitectureRules {
   root: SplitRule;
   left: SplitRule;
   right: SplitRule;
+}
+
+type LeafValues = readonly [number, number, number, number];
+
+interface BuilderRuleFamily {
+  independent: ArchitectureRules;
+  shared: SplitRule;
+}
+
+export interface BuilderDataset {
+  id: BuilderDatasetId;
+  label: string;
+  description: string;
+  points: readonly Point2D[];
+  rules: Readonly<Record<SplitGeometry, BuilderRuleFamily>>;
+  leafValues: Readonly<Record<SplitGeometry, LeafValues>>;
 }
 
 export interface RoutingResult {
@@ -113,59 +130,144 @@ export const ARCHITECTURE_PRESETS: readonly ArchitecturePreset[] = [
   },
 ] as const;
 
-// One fixed problem is reused by every architecture. Labels follow a diagonal
-// relationship so axis-aligned and oblique partitions have genuinely different
-// work to do without introducing random data or a hidden benchmark.
-export const BUILDER_POINTS: readonly Point2D[] = [
-  { id: "n-1", x1: -1.65, x2: -0.95, label: 0 },
-  { id: "n-2", x1: -1.5, x2: 0.15, label: 0 },
-  { id: "n-3", x1: -1.15, x2: -1.35, label: 0 },
-  { id: "n-4", x1: -0.85, x2: 0.65, label: 0 },
-  { id: "n-5", x1: -0.65, x2: -0.35, label: 0 },
-  { id: "n-6", x1: -0.25, x2: -1.5, label: 0 },
-  { id: "n-7", x1: 0.25, x2: -0.75, label: 0 },
-  { id: "n-8", x1: 0.55, x2: -1.05, label: 0 },
-  { id: "p-1", x1: -0.9, x2: 1.45, label: 1 },
-  { id: "p-2", x1: -0.45, x2: 0.95, label: 1 },
-  { id: "p-3", x1: 0.05, x2: 0.45, label: 1 },
-  { id: "p-4", x1: 0.35, x2: 0.15, label: 1 },
-  { id: "p-5", x1: 0.45, x2: 1.4, label: 1 },
-  { id: "p-6", x1: 0.8, x2: -0.35, label: 1 },
-  { id: "p-7", x1: 1.15, x2: 0.45, label: 1 },
-  { id: "p-8", x1: 1.55, x2: -0.15, label: 1 },
+const SAMPLE_COORDINATES = [-1.65, -0.99, -0.33, 0.33, 0.99, 1.65] as const;
+
+function createDatasetPoints(
+  datasetId: BuilderDatasetId,
+  classify: (x1: number, x2: number) => 0 | 1,
+): readonly Point2D[] {
+  return SAMPLE_COORDINATES.flatMap((baseX, column) => (
+    SAMPLE_COORDINATES.map((baseY, row) => {
+      // Fixed, tiny offsets keep the sample from reading as a synthetic lattice
+      // without introducing randomness between renders or architecture choices.
+      const x1 = baseX + ((((row * 3) + (column * 5)) % 5) - 2) * 0.025;
+      const x2 = baseY + ((((row * 7) + (column * 2)) % 5) - 2) * 0.025;
+      return {
+        id: `${datasetId}-${column}-${row}`,
+        x1,
+        x2,
+        label: classify(x1, x2),
+      };
+    })
+  ));
+}
+
+const DIAGONAL_POINTS = createDatasetPoints(
+  "diagonal",
+  (x1, x2) => Number(x2 >= (-0.78 * x1) + 0.05) as 0 | 1,
+);
+
+const XOR_POINTS = createDatasetPoints(
+  "xor",
+  (x1, x2) => Number((x1 < 0) === (x2 < 0)) as 0 | 1,
+);
+
+const OFFSET_STEP_POINTS = createDatasetPoints(
+  "offset-steps",
+  (x1, x2) => Number(x2 >= (x1 < 0 ? -0.62 : 0.62)) as 0 | 1,
+);
+
+const ROOT_X1: SplitRule = { weights: [1, 0], threshold: 0, label: "x₁ < 0" };
+const ROOT_X2: SplitRule = { weights: [0, 1], threshold: 0, label: "x₂ < 0" };
+
+export const DEFAULT_BUILDER_DATASET_ID: BuilderDatasetId = "diagonal";
+
+export const BUILDER_DATASETS: readonly BuilderDataset[] = [
+  {
+    id: "diagonal",
+    label: "Diagonal",
+    description: "A slanted boundary rewards a split that can rotate.",
+    points: DIAGONAL_POINTS,
+    rules: {
+      "axis-aligned": {
+        independent: {
+          root: ROOT_X1,
+          left: { weights: [0, 1], threshold: 0.62, label: "x₂ < 0.62" },
+          right: { weights: [0, 1], threshold: -0.62, label: "x₂ < −0.62" },
+        },
+        shared: ROOT_X2,
+      },
+      oblique: {
+        independent: {
+          root: { weights: [0.78, 1], threshold: 0.05, label: "0.78x₁ + x₂ < 0.05" },
+          left: { weights: [-0.45, 1], threshold: -0.75, label: "−0.45x₁ + x₂ < −0.75" },
+          right: { weights: [-0.45, 1], threshold: 0.8, label: "−0.45x₁ + x₂ < 0.80" },
+        },
+        shared: { weights: [-0.45, 1], threshold: 0, label: "−0.45x₁ + x₂ < 0" },
+      },
+    },
+    leafValues: {
+      "axis-aligned": [0.08, 0.88, 0.12, 0.92],
+      oblique: [0.06, 0.18, 0.82, 0.94],
+    },
+  },
+  {
+    id: "xor",
+    label: "XOR",
+    description: "Alternating quadrants reward a repeated depth-two rule.",
+    points: XOR_POINTS,
+    rules: {
+      "axis-aligned": {
+        independent: {
+          root: ROOT_X1,
+          left: ROOT_X2,
+          right: ROOT_X2,
+        },
+        shared: ROOT_X2,
+      },
+      oblique: {
+        independent: {
+          root: { weights: [1, 1], threshold: 0, label: "x₁ + x₂ < 0" },
+          left: { weights: [1, -1], threshold: 0, label: "x₁ − x₂ < 0" },
+          right: { weights: [1, -1], threshold: 0, label: "x₁ − x₂ < 0" },
+        },
+        shared: { weights: [1, -1], threshold: 0, label: "x₁ − x₂ < 0" },
+      },
+    },
+    leafValues: {
+      "axis-aligned": [0.92, 0.08, 0.08, 0.92],
+      oblique: [0.1, 0.9, 0.9, 0.1],
+    },
+  },
+  {
+    id: "offset-steps",
+    label: "Offset steps",
+    description: "Different local thresholds reward independent node rules.",
+    points: OFFSET_STEP_POINTS,
+    rules: {
+      "axis-aligned": {
+        independent: {
+          root: ROOT_X1,
+          left: { weights: [0, 1], threshold: -0.62, label: "x₂ < −0.62" },
+          right: { weights: [0, 1], threshold: 0.62, label: "x₂ < 0.62" },
+        },
+        shared: ROOT_X2,
+      },
+      oblique: {
+        independent: {
+          root: { weights: [1, 0.18], threshold: 0, label: "x₁ + 0.18x₂ < 0" },
+          left: { weights: [-0.18, 1], threshold: -0.62, label: "−0.18x₁ + x₂ < −0.62" },
+          right: { weights: [0.18, 1], threshold: 0.62, label: "0.18x₁ + x₂ < 0.62" },
+        },
+        shared: { weights: [0, 1], threshold: 0, label: "x₂ < 0" },
+      },
+    },
+    leafValues: {
+      "axis-aligned": [0.08, 0.9, 0.1, 0.92],
+      oblique: [0.08, 0.9, 0.1, 0.92],
+    },
+  },
 ] as const;
 
-const CONSTANT_LEAF_VALUES = [0.1, 0.34, 0.66, 0.9] as const;
-const LINEAR_LEAF_MODELS = [
-  { intercept: 0.16, x1: 0.07, x2: 0.04 },
-  { intercept: 0.39, x1: 0.07, x2: -0.05 },
-  { intercept: 0.61, x1: -0.04, x2: 0.07 },
-  { intercept: 0.84, x1: 0.05, x2: 0.04 },
+// Kept as a stable public alias for consumers that only need the default sample.
+export const BUILDER_POINTS = BUILDER_DATASETS[0].points;
+
+const LINEAR_LEAF_SLOPES = [
+  { x1: 0.045, x2: 0.035 },
+  { x1: 0.055, x2: -0.04 },
+  { x1: -0.035, x2: 0.055 },
+  { x1: 0.04, x2: 0.035 },
 ] as const;
-
-const AXIS_RULES: ArchitectureRules = {
-  root: { weights: [1, 0], threshold: 0, label: "x₁ < 0.0" },
-  left: { weights: [0, 1], threshold: -0.2, label: "x₂ < −0.2" },
-  right: { weights: [0, 1], threshold: 0.25, label: "x₂ < 0.25" },
-};
-
-const AXIS_SHARED_RULE: SplitRule = {
-  weights: [0, 1],
-  threshold: 0,
-  label: "x₂ < 0.0",
-};
-
-const OBLIQUE_RULES: ArchitectureRules = {
-  root: { weights: [0.8, 0.6], threshold: 0, label: "0.8x₁ + 0.6x₂ < 0" },
-  left: { weights: [-0.45, 1], threshold: 0.05, label: "−0.45x₁ + x₂ < 0.05" },
-  right: { weights: [0.65, -1], threshold: -0.1, label: "0.65x₁ − x₂ < −0.1" },
-};
-
-const OBLIQUE_SHARED_RULE: SplitRule = {
-  weights: [-0.6, 0.8],
-  threshold: 0,
-  label: "−0.6x₁ + 0.8x₂ < 0",
-};
 
 function clamp(value: number, minimum: number, maximum: number): number {
   return Math.max(minimum, Math.min(maximum, value));
@@ -192,11 +294,21 @@ export function softRoutingPrediction(x: number, temperature: number): RoutingRe
   };
 }
 
-export function architectureRules(architecture: TreeArchitecture): ArchitectureRules {
-  const base = architecture.split === "axis-aligned" ? AXIS_RULES : OBLIQUE_RULES;
-  if (architecture.rules === "independent") return base;
-  const shared = architecture.split === "axis-aligned" ? AXIS_SHARED_RULE : OBLIQUE_SHARED_RULE;
-  return { root: base.root, left: shared, right: shared };
+export function getBuilderDataset(datasetId: BuilderDatasetId): BuilderDataset {
+  return BUILDER_DATASETS.find((dataset) => dataset.id === datasetId) ?? BUILDER_DATASETS[0];
+}
+
+export function architectureRules(
+  architecture: TreeArchitecture,
+  datasetId: BuilderDatasetId = DEFAULT_BUILDER_DATASET_ID,
+): ArchitectureRules {
+  const family = getBuilderDataset(datasetId).rules[architecture.split];
+  if (architecture.rules === "independent") return family.independent;
+  return {
+    root: family.independent.root,
+    left: family.shared,
+    right: family.shared,
+  };
 }
 
 function ruleScore(rule: SplitRule, x1: number, x2: number): number {
@@ -215,18 +327,33 @@ function rightGate(
     : sigmoid(score / BUILDER_SOFT_TEMPERATURE);
 }
 
-function leafPrediction(leafIndex: number, x1: number, x2: number, model: LeafModel): number {
-  if (model === "constant") return CONSTANT_LEAF_VALUES[leafIndex];
-  const leaf = LINEAR_LEAF_MODELS[leafIndex];
-  return clamp(leaf.intercept + leaf.x1 * x1 + leaf.x2 * x2, 0.03, 0.97);
+export function architectureLeafValues(
+  architecture: TreeArchitecture,
+  datasetId: BuilderDatasetId = DEFAULT_BUILDER_DATASET_ID,
+): LeafValues {
+  return getBuilderDataset(datasetId).leafValues[architecture.split];
+}
+
+function leafPrediction(
+  leafIndex: number,
+  x1: number,
+  x2: number,
+  architecture: TreeArchitecture,
+  datasetId: BuilderDatasetId,
+): number {
+  const base = architectureLeafValues(architecture, datasetId)[leafIndex];
+  if (architecture.leaves === "constant") return base;
+  const slopes = LINEAR_LEAF_SLOPES[leafIndex];
+  return clamp(base + slopes.x1 * x1 + slopes.x2 * x2, 0.03, 0.97);
 }
 
 export function predictArchitecture(
   architecture: TreeArchitecture,
   x1: number,
   x2: number,
+  datasetId: BuilderDatasetId = DEFAULT_BUILDER_DATASET_ID,
 ): ArchitecturePrediction {
-  const rules = architectureRules(architecture);
+  const rules = architectureRules(architecture, datasetId);
   const rootRight = rightGate(rules.root, x1, x2, architecture.routing);
   if (architecture.routing === "hard") {
     const onRight = rootRight === 1;
@@ -235,7 +362,7 @@ export function predictArchitecture(
     const leafWeights: [number, number, number, number] = [0, 0, 0, 0];
     leafWeights[leafIndex] = 1;
     return {
-      prediction: leafPrediction(leafIndex, x1, x2, architecture.leaves),
+      prediction: leafPrediction(leafIndex, x1, x2, architecture, datasetId),
       leafWeights,
     };
   }
@@ -251,7 +378,7 @@ export function predictArchitecture(
     rootRight * rightRight,
   ];
   const prediction = leafWeights.reduce((total, weight, leafIndex) => (
-    total + weight * leafPrediction(leafIndex, x1, x2, architecture.leaves)
+    total + weight * leafPrediction(leafIndex, x1, x2, architecture, datasetId)
   ), 0);
 
   return { prediction, leafWeights };
@@ -281,6 +408,7 @@ export function architectureComplexity(architecture: TreeArchitecture): Architec
 export function createDecisionSurface(
   architecture: TreeArchitecture,
   steps = 14,
+  datasetId: BuilderDatasetId = DEFAULT_BUILDER_DATASET_ID,
 ): readonly SurfaceCell[] {
   const safeSteps = Math.max(2, Math.floor(steps));
   const span = 4;
@@ -289,7 +417,7 @@ export function createDecisionSurface(
     const row = Math.floor(index / safeSteps);
     const x1 = -2 + ((column + 0.5) / safeSteps) * span;
     const x2 = 2 - ((row + 0.5) / safeSteps) * span;
-    const prediction = predictArchitecture(architecture, x1, x2).prediction;
+    const prediction = predictArchitecture(architecture, x1, x2, datasetId).prediction;
     return {
       id: `${row}-${column}`,
       x1,

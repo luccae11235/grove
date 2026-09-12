@@ -2,16 +2,20 @@ import { useId, useMemo, useState } from "react";
 import styles from "./BeyondCartPlaygrounds.module.css";
 import {
   ARCHITECTURE_PRESETS,
-  BUILDER_POINTS,
+  BUILDER_DATASETS,
   CART_ARCHITECTURE,
+  DEFAULT_BUILDER_DATASET_ID,
   SOFT_TREE_LEFT_VALUE,
   SOFT_TREE_RIGHT_VALUE,
   architectureComplexity,
+  architectureLeafValues,
   architectureRules,
   architectureSummary,
   architecturesEqual,
   createDecisionSurface,
   softRoutingPrediction,
+  type BuilderDataset,
+  type BuilderDatasetId,
   type LeafModel,
   type RoutingMode,
   type RuleSharing,
@@ -41,8 +45,11 @@ function surfaceEvidenceSummary(architecture: TreeArchitecture): string {
   return `${geometry} ${transition} ${sharing} ${leaves}`;
 }
 
-function childRuleSummary(architecture: TreeArchitecture): string {
-  const rules = architectureRules(architecture);
+function childRuleSummary(
+  architecture: TreeArchitecture,
+  datasetId: BuilderDatasetId = DEFAULT_BUILDER_DATASET_ID,
+): string {
+  const rules = architectureRules(architecture, datasetId);
   return architecture.rules === "shared-by-depth"
     ? `Both second-depth nodes use ${rules.left.label}.`
     : `The left second-depth node uses ${rules.left.label}; the right one uses ${rules.right.label}.`;
@@ -246,11 +253,13 @@ function surfaceY(value: number): number {
 function DecisionSurface({
   architecture,
   cells,
+  dataset,
   titleId,
   descriptionId,
 }: {
   architecture: TreeArchitecture;
   cells: readonly SurfaceCell[];
+  dataset: BuilderDataset;
   titleId: string;
   descriptionId: string;
 }) {
@@ -266,7 +275,8 @@ function DecisionSurface({
     >
       <title id={titleId}>Decision surface for the assembled tree</title>
       <desc id={descriptionId}>
-        A fixed two-class dataset over the prediction surface produced by {summary}.{" "}
+        The {dataset.label} dataset has {dataset.points.length} observations over the prediction
+        surface produced by {summary}. {dataset.description}{" "}
         {surfaceEvidenceSummary(architecture)}{" "}
         Negative observations are warm diamonds; positive observations are green circles.
       </desc>
@@ -291,24 +301,26 @@ function DecisionSurface({
         width={SURFACE_PLOT.size}
         height={SURFACE_PLOT.size}
       />
-      {BUILDER_POINTS.map((point) => point.label === 1 ? (
+      {dataset.points.map((point) => point.label === 1 ? (
         <circle
           className={styles.positivePoint}
           cx={surfaceX(point.x1)}
           cy={surfaceY(point.x2)}
-          r="5.2"
+          r="4.1"
           data-point-class="positive"
+          data-point-id={point.id}
           key={point.id}
         />
       ) : (
         <rect
           className={styles.negativePoint}
-          x={surfaceX(point.x1) - 4.4}
-          y={surfaceY(point.x2) - 4.4}
-          width="8.8"
-          height="8.8"
+          x={surfaceX(point.x1) - 3.5}
+          y={surfaceY(point.x2) - 3.5}
+          width="7"
+          height="7"
           transform={`rotate(45 ${surfaceX(point.x1)} ${surfaceY(point.x2)})`}
           data-point-class="negative"
+          data-point-id={point.id}
           key={point.id}
         />
       ))}
@@ -326,16 +338,19 @@ function DecisionSurface({
 
 function TreeDiagram({
   architecture,
+  dataset,
   titleId,
   descriptionId,
 }: {
   architecture: TreeArchitecture;
+  dataset: BuilderDataset;
   titleId: string;
   descriptionId: string;
 }) {
-  const rules = architectureRules(architecture);
+  const rules = architectureRules(architecture, dataset.id);
+  const leafValues = architectureLeafValues(architecture, dataset.id);
   const leafLabels = architecture.leaves === "constant"
-    ? ["c₁ = 0.10", "c₂ = 0.34", "c₃ = 0.66", "c₄ = 0.90"]
+    ? leafValues.map((value, index) => `c${["₁", "₂", "₃", "₄"][index]} = ${format(value)}`)
     : ["β₁ᵀx + b₁", "β₂ᵀx + b₂", "β₃ᵀx + b₃", "β₄ᵀx + b₄"];
   const edgeClass = architecture.routing === "soft"
     ? `${styles.treeEdge} ${styles.softTreeEdge}`
@@ -351,7 +366,8 @@ function TreeDiagram({
     >
       <title id={titleId}>The assembled depth-two tree</title>
       <desc id={descriptionId}>
-        The root uses {rules.root.label}. {childRuleSummary(architecture)}{" "}
+        For the {dataset.label} dataset, the root uses {rules.root.label}.{" "}
+        {childRuleSummary(architecture, dataset.id)}{" "}
         Routing is {architecture.routing}, and the four leaves are {architecture.leaves} models.
       </desc>
 
@@ -455,7 +471,13 @@ function setArchitectureField(
 export function TreeArchitectureBuilder() {
   const id = useId();
   const [architecture, setArchitecture] = useState<TreeArchitecture>({ ...CART_ARCHITECTURE });
-  const surface = useMemo(() => createDecisionSurface(architecture, SURFACE_STEPS), [architecture]);
+  const [datasetId, setDatasetId] = useState<BuilderDatasetId>(DEFAULT_BUILDER_DATASET_ID);
+  const dataset = BUILDER_DATASETS.find((candidate) => candidate.id === datasetId)
+    ?? BUILDER_DATASETS[0];
+  const surface = useMemo(
+    () => createDecisionSurface(architecture, SURFACE_STEPS, dataset.id),
+    [architecture, dataset.id],
+  );
   const complexity = architectureComplexity(architecture);
   const selectedPreset = ARCHITECTURE_PRESETS.find((preset) => (
     architecturesEqual(preset.architecture, architecture)
@@ -467,6 +489,8 @@ export function TreeArchitectureBuilder() {
       role="region"
       aria-labelledby={`${id}-title`}
       data-beyond-cart-playground="architecture-builder"
+      data-dataset={dataset.id}
+      data-sample-count={dataset.points.length}
       data-split={architecture.split}
       data-routing={architecture.routing}
       data-rules={architecture.rules}
@@ -475,40 +499,60 @@ export function TreeArchitectureBuilder() {
       data-parameter-count={complexity.totalParameters}
       data-node-evaluations={complexity.nodeEvaluations}
     >
-      <header className={styles.header}>
-        <div>
-          <p className={styles.kicker}>Design space</p>
-          <h3 id={`${id}-title`}>Build a tree</h3>
+      <header className={`${styles.header} ${styles.builderHeader}`}>
+        <div className={styles.builderHeaderTop}>
+          <div>
+            <p className={styles.kicker}>Design space</p>
+            <h3 id={`${id}-title`}>Build a tree</h3>
+          </div>
+          <span className={styles.depthBadge}>fixed depth 2</span>
         </div>
-        <span className={styles.depthBadge}>fixed depth 2</span>
+        <div className={styles.builderToolbar}>
+          <div className={styles.toolbarGroup} role="group" aria-label="Dataset">
+            <span>Dataset</span>
+            <div>
+              {BUILDER_DATASETS.map((candidate) => (
+                <button
+                  type="button"
+                  aria-pressed={dataset.id === candidate.id}
+                  data-builder-dataset={candidate.id}
+                  onClick={() => setDatasetId(candidate.id)}
+                  key={candidate.id}
+                >
+                  {candidate.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className={styles.toolbarGroup} role="group" aria-label="Architecture presets">
+            <span>Start from</span>
+            <div>
+              {ARCHITECTURE_PRESETS.map((preset) => (
+                <button
+                  type="button"
+                  aria-pressed={selectedPreset?.id === preset.id}
+                  data-architecture-preset={preset.id}
+                  onClick={() => setArchitecture({ ...preset.architecture })}
+                  key={preset.id}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       </header>
-
-      <div className={styles.presetBar} role="group" aria-label="Architecture presets">
-        <span>Start from</span>
-        <div>
-          {ARCHITECTURE_PRESETS.map((preset) => (
-            <button
-              type="button"
-              aria-pressed={selectedPreset?.id === preset.id}
-              data-architecture-preset={preset.id}
-              onClick={() => setArchitecture({ ...preset.architecture })}
-              key={preset.id}
-            >
-              {preset.label}
-            </button>
-          ))}
-        </div>
-      </div>
 
       <div className={styles.builderViews}>
         <section className={styles.viewPanel} aria-labelledby={`${id}-surface-heading`}>
           <div className={styles.panelHeading}>
             <strong id={`${id}-surface-heading`}>Decision surface</strong>
-            <span>same 16 observations</span>
+            <span>{dataset.points.length} observations · held fixed</span>
           </div>
           <DecisionSurface
             architecture={architecture}
             cells={surface}
+            dataset={dataset}
             titleId={`${id}-surface-title`}
             descriptionId={`${id}-surface-description`}
           />
@@ -520,6 +564,7 @@ export function TreeArchitectureBuilder() {
           </div>
           <TreeDiagram
             architecture={architecture}
+            dataset={dataset}
             titleId={`${id}-tree-title`}
             descriptionId={`${id}-tree-description`}
           />
@@ -569,8 +614,9 @@ export function TreeArchitectureBuilder() {
       </div>
 
       <p className={styles.srOnly} aria-live="polite" aria-atomic="true">
+        Current dataset: {dataset.label}, {dataset.points.length} observations. {dataset.description}{" "}
         Current architecture: {architectureSummary(architecture)}.{" "}
-        {surfaceEvidenceSummary(architecture)} {childRuleSummary(architecture)} It contains
+        {surfaceEvidenceSummary(architecture)} {childRuleSummary(architecture, dataset.id)} It contains
         {" "}{complexity.totalParameters} learned parameters and needs approximately
         {" "}{complexity.nodeEvaluations} split evaluations for one prediction.
       </p>

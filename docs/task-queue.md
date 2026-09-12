@@ -297,12 +297,13 @@ references for longer-term editorial direction.
 
 ### Learning experience
 
-- [x] **Build the Beyond CART visual learning experience — issue #192** — 2026-09-11
-  - Replaced all six image, two animation, and two playground placeholders with
-    deterministic, code-native visuals centered on one learner question each.
-  - Preserved keyboard controls, text alternatives, reduced-motion behavior,
-    and contained desktop and mobile layouts while keeping the article in draft.
-  - Completion check: 87 visual tests, seven focused browser scenarios, both
+- [x] **Refine the Beyond CART architecture builder — issue #192** — 2026-09-12
+  - Expanded the fixed sample from 16 to 36 observations and added Diagonal,
+    XOR, and Offset steps datasets with dataset-specific rules, leaves, and
+    computed decision surfaces.
+  - Rebuilt the oversized header as a compact dataset-and-preset toolbar while
+    preserving selected architecture state, accessibility, and mobile layout.
+  - Completion check: 88 visual tests, seven focused browser scenarios, both
     relevant typechecks, the draft build, and rendered desktop/mobile review pass.
 
 - [x] **Complete the gradient boosting visual system — issue #136** — 2026-08-24

@@ -39,13 +39,14 @@
   padding: 22px 24px 18px;
 }
 
-.header p,
-.header h3 {
+.playground .header p,
+.playground .header h3 {
   margin: 0;
 }
 
-.kicker {
+.playground .kicker {
   color: var(--beyond-green);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   font-size: 0.68rem;
   font-weight: 780;
   letter-spacing: 0.1em;
@@ -53,7 +54,7 @@
   text-transform: uppercase;
 }
 
-.header h3 {
+.playground .header h3 {
   margin-top: 5px;
   font-size: clamp(1.2rem, 3vw, 1.48rem);
   letter-spacing: -0.025em;
@@ -307,17 +308,38 @@
   font-weight: 550;
 }
 
-.presetBar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border-block: 1px solid var(--border);
-  background: var(--surface-subtle);
-  padding: 10px 24px;
+.builderHeader {
+  display: grid;
+  align-items: stretch;
+  justify-content: stretch;
+  gap: 14px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 15px;
 }
 
-.presetBar > span {
-  flex: 0 0 auto;
+.builderHeaderTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.builderToolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 0.84fr) minmax(0, 1.16fr);
+  gap: 12px 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 13px;
+}
+
+.toolbarGroup {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-width: 0;
+}
+
+.toolbarGroup > span {
   color: var(--text-muted);
   font-size: 0.64rem;
   font-weight: 760;
@@ -325,13 +347,13 @@
   text-transform: uppercase;
 }
 
-.presetBar > div {
+.toolbarGroup > div {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.presetBar button,
+.builderToolbar button,
 .choiceGroup button {
   min-height: 40px;
   border: 1px solid var(--border-strong);
@@ -345,13 +367,13 @@
   line-height: 1.15;
 }
 
-.presetBar button:hover,
+.builderToolbar button:hover,
 .choiceGroup button:hover {
   border-color: var(--beyond-green);
   color: var(--beyond-green-dark);
 }
 
-.presetBar button[aria-pressed="true"],
+.builderToolbar button[aria-pressed="true"],
 .choiceGroup button[aria-pressed="true"] {
   border-color: var(--beyond-green);
   background: var(--beyond-green);
@@ -604,11 +626,17 @@
     padding-left: 18px;
   }
 
-  .presetBar {
-    align-items: flex-start;
-    flex-direction: column;
+  .builderHeader {
     padding-right: 18px;
     padding-left: 18px;
+  }
+
+  .builderToolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbarGroup {
+    gap: 7px;
   }
 
   .builderViews {
@@ -663,13 +691,17 @@
     border-left: 0;
   }
 
-  .presetBar > div {
+  .toolbarGroup > div {
     display: grid;
     width: 100%;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .presetBar button {
+  .toolbarGroup:first-child > div {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .builderToolbar button {
     width: 100%;
   }
 
