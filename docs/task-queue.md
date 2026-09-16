@@ -108,20 +108,6 @@ references for longer-term editorial direction.
 
 ### Learning experience
 
-- [ ] **Correct and simplify the Beyond CART learning experience — issue #199**
-  - Correct the soft-routing limit, oblique-tree comparison, split geometry,
-    optimization language, and architecture terminology identified by the
-    beta-reader review.
-  - Make the architecture builder explicit about its illustrative fixed models,
-    remove inconsistent learned-parameter claims, and guide one-axis-at-a-time
-    comparisons.
-  - Strengthen the model-leaf example, reduce repeated synthesis, and preserve
-    responsive, keyboard, reduced-motion, and non-color accessibility paths.
-  - Keep the article in draft; translation, publication, production deployment,
-    and newsletter delivery remain out of scope.
-  - Completion check: focused model and browser tests, relevant typechecks, the
-    draft build, and rendered desktop/mobile review pass before staging review.
-
 - [ ] **Prepare the Reward Hacking article for release — issue #123**
   - Make the first checkpoint playground clearly explain that readers can move
     checkpoints and watch the model learn the changed route.
@@ -247,6 +233,19 @@ references for longer-term editorial direction.
 ## Done
 
 ### Publishing and content
+
+- [x] **Correct and simplify the Beyond CART learning experience — issue #199** — 2026-09-16
+  - Corrected the soft-routing limit, oblique-tree comparison, split geometry,
+    optimization language, and architecture terminology from the beta-reader
+    review while reducing repeated synthesis.
+  - Made the builder explicit about its fixed illustrative models, added guided
+    one-axis comparisons and a prediction scale, and strengthened the model-leaf
+    and threshold-crossing visuals.
+  - PR #200 passed the full GitHub gate; focused browser acceptance passed at
+    desktop and mobile widths, and Railway staging reviewed exact PR revision
+    `aa2bfee` before merge and exact `develop` revision `549ef7a` afterward.
+  - The article remains a draft; translation, publication, production
+    deployment, and newsletter delivery remain out of scope.
 
 - [x] **Draft Beyond CART: Decision Trees Don't Have to Look Like CART — issue #191** — 2026-09-11
   - Added the complete supplied English manuscript, formulas, metadata, and
