@@ -234,6 +234,14 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Draft Beyond CART: Decision Trees Don't Have to Look Like CART — issue #191** — 2026-09-11
+  - Added the complete supplied English manuscript, formulas, metadata, and
+    planned section sequence as an unpublished MDX article.
+  - Kept translation, publication, deployment, and newsletter delivery outside
+    the writing scope.
+  - Completion check: the full prose is present and its content, typecheck, and
+    draft-build checks pass.
+
 - [x] **Publish Gradient Boosting and deliver Issue 007 — issue #193** — 2026-09-11
   - Published the reviewed English and Brazilian Portuguese article through PR
     #194 and release PR #190.
@@ -288,6 +296,15 @@ references for longer-term editorial direction.
     and the exact production revision passed verification.
 
 ### Learning experience
+
+- [x] **Refine the Beyond CART architecture builder — issue #192** — 2026-09-12
+  - Expanded the fixed sample from 16 to 36 observations and added Diagonal,
+    XOR, and Offset steps datasets with dataset-specific rules, leaves, and
+    computed decision surfaces.
+  - Rebuilt the oversized header as a compact dataset-and-preset toolbar while
+    preserving selected architecture state, accessibility, and mobile layout.
+  - Completion check: 88 visual tests, seven focused browser scenarios, both
+    relevant typechecks, the draft build, and rendered desktop/mobile review pass.
 
 - [x] **Complete the gradient boosting visual system — issue #136** — 2026-08-24
   - Built the regression and classification figures, animations, and

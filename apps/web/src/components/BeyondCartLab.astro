@@ -1,0 +1,45 @@
+---
+import {
+  BeyondCartAnimation,
+  BeyondCartFigure,
+  SoftRoutingPlayground,
+  TreeArchitectureBuilder,
+} from "@grove/tree-visuals";
+
+type StaticKind =
+  | "architecture-anatomy"
+  | "split-geometry"
+  | "rule-sharing"
+  | "model-leaves"
+  | "design-space"
+  | "tradeoff-map";
+
+type AnimationKind = "hard-routing" | "batch-evaluation";
+type PlaygroundKind = "soft-routing" | "architecture-builder";
+
+interface Props {
+  kind: StaticKind | AnimationKind | PlaygroundKind;
+}
+
+const { kind } = Astro.props;
+const staticKinds = new Set<StaticKind>([
+  "architecture-anatomy",
+  "split-geometry",
+  "rule-sharing",
+  "model-leaves",
+  "design-space",
+  "tradeoff-map",
+]);
+---
+
+<div data-analytics-lab={`beyond-cart-${kind}`} data-beyond-cart-lab={kind}>
+  {kind === "soft-routing" ? (
+    <SoftRoutingPlayground client:visible />
+  ) : kind === "architecture-builder" ? (
+    <TreeArchitectureBuilder client:visible />
+  ) : kind === "hard-routing" || kind === "batch-evaluation" ? (
+    <BeyondCartAnimation client:visible kind={kind as AnimationKind} />
+  ) : staticKinds.has(kind as StaticKind) ? (
+    <BeyondCartFigure kind={kind as StaticKind} />
+  ) : null}
+</div>
