@@ -71,7 +71,7 @@ They are design assumptions.
 
 Importantly, they are also useful assumptions. Restricting each node to one feature makes split search relatively simple and individual decisions easy to inspect. Hard routing means that only one path needs to be evaluated for each observation. Independent nodes allow different parts of the feature space to behave differently, while constant leaves keep local predictions statistically and computationally simple.
 
-Together, these restrictions give CART many of the properties that make trees attractive in the first place: sparse computation, heterogeneous feature handling, local structure, straightforward optimization, and interpretability.
+Together, these restrictions give CART many of the properties that make trees attractive in the first place: one active prediction path, direct rules, and a relatively simple greedy search for each node's next split.
 
 But what happens if we relax them individually?
 
@@ -137,7 +137,7 @@ The node can now create a diagonal boundary.
 
 This changes where the model stores its representational complexity.
 
-CART keeps each individual node extremely simple, so complicated boundaries must emerge from many nodes arranged into a deeper tree. An oblique tree gives each node more expressive power, which can allow a much smaller tree to represent the same geometry.
+CART keeps each individual node extremely simple, so a rotated boundary such as this one may require many nodes arranged into a deeper tree. An oblique tree gives each node more expressive power, which can allow a much smaller tree to represent the same geometry.
 
 In other words, **greater node complexity can produce lower tree complexity**.
 
@@ -145,9 +145,7 @@ That extra expressiveness is not free. CART searches over candidate pairs $(j,t)
 
 There are many ways to learn $w$. Some methods test candidate directions, some fit linear models, and others optimize the coefficients directly or use differentiable formulations. The exact training procedure is a separate question from the architecture itself.
 
-There is also an interesting boundary case. A tree containing only one oblique split is essentially learning a linear decision boundary. Depending on the formulation, it begins to look remarkably similar to a linear classifier such as logistic regression.
-
-By changing only one assumption, two model families that initially look unrelated start to overlap.
+A tree containing one hard oblique split is therefore a linear threshold classifier: it uses a line or hyperplane to choose one of two sides. That shared boundary does not make it logistic regression. Logistic regression also specifies a smooth probability model and a training objective.
 
 The broader lesson is that expressiveness can be distributed across a model in different ways. Simple components generally require more structure around them; stronger components can sometimes accomplish the same task with less structure.
 
@@ -217,9 +215,11 @@ so both leaves contribute to the prediction.
 
 In a deeper tree, the same idea continues recursively. The weight assigned to a leaf is the product of the routing probabilities along the path leading to it.
 
+Before moving both controls, try one comparison. Keep $x$ just to the right of the threshold and lower $\tau$. Predict what will happen to the right-path weight, then move $x$ just to the left of zero.
+
 <BeyondCartLab kind="soft-routing" />
 
-The parameter $\tau$ makes the relationship with CART especially clear. With a large temperature, routing changes gradually around the threshold. As
+The parameter $\tau$ makes the relationship with CART especially clear. With a large temperature, routing changes gradually around the threshold. For any $x\neq t$, as
 
 $$
 
@@ -227,7 +227,7 @@ $$
 
 $$
 
-the transition becomes increasingly sharp, until the soft gate approaches the hard left-or-right decision used by CART.
+the transition becomes increasingly sharp, so the soft gate approaches the hard left-or-right decision used by CART. Exactly at $x=t$, however, the sigmoid remains $0.5$ for every positive temperature. In the playground, choosing $\tau=0$ explicitly switches to the CART rule; it is not the sigmoid evaluated at zero temperature.
 
 Something deeper has happened than merely smoothing the prediction. We replaced a discrete operation with a continuous relaxation.
 
@@ -265,13 +265,7 @@ $$
 
 every observation is evaluated using that rule. At the second level, another rule is chosen and applied regardless of which first-level branch the observation followed.
 
-Conceptually, if $g_{d,i}$ denotes the split used by node $i$ at depth $d$, then an oblivious tree imposes
-
-$$
-
-g_{d,1}=g_{d,2}=\cdots=g_d.
-
-$$
+At each depth, an oblivious tree learns one rule and reuses it at every node on that level.
 
 This modification moves in the opposite direction from oblique and soft trees.
 
@@ -281,7 +275,7 @@ A standard tree can specialize each node to a small local region. An oblivious t
 
 What we gain is regularity.
 
-Because every observation receives the same test at each depth, evaluation becomes highly structured. Memory access is more predictable, operations can be vectorized more easily, and a complete path can be represented by the sequence of binary outcomes produced across the levels.
+Because every observation receives the same test at each depth, evaluation becomes highly structured. A batch can apply one comparison to every observation at a level, and a complete path can be represented by the resulting sequence of binary outcomes.
 
 The constraint can also act as regularization. By preventing different branches from independently inventing increasingly specialized rules, we reduce the flexibility of each individual tree.
 
@@ -345,7 +339,7 @@ The resulting decomposition is useful:
 
 The tree handles discontinuities and regime changes, while the leaf model handles smoother local relationships.
 
-This idea connects naturally to local models and mixture-of-experts architectures. Different parts of the input space can use different predictive functions, with the tree acting as the mechanism that selects which local model should be responsible.
+This is also the basic connection to local-model systems: one mechanism chooses a region, and another models what happens inside it.
 
 The cost is additional complexity. A constant leaf may need only a mean or a class distribution. A linear leaf requires several coefficients, enough local observations to estimate them reliably, and a more involved fitting procedure.
 
@@ -363,39 +357,15 @@ These dimensions are largely independent.
 
 An oblique tree does not need soft routing. A soft tree does not need linear leaves. An oblivious tree can still use ordinary axis-aligned splits.
 
-We can therefore construct combinations such as:
+Thinking in terms of architecture makes combinations easier to understand. We have not discovered four mutually exclusive algorithms. We have identified four decisions that CART happens to make in one particular way.
 
-- oblique + hard;
-- axis-aligned + soft;
-- soft + oblique;
-- oblivious + soft;
-- oblique + model leaves.
-
-Thinking in terms of architecture makes these combinations much easier to understand. We have not discovered four mutually exclusive algorithms. We have identified four decisions that CART happens to make in one particular way.
+The builder below uses fixed, hand-set depth-2 examples. It does not train a new model when you click a control. Keep the dataset fixed, start from CART, and change one row at a time. Before each click, predict whether the boundary direction, routing edges, repeated rules, or within-leaf predictions will change.
 
 <BeyondCartLab kind="architecture-builder" />
 
-A few presets make the design space easier to navigate.
+After isolating each change, combine oblique splits, soft routing, independent rules, and linear leaves. That configuration is particularly revealing.
 
-**CART**
-
-axis-aligned + hard + independent + constant
-
-**Soft tree**
-
-axis-aligned + soft + independent + constant
-
-**Oblivious tree**
-
-axis-aligned + hard + shared + constant
-
-**Highly relaxed tree**
-
-oblique + soft + independent + linear leaves
-
-The last configuration is particularly revealing.
-
-Its nodes compute weighted combinations of features. Its routing is smooth and differentiable. Several paths may contribute to a prediction. Its leaves contain learned functions rather than constants.
+Its nodes compute weighted combinations of features. Its routing is smooth and differentiable. Several paths may contribute to a prediction. In a trained model of this form, its leaves would contain learned functions rather than constants.
 
 At that point, the architecture begins to resemble a hierarchical mixture-of-experts neural model much more than the textbook tree we started with.
 
@@ -411,25 +381,12 @@ Why restrict a split to one feature when several could be combined? Why force an
 
 After relaxing them individually, the picture becomes more nuanced.
 
-Each restriction was buying something:
-
-- Axis alignment sacrifices compactness for simple, local decisions.
-- Hard routing sacrifices smoothness for sparse computation and crisp paths.
-- Independent rules sacrifice regularity for local flexibility.
-- Constant leaves sacrifice local expressiveness for simplicity and statistical efficiency.
-
-Relaxing an assumption therefore does not automatically improve the model. It changes its inductive bias and moves complexity somewhere else.
+Each restriction buys something. Axis alignment keeps each decision local to one feature, even when a rotated boundary needs more nodes. Hard routing keeps one crisp prediction path. Independent rules preserve local flexibility. Constant leaves keep local estimation small and data-efficient. Relaxing an assumption therefore does not automatically improve the model; it moves complexity somewhere else.
 
 <BeyondCartLab kind="tradeoff-map" />
 
-This gives us a more useful way to think about machine-learning architectures.
+The compact mental model is this: **a tree architecture chooses how to split, route, share rules, and predict inside a leaf.** Change one choice and you change both what the model can express and what it costs to train, run, or explain.
 
-**A machine-learning model is not an indivisible algorithm. It is a collection of choices about what the model is allowed to represent, how information flows through it, which parameters are shared, and how predictions are produced.**
-
-Changing one of those choices can create a new model family.
-
-CART's restrictions are therefore more than historical baggage. Many of them remain present in some of the strongest models for tabular data precisely because constraints can be useful inductive biases.
-
-**Learning to design models begins with learning to notice the assumptions hidden inside the models we already use.**
+CART's restrictions are therefore useful inductive biases, not historical baggage. Learning to design models begins with noticing those hidden choices and predicting what each one buys.
 
 </article>

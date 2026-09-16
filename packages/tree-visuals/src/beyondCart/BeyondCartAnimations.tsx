@@ -8,7 +8,7 @@ export interface BeyondCartAnimationProps {
   kind: BeyondCartAnimationKind;
 }
 
-const HARD_ROUTING_POSITIONS = [-1.4, -1, -0.6, -0.2, 0.2, 0.6, 1, 1.4] as const;
+const HARD_ROUTING_POSITIONS = [-1.4, -1, -0.6, -0.05, 0.05, 0.6, 1, 1.4] as const;
 const HARD_ROUTING_DELAY_MS = 680;
 const BATCH_DELAY_MS = 1_250;
 
@@ -65,7 +65,8 @@ function useReducedMotion(): boolean {
 }
 
 function formatInput(value: number): string {
-  const magnitude = Math.abs(value).toFixed(1);
+  const digits = Math.abs(value) > 0 && Math.abs(value) < 0.1 ? 2 : 1;
+  const magnitude = Math.abs(value).toFixed(digits);
   return value < 0 ? `−${magnitude}` : magnitude;
 }
 

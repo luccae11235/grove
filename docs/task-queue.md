@@ -108,6 +108,20 @@ references for longer-term editorial direction.
 
 ### Learning experience
 
+- [ ] **Correct and simplify the Beyond CART learning experience — issue #199**
+  - Correct the soft-routing limit, oblique-tree comparison, split geometry,
+    optimization language, and architecture terminology identified by the
+    beta-reader review.
+  - Make the architecture builder explicit about its illustrative fixed models,
+    remove inconsistent learned-parameter claims, and guide one-axis-at-a-time
+    comparisons.
+  - Strengthen the model-leaf example, reduce repeated synthesis, and preserve
+    responsive, keyboard, reduced-motion, and non-color accessibility paths.
+  - Keep the article in draft; translation, publication, production deployment,
+    and newsletter delivery remain out of scope.
+  - Completion check: focused model and browser tests, relevant typechecks, the
+    draft build, and rendered desktop/mobile review pass before staging review.
+
 - [ ] **Prepare the Reward Hacking article for release — issue #123**
   - Make the first checkpoint playground clearly explain that readers can move
     checkpoints and watch the model learn the changed route.

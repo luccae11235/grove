@@ -39,15 +39,15 @@ const SPLIT_POINTS = [
 
 const REGRESSION_POINTS = [
   { id: "r1", x: 0.08, y: 0.17 },
-  { id: "r2", x: 0.16, y: 0.23 },
-  { id: "r3", x: 0.25, y: 0.31 },
-  { id: "r4", x: 0.34, y: 0.4 },
-  { id: "r5", x: 0.43, y: 0.46 },
-  { id: "r6", x: 0.56, y: 0.57 },
-  { id: "r7", x: 0.65, y: 0.63 },
-  { id: "r8", x: 0.74, y: 0.69 },
-  { id: "r9", x: 0.83, y: 0.77 },
-  { id: "r10", x: 0.92, y: 0.82 },
+  { id: "r2", x: 0.16, y: 0.19 },
+  { id: "r3", x: 0.25, y: 0.22 },
+  { id: "r4", x: 0.34, y: 0.24 },
+  { id: "r5", x: 0.43, y: 0.27 },
+  { id: "r6", x: 0.56, y: 0.43 },
+  { id: "r7", x: 0.65, y: 0.53 },
+  { id: "r8", x: 0.74, y: 0.62 },
+  { id: "r9", x: 0.83, y: 0.73 },
+  { id: "r10", x: 0.92, y: 0.84 },
 ] as const;
 
 function FigureShell({
@@ -150,8 +150,8 @@ function ArchitectureAnatomy({ figureId }: { figureId: string }) {
 
         <div className={`${styles.anatomyNote} ${styles.anatomyRules}`}>
           <span className={styles.noteNumber}>3</span>
-          <span><strong>Parameter sharing</strong><small>learned separately by node</small></span>
-          <code>g₁, g₂</code>
+          <span><strong>Rule sharing</strong><small>a separate rule at each node</small></span>
+          <code>g₁, g₂, g₃</code>
         </div>
         <div className={`${styles.anatomyNote} ${styles.anatomyLeaves}`}>
           <span className={styles.noteNumber}>4</span>
@@ -199,7 +199,7 @@ function SplitPanel({
         </title>
         <desc id={descriptionId}>
           {cart
-            ? "Circular observations lie above a staircase approximation made from four horizontal and vertical CART cuts; square observations lie below it."
+            ? "Circular observations lie above a staircase approximation made from horizontal and vertical CART boundaries; square observations lie below it."
             : "The same circular and square observations are separated by one diagonal weighted-feature split."}
         </desc>
         <rect className={styles.plotBackground} x="34" y="20" width="278" height="200" rx="8" />
@@ -209,7 +209,7 @@ function SplitPanel({
         {cart ? (
           <>
             <path className={styles.cartBoundary} d="M45 203H101V168H158V133H215V98H269V62H312" />
-            <text className={styles.boundaryLabel} x="178" y="119">4 cuts</text>
+            <text className={styles.boundaryLabel} x="178" y="119">staircase</text>
           </>
         ) : (
           <>
@@ -249,8 +249,8 @@ function SplitGeometry({ figureId }: { figureId: string }) {
       kind="split-geometry"
       figureId={figureId}
       kicker="Change the split"
-      title="CART approximates a diagonal boundary; an oblique node draws it directly"
-      caption="CART keeps each node simple and spends more tree structure on an approximation. An oblique node spends more parameters on one direct split."
+      title="For this diagonal dataset, CART builds a staircase; one oblique node draws the boundary directly"
+      caption="Here, CART keeps each node simple and spends more tree structure on the approximation. The oblique node spends a weighted rule on one direct split."
     >
       <div className={styles.pairBody}>
         <div className={styles.classKey} role="group" aria-label="Circles are class A; squares are class B">
@@ -380,8 +380,8 @@ function LeafPanel({
         </title>
         <desc id={descriptionId}>
           {constant
-            ? "Two regions contain the same rising observations as the model-tree panel, but each CART leaf predicts one horizontal mean."
-            : "The same two regions and observations each contain a fitted rising line with its own slope and intercept."}
+            ? "Two regions contain the same observations as the model-tree panel: a shallow rise on the left and a steeper rise on the right. Each CART leaf predicts one horizontal mean."
+            : "The same two regions and observations each contain a fitted rising line. The left line is shallow and the right line is steeper."}
         </desc>
         <rect className={styles.leftRegion} x="35" y="22" width="137.5" height="196" />
         <rect className={styles.rightRegion} x="172.5" y="22" width="137.5" height="196" />
@@ -393,15 +393,15 @@ function LeafPanel({
 
         {constant ? (
           <>
-            <path className={styles.constantPrediction} d={`M35 ${regressionY(0.32)}H172.5M172.5 ${regressionY(0.69)}H310`} />
-            <text className={styles.predictionLabel} x="46" y={regressionY(0.32) - 8}>leaf mean</text>
-            <text className={styles.predictionLabel} x="230" y={regressionY(0.69) - 8}>leaf mean</text>
+            <path className={styles.constantPrediction} d={`M35 ${regressionY(0.22)}H172.5M172.5 ${regressionY(0.63)}H310`} />
+            <text className={styles.predictionLabel} x="46" y={regressionY(0.22) - 8}>leaf mean</text>
+            <text className={styles.predictionLabel} x="230" y={regressionY(0.63) - 8}>leaf mean</text>
           </>
         ) : (
           <>
-            <path className={styles.linearPrediction} d={`M45 ${regressionY(0.16)}L166 ${regressionY(0.49)}M180 ${regressionY(0.54)}L306 ${regressionY(0.84)}`} />
-            <text className={styles.predictionLabel} x="50" y={regressionY(0.2) - 10}>local line</text>
-            <text className={styles.predictionLabel} x="236" y={regressionY(0.73) - 10}>local line</text>
+            <path className={styles.linearPrediction} d={`M45 ${regressionY(0.16)}L166 ${regressionY(0.29)}M180 ${regressionY(0.4)}L306 ${regressionY(0.87)}`} />
+            <text className={styles.predictionLabel} x="50" y={regressionY(0.19) - 10}>shallow line</text>
+            <text className={styles.predictionLabel} x="236" y={regressionY(0.65) - 10}>steeper line</text>
           </>
         )}
 
@@ -507,7 +507,7 @@ function DesignSpace({ figureId }: { figureId: string }) {
 const TRADEOFFS = [
   {
     family: "Oblique",
-    gain: "compact boundaries",
+    gain: "compact rotated boundaries",
     cost: "harder split search",
     position: "top",
   },

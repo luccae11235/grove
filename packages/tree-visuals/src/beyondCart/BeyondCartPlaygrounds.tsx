@@ -1,7 +1,6 @@
 import { useId, useMemo, useState } from "react";
 import styles from "./BeyondCartPlaygrounds.module.css";
 import {
-  ARCHITECTURE_PRESETS,
   BUILDER_DATASETS,
   CART_ARCHITECTURE,
   DEFAULT_BUILDER_DATASET_ID,
@@ -11,7 +10,6 @@ import {
   architectureLeafValues,
   architectureRules,
   architectureSummary,
-  architecturesEqual,
   createDecisionSurface,
   softRoutingPrediction,
   type BuilderDataset,
@@ -145,10 +143,10 @@ function SoftRoutingDiagram({
 
 export function SoftRoutingPlayground() {
   const id = useId();
-  const [x, setX] = useState(-0.8);
-  const [temperature, setTemperature] = useState(0.8);
+  const [x, setX] = useState(0.2);
+  const [temperature, setTemperature] = useState(1);
   const result = softRoutingPrediction(x, temperature);
-  const modeLabel = result.hard ? "Hard limit" : "Both paths contribute";
+  const modeLabel = result.hard ? "Explicit hard rule" : "Both paths contribute";
 
   return (
     <section
@@ -170,6 +168,12 @@ export function SoftRoutingPlayground() {
         </div>
         <span className={result.hard ? styles.modeHard : styles.modeSoft}>{modeLabel}</span>
       </header>
+
+      <p className={styles.learningPrompt}>
+        <strong>Try one controlled change.</strong> Keep <i>x</i> at 0.2 and lower
+        temperature toward 0.1. Predict how the right-path weight will move. Then
+        cross the threshold without changing temperature.
+      </p>
 
       <div className={styles.softCanvas}>
         <SoftRoutingDiagram
@@ -226,7 +230,7 @@ export function SoftRoutingPlayground() {
             onInput={(event) => setTemperature(Number(event.currentTarget.value))}
             onChange={(event) => setTemperature(Number(event.currentTarget.value))}
           />
-          <small><span>0 · hard</span><span>1</span><span>2 · gradual</span></small>
+          <small><span>0 · switch to hard rule</span><span>1</span><span>2 · gradual</span></small>
         </label>
       </div>
 
@@ -276,7 +280,8 @@ function DecisionSurface({
       <title id={titleId}>Decision surface for the assembled tree</title>
       <desc id={descriptionId}>
         The {dataset.label} dataset has {dataset.points.length} observations over the prediction
-        surface produced by {summary}. {dataset.description}{" "}
+        surface produced by a fixed, illustrative model with {summary}. The controls select
+        hand-set rules and leaf values; they do not train the model. {dataset.description}{" "}
         {surfaceEvidenceSummary(architecture)}{" "}
         Negative observations are warm diamonds; positive observations are green circles.
       </desc>
@@ -479,9 +484,6 @@ export function TreeArchitectureBuilder() {
     [architecture, dataset.id],
   );
   const complexity = architectureComplexity(architecture);
-  const selectedPreset = ARCHITECTURE_PRESETS.find((preset) => (
-    architecturesEqual(preset.architecture, architecture)
-  ));
 
   return (
     <section
@@ -495,8 +497,7 @@ export function TreeArchitectureBuilder() {
       data-routing={architecture.routing}
       data-rules={architecture.rules}
       data-leaves={architecture.leaves}
-      data-preset={selectedPreset?.id ?? "custom"}
-      data-parameter-count={complexity.totalParameters}
+      data-rule-count={complexity.distinctRules}
       data-node-evaluations={complexity.nodeEvaluations}
     >
       <header className={`${styles.header} ${styles.builderHeader}`}>
@@ -505,7 +506,7 @@ export function TreeArchitectureBuilder() {
             <p className={styles.kicker}>Design space</p>
             <h3 id={`${id}-title`}>Build a tree</h3>
           </div>
-          <span className={styles.depthBadge}>fixed depth 2</span>
+          <span className={styles.depthBadge}>fixed depth 2 · illustrative</span>
         </div>
         <div className={styles.builderToolbar}>
           <div className={styles.toolbarGroup} role="group" aria-label="Dataset">
@@ -524,64 +525,27 @@ export function TreeArchitectureBuilder() {
               ))}
             </div>
           </div>
-          <div className={styles.toolbarGroup} role="group" aria-label="Architecture presets">
-            <span>Start from</span>
+          <div className={styles.toolbarGroup}>
+            <span>Baseline</span>
             <div>
-              {ARCHITECTURE_PRESETS.map((preset) => (
-                <button
-                  type="button"
-                  aria-pressed={selectedPreset?.id === preset.id}
-                  data-architecture-preset={preset.id}
-                  onClick={() => setArchitecture({ ...preset.architecture })}
-                  key={preset.id}
-                >
-                  {preset.label}
-                </button>
-              ))}
+              <button
+                type="button"
+                onClick={() => setArchitecture({ ...CART_ARCHITECTURE })}
+                data-builder-reset
+              >
+                Reset to CART
+              </button>
             </div>
           </div>
         </div>
       </header>
 
-      <div className={styles.builderViews}>
-        <section className={styles.viewPanel} aria-labelledby={`${id}-surface-heading`}>
-          <div className={styles.panelHeading}>
-            <strong id={`${id}-surface-heading`}>Decision surface</strong>
-            <span>{dataset.points.length} observations · held fixed</span>
-          </div>
-          <DecisionSurface
-            architecture={architecture}
-            cells={surface}
-            dataset={dataset}
-            titleId={`${id}-surface-title`}
-            descriptionId={`${id}-surface-description`}
-          />
-        </section>
-        <section className={styles.viewPanel} aria-labelledby={`${id}-tree-heading`}>
-          <div className={styles.panelHeading}>
-            <strong id={`${id}-tree-heading`}>Tree</strong>
-            <span>{architecture.routing === "hard" ? "crisp path" : "weighted paths"}</span>
-          </div>
-          <TreeDiagram
-            architecture={architecture}
-            dataset={dataset}
-            titleId={`${id}-tree-title`}
-            descriptionId={`${id}-tree-description`}
-          />
-        </section>
-      </div>
-
-      <div className={styles.complexityBand} aria-label="Architecture complexity">
-        <div>
-          <span>Learned parameters</span>
-          <strong data-complexity-value="parameters">{complexity.totalParameters}</strong>
-          <small>{complexity.splitParameters} split + {complexity.gateParameters} gate + {complexity.leafParameters} leaf</small>
-        </div>
-        <div>
-          <span>Split evaluations</span>
-          <strong data-complexity-value="evaluations">≈ {complexity.nodeEvaluations}</strong>
-          <small>for one prediction</small>
-        </div>
+      <div className={styles.builderGuide}>
+        <strong>Change one row at a time.</strong>
+        <span>
+          The observations stay fixed. Each choice loads a hand-set example so you can
+          isolate architecture—not compare training quality.
+        </span>
       </div>
 
       <div className={styles.architectureControls}>
@@ -613,12 +577,59 @@ export function TreeArchitectureBuilder() {
         ))}
       </div>
 
+      <div className={styles.builderViews}>
+        <section className={styles.viewPanel} aria-labelledby={`${id}-surface-heading`}>
+          <div className={styles.panelHeading}>
+            <strong id={`${id}-surface-heading`}>Decision surface</strong>
+            <span>{dataset.points.length} observations · held fixed</span>
+          </div>
+          <DecisionSurface
+            architecture={architecture}
+            cells={surface}
+            dataset={dataset}
+            titleId={`${id}-surface-title`}
+            descriptionId={`${id}-surface-description`}
+          />
+          <div className={styles.predictionScale} aria-label="Surface color scale from prediction zero to prediction one">
+            <span>prediction 0</span>
+            <i aria-hidden="true" />
+            <span>prediction 1</span>
+          </div>
+        </section>
+        <section className={styles.viewPanel} aria-labelledby={`${id}-tree-heading`}>
+          <div className={styles.panelHeading}>
+            <strong id={`${id}-tree-heading`}>Tree</strong>
+            <span>{architecture.routing === "hard" ? "crisp path" : "weighted paths"}</span>
+          </div>
+          <TreeDiagram
+            architecture={architecture}
+            dataset={dataset}
+            titleId={`${id}-tree-title`}
+            descriptionId={`${id}-tree-description`}
+          />
+        </section>
+      </div>
+
+      <div className={styles.complexityBand} aria-label="Architecture complexity">
+        <div>
+          <span>Distinct split rules</span>
+          <strong data-complexity-value="rules">{complexity.distinctRules}</strong>
+          <small>{architecture.rules === "shared-by-depth" ? "root + one shared depth-2 rule" : "root + two local depth-2 rules"}</small>
+        </div>
+        <div>
+          <span>Split evaluations</span>
+          <strong data-complexity-value="evaluations">≈ {complexity.nodeEvaluations}</strong>
+          <small>for one prediction</small>
+        </div>
+      </div>
+
       <p className={styles.srOnly} aria-live="polite" aria-atomic="true">
         Current dataset: {dataset.label}, {dataset.points.length} observations. {dataset.description}{" "}
         Current architecture: {architectureSummary(architecture)}.{" "}
-        {surfaceEvidenceSummary(architecture)} {childRuleSummary(architecture, dataset.id)} It contains
-        {" "}{complexity.totalParameters} learned parameters and needs approximately
-        {" "}{complexity.nodeEvaluations} split evaluations for one prediction.
+        The displayed rules and leaf values are fixed examples, not fitted comparisons.{" "}
+        {surfaceEvidenceSummary(architecture)} {childRuleSummary(architecture, dataset.id)} It uses
+        {" "}{complexity.distinctRules} distinct split rules and needs approximately
+        {" "}{complexity.nodeEvaluations} rule evaluations for one prediction.
       </p>
     </section>
   );

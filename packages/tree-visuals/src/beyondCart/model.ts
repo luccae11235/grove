@@ -59,10 +59,7 @@ export interface RoutingResult {
 }
 
 export interface ArchitectureComplexity {
-  splitParameters: number;
-  gateParameters: number;
-  leafParameters: number;
-  totalParameters: number;
+  distinctRules: number;
   nodeEvaluations: number;
 }
 
@@ -385,22 +382,13 @@ export function predictArchitecture(
 }
 
 export function architectureComplexity(architecture: TreeArchitecture): ArchitectureComplexity {
-  const uniqueRuleCount = architecture.rules === "independent" ? 3 : 2;
-  const parametersPerRule = architecture.split === "axis-aligned" ? 1 : 3;
-  const splitParameters = uniqueRuleCount * parametersPerRule;
-  // This visual's soft-tree variant learns one gate sharpness for each distinct
-  // rule. The hard-tree variant has no gate parameter.
-  const gateParameters = architecture.routing === "soft" ? uniqueRuleCount : 0;
-  const leafParameters = architecture.leaves === "constant" ? 4 : 12;
+  const distinctRules = architecture.rules === "independent" ? 3 : 2;
   const nodeEvaluations = architecture.routing === "hard" || architecture.rules === "shared-by-depth"
     ? 2
     : 3;
 
   return {
-    splitParameters,
-    gateParameters,
-    leafParameters,
-    totalParameters: splitParameters + gateParameters + leafParameters,
+    distinctRules,
     nodeEvaluations,
   };
 }

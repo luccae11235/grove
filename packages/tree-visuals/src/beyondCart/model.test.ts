@@ -126,27 +126,21 @@ describe("the deterministic architecture builder", () => {
     expect(result.leafWeights.every((weight) => weight > 0)).toBe(true);
   });
 
-  it("counts the learned numbers and split evaluations from architectural choices", () => {
+  it("counts distinct rules and per-observation evaluations without implying fitted parameters", () => {
     expect(architectureComplexity(CART_ARCHITECTURE)).toEqual({
-      splitParameters: 3,
-      gateParameters: 0,
-      leafParameters: 4,
-      totalParameters: 7,
+      distinctRules: 3,
       nodeEvaluations: 2,
     });
     expect(architectureComplexity(ARCHITECTURE_PRESETS[1].architecture)).toMatchObject({
-      totalParameters: 10,
+      distinctRules: 3,
       nodeEvaluations: 3,
     });
     expect(architectureComplexity(ARCHITECTURE_PRESETS[2].architecture)).toMatchObject({
-      totalParameters: 6,
+      distinctRules: 2,
       nodeEvaluations: 2,
     });
     expect(architectureComplexity(ARCHITECTURE_PRESETS[3].architecture)).toEqual({
-      splitParameters: 9,
-      gateParameters: 3,
-      leafParameters: 12,
-      totalParameters: 24,
+      distinctRules: 3,
       nodeEvaluations: 3,
     });
   });

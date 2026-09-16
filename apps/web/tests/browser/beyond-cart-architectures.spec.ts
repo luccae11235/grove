@@ -40,16 +40,17 @@ test("the article replaces every editorial note with the complete visual sequenc
   await expect(page.locator("body")).not.toContainText(/\[(?:IMAGE|ANIMATION|PLAYGROUND):/);
 });
 
-test("soft routing becomes the hard CART limit and keeps its calculation synchronized", async ({ page }) => {
+test("soft routing exposes the threshold exception and an explicit hard-rule mode", async ({ page }) => {
   const playground = page.locator('[data-beyond-cart-playground="soft-routing"]');
   await playground.scrollIntoViewIfNeeded();
   await expect.poll(() => playground.evaluate((element) => (
     element.closest("astro-island")?.hasAttribute("ssr") ?? false
   ))).toBe(false);
 
-  await expect(playground).toHaveAttribute("data-p-left", "0.731");
-  await expect(playground).toHaveAttribute("data-p-right", "0.269");
-  await expect(playground).toHaveAttribute("data-prediction", "3.61");
+  await expect(playground.getByText("Try one controlled change.", { exact: true })).toBeVisible();
+  await expect(playground).toHaveAttribute("data-p-left", "0.450");
+  await expect(playground).toHaveAttribute("data-p-right", "0.550");
+  await expect(playground).toHaveAttribute("data-prediction", "5.30");
 
   const input = playground.getByRole("slider", { name: /Input x/i });
   const temperature = playground.getByRole("slider", { name: /Temperature/i });
@@ -71,18 +72,19 @@ test("soft routing becomes the hard CART limit and keeps its calculation synchro
   await expect(playground).toHaveAttribute("data-prediction", "8.00");
 });
 
-test("the architecture builder composes all four choices from one computed state", async ({ page }) => {
+test("the architecture builder guides one-axis changes without implying model fitting", async ({ page }) => {
   const builder = page.locator('[data-beyond-cart-playground="architecture-builder"]');
   await builder.scrollIntoViewIfNeeded();
   await expect.poll(() => builder.evaluate((element) => (
     element.closest("astro-island")?.hasAttribute("ssr") ?? false
   ))).toBe(false);
 
-  await expect(builder).toHaveAttribute("data-preset", "cart");
   await expect(builder).toHaveAttribute("data-dataset", "diagonal");
   await expect(builder).toHaveAttribute("data-sample-count", "36");
-  await expect(builder).toHaveAttribute("data-parameter-count", "7");
+  await expect(builder).toHaveAttribute("data-rule-count", "3");
   await expect(builder).toHaveAttribute("data-node-evaluations", "2");
+  await expect(builder.getByText(/hand-set example.*not compare training quality/i)).toBeVisible();
+  await expect(builder.getByLabel("Surface color scale from prediction zero to prediction one")).toBeVisible();
   await expect(builder.locator("[data-surface-cell]")).toHaveCount(196);
   await expect(builder.locator("[data-point-id]")).toHaveCount(36);
   const cartSurface = await builder.locator("[data-surface-cell]").evaluateAll((cells) => (
@@ -91,20 +93,20 @@ test("the architecture builder composes all four choices from one computed state
 
   await builder.getByRole("button", { name: "XOR", exact: true }).click();
   await expect(builder).toHaveAttribute("data-dataset", "xor");
-  await expect(builder).toHaveAttribute("data-preset", "cart");
   await expect(builder.locator('[data-point-id^="xor-"]')).toHaveCount(36);
   const xorSurface = await builder.locator("[data-surface-cell]").evaluateAll((cells) => (
     cells.map((cell) => cell.getAttribute("data-prediction-bin")).join("")
   ));
   expect(xorSurface).not.toBe(cartSurface);
 
-  await builder.getByRole("button", { name: "Highly relaxed" }).click();
-  await expect(builder).toHaveAttribute("data-preset", "relaxed");
+  await builder.getByRole("button", { name: "Oblique", exact: true }).click();
+  await builder.getByRole("button", { name: "Soft", exact: true }).click();
+  await builder.getByRole("button", { name: "Linear", exact: true }).click();
   await expect(builder).toHaveAttribute("data-split", "oblique");
   await expect(builder).toHaveAttribute("data-routing", "soft");
   await expect(builder).toHaveAttribute("data-rules", "independent");
   await expect(builder).toHaveAttribute("data-leaves", "linear");
-  await expect(builder).toHaveAttribute("data-parameter-count", "24");
+  await expect(builder).toHaveAttribute("data-rule-count", "3");
   await expect(builder).toHaveAttribute("data-node-evaluations", "3");
   const relaxedSurface = await builder.locator("[data-surface-cell]").evaluateAll((cells) => (
     cells.map((cell) => cell.getAttribute("data-prediction-bin")).join("")
@@ -112,22 +114,23 @@ test("the architecture builder composes all four choices from one computed state
   expect(relaxedSurface).not.toBe(cartSurface);
 
   await builder.getByRole("button", { name: "Shared by depth" }).click();
-  await expect(builder).toHaveAttribute("data-preset", "custom");
   await expect(builder).toHaveAttribute("data-rules", "shared-by-depth");
-  await expect(builder).toHaveAttribute("data-parameter-count", "20");
+  await expect(builder).toHaveAttribute("data-rule-count", "2");
   await expect(builder).toHaveAttribute("data-node-evaluations", "2");
   const sharedRules = await builder.locator('[data-tree-node="left-rule"], [data-tree-node="right-rule"]').evaluateAll((nodes) => (
     nodes.map((node) => node.querySelector("text")?.textContent)
   ));
   expect(sharedRules[0]).toBe(sharedRules[1]);
 
-  await builder.getByRole("button", { name: "CART", exact: true }).click();
-  await expect(builder).toHaveAttribute("data-preset", "cart");
-  await expect(builder).toHaveAttribute("data-parameter-count", "7");
+  await builder.getByRole("button", { name: "Reset to CART", exact: true }).click();
+  await expect(builder).toHaveAttribute("data-split", "axis-aligned");
+  await expect(builder).toHaveAttribute("data-routing", "hard");
+  await expect(builder).toHaveAttribute("data-rules", "independent");
+  await expect(builder).toHaveAttribute("data-leaves", "constant");
+  await expect(builder).toHaveAttribute("data-rule-count", "3");
 
   await builder.getByRole("button", { name: "Offset steps", exact: true }).click();
   await expect(builder).toHaveAttribute("data-dataset", "offset-steps");
-  await expect(builder).toHaveAttribute("data-preset", "cart");
   await expect(builder.locator('[data-point-id^="offset-steps-"]')).toHaveCount(36);
 });
 
@@ -146,8 +149,12 @@ test("both animations support explicit steps and timed playback", async ({ page 
   await expect(hardRouting).toHaveAttribute("data-beyond-cart-frame", "0");
   await hardRouting.getByRole("button", { name: "Next" }).click();
   await expect(hardRouting).toHaveAttribute("data-beyond-cart-frame", "1");
+  await hardRouting.locator("[data-beyond-cart-scrubber]").fill("3");
+  await expect(hardRouting).toHaveAttribute("data-beyond-cart-branch", "left");
+  await expect(hardRouting.getByText(/Observation x = −0\.05 follows the left branch/)).toBeVisible();
   await hardRouting.locator("[data-beyond-cart-scrubber]").fill("4");
   await expect(hardRouting).toHaveAttribute("data-beyond-cart-branch", "right");
+  await expect(hardRouting.getByText(/Observation x = 0\.05 follows the right branch/)).toBeVisible();
   await expect(hardRouting.getByText("Current prediction: 8", { exact: true })).toBeVisible();
   await hardRouting.getByRole("button", { name: "Reset" }).click();
   await expect(hardRouting).toHaveAttribute("data-beyond-cart-frame", "0");
