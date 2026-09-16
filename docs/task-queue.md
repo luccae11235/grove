@@ -109,9 +109,10 @@ references for longer-term editorial direction.
 ### Learning experience
 
 - [ ] **Organize the article library by editorial series — issue #197**
-  - Replace the single horizontal article shelf with a simple, responsive
-    library grouped by the existing decision-tree, reinforcement-learning, and
-    time-series metadata, with a fallback for ungrouped articles.
+  - Keep the home page's chronological horizontal shelf as the compact release
+    view, and add a dedicated, responsive library grouped by the existing
+    decision-tree, reinforcement-learning, and time-series metadata, with a
+    fallback for ungrouped articles.
   - Preserve article visibility rules, publication details, and both English
     and Brazilian Portuguese experiences without changing article content.
   - Completion check: focused grouping tests and relevant typecheck/build checks
