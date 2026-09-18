@@ -211,3 +211,9 @@ export type {
   BoostingTree,
   TreeLeafSegment,
 } from "./gradientBoosting/experiment";
+export { BeyondCartFigure } from "./beyondCart/BeyondCartFigures";
+export { BeyondCartAnimation } from "./beyondCart/BeyondCartAnimations";
+export {
+  SoftRoutingPlayground,
+  TreeArchitectureBuilder,
+} from "./beyondCart/BeyondCartPlaygrounds";

@@ -1,0 +1,393 @@
+---
+articleId: beyond-cart-tree-architectures
+locale: en
+routeSlug: beyond-cart-tree-architectures
+href: /learn/beyond-cart-tree-architectures
+title: "Beyond CART: Decision Trees Don't Have to Look Like CART"
+navTitle: Explore tree architectures beyond CART
+description: "Treat CART as one point in a larger decision-tree design space by changing its splits, routing, structure, and leaf models."
+eyebrow: Decision trees · Architecture
+area: Supervised learning
+topic: Decision-tree architectures
+summary: Identify the four architectural assumptions behind CART, then reason about what oblique, soft, oblivious, and model trees gain and give up by changing them.
+status: published
+publishedAt: 2026-09-18
+readingTime: 15–20 min
+interactiveCount: 4
+staticVisualCount: 6
+difficulty: intermediate
+series: tree-based-machine-learning
+access: public
+prerequisites:
+  - decision-trees-from-scratch
+  - regression-trees-from-scratch
+related: []
+implementation: mdx
+learning:
+  priorKnowledge:
+    - Recognize the root, internal nodes, branches, and leaves of a decision tree.
+    - Understand how a standard CART node routes an observation using a rule such as x_j < t.
+    - Distinguish a classification prediction from a regression prediction.
+  likelyMisconception: The axis-aligned splits, hard routing, independent node rules, and constant leaves of CART define every possible decision tree.
+  transferOutcome: Identify which CART assumption changes in an oblique, soft, oblivious, or model tree and explain what that change provides and costs.
+  motivatingQuestion: What happens when we relax each of the familiar assumptions behind a CART tree?
+  conceptualBottleneck: A decision tree is a configurable routing-and-prediction architecture, while CART is one coordinated set of choices within that larger design space.
+  evidenceOfUnderstanding:
+    - Map oblique splits, soft routing, depth-shared rules, and learned leaf models to the CART assumption each one changes.
+    - Explain why a more expressive node can produce a smaller tree while making optimization and interpretation harder.
+    - Explain why constraining a tree can improve regularity and execution even when it reduces local flexibility.
+    - Compare two mixed architectures by locating where each one stores complexity.
+---
+
+import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import BeyondCartLab from "../../../components/BeyondCartLab.astro";
+
+<header className="page-header lesson-header article-hero">
+  <p className="eyebrow">Decision trees · Architecture</p>
+  <h1>Beyond CART: Decision Trees Don't Have to Look Like CART</h1>
+  <p className="lede">Treat CART as one point in a larger design space by changing how a tree splits, routes observations, shares rules, and predicts at its leaves.</p>
+  <div className="article-meta" aria-label="Article information">
+    <DifficultyBadge difficulty="intermediate" />
+  </div>
+</header>
+
+<article className="lesson-body deep-article beyond-cart-article">
+
+## A model is a collection of assumptions
+
+Decision trees are one of the foundational models of machine learning. They are easy to visualize, require relatively few assumptions about the shape of the data, and form the basis of some of the strongest methods for tabular problems.
+
+When decision trees are first introduced, however, we usually learn one particular version of them: **CART**, or Classification and Regression Trees.
+
+A standard CART tree makes several architectural choices:
+
+- **Axis-aligned splits:** one feature determines each split.
+- **Hard routing:** each observation follows exactly one branch.
+- **Independent node rules:** every node learns its own splitting rule.
+- **Constant leaves:** once an observation reaches a leaf, the prediction is constant.
+
+These choices are so familiar that they can easily start to feel like the definition of a decision tree itself. But they are not.
+
+They are design assumptions.
+
+Importantly, they are also useful assumptions. Restricting each node to one feature makes split search relatively simple and individual decisions easy to inspect. Hard routing means that only one path needs to be evaluated for each observation. Independent nodes allow different parts of the feature space to behave differently, while constant leaves keep local predictions statistically and computationally simple.
+
+Together, these restrictions give CART many of the properties that make trees attractive in the first place: one active prediction path, direct rules, and a relatively simple greedy search for each node's next split.
+
+But what happens if we relax them individually?
+
+<BeyondCartLab kind="architecture-anatomy" />
+
+This is a useful way to think about machine-learning models more generally. A model is often better understood as a collection of design assumptions. New model families can emerge when we relax, replace, or share those assumptions.
+
+The goal is not to find four improved versions of CART. Every modification will give us something while taking something else away. What matters is understanding that exchange.
+
+## Why only one feature?
+
+A standard CART node asks a question of the form
+
+$$
+
+x_j < t
+
+$$
+
+where $j$ selects one feature and $t$ is a threshold.
+
+If we have two features $x_1$ and $x_2$, the split might therefore be
+
+$$
+
+x_1 < 3.7
+
+$$
+
+or
+
+$$
+
+x_2 < 8.1.
+
+$$
+
+Geometrically, this restricts the decision boundary to be perpendicular to one of the feature axes.
+
+But why should that restriction exist?
+
+Suppose two classes in a 2D dataset are naturally separated by a diagonal line. An axis-aligned tree cannot draw that line directly. It must approximate it using several horizontal and vertical cuts, creating the familiar staircase-like partition produced by decision trees.
+
+An **oblique tree** changes the splitting function itself. Instead of examining one feature, a node can examine a weighted combination of features:
+
+$$
+
+w^\top x < t.
+
+$$
+
+For two features, this could become
+
+$$
+
+0.8x_1 - 0.5x_2 < 2.
+
+$$
+
+The node can now create a diagonal boundary.
+
+<BeyondCartLab kind="split-geometry" />
+
+This changes where the model stores its representational complexity.
+
+CART keeps each individual node extremely simple, so a rotated boundary such as this one may require many nodes arranged into a deeper tree. An oblique tree gives each node more expressive power, which can allow a much smaller tree to represent the same geometry.
+
+In other words, **greater node complexity can produce lower tree complexity**.
+
+That extra expressiveness is not free. CART searches over candidate pairs $(j,t)$: choose a feature, then choose a threshold. An oblique node must search over $(w,t)$, where $w$ may contain one coefficient for every feature. The search space becomes much larger, and a decision involving several weighted variables is generally harder to interpret than a rule such as `age < 35`.
+
+There are many ways to learn $w$. Some methods test candidate directions, some fit linear models, and others optimize the coefficients directly or use differentiable formulations. The exact training procedure is a separate question from the architecture itself.
+
+A tree containing one hard oblique split is therefore a linear threshold classifier: it uses a line or hyperplane to choose one of two sides. That shared boundary does not make it logistic regression. Logistic regression also specifies a smooth probability model and a training objective.
+
+The broader lesson is that expressiveness can be distributed across a model in different ways. Simple components generally require more structure around them; stronger components can sometimes accomplish the same task with less structure.
+
+## Why choose only one path?
+
+Consider two observations lying almost exactly on opposite sides of a CART threshold:
+
+$$
+
+x=t-\epsilon
+
+$$
+
+and
+
+$$
+
+x=t+\epsilon.
+
+$$
+
+Even if $\epsilon$ is tiny, the first observation goes completely to one branch and the second goes completely to the other.
+
+<BeyondCartLab kind="hard-routing" />
+
+This happens because CART routing is discrete. Each split produces a binary decision: left or right.
+
+But the routing operation itself does not have to be discrete.
+
+A **soft tree** replaces the hard decision with a smooth gate. One possible formulation is
+
+$$
+
+p_R(x)=\sigma\left(\frac{x_j-t}{\tau}\right)
+
+$$
+
+and
+
+$$
+
+p_L(x)=1-p_R(x),
+
+$$
+
+where $\sigma$ is the sigmoid function and $\tau$ controls how gradual the transition is.
+
+Instead of saying that an observation belongs entirely to the left or right branch, the tree can assign weight to both.
+
+For a depth-1 regression tree with leaf values $v_L$ and $v_R$, the prediction becomes
+
+$$
+
+\hat y(x)=p_L(x)v_L+p_R(x)v_R.
+
+$$
+
+An observation close to the threshold might receive
+
+$$
+
+p_L(x)=0.55,\qquad p_R(x)=0.45,
+
+$$
+
+so both leaves contribute to the prediction.
+
+In a deeper tree, the same idea continues recursively. The weight assigned to a leaf is the product of the routing probabilities along the path leading to it.
+
+Before moving both controls, try one comparison. Keep $x$ just to the right of the threshold and lower $\tau$. Predict what will happen to the right-path weight, then move $x$ just to the left of zero.
+
+<BeyondCartLab kind="soft-routing" />
+
+The parameter $\tau$ makes the relationship with CART especially clear. With a large temperature, routing changes gradually around the threshold. For any $x\neq t$, as
+
+$$
+
+\tau\rightarrow0,
+
+$$
+
+the transition becomes increasingly sharp, so the soft gate approaches the hard left-or-right decision used by CART. Exactly at $x=t$, however, the sigmoid remains $0.5$ for every positive temperature. In the playground, choosing $\tau=0$ explicitly switches to the CART rule; it is not the sigmoid evaluated at zero temperature.
+
+Something deeper has happened than merely smoothing the prediction. We replaced a discrete operation with a continuous relaxation.
+
+Because the gate is differentiable, parameters controlling the split can potentially be adjusted using gradients together with other parameters in the model. This is an instance of a much broader technique in machine learning: when an operation is useful but discrete and difficult to optimize, we can sometimes replace it with a differentiable approximation.
+
+Again, the relaxation comes with a price.
+
+A hard tree evaluates one crisp path. A soft tree may assign meaningful probability to several paths simultaneously, which makes inference less sparse and explanations less direct. Instead of saying that an observation reached a leaf because three decisions were true, we may need to describe how several weighted paths contributed to its prediction.
+
+As more of the tree becomes differentiable, its computation also begins to resemble a gated neural architecture.
+
+This exposes an important tension. Making a tree easier to integrate with gradient-based learning can remove some of the discrete structure that made trees attractive.
+
+**Continuous relaxation exchanges discrete structure for smoother optimization.**
+
+## Why should every node ask a different question?
+
+In a normal CART tree, every internal node is independent.
+
+A depth-3 tree might ask about `income` at the root, `age` on one branch, `account_age` on another, and completely different questions farther down the tree.
+
+That flexibility is useful because each region of the input space can develop its own local logic. But do we always need it?
+
+An **oblivious tree**, also called a **symmetric tree**, imposes a strong structural constraint: every node at the same depth uses the same splitting rule.
+
+<BeyondCartLab kind="rule-sharing" />
+
+If the first level asks
+
+$$
+
+x_3 < 5,
+
+$$
+
+every observation is evaluated using that rule. At the second level, another rule is chosen and applied regardless of which first-level branch the observation followed.
+
+At each depth, an oblivious tree learns one rule and reuses it at every node on that level.
+
+This modification moves in the opposite direction from oblique and soft trees.
+
+We are deliberately making the model **less expressive**.
+
+A standard tree can specialize each node to a small local region. An oblivious tree cannot. If one branch would benefit from splitting on age while another would benefit from splitting on income at the same depth, the model must still choose a single shared rule.
+
+What we gain is regularity.
+
+Because every observation receives the same test at each depth, evaluation becomes highly structured. A batch can apply one comparison to every observation at a level, and a complete path can be represented by the resulting sequence of binary outcomes.
+
+The constraint can also act as regularization. By preventing different branches from independently inventing increasingly specialized rules, we reduce the flexibility of each individual tree.
+
+This architecture is not merely theoretical. CatBoost uses symmetric trees by default. Their regular structure is particularly convenient for efficient evaluation, which matters when large numbers of trees must be executed repeatedly in production.
+
+<BeyondCartLab kind="batch-evaluation" />
+
+The interesting point is that we improved some properties of the model by restricting what it was allowed to do.
+
+More flexibility is not automatically better. Architectural constraints can make models easier to execute, regularize, and sometimes optimize, even when those constraints reduce the expressive power of an individual model.
+
+## Why should a leaf be a constant?
+
+So far we have changed the internal nodes. The leaves contain another assumption that is easy to overlook.
+
+In CART regression, once an observation reaches leaf $\ell$, its prediction is simply
+
+$$
+
+f(x)=c_\ell.
+
+$$
+
+Every observation reaching that leaf receives the same value.
+
+This means that CART is making an implicit assumption: once the input space has been partitioned into a sufficiently local region, there is no remaining structure inside that region worth modeling.
+
+Consider a regression problem with two regimes. In the first region, the target increases approximately linearly with $x$. In the second region, it also follows a roughly linear trend, but with a different slope.
+
+A standard regression tree can identify the two regimes. Once inside each regime, however, it still approximates the trend using constant steps. Capturing the slope requires additional partitions.
+
+Why should the tree have to do both jobs?
+
+A **model tree** separates them.
+
+Instead of storing a constant in leaf $\ell$,
+
+$$
+
+f(x)=f_\ell(x),
+
+$$
+
+where $f_\ell$ is itself a predictive model.
+
+For example, each leaf might contain a linear regression:
+
+$$
+
+f_\ell(x)=\beta_\ell^\top x+b_\ell.
+
+$$
+
+<BeyondCartLab kind="model-leaves" />
+
+The resulting decomposition is useful:
+
+**Tree:** Which regime am I in?
+
+**Leaf model:** What happens inside this regime?
+
+The tree handles discontinuities and regime changes, while the leaf model handles smoother local relationships.
+
+This is also the basic connection to local-model systems: one mechanism chooses a region, and another models what happens inside it.
+
+The cost is additional complexity. A constant leaf may need only a mean or a class distribution. A linear leaf requires several coefficients, enough local observations to estimate them reliably, and a more involved fitting procedure.
+
+As the leaf models become more expressive, the original simplicity of tree predictions gradually disappears.
+
+Still, the architectural lesson is broader than model trees themselves: different parts of a model can specialize in different jobs. Partitioning the input space and modeling behavior inside each partition do not need to be performed by the same mechanism.
+
+## A design space, not four algorithms
+
+We can now return to the original CART tree and describe it as a collection of choices.
+
+<BeyondCartLab kind="design-space" />
+
+These dimensions are largely independent.
+
+An oblique tree does not need soft routing. A soft tree does not need linear leaves. An oblivious tree can still use ordinary axis-aligned splits.
+
+Thinking in terms of architecture makes combinations easier to understand. We have not discovered four mutually exclusive algorithms. We have identified four decisions that CART happens to make in one particular way.
+
+The builder below uses fixed, hand-set depth-2 examples. It does not train a new model when you click a control. Keep the dataset fixed, start from CART, and change one row at a time. Before each click, predict whether the boundary direction, routing edges, repeated rules, or within-leaf predictions will change.
+
+<BeyondCartLab kind="architecture-builder" />
+
+After isolating each change, combine oblique splits, soft routing, independent rules, and linear leaves. That configuration is particularly revealing.
+
+Its nodes compute weighted combinations of features. Its routing is smooth and differentiable. Several paths may contribute to a prediction. In a trained model of this form, its leaves would contain learned functions rather than constants.
+
+At that point, the architecture begins to resemble a hierarchical mixture-of-experts neural model much more than the textbook tree we started with.
+
+This raises an interesting question: **at what point does a modified decision tree stop behaving like the kind of model we originally valued as a tree?**
+
+There is no single boundary. But the question matters because every relaxation changes not only what the model can represent, but also how it computes, how it is trained, and how easily its predictions can be understood.
+
+## Constraints define models
+
+At the beginning, CART's assumptions looked like limitations.
+
+Why restrict a split to one feature when several could be combined? Why force an observation onto one branch? Why prevent nodes from sharing parameters? Why make every leaf constant?
+
+After relaxing them individually, the picture becomes more nuanced.
+
+Each restriction buys something. Axis alignment keeps each decision local to one feature, even when a rotated boundary needs more nodes. Hard routing keeps one crisp prediction path. Independent rules preserve local flexibility. Constant leaves keep local estimation small and data-efficient. Relaxing an assumption therefore does not automatically improve the model; it moves complexity somewhere else.
+
+<BeyondCartLab kind="tradeoff-map" />
+
+The compact mental model is this: **a tree architecture chooses how to split, route, share rules, and predict inside a leaf.** Change one choice and you change both what the model can express and what it costs to train, run, or explain.
+
+CART's restrictions are therefore useful inductive biases, not historical baggage. Learning to design models begins with noticing those hidden choices and predicting what each one buys.
+
+</article>

@@ -34,15 +34,15 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
-- [ ] **Publish Gradient Boosting and deliver Issue 007 — issue #193**
-  - Publish the reviewed English and Brazilian Portuguese article on 2026-09-11
-    while keeping later articles in draft.
-  - Review the Issue 007 web, HTML email, and plain-text forms before the
-    production promotion.
-  - Treat the production merge, provider draft, test email, and subscriber send
-    as separate gates with explicit production and delivery approval.
-  - Completion check: exact-SHA staging and production verification pass, the
-    test email is reviewed, and the Issue 007 report confirms one delivery.
+- [ ] **Publish Beyond CART — issue #202**
+  - Publish the reviewed English article on 2026-09-18 while keeping the Markov
+    principle article in draft.
+  - Record the missing Brazilian Portuguese counterpart under issue #203.
+  - Treat the production promotion and any newsletter work as separate gates;
+    this release must not create, send, or schedule a broadcast.
+  - Completion check: the full repository gate passes, exact-SHA staging and
+    production verification succeed, and the canonical article, library, RSS,
+    sitemap, and responsive layouts are reviewed.
 
 - [ ] **Develop the Markov principle article — issue #158**
   - [x] Add the complete supplied English manuscript with the title, chapter
@@ -244,6 +244,38 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Correct and simplify the Beyond CART learning experience — issue #199** — 2026-09-16
+  - Corrected the soft-routing limit, oblique-tree comparison, split geometry,
+    optimization language, and architecture terminology from the beta-reader
+    review while reducing repeated synthesis.
+  - Made the builder explicit about its fixed illustrative models, added guided
+    one-axis comparisons and a prediction scale, and strengthened the model-leaf
+    and threshold-crossing visuals.
+  - PR #200 passed the full GitHub gate; focused browser acceptance passed at
+    desktop and mobile widths, and Railway staging reviewed exact PR revision
+    `aa2bfee` before merge and exact `develop` revision `549ef7a` afterward.
+  - The article remained a draft at completion; publication is tracked
+    separately under issue #202 and translation parity under issue #203.
+
+- [x] **Draft Beyond CART: Decision Trees Don't Have to Look Like CART — issue #191** — 2026-09-11
+  - Added the complete supplied English manuscript, formulas, metadata, and
+    planned section sequence as an unpublished MDX article.
+  - Kept translation, publication, deployment, and newsletter delivery outside
+    the writing scope.
+  - Completion check: the full prose is present and its content, typecheck, and
+    draft-build checks pass.
+
+- [x] **Publish Gradient Boosting and deliver Issue 007 — issue #193** — 2026-09-11
+  - Published the reviewed English and Brazilian Portuguese article through PR
+    #194 and release PR #190.
+  - Verified staging revision `a59e14d` in run `34603685935` and production
+    revision `08fc680` in run `34605041981`, including both article locales and
+    all Issue 007 forms.
+  - Reviewed broadcast `c522d9dc-92cb-4ed9-9568-7a6c40c06400`, confirmed the
+    owner test in Primary, and sent it once through run `34605651239`.
+  - The first report recorded 9 sent, 9 delivered, 0 bounced, 0 complained, and
+    0 suppressed.
+
 - [x] **Publish and deliver Issue 006 about bagging variance — issue #182** — 2026-09-04
   - Published the reviewed text-only issue through implementation PR #186 and
     release PR #187; exact staging revision `cde06c6` and production revision
@@ -287,6 +319,15 @@ references for longer-term editorial direction.
     and the exact production revision passed verification.
 
 ### Learning experience
+
+- [x] **Refine the Beyond CART architecture builder — issue #192** — 2026-09-12
+  - Expanded the fixed sample from 16 to 36 observations and added Diagonal,
+    XOR, and Offset steps datasets with dataset-specific rules, leaves, and
+    computed decision surfaces.
+  - Rebuilt the oversized header as a compact dataset-and-preset toolbar while
+    preserving selected architecture state, accessibility, and mobile layout.
+  - Completion check: 88 visual tests, seven focused browser scenarios, both
+    relevant typechecks, the draft build, and rendered desktop/mobile review pass.
 
 - [x] **Complete the gradient boosting visual system — issue #136** — 2026-08-24
   - Built the regression and classification figures, animations, and
