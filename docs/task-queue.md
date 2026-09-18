@@ -34,16 +34,6 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
-- [ ] **Publish Beyond CART — issue #202**
-  - Publish the reviewed English article on 2026-09-18 while keeping the Markov
-    principle article in draft.
-  - Record the missing Brazilian Portuguese counterpart under issue #203.
-  - Treat the production promotion and any newsletter work as separate gates;
-    this release must not create, send, or schedule a broadcast.
-  - Completion check: the full repository gate passes, exact-SHA staging and
-    production verification succeed, and the canonical article, library, RSS,
-    sitemap, and responsive layouts are reviewed.
-
 - [ ] **Develop the Markov principle article — issue #158**
   - [x] Add the complete supplied English manuscript with the title, chapter
     structure, formulas, and production notes on an isolated docs branch.
@@ -243,6 +233,17 @@ references for longer-term editorial direction.
 ## Done
 
 ### Publishing and content
+
+- [x] **Publish Beyond CART — issue #202** — 2026-09-18
+  - Published the reviewed English article through implementation PR #204 and
+    production release PR #205; exact staging revision `e8211c1` and production
+    revision `46a18e6` passed deployment verification in runs `35379494138` and
+    `35380532188`, respectively.
+  - Verified the canonical article, latest-library position, RSS, sitemap,
+    desktop/mobile containment, and continued production exclusion of the
+    Markov principle and model-evaluation drafts.
+  - Recorded Brazilian Portuguese translation parity under issue #203. No
+    provider draft, newsletter broadcast, or schedule was created.
 
 - [x] **Correct and simplify the Beyond CART learning experience — issue #199** — 2026-09-16
   - Corrected the soft-routing limit, oblique-tree comparison, split geometry,
