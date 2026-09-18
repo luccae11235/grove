@@ -34,6 +34,16 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Publish Beyond CART — issue #202**
+  - Publish the reviewed English article on 2026-09-18 while keeping the Markov
+    principle article in draft.
+  - Record the missing Brazilian Portuguese counterpart under issue #203.
+  - Treat the production promotion and any newsletter work as separate gates;
+    this release must not create, send, or schedule a broadcast.
+  - Completion check: the full repository gate passes, exact-SHA staging and
+    production verification succeed, and the canonical article, library, RSS,
+    sitemap, and responsive layouts are reviewed.
+
 - [ ] **Develop the Markov principle article — issue #158**
   - [x] Add the complete supplied English manuscript with the title, chapter
     structure, formulas, and production notes on an isolated docs branch.
@@ -244,8 +254,8 @@ references for longer-term editorial direction.
   - PR #200 passed the full GitHub gate; focused browser acceptance passed at
     desktop and mobile widths, and Railway staging reviewed exact PR revision
     `aa2bfee` before merge and exact `develop` revision `549ef7a` afterward.
-  - The article remains a draft; translation, publication, production
-    deployment, and newsletter delivery remain out of scope.
+  - The article remained a draft at completion; publication is tracked
+    separately under issue #202 and translation parity under issue #203.
 
 - [x] **Draft Beyond CART: Decision Trees Don't Have to Look Like CART — issue #191** — 2026-09-11
   - Added the complete supplied English manuscript, formulas, metadata, and
