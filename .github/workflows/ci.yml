@@ -161,6 +161,7 @@ jobs:
           pnpm observability:migrate
       - name: Build the consent-enabled website
         env:
+          SHOW_DRAFTS: "true"
           PUBLIC_OBSERVABILITY_ENABLED: "true"
           PUBLIC_FEEDBACK_ENABLED: "true"
           PUBLIC_OBSERVABILITY_API_URL: http://127.0.0.1:3001
