@@ -1,3 +1,4 @@
+import { markovCountWord, markovNumber, markovText, type MarkovLocale } from "../markovLocale";
 import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./CheckpointPlayground.module.css";
 import { trainingFrameDelay } from "../markovTrainingMotion";
@@ -38,7 +39,8 @@ function linePath(points: readonly CheckpointCurvePoint[]) {
   }).join(" ");
 }
 
-function ChartFrame({ children, label, axisTitles = false }: {
+function ChartFrame({ children, label, axisTitles = false, locale = "en" }: {
+  locale?: MarkovLocale;
   children: React.ReactNode;
   label: string;
   axisTitles?: boolean;
@@ -56,22 +58,23 @@ function ChartFrame({ children, label, axisTitles = false }: {
         })}
       </g>
       {axisTitles ? <>
-        <text className={styles.yLabel} x="-101" y="10" transform="rotate(-90)">Completion (%)</text>
-        <text className={styles.xLabel} x="272" y="218" textAnchor="middle">Training episodes</text>
+        <text className={styles.yLabel} x="-101" y="10" transform="rotate(-90)">{markovText(locale, "Completion (%)")}</text>
+        <text className={styles.xLabel} x="272" y="218" textAnchor="middle">{markovText(locale, "Training episodes")}</text>
       </> : null}
       {children}
     </svg>
   );
 }
 
-function LearningChart({ points, mode }: {
+function LearningChart({ points, mode, locale }: {
+  locale: MarkovLocale;
   points: readonly CheckpointCurvePoint[];
   mode: CheckpointObservationMode;
 }) {
   const latest = points[points.length - 1];
   return (
     <div className={styles.chartWrap}>
-      <ChartFrame label={`${mode === "position" ? "Position-only" : "Position and next-checkpoint"} policy completes the ordered route in ${percent(latest.completionRate)} of evaluations after ${latest.episode} training episodes.`}>
+      <ChartFrame locale={locale} label={locale === "pt-BR" ? `A política com ${mode === "position" ? "apenas a posição" : "posição e próximo checkpoint"} conclui o percurso ordenado em ${percent(latest.completionRate)} das avaliações após ${markovNumber(locale, latest.episode)} episódios de treinamento.` : `${mode === "position" ? "Position-only" : "Position and next-checkpoint"} policy completes the ordered route in ${percent(latest.completionRate)} of evaluations after ${latest.episode} training episodes.`}>
         <path d={linePath(points)} className={`${styles.curve} ${mode === "position" ? styles.positionCurve : styles.progressCurve}`} />
       </ChartFrame>
     </div>
@@ -83,7 +86,9 @@ function CheckpointBoard({
   visited = [],
   revealProgress = false,
   showRoute = false,
+  locale = "en",
 }: {
+  locale?: MarkovLocale;
   state: CheckpointTrueState;
   visited?: readonly string[];
   revealProgress?: boolean;
@@ -101,7 +106,7 @@ function CheckpointBoard({
     <div
       className={`${styles.board} ${state.rolloutStep === 0 ? styles.resetting : ""}`}
       role="img"
-      aria-label={`Ordered checkpoint grid. Agent at column ${state.x + 1}, row ${state.y + 1}.${revealProgress ? ` Next checkpoint ${expected?.label ?? "complete"}.` : " Task progress is hidden from the agent."}${state.outcome === "complete" ? " The route is complete." : state.outcome === "timeout" ? " The route timed out." : ""}`}
+      aria-label={locale === "pt-BR" ? `Grade de checkpoints ordenados. Agente na coluna ${state.x + 1}, linha ${state.y + 1}.${revealProgress ? ` Próximo checkpoint: ${expected?.label ?? "concluído"}.` : " O progresso da tarefa está oculto para o agente."}${state.outcome === "complete" ? " O percurso foi concluído." : state.outcome === "timeout" ? " O percurso atingiu o limite de passos." : ""}` : `Ordered checkpoint grid. Agent at column ${state.x + 1}, row ${state.y + 1}.${revealProgress ? ` Next checkpoint ${expected?.label ?? "complete"}.` : " Task progress is hidden from the agent."}${state.outcome === "complete" ? " The route is complete." : state.outcome === "timeout" ? " The route timed out." : ""}`}
       data-agent-x={state.x}
       data-agent-y={state.y}
       data-next-checkpoint={expected?.label ?? "done"}
@@ -117,7 +122,7 @@ function CheckpointBoard({
           aria-hidden="true"
         />;
       })}
-      <span className={styles.hub} aria-hidden="true">Hub</span>
+      <span className={styles.hub} aria-hidden="true">{markovText(locale, "Hub")}</span>
       {MARKOV_CHECKPOINTS.checkpoints.map((checkpoint, index) => (
         <span
           className={`${styles.checkpoint} ${index < state.nextCheckpoint ? styles.collected : ""} ${revealProgress && index === state.nextCheckpoint ? styles.expected : ""}`}
@@ -133,15 +138,15 @@ function CheckpointBoard({
         style={{ "--agent-x": state.x, "--agent-y": state.y } as React.CSSProperties}
         aria-hidden="true"
       />
-      {revealProgress ? <span className={styles.nextBadge}>Next · {expected?.label ?? "done"}</span> : null}
+      {revealProgress ? <span className={styles.nextBadge}>{locale === "pt-BR" ? "Próximo" : "Next"} · {expected?.label ?? (locale === "pt-BR" ? "concluído" : "done")}</span> : null}
       {showRoute ? <span className={styles.routeSequence} aria-hidden="true"><b>A</b><i>→</i><b>B</b><i>→</i><b>C</b></span> : null}
       {state.rolloutStep > 0 && currentCheckpoint >= 0 ? <span className={`${styles.rewardBadge} ${state.reward === 1 ? styles.positiveReward : styles.zeroReward}`}>{state.reward === 1 ? "+1" : "0"}</span> : null}
-      {state.outcome ? <span className={state.outcome === "complete" ? styles.completeBadge : styles.timeoutBadge}>{state.outcome === "complete" ? "Complete" : "Timed out"}</span> : null}
+      {state.outcome ? <span className={state.outcome === "complete" ? styles.completeBadge : styles.timeoutBadge}>{state.outcome === "complete" ? markovText(locale, "Complete") : markovText(locale, "Timed out")}</span> : null}
     </div>
   );
 }
 
-function RewardMoment({ expected, reward }: { expected: "B" | "C"; reward: "+1" | "0" }) {
+function RewardMoment({ expected, reward, locale }: { expected: "B" | "C"; reward: "+1" | "0"; locale: MarkovLocale }) {
   return (
     <div className={styles.rewardCase}>
       <span className={styles.stateLabel}>q = {expected}</span>
@@ -151,21 +156,21 @@ function RewardMoment({ expected, reward }: { expected: "B" | "C"; reward: "+1" 
         <span className={styles.miniCheckpoint}>B</span>
       </div>
       <strong className={reward === "+1" ? styles.rewardPositive : styles.rewardNeutral}>{reward}</strong>
-      <small>{expected === "B" ? "B was expected" : "C was expected"}</small>
+      <small>{markovText(locale, expected === "B" ? "B was expected" : "C was expected")}</small>
     </div>
   );
 }
 
-export function CheckpointFigure({ kind }: { kind: "environment" | "reward" }) {
+export function CheckpointFigure({ kind, locale = "en" }: { kind: "environment" | "reward"; locale?: MarkovLocale }) {
   if (kind === "environment") {
     return (
       <figure className={`${styles.figure} ${styles.routeFigure}`} data-checkpoint-figure="environment">
         <figcaption>
-          <p className={styles.kicker}>The route</p>
-          <h3>Three open paths. One required order.</h3>
+          <p className={styles.kicker}>{markovText(locale, "The route")}</p>
+          <h3>{markovText(locale, "Three open paths. One required order.")}</h3>
         </figcaption>
-        <CheckpointBoard state={createCheckpointEpisode()} showRoute />
-        <p className={styles.figureNote}>The map never changes. Only the next expected checkpoint does.</p>
+        <CheckpointBoard state={createCheckpointEpisode()} showRoute locale={locale} />
+        <p className={styles.figureNote}>{markovText(locale, "The map never changes. Only the next expected checkpoint does.")}</p>
       </figure>
     );
   }
@@ -173,19 +178,19 @@ export function CheckpointFigure({ kind }: { kind: "environment" | "reward" }) {
   return (
     <figure className={`${styles.figure} ${styles.rewardFigure}`} data-checkpoint-figure="reward">
       <figcaption>
-        <p className={styles.kicker}>The hidden difference</p>
-        <h3>Same move into B. Different reward.</h3>
+        <p className={styles.kicker}>{markovText(locale, "The hidden difference")}</p>
+        <h3>{markovText(locale, "Same move into B. Different reward.")}</h3>
       </figcaption>
       <div className={styles.rewardPair}>
-        <RewardMoment expected="B" reward="+1" />
-        <RewardMoment expected="C" reward="0" />
+        <RewardMoment expected="B" reward="+1" locale={locale} />
+        <RewardMoment expected="C" reward="0" locale={locale} />
       </div>
-      <p className={styles.figureNote}>Position predicts the movement. Task progress predicts what that movement means.</p>
+      <p className={styles.figureNote}>{markovText(locale, "Position predicts the movement. Task progress predicts what that movement means.")}</p>
     </figure>
   );
 }
 
-export function CheckpointPlayground({ mode }: { mode: CheckpointObservationMode }) {
+export function CheckpointPlayground({ mode, locale = "en" }: { mode: CheckpointObservationMode; locale?: MarkovLocale }) {
   const titleId = `markov-checkpoint-title-${mode}`;
   const results = useMemo(() => trainMarkovCheckpoints(mode), [mode]);
   const [curveIndex, setCurveIndex] = useState(0);
@@ -279,73 +284,73 @@ export function CheckpointPlayground({ mode }: { mode: CheckpointObservationMode
       style={{ "--training-frame-ms": `${trainingFrameMs}ms` } as React.CSSProperties}
     >
       <header className={styles.header}>
-        <p className={styles.kicker}>{seesProgress ? "Experiment 2 · Markov state" : "Experiment 1 · Broken state"}</p>
-        <h3 id={titleId}>{seesProgress ? "What changes when task progress is part of the state?" : "Can position alone learn the ordered route?"}</h3>
+        <p className={styles.kicker}>{seesProgress ? markovText(locale, "Experiment 2 · Markov state") : markovText(locale, "Experiment 1 · Broken state")}</p>
+        <h3 id={titleId}>{seesProgress ? markovText(locale, "What changes when task progress is part of the state?") : markovText(locale, "Can position alone learn the ordered route?")}</h3>
       </header>
 
       <div className={styles.experimentBand}>
-        <span>Agent sees</span>
+        <span>{markovText(locale, "Agent sees")}</span>
         <code>{seesProgress ? "z = (p, next)" : "z = p"}</code>
-        <strong>{seesProgress ? "Next checkpoint observed" : "Task progress hidden"}</strong>
+        <strong>{seesProgress ? markovText(locale, "Next checkpoint observed") : markovText(locale, "Task progress hidden")}</strong>
       </div>
 
       <div className={styles.body}>
         <div className={styles.environmentColumn}>
-          <CheckpointBoard state={state} visited={visited} revealProgress={seesProgress} />
+          <CheckpointBoard state={state} visited={visited} revealProgress={seesProgress} locale={locale} />
           {curveIndex >= maximumCurveIndex ? <div className={styles.runScore} aria-live="polite" data-run-complete={runResult.complete} data-run-timeouts={runResult.timeouts}>
-            <strong>{runResult.complete}</strong> complete <span>· {runResult.timeouts} timed out</span>
+            <strong>{runResult.complete}</strong> {markovCountWord(locale, runResult.complete, "completed")} <span>· {runResult.timeouts} {markovCountWord(locale, runResult.timeouts, "timeouts")}</span>
           </div> : null}
         </div>
 
         <div className={styles.learningColumn} data-training-episodes={currentPoint.episode} data-active-completion-rate={Math.round(currentPoint.completionRate * 100)}>
           <div className={styles.result}>
             <strong>{percent(currentPoint.completionRate)}</strong>
-            <span>completion</span>
-            <small>{currentPoint.episode.toLocaleString()} / 4,000 episodes</small>
+            <span>{markovText(locale, "completion")}</span>
+            <small>{markovNumber(locale, currentPoint.episode)} / {markovNumber(locale, 4000)} {markovText(locale, "episodes")}</small>
           </div>
-          <LearningChart points={revealedCurve} mode={mode} />
+          <LearningChart points={revealedCurve} mode={mode} locale={locale} />
           {curveIndex < maximumCurveIndex ? <label className={styles.speedControl}>
-            <span>Training speed <strong>{episodesPerSecond.toLocaleString()} episodes/s</strong></span>
-            <input type="range" min="100" max="2000" step="100" value={episodesPerSecond} onChange={(event) => setEpisodesPerSecond(Number(event.target.value))} aria-label="Checkpoint training speed in episodes per second" />
+            <span>{markovText(locale, "Training speed")} <strong>{markovNumber(locale, episodesPerSecond)} {markovText(locale, "episodes/s")}</strong></span>
+            <input type="range" min="100" max="2000" step="100" value={episodesPerSecond} onChange={(event) => setEpisodesPerSecond(Number(event.target.value))} aria-label={locale === "pt-BR" ? "Velocidade do treinamento dos checkpoints em episódios por segundo" : "Checkpoint training speed in episodes per second"} />
           </label> : null}
           <button type="button" className={styles.trainButton} onClick={toggleAgent}>
             {curveIndex >= maximumCurveIndex
-              ? running ? "Stop agent" : "Run agent"
-              : training ? "Pause" : curveIndex === 0 ? "Train agent" : "Continue"}
+              ? running ? markovText(locale, "Stop agent") : markovText(locale, "Run agent")
+              : training ? markovText(locale, "Pause") : curveIndex === 0 ? markovText(locale, "Train agent") : markovText(locale, "Continue")}
           </button>
         </div>
       </div>
 
       <p className={styles.srOnly} aria-live="polite" aria-atomic="true">
         {training
-          ? "Training in progress."
+          ? markovText(locale, "Training in progress.")
           : curveIndex >= maximumCurveIndex
-            ? `Training complete after ${currentPoint.episode} episodes. Final completion result ${percent(currentPoint.completionRate)}.`
+            ? locale === "pt-BR" ? `Treinamento concluído após ${markovNumber(locale, currentPoint.episode)} episódios. Taxa final de conclusão: ${percent(currentPoint.completionRate)}.` : `Training complete after ${currentPoint.episode} episodes. Final completion result ${percent(currentPoint.completionRate)}.`
             : curveIndex > 0
-              ? `Training paused after ${currentPoint.episode} episodes. Completion result ${percent(currentPoint.completionRate)}.`
-              : "Training has not started."}
+              ? locale === "pt-BR" ? `Treinamento pausado após ${markovNumber(locale, currentPoint.episode)} episódios. Taxa de conclusão: ${percent(currentPoint.completionRate)}.` : `Training paused after ${currentPoint.episode} episodes. Completion result ${percent(currentPoint.completionRate)}.`
+              : markovText(locale, "Training has not started.")}
       </p>
     </section>
   );
 }
 
-export function CheckpointComparison() {
+export function CheckpointComparison({ locale = "en" }: { locale?: MarkovLocale }) {
   const results = trainCheckpointPair();
   return (
     <figure className={`${styles.lab} ${styles.comparison}`} aria-labelledby="markov-checkpoint-comparison-title" data-markov-checkpoint-comparison>
       <figcaption className={styles.comparisonHeader}>
-        <p className={styles.kicker}>Matched result</p>
-        <h3 id="markov-checkpoint-comparison-title">Task progress makes the order learnable</h3>
-        <p>Same map, rewards, and training budget. Only the state representation differs.</p>
+        <p className={styles.kicker}>{markovText(locale, "Matched result")}</p>
+        <h3 id="markov-checkpoint-comparison-title">{markovText(locale, "Task progress makes the order learnable")}</h3>
+        <p>{markovText(locale, "Same map, rewards, and training budget. Only the state representation differs.")}</p>
       </figcaption>
       <div className={styles.comparisonBody}>
-        <ChartFrame axisTitles label={`After 4,000 episodes, the position-only policy completes the ordered route ${percent(results.position.finalCompletionRate)} of the time and the progress-aware policy completes it ${percent(results.progress.finalCompletionRate)} of the time.`}>
+        <ChartFrame locale={locale} axisTitles label={locale === "pt-BR" ? `Após 4.000 episódios, a política que só vê a posição conclui o percurso ordenado em ${percent(results.position.finalCompletionRate)} das avaliações; a política que conhece o progresso conclui em ${percent(results.progress.finalCompletionRate)}.` : `After 4,000 episodes, the position-only policy completes the ordered route ${percent(results.position.finalCompletionRate)} of the time and the progress-aware policy completes it ${percent(results.progress.finalCompletionRate)} of the time.`}>
           <path d={linePath(results.position.curve)} className={`${styles.curve} ${styles.positionCurve}`} />
           <path d={linePath(results.progress.curve)} className={`${styles.curve} ${styles.progressCurve}`} />
         </ChartFrame>
         <div className={styles.comparisonStats}>
-          <div><span className={styles.positionLegend}>Position only</span><strong>{percent(results.position.finalCompletionRate)}</strong><small>progress hidden</small></div>
-          <div><span className={styles.progressLegend}>Position + next</span><strong>{percent(results.progress.finalCompletionRate)}</strong><small>Markov state</small></div>
+          <div><span className={styles.positionLegend}>{markovText(locale, "Position only")}</span><strong>{percent(results.position.finalCompletionRate)}</strong><small>{markovText(locale, "progress hidden")}</small></div>
+          <div><span className={styles.progressLegend}>{markovText(locale, "Position + next")}</span><strong>{percent(results.progress.finalCompletionRate)}</strong><small>{markovText(locale, "Markov state")}</small></div>
         </div>
       </div>
     </figure>

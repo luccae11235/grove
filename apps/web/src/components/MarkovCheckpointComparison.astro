@@ -1,5 +1,6 @@
 ---
 import { MarkovCheckpointComparison } from "@grove/tree-visuals";
+const { locale = "en" } = Astro.props;
 ---
 
-<MarkovCheckpointComparison />
+<MarkovCheckpointComparison locale={locale} />

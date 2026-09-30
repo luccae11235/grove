@@ -1,3 +1,4 @@
+import { markovCountWord, markovNumber, markovText, type MarkovLocale } from "../markovLocale";
 import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./MarkovPongPlayground.module.css";
 import { trainingFrameDelay } from "../markovTrainingMotion";
@@ -47,7 +48,8 @@ function linePath(points: readonly PongCurvePoint[], width = 520, height = 220) 
   }).join(" ");
 }
 
-function ChartFrame({ children, label, axisTitles = false }: {
+function ChartFrame({ children, label, axisTitles = false, locale = "en" }: {
+  locale?: MarkovLocale;
   children: React.ReactNode;
   label: string;
   axisTitles?: boolean;
@@ -65,26 +67,26 @@ function ChartFrame({ children, label, axisTitles = false }: {
         })}
       </g>
       {axisTitles ? <>
-        <text className={styles.yLabel} x="-101" y="10" transform="rotate(-90)">Hit rate (%)</text>
-        <text className={styles.xLabel} x="272" y="218" textAnchor="middle">Training episodes</text>
+        <text className={styles.yLabel} x="-101" y="10" transform="rotate(-90)">{markovText(locale, "Hit rate (%)")}</text>
+        <text className={styles.xLabel} x="272" y="218" textAnchor="middle">{markovText(locale, "Training episodes")}</text>
       </> : null}
       {children}
     </svg>
   );
 }
 
-function LearningChart({ points, mode }: { points: readonly PongCurvePoint[]; mode: PongObservationMode }) {
+function LearningChart({ points, mode, locale }: { points: readonly PongCurvePoint[]; mode: PongObservationMode; locale: MarkovLocale }) {
   const latest = points[points.length - 1];
   return (
     <div className={styles.chartWrap}>
-      <ChartFrame label={`${mode === "position" ? "Position-only" : "Position and velocity"} policy hit rate is ${percent(latest.hitRate)} after ${latest.episode} training episodes.`}>
+      <ChartFrame locale={locale} label={locale === "pt-BR" ? `A política com ${mode === "position" ? "apenas a posição" : "posição e velocidade"} acerta ${percent(latest.hitRate)} após ${markovNumber(locale, latest.episode)} episódios de treinamento.` : `${mode === "position" ? "Position-only" : "Position and velocity"} policy hit rate is ${percent(latest.hitRate)} after ${latest.episode} training episodes.`}>
         <path d={linePath(points)} className={`${styles.curve} ${styles.activeCurve} ${mode === "position" ? styles.positionCurve : styles.velocityCurve}`} />
       </ChartFrame>
     </div>
   );
 }
 
-export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
+export function MarkovPongPlayground({ mode, locale = "en" }: { mode: PongObservationMode; locale?: MarkovLocale }) {
   const titleId = `markov-pong-title-${mode}`;
   const results = useMemo(() => trainMarkovPong(mode), [mode]);
   const [curveIndex, setCurveIndex] = useState(0);
@@ -188,8 +190,8 @@ export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
   }
 
   const title = visibleVelocity
-    ? "What changes when velocity is part of the state?"
-    : "Can a position-only agent learn to return the ball?";
+    ? markovText(locale, "What changes when velocity is part of the state?")
+    : markovText(locale, "Can a position-only agent learn to return the ball?");
   const velocityAngle = Math.atan2(state.ballVy, state.ballVx) * (180 / Math.PI);
 
   return (
@@ -204,80 +206,80 @@ export function MarkovPongPlayground({ mode }: { mode: PongObservationMode }) {
       style={{ "--training-frame-ms": `${trainingFrameMs}ms` } as React.CSSProperties}
     >
       <header className={styles.header}>
-        <p className={styles.kicker}>{visibleVelocity ? "Experiment 2 · Markov state" : "Experiment 1 · Broken state"}</p>
+        <p className={styles.kicker}>{visibleVelocity ? markovText(locale, "Experiment 2 · Markov state") : markovText(locale, "Experiment 1 · Broken state")}</p>
         <h3 id={titleId}>{title}</h3>
       </header>
 
       <div className={styles.experimentBand}>
-        <span>Agent sees</span>
+        <span>{markovText(locale, "Agent sees")}</span>
         <code>{visibleVelocity ? "z = (x, y, vₓ, vᵧ, paddle)" : "z = (x, y, paddle)"}</code>
-        <strong>{visibleVelocity ? "Velocity observed" : "Velocity hidden"}</strong>
+        <strong>{visibleVelocity ? markovText(locale, "Velocity observed") : markovText(locale, "Velocity hidden")}</strong>
       </div>
 
       <div className={styles.body}>
         <div className={styles.environmentColumn}>
-          <div className={`${styles.court} ${resetting ? styles.resetting : ""}`} role="img" aria-label={`Pong court. Ball at column ${state.ballX}, row ${state.ballY}, moving ${state.ballVx < 0 ? "left" : "right"} and ${state.ballVy < 0 ? "up" : "down"}. Paddle at column ${state.paddleX}.${state.outcome ? ` The agent ${state.outcome === "hit" ? "hit" : "missed"} the ball.` : newRally ? " A new rally has started." : ""}`} data-outcome={state.outcome ?? "playing"} data-launch-index={launchIndexRef.current} data-ball-vx={state.ballVx} data-ball-vy={state.ballVy} data-resetting={String(resetting)}>
+          <div className={`${styles.court} ${resetting ? styles.resetting : ""}`} role="img" aria-label={locale === "pt-BR" ? `Quadra de Pong. Bola na coluna ${state.ballX}, linha ${state.ballY}, movendo-se para a ${state.ballVx < 0 ? "esquerda" : "direita"} e para ${state.ballVy < 0 ? "cima" : "baixo"}. Raquete na coluna ${state.paddleX}.${state.outcome ? ` O agente ${state.outcome === "hit" ? "acertou" : "errou"} a bola.` : newRally ? " Uma nova jogada começou." : ""}` : `Pong court. Ball at column ${state.ballX}, row ${state.ballY}, moving ${state.ballVx < 0 ? "left" : "right"} and ${state.ballVy < 0 ? "up" : "down"}. Paddle at column ${state.paddleX}.${state.outcome ? ` The agent ${state.outcome === "hit" ? "hit" : "missed"} the ball.` : newRally ? " A new rally has started." : ""}`} data-outcome={state.outcome ?? "playing"} data-launch-index={launchIndexRef.current} data-ball-vx={state.ballVx} data-ball-vy={state.ballVy} data-resetting={String(resetting)}>
             <span className={styles.centerLine} aria-hidden="true" />
             <span className={styles.ball} style={{ left: `${((state.ballX + 0.5) / MARKOV_PONG.columns) * 100}%`, top: `${((state.ballY + 0.5) / MARKOV_PONG.rows) * 100}%` }} data-ball-x={state.ballX} data-ball-y={state.ballY} aria-hidden="true" />
             {visibleVelocity ? <span className={styles.velocityArrow} style={{ left: `${((state.ballX + 0.5) / MARKOV_PONG.columns) * 100}%`, top: `${((state.ballY + 0.5) / MARKOV_PONG.rows) * 100}%`, "--velocity-angle": `${velocityAngle}deg` } as React.CSSProperties} data-velocity-x={state.ballVx} data-velocity-y={state.ballVy} aria-hidden="true" /> : null}
             <span className={styles.paddle} style={{ left: `${((state.paddleX + 0.5) / MARKOV_PONG.columns) * 100}%` }} data-paddle-x={state.paddleX} aria-hidden="true" />
-            {state.done ? <span className={state.outcome === "hit" ? styles.hitBadge : styles.missBadge}>{state.outcome === "hit" ? "Hit" : "Miss"}</span> : null}
-            {newRally && !state.done ? <span className={styles.newRallyBadge}>New rally</span> : null}
+            {state.done ? <span className={state.outcome === "hit" ? styles.hitBadge : styles.missBadge}>{state.outcome === "hit" ? markovText(locale, "Hit") : markovText(locale, "Miss")}</span> : null}
+            {newRally && !state.done ? <span className={styles.newRallyBadge}>{markovText(locale, "New rally")}</span> : null}
           </div>
           {curveIndex >= maximumCurveIndex ? <div className={styles.runScore} aria-live="polite" data-run-hits={runResult.hits} data-run-misses={runResult.misses}>
-            <strong>{runResult.hits}</strong> hits <span>· {runResult.misses} misses</span>
+            <strong>{runResult.hits}</strong> {markovCountWord(locale, runResult.hits, "hits")} <span>· {runResult.misses} {markovCountWord(locale, runResult.misses, "misses")}</span>
           </div> : null}
         </div>
 
         <div className={styles.learningColumn} data-training-episodes={currentPoint.episode} data-active-hit-rate={Math.round(currentPoint.hitRate * 100)}>
           <div className={styles.result}>
             <strong>{percent(currentPoint.hitRate)}</strong>
-            <span>hit rate</span>
-            <small>{currentPoint.episode.toLocaleString()} / 5,000 episodes</small>
+            <span>{markovText(locale, "hit rate")}</span>
+            <small>{markovNumber(locale, currentPoint.episode)} / {markovNumber(locale, 5000)} {markovText(locale, "episodes")}</small>
           </div>
-          <LearningChart points={revealedCurve} mode={mode} />
+          <LearningChart points={revealedCurve} mode={mode} locale={locale} />
           {curveIndex < maximumCurveIndex ? <label className={styles.speedControl}>
-            <span>Training speed <strong>{episodesPerSecond.toLocaleString()} episodes/s</strong></span>
-            <input type="range" min="100" max="2000" step="100" value={episodesPerSecond} onChange={(event) => setEpisodesPerSecond(Number(event.target.value))} aria-label="Training speed in episodes per second" />
+            <span>{markovText(locale, "Training speed")} <strong>{markovNumber(locale, episodesPerSecond)} {markovText(locale, "episodes/s")}</strong></span>
+            <input type="range" min="100" max="2000" step="100" value={episodesPerSecond} onChange={(event) => setEpisodesPerSecond(Number(event.target.value))} aria-label={locale === "pt-BR" ? "Velocidade do treinamento em episódios por segundo" : "Training speed in episodes per second"} />
           </label> : null}
           <button type="button" className={styles.trainButton} onClick={toggleAgent}>
             {curveIndex >= maximumCurveIndex
-              ? running ? "Stop agent" : "Run agent"
-              : training ? "Pause" : curveIndex === 0 ? "Train agent" : "Continue"}
+              ? running ? markovText(locale, "Stop agent") : markovText(locale, "Run agent")
+              : training ? markovText(locale, "Pause") : curveIndex === 0 ? markovText(locale, "Train agent") : markovText(locale, "Continue")}
           </button>
         </div>
       </div>
 
       <p className={styles.srOnly} aria-live="polite" aria-atomic="true">
         {training
-          ? "Training in progress."
+          ? markovText(locale, "Training in progress.")
           : curveIndex >= maximumCurveIndex
-            ? `Training complete after ${currentPoint.episode} episodes. Final hit rate ${percent(currentPoint.hitRate)}.`
+            ? locale === "pt-BR" ? `Treinamento concluído após ${markovNumber(locale, currentPoint.episode)} episódios. Taxa final de acertos: ${percent(currentPoint.hitRate)}.` : `Training complete after ${currentPoint.episode} episodes. Final hit rate ${percent(currentPoint.hitRate)}.`
             : curveIndex > 0
-              ? `Training paused after ${currentPoint.episode} episodes. Hit rate ${percent(currentPoint.hitRate)}.`
-              : "Training has not started."}
+              ? locale === "pt-BR" ? `Treinamento pausado após ${markovNumber(locale, currentPoint.episode)} episódios. Taxa de acertos: ${percent(currentPoint.hitRate)}.` : `Training paused after ${currentPoint.episode} episodes. Hit rate ${percent(currentPoint.hitRate)}.`
+              : markovText(locale, "Training has not started.")}
       </p>
     </section>
   );
 }
 
-export function MarkovPongComparison() {
+export function MarkovPongComparison({ locale = "en" }: { locale?: MarkovLocale }) {
   const results = trainPongPair();
   return (
     <figure className={`${styles.lab} ${styles.comparison}`} aria-labelledby="markov-pong-comparison-title" data-markov-pong-comparison>
       <figcaption className={styles.comparisonHeader}>
-        <p className={styles.kicker}>Matched result</p>
-        <h3 id="markov-pong-comparison-title">One missing variable changes what can be learned</h3>
-        <p>Same game and training budget. Only the state representation differs.</p>
+        <p className={styles.kicker}>{markovText(locale, "Matched result")}</p>
+        <h3 id="markov-pong-comparison-title">{markovText(locale, "One missing variable changes what can be learned")}</h3>
+        <p>{markovText(locale, "Same game and training budget. Only the state representation differs.")}</p>
       </figcaption>
       <div className={styles.comparisonBody}>
-        <ChartFrame axisTitles label={`After 5,000 episodes, the position-only agent returns ${percent(results.position.finalHitRate)} of launches and the velocity-aware agent returns ${percent(results.velocity.finalHitRate)}.`}>
+        <ChartFrame locale={locale} axisTitles label={locale === "pt-BR" ? `Após 5.000 episódios, o agente que só vê a posição rebate ${percent(results.position.finalHitRate)} dos lançamentos; o agente que conhece a velocidade rebate ${percent(results.velocity.finalHitRate)}.` : `After 5,000 episodes, the position-only agent returns ${percent(results.position.finalHitRate)} of launches and the velocity-aware agent returns ${percent(results.velocity.finalHitRate)}.`}>
           <path d={linePath(results.position.curve)} className={`${styles.curve} ${styles.activeCurve} ${styles.positionCurve}`} />
           <path d={linePath(results.velocity.curve)} className={`${styles.curve} ${styles.activeCurve} ${styles.velocityCurve}`} />
         </ChartFrame>
         <div className={styles.comparisonStats}>
-          <div><span className={styles.positionLegend}>Position only</span><strong>{percent(results.position.finalHitRate)}</strong><small>velocity hidden</small></div>
-          <div><span className={styles.velocityLegend}>Position + velocity</span><strong>{percent(results.velocity.finalHitRate)}</strong><small>Markov state</small></div>
+          <div><span className={styles.positionLegend}>{markovText(locale, "Position only")}</span><strong>{percent(results.position.finalHitRate)}</strong><small>{markovText(locale, "velocity hidden")}</small></div>
+          <div><span className={styles.velocityLegend}>{markovText(locale, "Position + velocity")}</span><strong>{percent(results.velocity.finalHitRate)}</strong><small>{markovText(locale, "Markov state")}</small></div>
         </div>
       </div>
     </figure>
