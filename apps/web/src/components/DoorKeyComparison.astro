@@ -1,5 +1,6 @@
 ---
 import { DoorKeyComparison } from "@grove/tree-visuals";
+const { locale = "en" } = Astro.props;
 ---
 
-<DoorKeyComparison />
+<DoorKeyComparison locale={locale} />

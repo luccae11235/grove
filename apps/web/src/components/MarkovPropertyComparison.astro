@@ -1,16 +1,18 @@
 ---
 // Learner question: does the previous frame change what we can predict now?
 // Keep the ball, action, and actual motion fixed; vary only available information.
+const { locale = "en" } = Astro.props;
+const pt = locale === "pt-BR";
 const rows = [
-  { id: "position", title: "Position alone", velocity: false, conclusion: "History changes the prediction.", before: "Either direction is possible.", after: "The previous position reveals the direction." },
-  { id: "velocity", title: "Position + velocity", velocity: true, conclusion: "History adds no new information.", before: "Velocity already gives the direction.", after: "The prediction stays the same." },
+  { id: "position", title: (pt ? "Só a posição" : "Position alone"), velocity: false, conclusion: (pt ? "O histórico muda a previsão." : "History changes the prediction."), before: (pt ? "As duas direções são possíveis." : "Either direction is possible."), after: (pt ? "A posição anterior revela a direção." : "The previous position reveals the direction.") },
+  { id: "velocity", title: (pt ? "Posição + velocidade" : "Position + velocity"), velocity: true, conclusion: (pt ? "O histórico não acrescenta informação." : "History adds no new information."), before: (pt ? "A velocidade já indica a direção." : "Velocity already gives the direction."), after: (pt ? "A previsão não muda." : "The prediction stays the same.") },
 ];
 ---
 
 <figure class="markov-comparison" aria-labelledby="markov-comparison-title">
   <header class="intro">
-    <h3 id="markov-comparison-title">Does the previous frame change your prediction?</h3>
-    <p>A ball travels up-right or down-right at a fixed speed, away from the walls. The paddle stays still.</p>
+    <h3 id="markov-comparison-title">{pt ? "O quadro anterior muda sua previsão?" : "Does the previous frame change your prediction?"}</h3>
+    <p>{pt ? "A bola se move para a direita e para cima ou para baixo, com velocidade fixa e longe das paredes. A raquete fica parada." : "A ball travels up-right or down-right at a fixed speed, away from the walls. The paddle stays still."}</p>
   </header>
   <div class="comparison-frame">
     {rows.map((row) => (
@@ -25,12 +27,12 @@ const rows = [
             const arrowId = `prediction-${row.id}-${history}`;
             return (
               <div class="scene">
-                <p class="scene-heading">{history ? "Now, reveal the previous frame" : "Use only the current state"}</p>
+                <p class="scene-heading">{history ? (pt ? "Agora, revele o quadro anterior" : "Now, reveal the previous frame") : (pt ? "Use apenas o estado atual" : "Use only the current state")}</p>
                 <svg viewBox="0 0 280 200" role="img" aria-label={ambiguous
-                  ? "The ball is at the center. Its next position could be up and right or down and right; position alone does not distinguish them."
+                  ? (pt ? "A bola está no centro. Ela pode seguir para a direita e para cima ou para baixo; a posição sozinha não distingue as duas possibilidades." : "The ball is at the center. Its next position could be up and right or down and right; position alone does not distinguish them.")
                   : history
-                    ? `The previous ball position is down and left of its current position, so the next position is up and right. ${row.velocity ? "The current velocity already predicted this." : "History removes the downward possibility."}`
-                    : "The ball is at the center with a velocity arrow pointing up and right. Its next position is up and right."}>
+                    ? `${pt ? "A posição anterior da bola fica abaixo e à esquerda da atual; logo, a próxima posição fica acima e à direita." : "The previous ball position is down and left of its current position, so the next position is up and right."} ${row.velocity ? (pt ? "A velocidade atual já permitia prever isso." : "The current velocity already predicted this.") : (pt ? "O histórico elimina a possibilidade de descer." : "History removes the downward possibility.")}`
+                    : (pt ? "A bola está no centro, com uma seta de velocidade apontando para cima e à direita. Sua próxima posição segue nessa direção." : "The ball is at the center with a velocity arrow pointing up and right. Its next position is up and right.")}>
                   <defs>
                     <marker id={arrowId} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                       <path d="M1 1 9 5 1 9" fill="none" stroke="currentColor" stroke-width="1.5" />
@@ -39,21 +41,21 @@ const rows = [
                   {history && <>
                     <path class="trail" d="M60 144 130 106" />
                     <circle class="past" cx="50" cy="150" r="10" />
-                    <text x="50" y="182" text-anchor="middle">Previous</text>
+                    <text x="50" y="182" text-anchor="middle">{pt ? "Antes" : "Previous"}</text>
                   </>}
                   <path class="prediction" d="M154 92 213 59" marker-end={`url(#${arrowId})`} />
                   <circle class="future" cx="230" cy="50" r="10" />
-                  <text x="230" y="25" text-anchor="middle">{ambiguous ? "Possible next" : "Next"}</text>
+                  <text x="230" y="25" text-anchor="middle">{ambiguous ? (pt ? "Possível próxima" : "Possible next") : (pt ? "Próxima" : "Next")}</text>
                   {ambiguous && <>
                     <path class="prediction" d="M154 108 213 141" marker-end={`url(#${arrowId})`} />
                     <circle class="future" cx="230" cy="150" r="10" />
-                    <text x="230" y="182" text-anchor="middle">Possible next</text>
+                    <text x="230" y="182" text-anchor="middle">{pt ? "Possível próxima" : "Possible next"}</text>
                   </>}
                   <circle class="present" cx="140" cy="100" r="11" />
-                  <text class="now-label" x="140" y="132" text-anchor="middle">Now</text>
+                  <text class="now-label" x="140" y="132" text-anchor="middle">{pt ? "Agora" : "Now"}</text>
                   {row.velocity && <>
                     <path class="velocity" d="M141 81 172 64" marker-end={`url(#${arrowId})`} />
-                    <text class="velocity-label" x="137" y="52" text-anchor="middle">Velocity</text>
+                    <text class="velocity-label" x="137" y="52" text-anchor="middle">{pt ? "Velocidade" : "Velocity"}</text>
                   </>}
                 </svg>
                 <p class="prediction-note">{history ? row.after : row.before}</p>
@@ -64,7 +66,7 @@ const rows = [
       </section>
     ))}
   </div>
-  <figcaption>History matters when it changes what we can predict from the current state and action. Here, velocity keeps the information we needed from the previous frame.</figcaption>
+  <figcaption>{pt ? "O histórico importa quando muda o que podemos prever a partir do estado e da ação atuais. Aqui, a velocidade guarda a informação necessária do quadro anterior." : "History matters when it changes what we can predict from the current state and action. Here, velocity keeps the information we needed from the previous frame."}</figcaption>
 </figure>
 
 <style>

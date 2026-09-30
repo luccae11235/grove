@@ -2,12 +2,13 @@
 import { DoorKeyPlayground } from "@grove/tree-visuals";
 
 interface Props {
+  locale?: "en" | "pt-BR";
   mode: "position" | "memory";
 }
 
-const { mode } = Astro.props;
+const { mode, locale = "en" } = Astro.props;
 ---
 
 <div data-analytics-lab={`markov-door-${mode}`}>
-  <DoorKeyPlayground mode={mode} client:load />
+  <DoorKeyPlayground mode={mode} locale={locale} client:load />
 </div>

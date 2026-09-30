@@ -1,18 +1,20 @@
 ---
 interface Props {
   kind: "environment" | "state";
+  locale?: "en" | "pt-BR";
 }
 
-const { kind } = Astro.props;
+const { kind, locale = "en" } = Astro.props;
+const pt = locale === "pt-BR";
 ---
 
 {kind === "environment" ? (
   <figure class="pong-figure environment-figure" aria-labelledby="pong-environment-title pong-environment-caption">
     <header>
-      <p>Simplified Pong MDP</p>
-      <h3 id="pong-environment-title">Move the paddle before the ball arrives</h3>
+      <p>{pt ? "MDP simplificado de Pong" : "Simplified Pong MDP"}</p>
+      <h3 id="pong-environment-title">{pt ? "Mova a raquete antes que a bola chegue" : "Move the paddle before the ball arrives"}</h3>
     </header>
-    <svg viewBox="0 0 720 360" role="img" aria-label="A ball bounces inside a rectangular Pong court toward a horizontal paddle. Moving left, staying, and moving right yield zero reward during play. Hitting yields plus one; missing yields minus one.">
+    <svg viewBox="0 0 720 360" role="img" aria-label={pt ? "Uma bola rebate dentro de uma quadra retangular de Pong em direção a uma raquete horizontal. Mover para a esquerda, parar ou mover para a direita rende zero durante o jogo. Acertar rende mais um; errar rende menos um." : "A ball bounces inside a rectangular Pong court toward a horizontal paddle. Moving left, staying, and moving right yield zero reward during play. Hitting yields plus one; missing yields minus one."}>
       <defs>
         <marker id="pong-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
           <path d="M 0 0 L 10 5 L 0 10 z" class="arrow-head" />
@@ -26,38 +28,38 @@ const { kind } = Astro.props;
       <circle class="ball" cx="396" cy="224" r="12" />
       <rect class="paddle" x="314" y="282" width="92" height="12" rx="6" />
       <path class="paddle-motion" d="M292 288 H246 M428 288 H474" marker-start="url(#pong-arrow)" marker-end="url(#pong-arrow)" />
-      <text class="action" x="360" y="332" text-anchor="middle">left · stay · right</text>
+      <text class="action" x="360" y="332" text-anchor="middle">{pt ? "esquerda · parar · direita" : "left · stay · right"}</text>
       <g class="reward-zero">
-        <text x="70" y="139">during play</text>
-        <text class="reward-value" x="70" y="164">reward 0</text>
+        <text x="70" y="139">{pt ? "durante o jogo" : "during play"}</text>
+        <text class="reward-value" x="70" y="164">{pt ? "recompensa 0" : "reward 0"}</text>
         <path d="M128 152 H166" />
       </g>
       <g class="reward-hit">
-        <text x="604" y="227">paddle hit</text>
-        <text class="reward-value" x="604" y="252">reward +1</text>
+        <text x="604" y="227">{pt ? "acerto da raquete" : "paddle hit"}</text>
+        <text class="reward-value" x="604" y="252">{pt ? "recompensa +1" : "reward +1"}</text>
         <path d="M550 241 H591" />
       </g>
       <g class="reward-miss">
-        <text x="604" y="286">ball passes</text>
-        <text class="reward-value" x="604" y="311">reward −1</text>
+        <text x="604" y="286">{pt ? "bola passa" : "ball passes"}</text>
+        <text class="reward-value" x="604" y="311">{pt ? "recompensa −1" : "reward −1"}</text>
         <path d="M550 300 H591" />
       </g>
     </svg>
-    <figcaption id="pong-environment-caption">The reward is sparse: every intermediate move earns 0. Only the return decides +1 or −1.</figcaption>
+    <figcaption id="pong-environment-caption">{pt ? "A recompensa é esparsa: cada movimento intermediário vale 0. Só a rebatida determina +1 ou −1." : "The reward is sparse: every intermediate move earns 0. Only the return decides +1 or −1."}</figcaption>
   </figure>
 ) : (
   <figure class="pong-figure state-figure" aria-labelledby="pong-state-title pong-state-caption">
     <header>
-      <p>One snapshot · two state representations</p>
-      <h3 id="pong-state-title">Can this state tell us where the ball goes next?</h3>
+      <p>{pt ? "Uma imagem · duas representações de estado" : "One snapshot · two state representations"}</p>
+      <h3 id="pong-state-title">{pt ? "Esse estado permite prever para onde a bola vai?" : "Can this state tell us where the ball goes next?"}</h3>
     </header>
     <div class="state-panels">
       <section class="state-panel incomplete">
         <div class="panel-heading">
-          <span>Position only</span>
+          <span>{pt ? "Só a posição" : "Position only"}</span>
           <strong>z = (x, y, paddle)</strong>
         </div>
-        <svg viewBox="0 0 320 220" role="img" aria-label="Position-only observation: the same ball and paddle snapshot is consistent with four different next trajectories, so velocity remains unknown.">
+        <svg viewBox="0 0 320 220" role="img" aria-label={pt ? "Observação com apenas a posição: a mesma imagem da bola e da raquete admite quatro trajetórias seguintes; a velocidade é desconhecida." : "Position-only observation: the same ball and paddle snapshot is consistent with four different next trajectories, so velocity remains unknown."}>
           <defs>
             <marker id="uncertain-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
               <path d="M 0 0 L 10 5 L 0 10 z" class="uncertain-head" />
@@ -67,15 +69,15 @@ const { kind } = Astro.props;
           <circle class="mini-ball" cx="160" cy="91" r="10" />
           <rect class="mini-paddle" x="128" y="166" width="64" height="9" rx="5" />
           <path class="uncertain" d="M160 91 L111 47 M160 91 L209 47 M160 91 L111 136 M160 91 L209 136" marker-end="url(#uncertain-arrow)" />
-          <text class="unknown-label" x="160" y="210" text-anchor="middle">several next states fit</text>
+          <text class="unknown-label" x="160" y="210" text-anchor="middle">{pt ? "vários próximos estados" : "several next states fit"}</text>
         </svg>
       </section>
       <section class="state-panel complete">
         <div class="panel-heading">
-          <span>Position + velocity</span>
+          <span>{pt ? "Posição + velocidade" : "Position + velocity"}</span>
           <strong>z = (x, y, vₓ, vᵧ, paddle)</strong>
         </div>
-        <svg viewBox="0 0 320 220" role="img" aria-label="Position-plus-velocity observation: a labeled velocity arrow selects one specific next trajectory from the same ball and paddle snapshot.">
+        <svg viewBox="0 0 320 220" role="img" aria-label={pt ? "Observação com posição e velocidade: uma seta de velocidade indica uma única trajetória seguinte a partir da mesma imagem da bola e da raquete." : "Position-plus-velocity observation: a labeled velocity arrow selects one specific next trajectory from the same ball and paddle snapshot."}>
           <defs>
             <marker id="known-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
               <path d="M 0 0 L 10 5 L 0 10 z" class="known-head" />
@@ -86,11 +88,11 @@ const { kind } = Astro.props;
           <rect class="mini-paddle" x="128" y="166" width="64" height="9" rx="5" />
           <path class="known" d="M160 91 L213 141" marker-end="url(#known-arrow)" />
           <text class="velocity-label" x="213" y="101">vₓ, vᵧ</text>
-          <text class="known-label" x="160" y="210" text-anchor="middle">one next state follows</text>
+          <text class="known-label" x="160" y="210" text-anchor="middle">{pt ? "um próximo estado" : "one next state follows"}</text>
         </svg>
       </section>
     </div>
-    <figcaption id="pong-state-caption">The picture of the present is identical. Velocity changes whether the future is ambiguous.</figcaption>
+    <figcaption id="pong-state-caption">{pt ? "A imagem atual é a mesma. A velocidade determina se o futuro é ambíguo." : "The picture of the present is identical. Velocity changes whether the future is ambiguous."}</figcaption>
   </figure>
 )}
 
