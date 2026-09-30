@@ -34,13 +34,6 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
-- [ ] **Translate the Markov principle article into Brazilian Portuguese — issue #207**
-  - Add a faithful `pt-BR` draft with aligned learning metadata, structure,
-    equations, figures, and all six interactive experiences.
-  - Localize reader-facing and accessible text in the shared figures and labs.
-  - Completion check: full repository gate and desktop/mobile rendered review
-    pass for both locales, followed by exact-revision staging review before merge.
-
 - [ ] **Develop the Markov principle article — issue #158**
   - [x] Add the complete supplied English manuscript with the title, chapter
     structure, formulas, and production notes on an isolated docs branch.
@@ -240,6 +233,14 @@ references for longer-term editorial direction.
 ## Done
 
 ### Publishing and content
+
+- [x] **Translate the Markov principle article into Brazilian Portuguese — issue #207** — 2026-09-30
+  - Added a faithful `pt-BR` draft with aligned learning metadata, structure,
+    equations, figures, and all six interactive experiences.
+  - Localized reader-facing and accessible text in the shared figures and labs.
+  - Completion check: repository quality gates passed; both locales received
+    desktop and mobile rendered review; the pull request revision was reviewed
+    on staging before merging to `develop`.
 
 - [x] **Publish Beyond CART — issue #202** — 2026-09-18
   - Published the reviewed English article through implementation PR #204 and

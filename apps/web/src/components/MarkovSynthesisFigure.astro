@@ -11,7 +11,7 @@ const pt = locale === "pt-BR";
     aria-describedby="markov-synthesis-description"
   >
     <p id="markov-synthesis-description" class="sr-only">
-      {pt ? "No Pong, falta a velocidade, resolvido ao acrescentar a velocidade à posição. No ambiente da porta e da chave, falta a memória de que o agente possui a chave. No ambiente dos checkpoints, falta o contexto da recompensa, resolvido ao acrescentar o próximo checkpoint necessário." : "Pong is missing dynamics, repaired by adding velocity to position. The door-and-key environment is missing memory, repaired by adding whether the agent has the key. The checkpoint environment is missing reward state, repaired by adding the next required checkpoint."}
+      {pt ? "No Pong, acrescentar a velocidade à posição permite prever o movimento. No ambiente da porta e da chave, registrar se o agente possui a chave preserva a informação sobre o evento passado. No ambiente dos checkpoints, registrar o próximo checkpoint esperado fornece o contexto necessário para prever a recompensa." : "Pong is missing dynamics, repaired by adding velocity to position. The door-and-key environment is missing memory, repaired by adding whether the agent has the key. The checkpoint environment is missing reward state, repaired by adding the next required checkpoint."}
     </p>
 
     <div class="repairs">
