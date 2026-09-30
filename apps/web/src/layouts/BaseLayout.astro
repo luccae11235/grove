@@ -46,7 +46,8 @@ const activePath = base && pathname.startsWith(base)
   : pathname;
 const localePrefix = locale === "pt-BR" ? "/pt-br" : "";
 const homeHref = `${base}${localePrefix}/` || "/";
-const articlesHref = pageType === "website" && activePath === "/" ? "#articles" : `${homeHref}#articles`;
+const articlesPath = locale === "pt-BR" ? "/pt-br/artigos" : "/articles";
+const articlesHref = `${base}${articlesPath}`;
 const newsletterHref = `${base}${localePrefix}/newsletter`;
 const aboutHref = `${base}${localePrefix}/about`;
 const availableTranslations = { [locale]: activePath, ...translations };
@@ -123,7 +124,7 @@ const alternateOgLocales = Object.keys(availableTranslations)
       <div class="site-header-inner">
         <Brand href={homeHref} locale={locale} />
         <nav class="header-nav" aria-label={siteCopy.navigation.primary}>
-          <a href={articlesHref}>{locale === "pt-BR" ? "Artigos" : "Articles"}</a>
+          <a href={articlesHref} aria-current={activePath === articlesPath ? "page" : undefined}>{locale === "pt-BR" ? "Artigos" : "Articles"}</a>
           <a href={newsletterHref}>{siteCopy.navigation.newsletter}</a>
           <a href={aboutHref}>{siteCopy.navigation.about}</a>
         </nav>
@@ -134,7 +135,7 @@ const alternateOgLocales = Object.keys(availableTranslations)
               <span></span><span></span><span></span>
             </summary>
             <nav class="header-menu-panel" aria-label={siteCopy.navigation.primary}>
-              <a href={articlesHref}>{locale === "pt-BR" ? "Artigos" : "Articles"}</a>
+              <a href={articlesHref} aria-current={activePath === articlesPath ? "page" : undefined}>{locale === "pt-BR" ? "Artigos" : "Articles"}</a>
               <a href={newsletterHref}>{siteCopy.navigation.newsletter}</a>
               <a href={aboutHref}>{siteCopy.navigation.about}</a>
               <LanguageSwitcher locale={locale} translations={availableTranslations} base={base} />

@@ -108,6 +108,16 @@ references for longer-term editorial direction.
 
 ### Learning experience
 
+- [ ] **Organize the article library by editorial series — issue #197**
+  - Keep the home page's chronological horizontal shelf as the compact release
+    view, and add a dedicated, responsive library grouped by the existing
+    decision-tree, reinforcement-learning, and time-series metadata, with a
+    fallback for ungrouped articles.
+  - Preserve article visibility rules, publication details, and both English
+    and Brazilian Portuguese experiences without changing article content.
+  - Completion check: focused grouping tests and relevant typecheck/build checks
+    pass, followed by representative desktop and mobile rendered review.
+
 - [ ] **Prepare the Reward Hacking article for release — issue #123**
   - Make the first checkpoint playground clearly explain that readers can move
     checkpoints and watch the model learn the changed route.
