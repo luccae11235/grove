@@ -1013,7 +1013,11 @@ h1 {
   font-size: 0.72rem;
 }
 
-.topic-article-meta > span:first-child {
+.topic-article-meta .topic-article-labels {
+  flex-wrap: wrap;
+}
+
+.topic-article-topic {
   color: var(--accent);
   font-weight: 760;
   letter-spacing: 0.06em;
