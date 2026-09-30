@@ -40,6 +40,11 @@ test("the production article library excludes drafts", async ({ page }) => {
     level: 1,
     name: "Why averaging trees makes predictions more stable",
   })).toBeVisible();
+
+  await page.goto("/pt-br/");
+  await expect(page.locator(".library-card .quick-read-badge")).toHaveCount(0);
+  await page.goto("/pt-br/artigos/");
+  await expect(page.locator(".topic-article .quick-read-badge")).toHaveCount(0);
 });
 
 test("the published reading flow is complete in Brazilian Portuguese", async ({ page }) => {

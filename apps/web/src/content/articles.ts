@@ -254,6 +254,16 @@ export function getPublishedArticles(locale: Locale = defaultLocale): Article[] 
     );
 }
 
+/** Includes authored drafts only in development or an explicit draft preview. */
+export function getVisibleArticles(locale: Locale = defaultLocale): Article[] {
+  return allEntries
+    .filter((entry) => entry.data.locale === locale && isVisible(entry))
+    .map(toArticle)
+    .sort((left, right) =>
+      (right.publishedAt?.getTime() ?? 0) - (left.publishedAt?.getTime() ?? 0),
+    );
+}
+
 /**
  * Returns the complete authored catalog for editorial discovery surfaces.
  * Drafts remain explicitly labeled by consumers rather than silently omitted.

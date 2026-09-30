@@ -76,6 +76,14 @@ test("only the new article has the Quick read marker in the catalog", async ({ p
   const topicCards = page.locator(".topic-article");
   await expect(topicCards.locator(".quick-read-badge")).toHaveCount(1);
   await expect(topicCards.filter({ has: page.locator(".quick-read-badge") })).toHaveAttribute("href", article);
+  await page.goto("/pt-br/");
+  const portugueseCards = page.locator(".library-card");
+  await expect(portugueseCards.locator(".quick-read-badge")).toHaveCount(1);
+  await expect(portugueseCards.filter({ has: page.locator(".quick-read-badge") })).toHaveAttribute("href", portugueseArticle);
+  await page.goto("/pt-br/artigos/");
+  const portugueseTopicCards = page.locator(".topic-article");
+  await expect(portugueseTopicCards.locator(".quick-read-badge")).toHaveCount(1);
+  await expect(portugueseTopicCards.filter({ has: page.locator(".quick-read-badge") })).toHaveAttribute("href", portugueseArticle);
   await page.goto("/learn/regression-trees/");
   await expect(page.locator(".quick-read-badge")).toHaveCount(0);
 });
