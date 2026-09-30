@@ -34,6 +34,16 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Explain why constant-leaf regression trees do not extrapolate — issue #209**
+  - [x] Record the learning scope, complete English editorial draft, visual contract,
+    and unsent email/LinkedIn drafts in `docs/article-plans/`.
+  - [x] Add matched English and Brazilian Portuguese article drafts and one
+    focused interactive example; keep both articles in `draft`.
+  - [x] Complete focused tests, full repository checks, and desktop/mobile
+    rendered review before requesting staging review.
+  - Completion check: the approved reader-facing drafts and interaction pass
+    all checks, with publication and newsletter delivery remaining separate.
+
 - [ ] **Develop the Markov principle article — issue #158**
   - [x] Add the complete supplied English manuscript with the title, chapter
     structure, formulas, and production notes on an isolated docs branch.

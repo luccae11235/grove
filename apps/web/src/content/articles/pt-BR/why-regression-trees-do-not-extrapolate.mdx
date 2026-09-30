@@ -1,0 +1,84 @@
+---
+articleId: why-regression-trees-do-not-extrapolate
+locale: pt-BR
+routeSlug: por-que-arvores-de-regressao-param-na-borda
+href: /pt-br/learn/por-que-arvores-de-regressao-param-na-borda
+title: Por que uma árvore de regressão para na borda
+navTitle: Por que árvores de regressão param na borda
+description: "Acompanhe uma árvore de regressão além das entradas observadas e veja por que uma folha constante não prolonga uma tendência de alta."
+eyebrow: Árvores de decisão · Regressão
+area: Aprendizado supervisionado
+topic: Árvores de regressão
+summary: Mova uma entrada além dos dados de treino e acompanhe por que a folha que guarda uma média continua retornando a mesma previsão.
+status: draft
+readingTime: 4–5 min
+interactiveCount: 1
+staticVisualCount: 0
+difficulty: foundational
+quickRead: true
+series: tree-based-machine-learning
+access: public
+prerequisites:
+  - regression-trees-from-scratch
+related:
+  - beyond-cart-tree-architectures
+implementation: mdx
+learning:
+  priorKnowledge:
+    - Acompanhar uma pergunta de limiar em uma árvore de regressão.
+    - Entender por que uma folha de regressão convencional prevê a média dos resultados de treino que chegam até ela.
+  likelyMisconception: Uma árvore de regressão prolonga uma tendência de alta quando recebe uma entrada além do intervalo observado no treino.
+  transferOutcome: Acompanhar uma entrada fora do intervalo observado até sua folha constante e explicar por que a previsão não muda quando a entrada se afasta.
+  motivatingQuestion: Se as observações continuam subindo, o que uma árvore ajustada prevê logo além delas?
+  conceptualBottleneck: Um limiar consegue encaminhar uma entrada nova para além dos dados, mas a folha alcançada contém um número fixo, não uma regra para prolongar a tendência.
+  evidenceOfUnderstanding:
+    - Prever a folha e o valor retornados para uma entrada maior que o maior x observado.
+    - Distinguir o intervalo observado das entradas do intervalo dos resultados e das previsões da árvore.
+    - Explicar por que acrescentar folhas constantes pode mudar o nível final sem criar inclinação.
+---
+
+import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import RegressionExtrapolationLab from "../../../components/RegressionExtrapolationLab.astro";
+
+<header className="page-header lesson-header article-hero">
+  <p className="eyebrow">Árvores de decisão · Regressão</p>
+  <h1>Por que uma árvore de regressão para na borda</h1>
+  <p className="lede">Uma árvore de regressão consegue prever além das entradas que observou. Acompanhe seu último caminho para ver por que essa previsão não prolonga uma tendência de alta.</p>
+  <div className="article-meta" aria-label="Informações sobre o artigo">
+    <DifficultyBadge difficulty="foundational" locale="pt-BR" />
+    <span className="quick-read-badge">Leitura rápida</span>
+    <span><strong>Sem código</strong></span>
+    <span><strong>1</strong> experimento guiado</span>
+    <span><strong>Rascunho</strong></span>
+  </div>
+</header>
+
+<article className="lesson-body deep-article regression-extrapolation-article">
+  <p className="lesson-stage">Um padrão crescente</p>
+  <h2 id="um-padrao">O que acontece além dos pontos?</h2>
+
+  Uma árvore de regressão transforma uma sequência de perguntas em uma previsão numérica. No [artigo anterior](/pt-br/learn/regression-trees/), cada folha devolvia a média dos resultados de treino que chegavam até ela. O que acontece quando fazemos uma pergunta a essa árvore sobre uma entrada além de todas as que ela viu?
+
+  O gráfico abaixo mostra dez observações. Os resultados geralmente sobem à medida que `x` aumenta, embora não em um ritmo perfeitamente constante. A faixa sombreada marca as entradas observadas, de `x = 1` a `x = 8,2`. Uma pequena árvore ajustada a esses pontos produz as previsões em degraus verdes. Deslize pelo eixo x para comparar previsões dentro e fora dessa faixa. A árvore permanece fixa enquanto você move a entrada.
+
+  <div className="decision-tree-interactive">
+    <RegressionExtrapolationLab locale="pt-BR" />
+  </div>
+
+  <p className="lesson-stage">Acompanhe a última folha</p>
+  <h2 id="ultima-pergunta">Por que a previsão fica constante?</h2>
+
+  Experimente `x = 7` e depois avance um pouco. A última divisão da árvore envia entradas maiores para uma folha com os resultados `6,8` e `6,5`, cuja média é `6,65`. Em `x = 8,2`, a maior entrada observada, a árvore prevê `6,65`. Ela dá a mesma resposta em `x = 9,5` e em `x = 10`: as três entradas chegam à mesma folha, que guarda um número em vez de uma regra para prolongar a subida.
+
+  O trecho plano começa logo depois de `x = 7`, *dentro* do intervalo observado de entradas. Cruzar a borda em `8,2` não o cria. Uma árvore com mais folhas constantes poderia separar as últimas observações em grupos diferentes e mudar a altura do degrau final, mas sua folha mais à direita ainda devolveria um valor fixo para qualquer entrada mais distante.
+
+  Observe os dois intervalos diferentes. `x = 9,5` está fora do intervalo observado das **entradas**. A previsão `6,65` continua dentro do intervalo dos **resultados** observados, de `2` a `6,8`. Uma folha que prevê a média não pode ultrapassar o maior nem o menor resultado de treino que recebeu. Portanto, esse tipo de árvore também não prevê além dos extremos globais dos resultados observados.
+
+  <p className="lesson-stage">Aplique a ideia em outro lugar</p>
+  <h2 id="cauda-plana">Uma previsão não é uma continuação</h2>
+
+  As observações crescentes não nos dizem qual será o resultado real em `x = 9,5`. Ele pode continuar subindo, estabilizar ou cair. A árvore consegue devolver `6,65` ali, mas isso não significa que a relação real seja plana. Algumas arquiteturas colocam um modelo linear na folha, como descreve o [artigo Beyond CART](/learn/beyond-cart-tree-architectures/). O argumento da cauda plana aqui vale para árvores de regressão convencionais com folhas constantes.
+
+  Ao encontrar uma previsão de uma dessas árvores além das entradas de treino, pergunte a qual folha a nova entrada chega e o que ela guarda. Isso explica o que o modelo consegue calcular; ainda precisamos de observações fora do intervalo de treino para avaliar como o padrão real continua.
+
+</article>

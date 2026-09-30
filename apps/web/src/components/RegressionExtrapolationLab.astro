@@ -1,0 +1,13 @@
+---
+import { RegressionExtrapolationPlayground } from "@grove/tree-visuals";
+
+interface Props {
+  locale?: "en" | "pt-BR";
+}
+
+const { locale = "en" } = Astro.props;
+---
+
+<div data-analytics-lab="regression-extrapolation" data-extrapolation-visual>
+  <RegressionExtrapolationPlayground locale={locale} client:load />
+</div>

@@ -82,6 +82,10 @@ An article's URL is independent from its source filename. Renaming or translatin
 a title must not change the stable ID. A URL change requires a redirect plan once
 the public Railway deployment supports request-time routing.
 
+`quickRead: true` is an optional format marker for a short article. It is
+independent of `difficulty` and publication `status`; articles without it keep
+their existing labels and order.
+
 ## Learning contract
 
 Every article entry records:

@@ -58,7 +58,10 @@ const formatDate = (date?: Date) => date?.toLocaleDateString("pt-BR", {
               <a class="topic-article" href={`${base}${article.href}`}>
                 <span class="topic-article-copy">
                   <span class="topic-article-meta">
-                    <span>{article.topic}</span>
+                    <span class="topic-article-labels">
+                      <span class="topic-article-topic">{article.topic}</span>
+                      {article.quickRead && <span class="quick-read-badge">Leitura rápida</span>}
+                    </span>
                     {article.publishedAt && (
                       <span>
                         {article.id === latestArticleId && <strong>Mais recente</strong>}

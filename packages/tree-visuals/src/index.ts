@@ -19,6 +19,13 @@ export {
   regressionLessonSummary,
 } from "./RegressionTreePlaygrounds";
 export {
+  EXTRAPOLATION_POINTS,
+  EXTRAPOLATION_SPLITS,
+  EXTRAPOLATION_LEAF_MEANS,
+  predictExtrapolationTree,
+  RegressionExtrapolationPlayground,
+} from "./RegressionExtrapolationPlayground";
+export {
   MultiFeatureRegressionPlayground,
   multiFeatureRegressionSummary,
 } from "./MultiFeatureRegressionPlayground";

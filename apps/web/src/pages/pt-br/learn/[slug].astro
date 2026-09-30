@@ -16,6 +16,7 @@ export async function getStaticPaths() {
     "sample-based-view-of-reinforcement-learning",
     "is-my-model-good",
     "the-markov-principle",
+    "why-regression-trees-do-not-extrapolate",
   ]);
   const includeDrafts =
     import.meta.env.DEV || import.meta.env.SHOW_DRAFTS === "true";
@@ -60,6 +61,11 @@ const translations = entry.data.articleId === "sample-based-view-of-reinforcemen
     ? {
         en: "/learn/the-markov-principle/",
         "pt-BR": "/pt-br/learn/o-principio-de-markov/",
+      }
+  : entry.data.articleId === "why-regression-trees-do-not-extrapolate"
+    ? {
+        en: "/learn/why-regression-trees-stop-at-the-edge/",
+        "pt-BR": "/pt-br/learn/por-que-arvores-de-regressao-param-na-borda/",
       }
   : undefined;
 ---
