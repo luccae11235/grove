@@ -161,7 +161,6 @@ jobs:
           pnpm observability:migrate
       - name: Build the consent-enabled website
         env:
-          SHOW_DRAFTS: "true"
           PUBLIC_OBSERVABILITY_ENABLED: "true"
           PUBLIC_FEEDBACK_ENABLED: "true"
           PUBLIC_OBSERVABILITY_API_URL: http://127.0.0.1:3001
@@ -175,6 +174,22 @@ jobs:
           OBSERVABILITY_LINK_SECRET: observability-test-secret-at-least-32-characters
           CONSENT_VERSION: 2026-07
         run: pnpm --filter @grove/web test:browser
+      - name: Build the draft website for article acceptance
+        env:
+          SHOW_DRAFTS: "true"
+          PUBLIC_OBSERVABILITY_ENABLED: "true"
+          PUBLIC_FEEDBACK_ENABLED: "true"
+          PUBLIC_OBSERVABILITY_API_URL: http://127.0.0.1:3001
+          PUBLIC_OBSERVABILITY_CONSENT_VERSION: 2026-07
+        run: pnpm build
+      - name: Run draft article acceptance
+        env:
+          DATABASE_URL: postgresql://grove:grove@127.0.0.1:5432/grove_browser
+          DEPLOYMENT_ENV: development
+          ALLOWED_ORIGINS: http://127.0.0.1:4322
+          OBSERVABILITY_LINK_SECRET: observability-test-secret-at-least-32-characters
+          CONSENT_VERSION: 2026-07
+        run: pnpm --filter @grove/web exec playwright test tests/browser/regression-extrapolation.spec.ts
 
   newsletter-preview:
     name: Newsletter preview
