@@ -30,19 +30,21 @@ const formatDate = (date?: Date) => date?.toLocaleDateString("pt-BR", {
       Escolha um assunto e percorra as ideias na ordem que for mais útil para você.
     </p>
 
-    <nav class="catalog-topic-nav" aria-label="Temas dos artigos">
-      {librarySections.map((section) => (
-        <a href={`#topic-${section.id}`}>
+  </header>
+
+  <div class="catalog-layout" data-article-library>
+    <nav class="catalog-topic-nav" role="tablist" aria-label="Temas dos artigos">
+      {librarySections.map((section, index) => (
+        <button type="button" role="tab" id={`topic-tab-${section.id}`} data-topic-button={section.id} aria-controls={`topic-${section.id}`} aria-selected={index === 0 ? "true" : "false"} tabindex={index === 0 ? 0 : -1}>
           <span>{section.label}</span>
           <small>{section.articles.length}</small>
-        </a>
+        </button>
       ))}
     </nav>
-  </header>
 
   <div class="topic-catalog" aria-label="Artigos por tema">
     {librarySections.map((section) => (
-      <section class="topic-section" id={`topic-${section.id}`} aria-labelledby={`topic-title-${section.id}`}>
+      <section class="topic-section" role="tabpanel" id={`topic-${section.id}`} data-topic-panel={section.id} aria-labelledby={`topic-tab-${section.id}`}>
         <header class="topic-section-heading">
           <p class="eyebrow">Tema</p>
           <h2 id={`topic-title-${section.id}`}>{section.label}</h2>
@@ -75,4 +77,9 @@ const formatDate = (date?: Date) => date?.toLocaleDateString("pt-BR", {
       </section>
     ))}
   </div>
+  </div>
 </BaseLayout>
+
+<script>
+  import "../../scripts/article-library-ui";
+</script>

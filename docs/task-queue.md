@@ -113,6 +113,9 @@ references for longer-term editorial direction.
     view, and add a dedicated, responsive library grouped by the existing
     decision-tree, reinforcement-learning, and time-series metadata, with a
     fallback for ungrouped articles.
+  - Let readers select one area from a left-side vertical topic list on desktop
+    and show only that area's articles; keep the selection usable on mobile and
+    by keyboard.
   - Preserve article visibility rules, publication details, and both English
     and Brazilian Portuguese experiences without changing article content.
   - Completion check: focused grouping tests and relevant typecheck/build checks
