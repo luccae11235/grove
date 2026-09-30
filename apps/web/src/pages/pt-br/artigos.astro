@@ -1,0 +1,85 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPublishedArticles } from "../../content/articles";
+import { groupArticlesBySeries } from "../../content/article-library";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const libraryArticles = getPublishedArticles("pt-BR");
+const librarySections = groupArticlesBySeries(libraryArticles, "pt-BR");
+const latestArticleId = libraryArticles.find((article) => article.publishedAt)?.id;
+const formatDate = (date?: Date) => date?.toLocaleDateString("pt-BR", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+---
+
+<BaseLayout
+  title="Artigos"
+  description="Explore por tema os artigos visuais e interativos de aprendizado de máquina da Aflora."
+  locale="pt-BR"
+  canonicalPath="/pt-br/artigos"
+  translations={{ en: "/articles", "pt-BR": "/pt-br/artigos" }}
+  wide
+>
+  <header class="catalog-intro">
+    <p class="eyebrow">Biblioteca de artigos</p>
+    <h1>Explore por tema</h1>
+    <p>
+      Escolha um assunto e percorra as ideias na ordem que for mais útil para você.
+    </p>
+
+  </header>
+
+  <div class="catalog-layout" data-article-library>
+    <nav class="catalog-topic-nav" role="tablist" aria-label="Temas dos artigos">
+      {librarySections.map((section, index) => (
+        <button type="button" role="tab" id={`topic-tab-${section.id}`} data-topic-button={section.id} aria-controls={`topic-${section.id}`} aria-selected={index === 0 ? "true" : "false"} tabindex={index === 0 ? 0 : -1}>
+          <span>{section.label}</span>
+          <small>{section.articles.length}</small>
+        </button>
+      ))}
+    </nav>
+
+  <div class="topic-catalog" aria-label="Artigos por tema">
+    {librarySections.map((section) => (
+      <section class="topic-section" role="tabpanel" id={`topic-${section.id}`} data-topic-panel={section.id} aria-labelledby={`topic-tab-${section.id}`}>
+        <header class="topic-section-heading">
+          <p class="eyebrow">Tema</p>
+          <h2 id={`topic-title-${section.id}`}>{section.label}</h2>
+          <p>{section.description}</p>
+          <span>{section.articles.length} {section.articles.length === 1 ? "artigo" : "artigos"}</span>
+        </header>
+
+        <ol class="topic-article-list">
+          {section.articles.map((article) => (
+            <li>
+              <a class="topic-article" href={`${base}${article.href}`}>
+                <span class="topic-article-copy">
+                  <span class="topic-article-meta">
+                    <span>{article.topic}</span>
+                    {article.publishedAt && (
+                      <span>
+                        {article.id === latestArticleId && <strong>Mais recente</strong>}
+                        <time datetime={article.publishedAt.toISOString()}>{formatDate(article.publishedAt)}</time>
+                      </span>
+                    )}
+                  </span>
+                  <h3>{article.title}</h3>
+                  <p>{article.summary}</p>
+                </span>
+                <span class="topic-article-arrow" aria-hidden="true">→</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))}
+  </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/article-library-ui";
+</script>
