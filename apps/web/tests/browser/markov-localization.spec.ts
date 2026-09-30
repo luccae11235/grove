@@ -4,9 +4,9 @@ const portuguesePath = "/pt-br/learn/o-principio-de-markov/";
 const englishPath = "/learn/the-markov-principle/";
 
 test("the Markov lesson and its six experiments read naturally in Brazilian Portuguese", async ({ page }) => {
-  await page.goto(portuguesePath);
+  const response = await page.goto(portuguesePath);
   test.skip(
-    (await page.locator('meta[http-equiv="refresh"]').count()) > 0,
+    response?.status() === 404,
     "The draft is excluded from published-only builds.",
   );
 
@@ -30,15 +30,16 @@ test("the Markov lesson and its six experiments read naturally in Brazilian Port
 });
 
 test("both Markov versions link to each other", async ({ page }) => {
-  await page.goto(englishPath);
+  const response = await page.goto(englishPath);
+  test.skip(response?.status() === 404, "The draft is excluded from published-only builds.");
   await expect(page.locator('link[rel="alternate"][hreflang="pt-BR"]')).toHaveAttribute("href", new RegExp(`${portuguesePath}$`));
 });
 
 test("the Portuguese article and experiments fit a narrow mobile viewport", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto(portuguesePath);
+  const response = await page.goto(portuguesePath);
   test.skip(
-    (await page.locator('meta[http-equiv="refresh"]').count()) > 0,
+    response?.status() === 404,
     "The draft is excluded from published-only builds.",
   );
 
