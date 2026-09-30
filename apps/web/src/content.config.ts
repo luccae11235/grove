@@ -26,6 +26,7 @@ const articles = defineCollection({
     interactiveCount: z.number().int().nonnegative(),
     staticVisualCount: z.number().int().nonnegative(),
     difficulty,
+    quickRead: z.boolean().optional(),
     series: z.string().min(1).optional(),
     access: z.enum(["public", "member", "paid"]).default("public"),
     prerequisites: z.array(z.string()).default([]),

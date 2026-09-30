@@ -49,6 +49,7 @@ const formatDate = (date?: Date) => date?.toLocaleDateString("en", {
         <a class="library-card" href={`${base}${article.href}`}>
           <span class="library-card-topline">
             <span class="library-card-topic">{article.topic}</span>
+            {article.quickRead && <span class="quick-read-badge">Quick read</span>}
             {article.status === "published" && article.publishedAt
               ? <span class="library-card-publication">
                   {index === 0 && <span class="library-card-latest">Latest</span>}

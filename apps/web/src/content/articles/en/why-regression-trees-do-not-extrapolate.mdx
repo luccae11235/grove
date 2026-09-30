@@ -1,0 +1,84 @@
+---
+articleId: why-regression-trees-do-not-extrapolate
+locale: en
+routeSlug: why-regression-trees-stop-at-the-edge
+href: /learn/why-regression-trees-stop-at-the-edge
+title: Why a regression tree stops at the edge
+navTitle: Why regression trees stop at the edge
+description: "Follow one regression tree beyond its observed inputs and see why a constant leaf cannot extend a rising trend."
+eyebrow: Decision trees · Regression
+area: Supervised learning
+topic: Regression trees
+summary: Move a new input past the training data and trace why a mean-valued leaf keeps returning the same prediction.
+status: draft
+readingTime: 4–5 min
+interactiveCount: 1
+staticVisualCount: 0
+difficulty: foundational
+quickRead: true
+series: tree-based-machine-learning
+access: public
+prerequisites:
+  - regression-trees-from-scratch
+related:
+  - beyond-cart-tree-architectures
+implementation: mdx
+learning:
+  priorKnowledge:
+    - Follow a threshold question through a regression tree.
+    - Understand why an ordinary regression leaf predicts the mean of its training outcomes.
+  likelyMisconception: A regression tree continues a rising pattern when the input goes beyond the observed training range.
+  transferOutcome: Trace an out-of-range input to its constant leaf and explain why its prediction remains level as the input moves farther away.
+  motivatingQuestion: If the observations keep rising, what will a fitted regression tree predict just beyond them?
+  conceptualBottleneck: A threshold can route a new input beyond the data, but the reached leaf contains one fixed number rather than a rule for continuing a trend.
+  evidenceOfUnderstanding:
+    - Predict the leaf and value returned for an input past the largest observed x.
+    - Distinguish the observed input range from the range of outcome values and tree predictions.
+    - Explain why adding more constant leaves can change the last level without creating a slope.
+---
+
+import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import RegressionExtrapolationLab from "../../../components/RegressionExtrapolationLab.astro";
+
+<header className="page-header lesson-header article-hero">
+  <p className="eyebrow">Decision trees · Regression</p>
+  <h1>Why a regression tree stops at the edge</h1>
+  <p className="lede">A regression tree can predict beyond the inputs it has seen. Follow its last route to see why that prediction does not continue a rising trend.</p>
+  <div className="article-meta" aria-label="Article information">
+    <DifficultyBadge difficulty="foundational" />
+    <span className="quick-read-badge">Quick read</span>
+    <span><strong>No coding</strong> required</span>
+    <span><strong>1</strong> guided experiment</span>
+    <span><strong>Draft</strong></span>
+  </div>
+</header>
+
+<article className="lesson-body deep-article regression-extrapolation-article">
+  <p className="lesson-stage">A rising pattern</p>
+  <h2 id="a-pattern">What happens beyond the dots?</h2>
+
+  A regression tree turns a set of questions into a numeric prediction. In the [previous article](/learn/regression-trees/), each leaf returned the average outcome of the training observations that reached it. What happens when we ask that kind of tree about an input beyond everything it has seen?
+
+  The graph below shows ten observations. Their outcomes generally rise as `x` increases, though not at a perfectly steady rate. The shaded band marks the observed inputs, from `x = 1` to `x = 8.2`. A small tree fitted to these points makes the green step-shaped predictions. Slide along the x-axis to compare its predictions inside and beyond the band. The tree stays fixed as you move the input.
+
+  <div className="decision-tree-interactive">
+    <RegressionExtrapolationLab />
+  </div>
+
+  <p className="lesson-stage">Follow the last leaf</p>
+  <h2 id="last-question">Why does the prediction stay level?</h2>
+
+  Try `x = 7` and then move just past it. The tree's last split sends larger inputs to a leaf containing the outcomes `6.8` and `6.5`, whose mean is `6.65`. At `x = 8.2`, the largest observed input, the tree predicts `6.65`. It gives the same answer at `x = 9.5` and at `x = 10`: all three inputs reach that same leaf, which stores one number rather than a rule for continuing the upward pattern.
+
+  The flat segment begins just after `x = 7`, *inside* the observed input range. Crossing the edge at `8.2` does not create it. A tree with more constant leaves might put the final observations into different groups and change the height of the last step, but its rightmost leaf would still return a fixed value for every input farther right.
+
+  Notice the two different ranges. `x = 9.5` is outside the observed **input** range. The prediction `6.65` remains within the observed **outcome** range of `2` to `6.8`. A mean-valued leaf cannot predict above the largest or below the smallest training outcome that reached it, so this kind of tree also cannot predict beyond the overall observed outcome extremes.
+
+  <p className="lesson-stage">Take the idea elsewhere</p>
+  <h2 id="flat-tail">A prediction is not a continuation</h2>
+
+  The rising observations do not tell us what the real outcome at `x = 9.5` will be. It might continue upward, level off, or turn down. The tree can return `6.65` there, but that does not mean the underlying relationship is flat. Some tree architectures place a linear model in a leaf, as the [Beyond CART article](/learn/beyond-cart-tree-architectures/) describes. The flat-tail argument here applies to conventional regression trees with constant leaves.
+
+  When you see one of these trees predict beyond its training inputs, ask which leaf the new input reaches and what that leaf stores. That tells you what the model can compute; observations beyond the training range are still needed to judge how the real pattern continues.
+
+</article>
