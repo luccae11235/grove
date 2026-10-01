@@ -8,8 +8,6 @@ export interface BeyondCartAnimationProps {
   kind: BeyondCartAnimationKind;
 }
 
-const HARD_ROUTING_POSITIONS = [-1.4, -1, -0.6, -0.05, 0.05, 0.6, 1, 1.4] as const;
-const HARD_ROUTING_DELAY_MS = 680;
 const BATCH_DELAY_MS = 1_250;
 
 type BatchSample = {
@@ -80,59 +78,10 @@ function hardRoutingX(value: number): number {
 
 function HardRoutingAnimation() {
   const graphicId = useId();
-  const reducedMotion = useReducedMotion();
-  const [frame, setFrame] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const lastFrame = HARD_ROUTING_POSITIONS.length - 1;
-  const input = HARD_ROUTING_POSITIONS[frame];
+  const [input, setInput] = useState(-0.05);
   const branch = branchFor(input);
   const prediction = branch === "left" ? SOFT_TREE_LEFT_VALUE : SOFT_TREE_RIGHT_VALUE;
   const pointX = hardRoutingX(input);
-
-  useEffect(() => {
-    if (reducedMotion && playing) setPlaying(false);
-  }, [playing, reducedMotion]);
-
-  useEffect(() => {
-    if (!playing || reducedMotion) return undefined;
-    if (frame >= lastFrame) {
-      setPlaying(false);
-      return undefined;
-    }
-
-    const timer = window.setTimeout(() => {
-      setFrame((current) => Math.min(lastFrame, current + 1));
-    }, HARD_ROUTING_DELAY_MS);
-    return () => window.clearTimeout(timer);
-  }, [frame, lastFrame, playing, reducedMotion]);
-
-  function selectFrame(nextFrame: number) {
-    setPlaying(false);
-    setFrame(Math.max(0, Math.min(lastFrame, nextFrame)));
-  }
-
-  function togglePlayback() {
-    if (
-      reducedMotion ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      setPlaying(false);
-      return;
-    }
-
-    if (playing) {
-      setPlaying(false);
-      return;
-    }
-
-    if (frame >= lastFrame) setFrame(0);
-    setPlaying(true);
-  }
-
-  function reset() {
-    setPlaying(false);
-    setFrame(0);
-  }
 
   const liveSummary = `Observation x = ${formatInput(input)} follows the ${branch} branch. The prediction is ${prediction}.`;
 
@@ -142,181 +91,127 @@ function HardRoutingAnimation() {
       aria-labelledby={`${graphicId}-heading`}
       data-beyond-cart-animation="hard-routing"
       data-beyond-cart-branch={branch}
-      data-beyond-cart-frame={frame}
-      data-beyond-cart-playing={playing ? "true" : "false"}
+      data-beyond-cart-input={formatInput(input)}
     >
       <header className={styles.header}>
         <div>
           <p className={styles.kicker}>Hard routing</p>
           <h3 id={`${graphicId}-heading`}>A tiny move can flip the prediction</h3>
         </div>
-        <p className={styles.lede}>
-          Follow one observation across the fixed threshold. Only its position changes.
+        <p className={styles.lede} id={`${graphicId}-instruction`}>
+          Drag the green dot across zero, or focus it and use the arrow keys. Watch the path and prediction change.
         </p>
       </header>
 
-      <div className={styles.controls}>
-        <button
-          type="button"
-          className={styles.secondaryButton}
-          disabled={frame === 0}
-          onClick={() => selectFrame(frame - 1)}
-          data-beyond-cart-back
-        >
-          Back
-        </button>
-        <button
-          type="button"
-          className={styles.primaryButton}
-          aria-pressed={playing}
-          disabled={reducedMotion}
-          onClick={togglePlayback}
-          data-beyond-cart-play
-        >
-          {playing ? "Pause" : frame >= lastFrame ? "Replay" : "Play"}
-        </button>
-        <button
-          type="button"
-          className={styles.secondaryButton}
-          disabled={frame === lastFrame}
-          onClick={() => selectFrame(frame + 1)}
-          data-beyond-cart-next
-        >
-          Next
-        </button>
-        <button
-          type="button"
-          className={styles.resetButton}
-          disabled={frame === 0 && !playing}
-          onClick={reset}
-          data-beyond-cart-reset
-        >
-          Reset
-        </button>
-        <span className={styles.stepReadout}>
-          Step {frame + 1} of {HARD_ROUTING_POSITIONS.length}
-        </span>
-      </div>
-
       <div className={styles.stage}>
-        <svg
-          className={styles.hardRoutingGraphic}
-          viewBox="0 0 520 320"
-          role="img"
-          aria-labelledby={`${graphicId}-svg-title ${graphicId}-svg-description`}
-        >
-          <title id={`${graphicId}-svg-title`}>
-            One observation crossing a hard tree threshold
-          </title>
-          <desc id={`${graphicId}-svg-description`}>
-            A fixed stump tests whether x is less than zero. The left leaf predicts {SOFT_TREE_LEFT_VALUE} and the right leaf predicts {SOFT_TREE_RIGHT_VALUE}. As the same observation crosses zero, the active branch and prediction switch abruptly.
-          </desc>
-
-          <text className={styles.railSideLabel} x="80" y="35">
-            left of threshold
-          </text>
-          <text className={styles.railSideLabel} x="440" y="35" textAnchor="end">
-            right of threshold
-          </text>
-          <line className={styles.inputRail} x1="80" x2="440" y1="65" y2="65" />
-          <line className={styles.threshold} x1="260" x2="260" y1="42" y2="91" />
-          <text className={styles.thresholdLabel} x="260" y="106" textAnchor="middle">
-            t = 0
-          </text>
-
-          <g
-            className={styles.movingObservation}
-            style={{ transform: `translate(${pointX}px, 0)` }}
-            data-beyond-cart-observation
+        <div className={styles.hardRoutingSurface}>
+          <svg
+            className={styles.hardRoutingGraphic}
+            viewBox="0 0 520 320"
+            role="img"
+            aria-labelledby={`${graphicId}-svg-title ${graphicId}-svg-description`}
           >
-            <circle className={styles.observationHalo} cx="0" cy="65" r="11" />
-            <circle className={styles.observation} cx="0" cy="65" r="6" />
-            <text className={styles.observationLabel} x="0" y="20" textAnchor="middle">
-              x = {formatInput(input)}
+            <title id={`${graphicId}-svg-title`}>
+              One observation crossing a hard tree threshold
+            </title>
+            <desc id={`${graphicId}-svg-description`}>
+              A fixed stump tests whether x is less than zero. The left leaf predicts {SOFT_TREE_LEFT_VALUE} and the right leaf predicts {SOFT_TREE_RIGHT_VALUE}. As the same observation crosses zero, the active branch and prediction switch abruptly.
+            </desc>
+
+            <text className={styles.railSideLabel} x="80" y="35">
+              left of threshold
             </text>
-          </g>
+            <text className={styles.railSideLabel} x="440" y="35" textAnchor="end">
+              right of threshold
+            </text>
+            <line className={styles.inputRail} x1="80" x2="440" y1="65" y2="65" />
+            <line className={styles.threshold} x1="260" x2="260" y1="42" y2="91" />
+            <text className={styles.thresholdLabel} x="260" y="106" textAnchor="middle">
+              t = 0
+            </text>
 
-          <path
-            className={`${styles.treeEdge} ${branch === "left" ? styles.treeEdgeActive : ""}`}
-            d="M260 167 L150 222"
+            <g
+              className={styles.movingObservation}
+              style={{ transform: `translate(${pointX}px, 0)` }}
+              data-beyond-cart-observation
+            >
+              <text className={styles.observationLabel} x="0" y="20" textAnchor="middle">
+                x = {formatInput(input)}
+              </text>
+            </g>
+
+            <path
+              className={`${styles.treeEdge} ${branch === "left" ? styles.treeEdgeActive : ""}`}
+              d="M260 167 L150 222"
+            />
+            <path
+              className={`${styles.treeEdge} ${branch === "right" ? styles.treeEdgeActive : ""}`}
+              d="M260 167 L370 222"
+            />
+            <text className={styles.edgeLabel} x="190" y="194" textAnchor="middle">
+              yes
+            </text>
+            <text className={styles.edgeLabel} x="330" y="194" textAnchor="middle">
+              no
+            </text>
+
+            <rect className={styles.splitNode} x="200" y="121" width="120" height="46" rx="12" />
+            <text className={styles.nodeText} x="260" y="150" textAnchor="middle">
+              x &lt; 0?
+            </text>
+
+            <rect
+              className={`${styles.leafNode} ${branch === "left" ? styles.leafNodeActive : ""}`}
+              x="95"
+              y="222"
+              width="110"
+              height="58"
+              rx="12"
+            />
+            <text className={styles.leafLabel} x="150" y="244" textAnchor="middle">
+              left leaf
+            </text>
+            <text className={styles.leafValue} x="150" y="266" textAnchor="middle">
+              prediction {SOFT_TREE_LEFT_VALUE}
+            </text>
+
+            <rect
+              className={`${styles.leafNode} ${branch === "right" ? styles.leafNodeActive : ""}`}
+              x="315"
+              y="222"
+              width="110"
+              height="58"
+              rx="12"
+            />
+            <text className={styles.leafLabel} x="370" y="244" textAnchor="middle">
+              right leaf
+            </text>
+            <text className={styles.leafValue} x="370" y="266" textAnchor="middle">
+              prediction {SOFT_TREE_RIGHT_VALUE}
+            </text>
+
+            <text className={styles.predictionLabel} x="260" y="308" textAnchor="middle">
+              Current prediction: {prediction}
+            </text>
+          </svg>
+          <input
+            className={styles.axisSlider}
+            type="range"
+            min="-1.5"
+            max="1.5"
+            step="0.05"
+            value={input}
+            onInput={(event) => setInput(Number(event.currentTarget.value))}
+            onChange={(event) => setInput(Number(event.currentTarget.value))}
+            aria-label="Input x on the tree axis"
+            aria-describedby={`${graphicId}-instruction`}
+            data-beyond-cart-axis-slider
           />
-          <path
-            className={`${styles.treeEdge} ${branch === "right" ? styles.treeEdgeActive : ""}`}
-            d="M260 167 L370 222"
-          />
-          <text className={styles.edgeLabel} x="190" y="194" textAnchor="middle">
-            yes
-          </text>
-          <text className={styles.edgeLabel} x="330" y="194" textAnchor="middle">
-            no
-          </text>
-
-          <rect className={styles.splitNode} x="200" y="121" width="120" height="46" rx="12" />
-          <text className={styles.nodeText} x="260" y="150" textAnchor="middle">
-            x &lt; 0?
-          </text>
-
-          <rect
-            className={`${styles.leafNode} ${branch === "left" ? styles.leafNodeActive : ""}`}
-            x="95"
-            y="222"
-            width="110"
-            height="58"
-            rx="12"
-          />
-          <text className={styles.leafLabel} x="150" y="244" textAnchor="middle">
-            left leaf
-          </text>
-          <text className={styles.leafValue} x="150" y="266" textAnchor="middle">
-            prediction {SOFT_TREE_LEFT_VALUE}
-          </text>
-
-          <rect
-            className={`${styles.leafNode} ${branch === "right" ? styles.leafNodeActive : ""}`}
-            x="315"
-            y="222"
-            width="110"
-            height="58"
-            rx="12"
-          />
-          <text className={styles.leafLabel} x="370" y="244" textAnchor="middle">
-            right leaf
-          </text>
-          <text className={styles.leafValue} x="370" y="266" textAnchor="middle">
-            prediction {SOFT_TREE_RIGHT_VALUE}
-          </text>
-
-          <text className={styles.predictionLabel} x="260" y="308" textAnchor="middle">
-            Current prediction: {prediction}
-          </text>
-        </svg>
-      </div>
-
-      <div className={styles.scrubber}>
-        <label htmlFor={`${graphicId}-position`}>
-          <span>Observation position</span>
-          <strong>x = {formatInput(input)}</strong>
-        </label>
-        <input
-          id={`${graphicId}-position`}
-          type="range"
-          min="0"
-          max={lastFrame}
-          step="1"
-          value={frame}
-          onChange={(event) => selectFrame(Number(event.currentTarget.value))}
-          aria-label="Move the observation along the input axis"
-          data-beyond-cart-scrubber
-        />
-        <div className={styles.scrubEnds} aria-hidden="true">
-          <span>left leaf · {SOFT_TREE_LEFT_VALUE}</span>
-          <span>right leaf · {SOFT_TREE_RIGHT_VALUE}</span>
         </div>
       </div>
 
       <p className={styles.liveSummary} aria-live="polite" aria-atomic="true">
         {liveSummary}
-        {reducedMotion ? " Timed play is off; use Back, Next, or the position control." : ""}
       </p>
     </section>
   );

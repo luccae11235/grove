@@ -352,6 +352,10 @@ references for longer-term editorial direction.
 
 ### Learning experience
 
+- [x] **Simplify Beyond CART routing controls — issue #212** — 2026-10-01
+  - Moved both input controls onto the axis, removed hard-routing playback and duplicate x controls, kept the temperature slider, and added drag and keyboard guidance with a reduced-motion-aware pulse.
+  - Completion check: PR #213 passed all required checks; seven focused browser scenarios and desktop/mobile rendered review passed locally and on Railway staging at code revision `c95f86c`.
+
 - [x] **Refine the Beyond CART architecture builder — issue #192** — 2026-09-12
   - Expanded the fixed sample from 16 to 36 observations and added Diagonal,
     XOR, and Offset steps datasets with dataset-specific rules, leaves, and
