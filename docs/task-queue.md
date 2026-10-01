@@ -118,11 +118,6 @@ references for longer-term editorial direction.
 
 ### Learning experience
 
-- [ ] **Simplify Beyond CART routing controls — issue #212**
-  - Make the top input marker the direct, accessible control in both routing figures; remove the hard-routing playback/step controls and both duplicate bottom x sliders.
-  - Keep the soft-routing temperature slider, add clear drag and keyboard guidance, and preserve correct predictions, reduced motion, and mobile layout.
-  - Completion check: focused checks, desktop/mobile rendered review, and staging verification pass before merging to `develop`.
-
 - [ ] **Organize the article library by editorial series — issue #197**
   - Keep the home page's chronological horizontal shelf as the compact release
     view, and add a dedicated, responsive library grouped by the existing
@@ -356,6 +351,10 @@ references for longer-term editorial direction.
     and the exact production revision passed verification.
 
 ### Learning experience
+
+- [x] **Simplify Beyond CART routing controls — issue #212** — 2026-10-01
+  - Moved both input controls onto the axis, removed hard-routing playback and duplicate x controls, kept the temperature slider, and added drag and keyboard guidance with a reduced-motion-aware pulse.
+  - Completion check: PR #213 passed all required checks; seven focused browser scenarios and desktop/mobile rendered review passed locally and on Railway staging at code revision `c95f86c`.
 
 - [x] **Refine the Beyond CART architecture builder — issue #192** — 2026-09-12
   - Expanded the fixed sample from 16 to 36 observations and added Diagonal,
