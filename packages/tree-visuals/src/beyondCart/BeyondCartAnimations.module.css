@@ -125,8 +125,60 @@
 
 .hardRoutingGraphic {
   display: block;
-  width: min(100%, 600px);
+  width: 100%;
   height: auto;
+}
+
+.hardRoutingSurface {
+  position: relative;
+  width: min(100%, 600px);
+}
+
+.axisSlider {
+  position: absolute;
+  top: 20.3125%;
+  left: calc(15.3846% - 13px);
+  width: calc(69.2308% + 26px);
+  height: 44px;
+  margin: 0;
+  transform: translateY(-50%);
+  appearance: none;
+  box-sizing: border-box;
+  background: transparent;
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.axisSlider:active { cursor: grabbing; }
+.axisSlider::-webkit-slider-runnable-track { height: 4px; background: transparent; }
+.axisSlider::-moz-range-track { height: 4px; background: transparent; }
+
+.axisSlider::-webkit-slider-thumb {
+  width: 26px;
+  height: 26px;
+  margin-top: -11px;
+  appearance: none;
+  box-sizing: border-box;
+  border: 3px solid var(--surface-raised);
+  border-radius: 50%;
+  background: var(--beyond-cart-accent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--beyond-cart-accent) 38%, transparent);
+  animation: axisPulse 2s ease-out infinite;
+}
+
+.axisSlider::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  box-sizing: border-box;
+  border: 3px solid var(--surface-raised);
+  border-radius: 50%;
+  background: var(--beyond-cart-accent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--beyond-cart-accent) 38%, transparent);
+  animation: axisPulse 2s ease-out infinite;
+}
+
+@keyframes axisPulse {
+  65%, 100% { box-shadow: 0 0 0 11px transparent; }
 }
 
 .inputRail,
@@ -179,20 +231,8 @@
   font-weight: 650;
 }
 
-.movingObservation,
 .batchToken {
   transition: transform 520ms ease;
-}
-
-.observationHalo {
-  fill: color-mix(in srgb, var(--accent-soft) 76%, transparent);
-}
-
-.observation {
-  fill: var(--surface-raised);
-  stroke: var(--beyond-cart-accent);
-  stroke-width: 3;
-  vector-effect: non-scaling-stroke;
 }
 
 .observationLabel {
@@ -259,41 +299,6 @@
   fill: var(--beyond-cart-accent);
   font-size: 15px;
   font-weight: 800;
-}
-
-.scrubber {
-  padding: 12px 24px 18px;
-  border-top: 1px solid var(--border);
-  background: var(--surface-subtle);
-}
-
-.scrubber label {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  color: var(--text);
-  font-size: 0.78rem;
-  font-weight: 680;
-}
-
-.scrubber label strong {
-  color: var(--beyond-cart-accent);
-  font-variant-numeric: tabular-nums;
-}
-
-.scrubber input {
-  width: 100%;
-  margin: 10px 0 4px;
-  accent-color: var(--beyond-cart-accent);
-  cursor: pointer;
-}
-
-.scrubEnds {
-  display: flex;
-  justify-content: space-between;
-  color: var(--text-muted);
-  font-size: 0.7rem;
 }
 
 .batchGrid {
@@ -470,7 +475,6 @@
     padding-inline: 4px;
   }
 
-  .scrubber,
   .liveSummary {
     padding-inline: 16px;
   }
@@ -491,7 +495,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .movingObservation,
+  .axisSlider::-webkit-slider-thumb,
+  .axisSlider::-moz-range-thumb {
+    animation: none;
+  }
+
   .batchToken,
   .treeEdge,
   .leafNode,
