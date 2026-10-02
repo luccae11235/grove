@@ -34,6 +34,13 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Publish bilingual model evaluation and prepare owner-only Issue 008 test — issue #214**
+  - Review both article locales, calculations, links, interactions, and email previews.
+  - Publish only the selected article and Issue 008 after staging and production gates.
+  - Send a test email only to the owner; subscriber delivery requires separate approval.
+  - Completion check: exact-SHA production verification and canonical routes pass;
+    the Issue 008 test reaches the owner without a subscriber send or schedule.
+
 - [ ] **Publish Beyond CART — issue #202**
   - Publish the reviewed English article on 2026-09-18 while keeping the Markov
     principle article in draft.
