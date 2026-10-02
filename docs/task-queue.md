@@ -125,6 +125,26 @@ references for longer-term editorial direction.
 
 ### Learning experience
 
+- [ ] **Release the topic article library — issue #217**
+  - Promote the bilingual catalog from issue #197; keep all article drafts
+    unpublished and exclude unrelated changes on `develop`.
+  - Completion check: CI passes and exact-SHA production checks confirm both
+    catalog routes, topic controls, mobile layout, existing article links, and
+    inaccessible draft routes.
+
+- [ ] **Organize the article library by editorial series — issue #197**
+  - Keep the home page's chronological horizontal shelf as the compact release
+    view, and add a dedicated, responsive library grouped by the existing
+    decision-tree, reinforcement-learning, and time-series metadata, with a
+    fallback for ungrouped articles.
+  - Let readers select one area from a left-side vertical topic list on desktop
+    and show only that area's articles; keep the selection usable on mobile and
+    by keyboard.
+  - Preserve article visibility rules, publication details, and both English
+    and Brazilian Portuguese experiences without changing article content.
+  - Completion check: focused grouping tests and relevant typecheck/build checks
+    pass, followed by representative desktop and mobile rendered review.
+
 - [ ] **Prepare the Reward Hacking article for release — issue #123**
   - Make the first checkpoint playground clearly explain that readers can move
     checkpoints and watch the model learn the changed route.
