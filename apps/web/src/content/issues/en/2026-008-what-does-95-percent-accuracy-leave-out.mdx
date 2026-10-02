@@ -1,0 +1,29 @@
+---
+issueId: "2026-008"
+locale: en
+issueNumber: 8
+routeSlug: "what-does-95-percent-accuracy-leave-out"
+href: "/newsletter/2026/008/what-does-95-percent-accuracy-leave-out"
+subject: "What does 95% accuracy leave out?"
+preheader: "See how the same predictions produce 95% accuracy, 50% precision, and 20% recall."
+summary: "One classifier gets 95 of 100 predictions right while missing four of five positive cases. Issue 008 invites readers to see what precision and recall reveal beyond accuracy."
+status: published
+publishedAt: 2026-10-02
+featuredArticles:
+  - "is-my-model-good"
+tags:
+  - "supervised-learning"
+  - "model-evaluation"
+  - "classification"
+cta:
+  label: "Explore precision and recall"
+  href: "/learn/is-my-model-good"
+---
+
+Imagine 100 examples, with five belonging to the positive class. A classifier finds one of those five, raises one false alarm, and correctly labels the other 94 negatives. It gets 95 predictions right, so its accuracy is 95%.
+
+But it found only one of five actual positives: 20% recall. And only one of its two positive predictions was correct: 50% precision.
+
+Both metrics count the same correctly identified positive. Recall compares it with all actual positives; precision compares it with all predicted positives. That change in denominator tells us whether we are measuring how many positives were found or how many positive predictions were correct.
+
+This Aflora article makes those groups visible with green and red dots, showing what each metric counts and why choosing a metric depends on which errors matter in the application.
