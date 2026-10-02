@@ -1,0 +1,87 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { articles } from "../content/articles";
+import { groupArticlesBySeries } from "../content/article-library";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+// Drafts are included only by the catalog's existing local-preview rules.
+const libraryArticles = articles;
+const librarySections = groupArticlesBySeries(libraryArticles, "en");
+const latestArticleId = libraryArticles.find(
+  (article) => article.status === "published" && article.publishedAt,
+)?.id;
+const formatDate = (date?: Date) => date?.toLocaleDateString("en", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+  timeZone: "UTC",
+});
+---
+
+<BaseLayout
+  title="Articles"
+  description="Explore Aflora's visual and interactive machine-learning articles by topic."
+  canonicalPath="/articles"
+  translations={{ en: "/articles", "pt-BR": "/pt-br/artigos" }}
+  wide
+>
+  <header class="catalog-intro">
+    <p class="eyebrow">Article library</p>
+    <h1>Explore by topic</h1>
+    <p>
+      Choose a subject and follow the ideas in the order that feels useful to you.
+    </p>
+
+  </header>
+
+  <div class="catalog-layout" data-article-library>
+    <nav class="catalog-topic-nav" role="tablist" aria-label="Article topics">
+      {librarySections.map((section, index) => (
+        <button type="button" role="tab" id={`topic-tab-${section.id}`} data-topic-button={section.id} aria-controls={`topic-${section.id}`} aria-selected={index === 0 ? "true" : "false"} tabindex={index === 0 ? 0 : -1}>
+          <span>{section.label}</span>
+          <small>{section.articles.length}</small>
+        </button>
+      ))}
+    </nav>
+
+  <div class="topic-catalog" aria-label="Articles by topic">
+    {librarySections.map((section) => (
+      <section class="topic-section" role="tabpanel" id={`topic-${section.id}`} data-topic-panel={section.id} aria-labelledby={`topic-tab-${section.id}`}>
+        <header class="topic-section-heading">
+          <p class="eyebrow">Topic</p>
+          <h2 id={`topic-title-${section.id}`}>{section.label}</h2>
+          <p>{section.description}</p>
+          <span>{section.articles.length} {section.articles.length === 1 ? "article" : "articles"}</span>
+        </header>
+
+        <ol class="topic-article-list">
+          {section.articles.map((article) => (
+            <li>
+              <a class="topic-article" href={`${base}${article.href}`}>
+                <span class="topic-article-copy">
+                  <span class="topic-article-meta">
+                    <span>{article.topic}</span>
+                    {article.status === "published" && article.publishedAt
+                      ? <span>
+                          {article.id === latestArticleId && <strong>Latest</strong>}
+                          <time datetime={article.publishedAt.toISOString()}>{formatDate(article.publishedAt)}</time>
+                        </span>
+                      : <strong>Draft</strong>}
+                  </span>
+                  <h3>{article.title}</h3>
+                  <p>{article.summary}</p>
+                </span>
+                <span class="topic-article-arrow" aria-hidden="true">→</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))}
+  </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../scripts/article-library-ui";
+</script>
