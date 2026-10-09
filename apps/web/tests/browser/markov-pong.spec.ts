@@ -1,20 +1,21 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const articlePath = "/learn/the-markov-principle/";
 
-test.beforeEach(async ({ page }) => {
+async function openArticle(page: Page) {
   const response = await page.goto(articlePath);
   test.skip(
     response?.status() === 404,
     "The Markov principle article is a draft in published-only builds.",
   );
-});
+}
 
 for (const viewport of [
   { name: "desktop", width: 1_440, height: 960 },
   { name: "mobile", width: 390, height: 844 },
 ]) {
   test(`the matched Pong experiments stay trainable on ${viewport.name}`, async ({ page }) => {
+    await openArticle(page);
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
     await page.setViewportSize(viewport);
@@ -109,11 +110,13 @@ for (const viewport of [
 }
 
 test("a paddle hit rebounds on the next playback step without a pause", async ({ page }) => {
+  await page.clock.install();
+  await openArticle(page);
   const lab = page.getByRole("region", { name: "What changes when velocity is part of the state?" });
   await lab.getByLabel("Training speed in episodes per second").fill("2000");
   await lab.getByRole("button", { name: "Train agent" }).click();
   await expect(lab.getByRole("button", { name: "Run agent" })).toBeVisible({ timeout: 15_000 });
-  await page.clock.install();
+  await page.clock.pauseAt(new Date());
   await lab.getByRole("button", { name: "Run agent" }).click();
   const court = lab.locator("[data-launch-index]");
   const ball = lab.locator("[data-ball-y]");
