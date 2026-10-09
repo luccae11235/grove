@@ -2,12 +2,13 @@
 import { MarkovCheckpointPlayground } from "@grove/tree-visuals";
 
 interface Props {
+  locale?: "en" | "pt-BR";
   mode: "position" | "progress";
 }
 
-const { mode } = Astro.props;
+const { mode, locale = "en" } = Astro.props;
 ---
 
 <div data-analytics-lab={`markov-checkpoint-${mode}`}>
-  <MarkovCheckpointPlayground mode={mode} client:load />
+  <MarkovCheckpointPlayground mode={mode} locale={locale} client:load />
 </div>

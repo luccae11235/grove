@@ -34,6 +34,13 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Publish the Markov principle in English and Brazilian Portuguese and deliver Issue 009 — issue #221**
+  - Publish only the reviewed Markov article pair and the short bilingual-link announcement dated 2026-10-09.
+  - Verify exact staging and production revisions, both article routes, locale links, and newsletter artifacts.
+  - Use the controlled owner-only delivery workflow once, then record accepted sends and observed delivery separately.
+  - Completion check: production routes and the Issue 009 delivery report are verified without exposing the regression-tree extrapolation draft.
+
+
 - [ ] **Publish bilingual model evaluation and prepare owner-only Issue 008 test — issue #214**
   - Review both article locales, calculations, links, interactions, and email previews.
   - Publish only the selected article and Issue 008 after staging and production gates.

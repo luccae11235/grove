@@ -2,10 +2,11 @@
 import { DoorKeyFigure } from "@grove/tree-visuals";
 
 interface Props {
+  locale?: "en" | "pt-BR";
   kind: "environment" | "state";
 }
 
-const { kind } = Astro.props;
+const { kind, locale = "en" } = Astro.props;
 ---
 
-<DoorKeyFigure kind={kind} />
+<DoorKeyFigure kind={kind} locale={locale} />

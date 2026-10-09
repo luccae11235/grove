@@ -1,0 +1,103 @@
+export type MarkovLocale = "en" | "pt-BR";
+
+const portuguese: Record<string, string> = {
+  "Hit rate (%)": "Taxa de acertos (%)",
+  "Goal rate (%)": "Objetivos alcançados (%)",
+  "Completion (%)": "Conclusão (%)",
+  "Training episodes": "Episódios de treinamento",
+  "Experiment 1 · Broken state": "Experimento 1 · Estado insuficiente",
+  "Experiment 2 · Markov state": "Experimento 2 · Estado markoviano",
+  "Agent sees": "O agente observa",
+  "Velocity observed": "Velocidade observada",
+  "Velocity hidden": "Velocidade oculta",
+  "Key remembered": "Chave lembrada",
+  "Key status hidden": "Status da chave oculto",
+  "Next checkpoint observed": "Próximo checkpoint observado",
+  "Task progress hidden": "Progresso da tarefa oculto",
+  "Hit": "Acerto",
+  "Miss": "Erro",
+  "New rally": "Nova jogada",
+  "Complete": "Concluído",
+  "Timed out": "Limite atingido",
+  "Goal": "Objetivo",
+  "Hub": "Centro",
+  "hits": "acertos",
+  "misses": "erros",
+  "goals": "objetivos",
+  "timed out": "limites atingidos",
+  "complete": "concluídos",
+  "hit rate": "taxa de acertos",
+  "goal rate": "objetivos alcançados",
+  "completion": "conclusão",
+  "Training speed": "Velocidade do treinamento",
+  "episodes/s": "episódios/s",
+  "episodes": "episódios",
+  "Stop agent": "Parar agente",
+  "Run agent": "Executar agente",
+  "Pause": "Pausar",
+  "Train agent": "Treinar agente",
+  "Continue": "Continuar",
+  "Matched result": "Resultado comparado",
+  "Position only": "Só a posição",
+  "Position + velocity": "Posição + velocidade",
+  "Position + key": "Posição + chave",
+  "Position + next": "Posição + próximo",
+  "velocity hidden": "velocidade oculta",
+  "key hidden": "chave oculta",
+  "progress hidden": "progresso oculto",
+  "Markov state": "estado markoviano",
+  "The route": "O percurso",
+  "The hidden difference": "A diferença oculta",
+  "1 · collect key ←": "1 · pegue a chave ←",
+  "2 · return and unlock →": "2 · volte e abra →",
+  "physical state (p, 0)": "estado físico (p, 0)",
+  "physical state (p, 1)": "estado físico (p, 1)",
+  "Blocked": "Bloqueado",
+  "Passes through": "Atravessa",
+  "key not collected": "chave não coletada",
+  "key collected": "chave coletada",
+  "B was expected": "B era esperado",
+  "C was expected": "C era esperado",
+  "Three open paths. One required order.": "Três caminhos abertos. Uma ordem obrigatória.",
+  "Same move into B. Different reward.": "Mesmo movimento até B. Recompensa diferente.",
+  "The map never changes. Only the next expected checkpoint does.": "O mapa não muda. Só o próximo checkpoint esperado muda.",
+  "Position predicts the movement. Task progress predicts what that movement means.": "A posição prevê o movimento. O progresso na tarefa determina o significado dele.",
+  "The agent must cross the same corridor twice": "O agente precisa atravessar o mesmo corredor duas vezes",
+  "The useful direction reverses after the key is collected.": "A direção útil se inverte depois que a chave é coletada.",
+  "Same position. Same action. Different next state.": "Mesma posição. Mesma ação. Próximo estado diferente.",
+  "Position alone merges these two states. The key bit keeps them separate.": "A posição sozinha mistura os dois estados. O status da chave os distingue.",
+  "What changes when velocity is part of the state?": "O que muda quando a velocidade faz parte do estado?",
+  "Can a position-only agent learn to return the ball?": "Um agente que só vê a posição consegue rebater a bola?",
+  "What changes when the key is part of the state?": "O que muda quando a chave faz parte do estado?",
+  "Can position alone encode the return route?": "A posição sozinha pode representar o caminho de volta?",
+  "What changes when task progress is part of the state?": "O que muda quando o estado inclui o progresso na tarefa?",
+  "Can position alone learn the ordered route?": "Só a posição permite aprender o percurso ordenado?",
+  "One missing variable changes what can be learned": "Uma variável ausente muda o que pode ser aprendido",
+  "Same game and training budget. Only the state representation differs.": "Mesmo jogo e orçamento de treinamento. Só muda a representação do estado.",
+  "One bit of memory makes the route learnable": "Um bit de memória torna o percurso aprendível",
+  "Same corridor and training budget. Only the state representation differs.": "Mesmo corredor e orçamento de treinamento. Só muda a representação do estado.",
+  "Task progress makes the order learnable": "O progresso na tarefa permite aprender a ordem",
+  "Same map, rewards, and training budget. Only the state representation differs.": "Mesmo mapa, recompensas e orçamento de treinamento. Só muda a representação do estado.",
+  "Training in progress.": "Treinamento em andamento.",
+  "Training has not started.": "O treinamento ainda não começou.",
+};
+
+export function markovText(locale: MarkovLocale, english: string): string {
+  return locale === "pt-BR" ? portuguese[english] ?? english : english;
+}
+
+export function markovNumber(locale: MarkovLocale, value: number): string {
+  return value.toLocaleString(locale === "pt-BR" ? "pt-BR" : "en-US");
+}
+
+const countWords: Record<string, { en: [string, string]; pt: [string, string] }> = {
+  hits: { en: ["hit", "hits"], pt: ["acerto", "acertos"] },
+  misses: { en: ["miss", "misses"], pt: ["erro", "erros"] },
+  goals: { en: ["goal", "goals"], pt: ["objetivo", "objetivos"] },
+  timeouts: { en: ["timed out", "timed out"], pt: ["limite atingido", "limites atingidos"] },
+  completed: { en: ["complete", "complete"], pt: ["concluído", "concluídos"] },
+};
+
+export function markovCountWord(locale: MarkovLocale, count: number, kind: keyof typeof countWords): string {
+  return countWords[kind][locale === "pt-BR" ? "pt" : "en"][count === 1 ? 0 : 1];
+}
