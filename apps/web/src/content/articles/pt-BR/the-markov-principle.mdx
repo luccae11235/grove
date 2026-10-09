@@ -1,0 +1,330 @@
+---
+articleId: the-markov-principle
+locale: pt-BR
+routeSlug: o-principio-de-markov
+href: /pt-br/learn/o-principio-de-markov
+title: O princípio de Markov
+navTitle: Entenda o princípio de Markov
+description: "Explore três MDPs para entender como a ausência de movimento, memória ou contexto da recompensa pode violar a propriedade de Markov e dificultar o aprendizado por reforço."
+eyebrow: Aprendizado por reforço · Representação de estados
+area: Aprendizado por reforço
+topic: O princípio de Markov e a representação de estados em MDPs
+summary: Compare representações de estado markovianas e não markovianas no Pong, em um labirinto com porta e chave e em uma tarefa com checkpoints ordenados.
+status: published
+publishedAt: 2026-10-09
+readingTime: 18–22 min
+interactiveCount: 6
+staticVisualCount: 11
+difficulty: foundational
+series: reinforcement-learning
+access: public
+prerequisites:
+  - sample-based-view-of-reinforcement-learning
+related:
+  - reward-hacking-three-mdps
+implementation: mdx
+learning:
+  priorKnowledge:
+    - Entender o ciclo básico entre agente, ambiente, estado, ação e recompensa no aprendizado por reforço.
+    - Ler a notação básica de probabilidade condicional.
+  likelyMisconception: A propriedade de Markov significa que o passado nunca importa, quando na verdade exige que o estado atual resuma tudo do passado que ainda importa.
+  transferOutcome: Diante de um ambiente e de uma representação de estado proposta, identificar informações ausentes que alteram a distribuição do próximo estado ou da recompensa e propor uma representação markoviana suficiente.
+  motivatingQuestion: Por que um MDP pode prever o próximo estado e a recompensa usando apenas o estado e a ação atuais, sem consultar todo o histórico do agente?
+  conceptualBottleneck: A propriedade de Markov depende da representação escolhida e do processo conjunto de próximo estado e recompensa; mesmo sem mudanças no ambiente físico, o estado talvez precise registrar movimento, memória ou progresso na tarefa.
+  evidenceOfUnderstanding:
+    - Explicar a igualdade entre probabilidades condicionais que define a propriedade de Markov.
+    - Diagnosticar a ausência de movimento, memória e contexto da recompensa em ambientes contrastantes.
+    - Explicar por que apenas a posição pode bastar para prever o movimento físico, mas não a recompensa.
+    - Propor uma variável de estado que resuma o histórico relevante sem guardar toda a trajetória.
+---
+
+import MarkovPropertyComparison from "../../../components/MarkovPropertyComparison.astro";
+import MarkovPongLab from "../../../components/MarkovPongLab.astro";
+import MarkovPongComparison from "../../../components/MarkovPongComparison.astro";
+import PongConceptFigure from "../../../components/PongConceptFigure.astro";
+import DoorKeyComparison from "../../../components/DoorKeyComparison.astro";
+import DoorKeyFigure from "../../../components/DoorKeyFigure.astro";
+import DoorKeyLab from "../../../components/DoorKeyLab.astro";
+import MarkovCheckpointComparison from "../../../components/MarkovCheckpointComparison.astro";
+import MarkovCheckpointFigure from "../../../components/MarkovCheckpointFigure.astro";
+import MarkovCheckpointLab from "../../../components/MarkovCheckpointLab.astro";
+import MarkovSynthesisFigure from "../../../components/MarkovSynthesisFigure.astro";
+
+<header className="page-header lesson-header article-hero">
+  <p className="eyebrow">Aprendizado por reforço · Representação de estados</p>
+  <h1>O princípio de Markov</h1>
+</header>
+
+<article className="lesson-body deep-article markov-principle-article">
+
+Congele uma partida de Pong quando a bola estiver na metade da quadra. Você vê sua posição, mas não a direção do movimento. A mesma imagem poderia mostrar uma bola subindo ou descendo. Se a raquete fizer a mesma coisa nos dois casos, devemos esperar o mesmo resultado?
+
+O quadro anterior desfaz a ambiguidade porque revela a direção da bola. Isso nos dá um teste prático para uma representação de estado:
+
+> **Depois de conhecer a representação e a ação atuais, alguma informação do histórico ainda pode mudar nossa previsão da próxima representação ou recompensa?**
+
+Um processo de decisão de Markov, ou MDP, é o ponto de partida usual para formalizar muitos problemas de aprendizado por reforço. Ele reúne estados, ações, recompensas e a dinâmica das transições. No instante $t$, o estado completo do ambiente é $s_t$. Depois que o agente escolhe $a_t$, a dinâmica define uma distribuição para o próximo estado e a recompensa: $p(s_{t+1},r_{t+1}\mid s_t,a_t)$.
+
+Nem sempre o agente recebe esse estado completo. Em vez disso, ele pode receber uma representação escolhida, $z_t$: talvez a leitura de um sensor, um conjunto de características ou um resumo construído a partir do histórico de interações. Seja
+
+$$H_t=(z_0,a_0,r_1,z_1,\ldots,a_{t-1},r_t,z_t)$$
+
+tudo o que o agente observou antes de escolher $a_t$. A representação $z_t$ é markoviana quando acrescentar esse histórico não muda a distribuição prevista:
+
+$$p(z_{t+1},r_{t+1}\mid z_t,a_t,H_t)=p(z_{t+1},r_{t+1}\mid z_t,a_t)$$
+
+A igualdade diz respeito ao **histórico**, não à certeza. Uma transição pode ser genuinamente aleatória e, ainda assim, perfeitamente markoviana. A propriedade só falha quando dois históricos que levam ao mesmo $z_t$ e à mesma ação $a_t$ produzem distribuições diferentes para o que acontece a seguir.
+
+<MarkovPropertyComparison locale="pt-BR" />
+
+Portanto, a propriedade de Markov pertence ao processo definido pela representação escolhida, e não ao agente, à política ou ao algoritmo de aprendizado. O ambiente pode permanecer igual enquanto uma representação preserva a propriedade e outra reúne situações que exigem previsões ou decisões diferentes.
+
+Vamos explorar esse efeito em três ambientes. Em cada par de experimentos, a dinâmica, as recompensas, o algoritmo, os hiperparâmetros e o orçamento de treinamento são os mesmos. Só muda a representação fornecida ao agente. Os exemplos ocultam três tipos de informação: movimento, um evento passado e o progresso que determina a recompensa de uma transição.
+
+<h2 id="pong">Pong</h2>
+
+Pong nos oferece a versão mais simples do problema inicial. O objetivo é intuitivo, mas a recompensa é esparsa: acertar a bola dá uma recompensa positiva; perdê-la dá uma negativa; cada passo intermediário dá zero. Usaremos uma quadra pequena e discretizada para que ambos os agentes possam aprender no navegador com o mesmo algoritmo de Q-learning tabular.
+
+<h3 id="the-mdp">O MDP</h3>
+
+Nosso primeiro MDP é uma versão simplificada de Pong: a bola atravessa uma arena retangular, rebate nas paredes e precisa ser alcançada por uma raquete controlada pelo agente na parte inferior da tela. O agente pode mover a raquete para a esquerda, mantê-la parada ou movê-la para a direita.
+
+Comparamos duas representações. A primeira contém as posições da bola e da raquete, $z_t=(x_t,y_t,p_t)$. Uma bola na mesma posição pode estar subindo ou descendo; portanto, posições anteriores ainda mudam a previsão da próxima posição. A segunda acrescenta a velocidade, $z_t=(x_t,y_t,v_t^x,v_t^y,p_t)$. Posição e velocidade agora descrevem a dinâmica relevante dessa quadra simplificada: quadros anteriores não acrescentam informação útil para prever a transição.
+
+<PongConceptFigure kind="environment" locale="pt-BR" />
+
+A primeira representação viola a propriedade de Markov porque dois históricos podem chegar ao mesmo $z_t$ com velocidades ocultas diferentes. Ao combinar essas velocidades, obtemos uma distribuição com várias próximas posições possíveis. Essa dispersão, por si só, não é a violação: uma transição estocástica pode ser markoviana. A violação está no fato de a distribuição mudar quando a posição anterior revela qual é a velocidade.
+
+<PongConceptFigure kind="state" locale="pt-BR" />
+
+Com posição e velocidade, os históricos relevantes concordam quanto à distribuição da próxima transição. A igualdade agora vale para essa dinâmica simplificada.
+
+<h3 id="learning">Aprendizado</h3>
+
+Os dois laboratórios usam a mesma quadra de 11 por 9 posições. Um contato bem-sucedido rebate a bola para cima; uma falha encerra a jogada. Cada episódio de treinamento permite até três rebatidas bem-sucedidas. A dinâmica, as recompensas, a sequência de lançamentos, o algoritmo de Q-learning e os hiperparâmetros são idênticos. Só muda a observação.
+
+<div className="prediction-prompt">
+  <p className="lesson-stage">Preveja antes de treinar</p>
+  <h3>Uma única ação serve para duas direções ocultas?</h3>
+  <p>
+    Mantenha fixas a posição visível da bola, a posição da raquete e a ação escolhida.
+    Se em um histórico a bola sobe e em outro ela desce, um único valor Q baseado
+    apenas na posição pode servir para ambos? Preveja qual curva de aprendizado
+    vai se estabilizar primeiro.
+  </p>
+</div>
+
+Comece com o agente que não observa a velocidade. Clique em **Treinar agente** e acompanhe a mudança de sua política e da taxa de acertos em lançamentos variados. Quando o treinamento terminar, clique em **Executar agente** para ver a política aprendida continuar jogando enquanto os acertos e erros são contabilizados.
+
+<MarkovPongLab mode="position" locale="pt-BR" />
+
+Agora repita o experimento acrescentando a velocidade à representação. A seta de direção indica a nova informação disponível para esse agente.
+
+<MarkovPongLab mode="velocity" locale="pt-BR" />
+
+Em pontos regulares do treinamento, cada curva avalia a política gulosa em cada um dos 176 estados iniciais possíveis. Ela não mostra as recompensas ruidosas obtidas enquanto o agente ainda explora.
+
+Nesta execução reproduzível, a política que conhece a velocidade atinge uma taxa de acertos de 100% após 5.000 episódios. A política que conhece apenas a posição chega a 36%, pois um mesmo valor Q precisa fazer a média de situações que pedem ações opostas.
+
+A diferença é calculada a partir dos valores Q aprendidos; não foi desenhada antecipadamente. Recarregar a página reproduz as mesmas curvas porque a semente, a sequência de lançamentos e o conjunto de avaliação são fixos. Esta comparação controlada mostra o efeito neste ambiente; não é uma referência geral para qualquer algoritmo ou representação de estado.
+
+<MarkovPongComparison locale="pt-BR" />
+
+Esse caso exemplifica o que podemos chamar de **dinâmica ausente**: o estado deixa de registrar o movimento instantâneo necessário para prever as transições físicas.
+
+<h2 id="the-door-and-the-key">A porta e a chave</h2>
+
+<h3 id="the-mdp-1">O MDP</h3>
+
+Nosso segundo ambiente é um pequeno labirinto em grade. O agente precisa pegar uma chave antes de atravessar uma porta para chegar ao objetivo. A chave e a porta ficam em lados opostos do mapa, obrigando o agente a atravessar uma região central, pegar a chave e refazer parte do caminho até a porta.
+
+O estado completo desse MDP é $s_t=(p_t,k_t)$, em que $p_t$ representa a posição do agente e $k_t \in \{0, 1\}$ indica se a chave foi coletada. As ações disponíveis são $A=\{\text{up}, \text{down}, \text{left}, \text{right}\}$. A porta funciona como uma parede quando $k_t=0$ e permite a passagem quando $k_t=1$. Chegar ao objetivo dá uma recompensa positiva e encerra o episódio.
+
+<DoorKeyFigure kind="environment" locale="pt-BR" />
+
+Avaliamos duas representações. Na primeira, $z_t=p_t$: o agente sabe apenas sua posição atual. Na segunda, $z_t=(p_t,k_t)$: ele sabe sua posição e se está com a chave.
+
+Esse desafio é diferente do Pong. Não falta informação sobre o movimento instantâneo. Se o agente está em uma célula vazia e se move para a esquerda, sabemos exatamente em qual célula ele vai parar. O que falta, neste caso, é informação sobre um evento passado.
+
+Considere a posição logo antes da porta. A mesma posição espacial $p_t$ representa dois estados reais distintos: $(p_t,0)$ antes de pegar a chave e $(p_t,1)$ depois.
+
+Executar a mesma ação nesses dois estados produz transições completamente diferentes. Se $k_t=0$, o agente é bloqueado ao tentar passar pela porta. Se $k_t=1$, ele atravessa. Como a representação $z_t=p_t$ mistura essas duas situações, a probabilidade de transição $p(z_{t+1}, r_{t+1} \mid z_t, a_t)$ precisa combinar os dois resultados possíveis.
+
+O histórico desfaz a ambiguidade. Se $H_t$ mostra que o agente já passou pela posição da chave, sabemos com certeza que $k_t=1$. Logo, as probabilidades de transição são diferentes:
+
+$$p(z_{t+1},r_{t+1}\mid z_t,a_t,H_t) \neq p(z_{t+1},r_{t+1}\mid z_t,a_t)$$
+
+Isso mostra que a representação baseada apenas na posição viola a propriedade de Markov. Acrescentar $k_t$ ao estado resolve o problema: um único valor atual resume um evento que pode ter ocorrido muito antes. Uma vez conhecido $k_t$, o caminho exato percorrido até ali não traz informação adicional para prever a próxima transição.
+
+<DoorKeyFigure kind="state" locale="pt-BR" />
+
+Podemos chamar esse caso de **memória ausente**. Diferentemente do Pong, a informação oculta não descreve o movimento físico; ela resume uma etapa decisiva que ocorreu antes no episódio.
+
+<h3 id="learning-1">Aprendizado</h3>
+
+Mais uma vez, mantemos iguais as recompensas, a dinâmica das transições, o algoritmo, os hiperparâmetros e o orçamento de treinamento.
+
+<div className="prediction-prompt">
+  <p className="lesson-stage">Preveja antes de treinar</p>
+  <h3>Para onde o centro deve apontar?</h3>
+  <p>
+    Antes de pegar a chave, o agente precisa sair do centro em direção a ela.
+    Depois, precisa cruzar o mesmo centro rumo à porta. Se os dois momentos
+    compartilham um único valor Q baseado na posição, uma mesma ação gulosa
+    consegue completar as duas metades do trajeto?
+  </p>
+</div>
+
+Treine o agente que observa apenas a posição e depois clique em **Executar agente**. Observe o percurso, o número de objetivos alcançados e as execuções interrompidas pelo limite de passos.
+
+<DoorKeyLab mode="position" locale="pt-BR" />
+
+Durante o treinamento exploratório, o agente pode encontrar o objetivo por acaso. Sua política gulosa final não consegue reproduzir o trajeto de modo confiável: nas células compartilhadas do corredor, uma única ação fixa não pode apontar para a chave antes de pegá-la e para a porta depois.
+
+Agora execute o experimento equivalente com $k_t$ incluído na representação.
+
+<DoorKeyLab mode="memory" locale="pt-BR" />
+
+O agente que conhece o status da chave distingue o centro antes de pegá-la do centro depois. Ele pode aprender duas políticas para o mesmo corredor: mover-se à esquerda enquanto $k_t=0$ e à direita enquanto $k_t=1$. A posição atual, o status da chave e a ação escolhida bastam para prever se a porta bloqueará o movimento.
+
+Em cada ponto da curva, a política gulosa determinística atual é avaliada uma vez, sempre a partir do mesmo ponto central. Portanto, os 0% ou 100% exibidos indicam se esse único percurso fixo falhou ou teve sucesso; não são estimativas obtidas de vários pontos de partida. A comparação final é calculada a partir dos valores Q aprendidos com o mesmo orçamento de 3.000 episódios.
+
+Para limitar demonstrações malsucedidas, o treinamento e a reprodução interrompem uma execução após 24 ações. Esse limite faz parte do experimento, não do MDP: atingi-lo não produz uma transição nem uma recompensa no ambiente, e o agente não precisa incluir um relógio oculto em seu estado.
+
+<DoorKeyComparison locale="pt-BR" />
+
+No Pong, acrescentamos uma variável para registrar o movimento atual. Aqui, acrescentamos uma variável para resumir um evento passado relevante.
+
+<h2 id="checkpoints">Checkpoints</h2>
+
+<h3 id="the-mdp-2">O MDP</h3>
+
+O terceiro ambiente é um labirinto em grade com um ponto central ligado a três checkpoints: A, B e C. Para concluir o episódio, o agente precisa visitá-los estritamente na ordem $A \rightarrow B \rightarrow C$.
+
+Nenhum caminho é bloqueado nem alterado durante o episódio. A geometria do mapa e as regras físicas de movimento permanecem iguais do início ao fim.
+
+O estado completo desse MDP é $s_t=(p_t,q_t)$. A variável $p_t$ define a posição, e $q_t \in \{A, B, C, \text{done}\}$ registra o próximo checkpoint esperado. Uma ação atualiza a posição do agente na grade. O estado da tarefa $q_t$ só avança quando o checkpoint correto é visitado, gerando uma recompensa positiva.
+
+<MarkovCheckpointFigure kind="environment" locale="pt-BR" />
+
+Avaliamos as representações $z_t=p_t$ e $z_t=(p_t,q_t)$.
+
+Esse cenário traz um desafio menos evidente. Apenas a posição $p_t$ basta para prever o movimento físico do agente. Para qualquer posição e ação, a transição espacial é a mesma independentemente do passado:
+
+$$p(p_{t+1}\mid p_t,a_t,H_t) = p(p_{t+1}\mid p_t,a_t)$$
+
+Conhecer o histórico não melhora nossa previsão de onde o agente vai parar.
+
+Mas um MDP define tanto o próximo estado quanto a recompensa. O estado atual também precisa ser suficiente para determinar a distribuição da recompensa.
+
+Considere a entrada no checkpoint B. Se $q_t=B$, entrar nessa célula gera uma recompensa positiva e avança a tarefa. Se o agente entra na mesma célula quando $q_t=A$ ou $q_t=C$, a recompensa é zero. A posição física e a ação executada são idênticas, mas a recompensa é diferente.
+
+A variável $q_t$ depende do histórico da tarefa. Saber quais checkpoints já foram visitados nos permite deduzir a recompensa de uma transição específica.
+
+Embora o movimento espacial seja inteiramente markoviano, a distribuição da recompensa não é:
+
+$$p(r_{t+1}\mid p_t,a_t,H_t) \neq p(r_{t+1}\mid p_t,a_t)$$
+
+Assim, sob a representação reduzida, a distribuição completa da transição do MDP viola a propriedade de Markov:
+
+$$p(z_{t+1},r_{t+1}\mid z_t,a_t,H_t) \neq p(z_{t+1},r_{t+1}\mid z_t,a_t)$$
+
+Incluir $q_t$ torna explícito o estado atual da tarefa. Conhecendo a posição física e o próximo checkpoint esperado, não precisamos do restante do histórico para prever a transição completa, inclusive a recompensa.
+
+<MarkovCheckpointFigure kind="reward" locale="pt-BR" />
+
+Chamamos esse caso de **contexto da recompensa ausente**. Não ocultamos a dinâmica física nem uma condição que libere novos movimentos. Ocultamos a variável que dá significado a uma transição física no contexto da tarefa.
+
+<h3 id="learning-2">Aprendizado</h3>
+
+Treinamos o algoritmo mais uma vez com a dinâmica espacial, as regras de recompensa, o algoritmo, os hiperparâmetros e o orçamento iguais nos dois experimentos.
+
+<div className="prediction-prompt">
+  <p className="lesson-stage">Preveja antes de treinar</p>
+  <h3>Uma ação no centro pode representar três etapas?</h3>
+  <p>
+    No centro, o agente precisa ir em direção a A, B ou C conforme o próximo
+    checkpoint esperado. Se o progresso estiver oculto, qual dessas três ações
+    uma política determinística baseada apenas na posição poderá escolher?
+    Preveja se a exploração durante o treinamento resolve essa limitação
+    na política gulosa final.
+  </p>
+</div>
+
+Primeiro, treine e execute o agente que observa apenas a posição. Veja se sua política final consegue registrar A, B e C na ordem antes de atingir o limite de passos.
+
+<MarkovCheckpointLab mode="position" locale="pt-BR" />
+
+Durante o treinamento, a exploração pode produzir a sequência correta por acaso, mas não corrige a representação usada pela política final. No centro, uma única ação gulosa precisa servir para as três etapas.
+
+Agora execute o experimento equivalente fornecendo explicitamente $q_t$.
+
+<MarkovCheckpointLab mode="progress" locale="pt-BR" />
+
+A política que conhece o progresso pode escolher uma direção diferente a partir do centro para cada valor de $q_t$, mesmo estando na mesma posição física. Execute a política final e veja A, B e C serem registrados na ordem.
+
+Assim como no experimento da porta, cada ponto da curva avalia uma execução gulosa determinística a partir do mesmo centro. O valor de 0% ou 100% registra se esse percurso fixo falhou ou foi concluído. A comparação final é calculada a partir dos valores Q aprendidos com o mesmo orçamento de 4.000 episódios.
+
+O limite de 42 ações por execução também é externo a esse MDP. Ele impede que o treinamento e a reprodução malsucedidos se prolonguem indefinidamente, mas não introduz uma transição nem uma recompensa.
+
+<MarkovCheckpointComparison locale="pt-BR" />
+
+Esse resultado destaca um terceiro tipo de informação oculta. A representação previa perfeitamente a próxima posição física, mas não registrava a variável necessária para determinar a recompensa.
+
+<h2 id="what-was-missing">O que faltava?</h2>
+
+Ao colocar os três experimentos lado a lado, vemos um padrão. Em cada caso, a dinâmica física, a função de recompensa real, o algoritmo de aprendizado e os hiperparâmetros permaneceram iguais entre as duas versões. Mudamos apenas o que o agente considerava seu estado.
+
+No primeiro caso, **dinâmica ausente**, a posição não informava a velocidade. O histórico permitia inferir a trajetória da bola, mudando a distribuição prevista para a próxima posição.
+
+No segundo, **memória ausente**, a posição não dizia se um evento decisivo havia ocorrido. O histórico revelava se a chave tinha sido coletada e, portanto, quais transições físicas eram possíveis.
+
+No terceiro, **contexto da recompensa ausente**, a posição previa perfeitamente o movimento seguinte, mas não determinava a recompensa. O histórico revelava o progresso do agente na sequência da tarefa.
+
+Esses nomes descrevem o que a informação omitida altera; não são categorias formais mutuamente exclusivas. O status da chave e o progresso entre checkpoints, por exemplo, resumem eventos anteriores. A pergunta útil é se o fato oculto altera o movimento físico, as transições possíveis, as recompensas ou uma combinação deles.
+
+<MarkovSynthesisFigure locale="pt-BR" />
+
+Os três exemplos são manifestações da mesma condição matemática. Se alguma informação do histórico modifica a distribuição prevista para a próxima representação ou recompensa, mesmo após conhecermos a representação e a ação atuais, a representação é insuficiente:
+
+$$p(z_{t+1},r_{t+1}\mid z_t,a_t,H_t) \neq p(z_{t+1},r_{t+1}\mid z_t,a_t)$$
+
+Guardar o histórico inteiro preservaria toda essa informação, mas raramente seria útil. O objetivo de projetar o estado é encontrar um resumo compacto e suficiente: manter os fatos do passado que ainda podem mudar o futuro e descartar o restante.
+
+Nessas demonstrações com sementes fixas, corrigir a mistura entre estados permitiu ao mesmo algoritmo de Q-learning tabular produzir uma política gulosa mais bem-sucedida. Isso não significa que acrescentar variáveis sempre acelera o aprendizado. Variáveis irrelevantes ampliam o espaço de estados tabular e podem tornar o aprendizado menos eficiente. O objetivo é ter informação suficiente, não o máximo de detalhes.
+
+<div className="mental-model">
+  <p className="lesson-stage">Guarde este diagnóstico</p>
+  <p>
+    <strong>
+      Mantenha fixas a representação e a ação atuais. Se dois históricos
+      compatíveis ainda levam a previsões diferentes para a próxima representação
+      ou recompensa, identifique o fato oculto e inclua um resumo atual dele.
+    </strong>
+  </p>
+</div>
+
+<div className="reasoning-check">
+  <p className="lesson-stage">Transfira a ideia</p>
+  <h3>O que falta no estado deste serviço de entrega?</h3>
+  <p>
+    Um drone de entregas observa sua posição, velocidade e nível de bateria.
+    Ele recebe +1 ao chegar a uma clínica antes das 18h e 0 pela mesma chegada
+    depois das 18h. Dois voos podem ter a mesma observação e executar a mesma
+    ação, mas chegar em lados opostos do prazo. A representação proposta é
+    markoviana? Que variável compacta resolveria o problema?
+  </p>
+  <details>
+    <summary>Confira seu raciocínio</summary>
+    <p>
+      Ela não é markoviana para a regra de recompensa descrita. O histórico do voo
+      pode revelar se o prazo já passou, mudando a recompensa mesmo quando posição,
+      velocidade, bateria e ação são iguais. Acrescente a hora atual ou o tempo
+      restante até o prazo; não é preciso guardar todo o trajeto do voo.
+    </p>
+  </details>
+</div>
+
+A propriedade de Markov depende da representação usada para descrever um processo. O ambiente pode continuar igual enquanto uma representação preserva todas as distinções relevantes para o próximo estado e a recompensa, e outra oculta justamente a informação de que o agente precisa.
+
+</article>

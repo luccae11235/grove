@@ -1,5 +1,6 @@
 ---
 import { MarkovPongComparison } from "@grove/tree-visuals";
+const { locale = "en" } = Astro.props;
 ---
 
-<MarkovPongComparison />
+<MarkovPongComparison locale={locale} />

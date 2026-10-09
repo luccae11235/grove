@@ -1,15 +1,17 @@
+---
+const { locale = "en" } = Astro.props;
+const pt = locale === "pt-BR";
+---
+
 <figure class="markov-synthesis" data-markov-synthesis>
   <div
     class="synthesis-frame"
     role="group"
-    aria-label="Three examples of missing Markov state"
+    aria-label={pt ? "Três exemplos de informação ausente no estado markoviano" : "Three examples of missing Markov state"}
     aria-describedby="markov-synthesis-description"
   >
     <p id="markov-synthesis-description" class="sr-only">
-      Pong is missing dynamics, repaired by adding velocity to position. The
-      door-and-key environment is missing memory, repaired by adding whether
-      the agent has the key. The checkpoint environment is missing reward
-      state, repaired by adding the next required checkpoint.
+      {pt ? "No Pong, acrescentar a velocidade à posição permite prever o movimento. No ambiente da porta e da chave, registrar se o agente possui a chave preserva a informação sobre o evento passado. No ambiente dos checkpoints, registrar o próximo checkpoint esperado fornece o contexto necessário para prever a recompensa." : "Pong is missing dynamics, repaired by adding velocity to position. The door-and-key environment is missing memory, repaired by adding whether the agent has the key. The checkpoint environment is missing reward state, repaired by adding the next required checkpoint."}
     </p>
 
     <div class="repairs">
@@ -21,11 +23,11 @@
           <span class="paddle"></span>
         </div>
         <p class="example-name">Pong</p>
-        <h3>Missing dynamics</h3>
+        <h3>{pt ? "Dinâmica ausente" : "Missing dynamics"}</h3>
         <div class="state-repair">
-          <span class="base-state">position</span>
+          <span class="base-state">{pt ? "posição" : "position"}</span>
           <span class="plus" aria-hidden="true">+</span>
-          <strong>velocity</strong>
+          <strong>{pt ? "velocidade" : "velocity"}</strong>
         </div>
       </section>
 
@@ -36,18 +38,18 @@
           <svg class="key" viewBox="0 0 32 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="10" r="5" /><path d="M13 10h15v5m-6-5v4" /></svg>
           <span class="door"><i></i></span>
         </div>
-        <p class="example-name">Key–Door</p>
-        <h3>Missing memory</h3>
+        <p class="example-name">{pt ? "Chave–Porta" : "Key–Door"}</p>
+        <h3>{pt ? "Memória ausente" : "Missing memory"}</h3>
         <div class="state-repair">
-          <span class="base-state">position</span>
+          <span class="base-state">{pt ? "posição" : "position"}</span>
           <span class="plus" aria-hidden="true">+</span>
-          <strong>has key</strong>
+          <strong>{pt ? "tem chave" : "has key"}</strong>
         </div>
       </section>
 
       <section class="repair">
         <div class="scene checkpoint-scene" aria-hidden="true">
-          <span class="hub">Hub</span>
+          <span class="hub">{pt ? "Centro" : "Hub"}</span>
           <span class="path path-a"></span>
           <span class="path path-b"></span>
           <span class="path path-c"></span>
@@ -55,20 +57,19 @@
           <span class="checkpoint checkpoint-b">B</span>
           <span class="checkpoint checkpoint-c">C</span>
         </div>
-        <p class="example-name">Checkpoints</p>
-        <h3>Missing reward state</h3>
+        <p class="example-name">{pt ? "Checkpoints" : "Checkpoints"}</p>
+        <h3>{pt ? "Contexto da recompensa ausente" : "Missing reward state"}</h3>
         <div class="state-repair">
-          <span class="base-state">position</span>
+          <span class="base-state">{pt ? "posição" : "position"}</span>
           <span class="plus" aria-hidden="true">+</span>
-          <strong>next checkpoint</strong>
+          <strong>{pt ? "próximo checkpoint" : "next checkpoint"}</strong>
         </div>
       </section>
     </div>
   </div>
 
   <p class="figure-note">
-    A useful state does not need to remember everything. It can keep a compact,
-    sufficient summary of the past that still changes what happens next.
+    {pt ? "Um estado útil não precisa lembrar de tudo. Basta guardar um resumo compacto e suficiente do passado que ainda afeta o que acontece a seguir." : "A useful state does not need to remember everything. It can keep a compact, sufficient summary of the past that still changes what happens next."}
   </p>
 </figure>
 

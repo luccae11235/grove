@@ -15,6 +15,7 @@ export async function getStaticPaths() {
     "gradient-boosting-quick-deep-dive",
     "sample-based-view-of-reinforcement-learning",
     "is-my-model-good",
+    "the-markov-principle",
   ]);
   const includeDrafts =
     import.meta.env.DEV || import.meta.env.SHOW_DRAFTS === "true";
@@ -54,6 +55,11 @@ const translations = entry.data.articleId === "sample-based-view-of-reinforcemen
     ? {
         en: "/learn/gradient-boosting-quick-deep-dive/",
         "pt-BR": "/pt-br/learn/gradient-boosting-quick-deep-dive/",
+      }
+  : entry.data.articleId === "the-markov-principle"
+    ? {
+        en: "/learn/the-markov-principle/",
+        "pt-BR": "/pt-br/learn/o-principio-de-markov/",
       }
   : undefined;
 ---

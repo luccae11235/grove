@@ -1,3 +1,4 @@
+import { markovCountWord, markovNumber, markovText, type MarkovLocale } from "../markovLocale";
 import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./DoorKeyPlayground.module.css";
 import { trainingFrameDelay } from "../markovTrainingMotion";
@@ -33,7 +34,8 @@ function linePath(points: readonly DoorCurvePoint[]) {
   }).join(" ");
 }
 
-function ChartFrame({ children, label, axisTitles = false }: {
+function ChartFrame({ children, label, axisTitles = false, locale = "en" }: {
+  locale?: MarkovLocale;
   children: React.ReactNode;
   label: string;
   axisTitles?: boolean;
@@ -51,22 +53,23 @@ function ChartFrame({ children, label, axisTitles = false }: {
         })}
       </g>
       {axisTitles ? <>
-        <text className={styles.yLabel} x="-101" y="10" transform="rotate(-90)">Goal rate (%)</text>
-        <text className={styles.xLabel} x="272" y="218" textAnchor="middle">Training episodes</text>
+        <text className={styles.yLabel} x="-101" y="10" transform="rotate(-90)">{markovText(locale, "Goal rate (%)")}</text>
+        <text className={styles.xLabel} x="272" y="218" textAnchor="middle">{markovText(locale, "Training episodes")}</text>
       </> : null}
       {children}
     </svg>
   );
 }
 
-function LearningChart({ points, mode }: {
+function LearningChart({ points, mode, locale }: {
+  locale: MarkovLocale;
   points: readonly DoorCurvePoint[];
   mode: DoorObservationMode;
 }) {
   const latest = points[points.length - 1];
   return (
     <div className={styles.chartWrap}>
-      <ChartFrame label={`${mode === "position" ? "Position-only" : "Position and key memory"} policy reaches the goal in ${percent(latest.successRate)} of evaluations after ${latest.episode} training episodes.`}>
+      <ChartFrame locale={locale} label={locale === "pt-BR" ? `A política com ${mode === "position" ? "apenas a posição" : "posição e memória da chave"} alcança o objetivo em ${percent(latest.successRate)} das avaliações após ${markovNumber(locale, latest.episode)} episódios de treinamento.` : `${mode === "position" ? "Position-only" : "Position and key memory"} policy reaches the goal in ${percent(latest.successRate)} of evaluations after ${latest.episode} training episodes.`}>
         <path d={linePath(points)} className={`${styles.curve} ${mode === "position" ? styles.positionCurve : styles.memoryCurve}`} />
       </ChartFrame>
     </div>
@@ -81,7 +84,9 @@ function DoorBoard({
   state,
   visited = [],
   showRoute = false,
+  locale = "en",
 }: {
+  locale?: MarkovLocale;
   state: Pick<DoorTrueState, "x" | "hasKey" | "outcome">;
   visited?: readonly number[];
   showRoute?: boolean;
@@ -91,7 +96,7 @@ function DoorBoard({
     <div
       className={styles.board}
       role="img"
-      aria-label={`Door and key corridor. Agent at column ${state.x}. ${state.hasKey ? "The agent holds the key and the door is open." : "The key has not been collected and the door is closed."}${state.outcome === "goal" ? " The agent reached the goal." : state.outcome === "timeout" ? " The route timed out." : ""}`}
+      aria-label={locale === "pt-BR" ? `Corredor da porta e da chave. Agente na coluna ${state.x}. ${state.hasKey ? "O agente está com a chave e a porta está aberta." : "A chave não foi coletada e a porta está fechada."}${state.outcome === "goal" ? " O agente alcançou o objetivo." : state.outcome === "timeout" ? " O percurso atingiu o limite de passos." : ""}` : `Door and key corridor. Agent at column ${state.x}. ${state.hasKey ? "The agent holds the key and the door is open." : "The key has not been collected and the door is closed."}${state.outcome === "goal" ? " The agent reached the goal." : state.outcome === "timeout" ? " The route timed out." : ""}`}
       data-agent-x={state.x}
       data-has-key={String(state.hasKey)}
       data-outcome={state.outcome ?? "running"}
@@ -104,29 +109,29 @@ function DoorBoard({
       })}
       {!state.hasKey ? <span className={styles.keyAtCell}><KeyShape /></span> : null}
       <span className={`${styles.door} ${state.hasKey ? styles.doorOpen : ""}`} aria-hidden="true"><i /></span>
-      <span className={styles.goal} aria-hidden="true">Goal</span>
+      <span className={styles.goal} aria-hidden="true">{markovText(locale, "Goal")}</span>
       <span className={styles.agent} style={{ "--agent-x": state.x } as React.CSSProperties} aria-hidden="true">
         {state.hasKey ? <KeyShape /> : null}
       </span>
       {showRoute ? <>
-        <span className={styles.routeToKey} aria-hidden="true">1 · collect key ←</span>
-        <span className={styles.routeToGoal} aria-hidden="true">2 · return and unlock →</span>
+        <span className={styles.routeToKey} aria-hidden="true">{markovText(locale, "1 · collect key ←")}</span>
+        <span className={styles.routeToGoal} aria-hidden="true">{markovText(locale, "2 · return and unlock →")}</span>
       </> : null}
-      {state.outcome ? <span className={state.outcome === "goal" ? styles.goalBadge : styles.timeoutBadge}>{state.outcome === "goal" ? "Goal" : "Timed out"}</span> : null}
+      {state.outcome ? <span className={state.outcome === "goal" ? styles.goalBadge : styles.timeoutBadge}>{state.outcome === "goal" ? markovText(locale, "Goal") : markovText(locale, "Timed out")}</span> : null}
     </div>
   );
 }
 
-export function DoorKeyFigure({ kind }: { kind: "environment" | "state" }) {
+export function DoorKeyFigure({ kind, locale = "en" }: { kind: "environment" | "state"; locale?: MarkovLocale }) {
   if (kind === "environment") {
     return (
       <figure className={`${styles.figure} ${styles.routeFigure}`} data-door-key-figure="environment">
         <figcaption>
-          <p className={styles.kicker}>The route</p>
-          <h3>The agent must cross the same corridor twice</h3>
+          <p className={styles.kicker}>{markovText(locale, "The route")}</p>
+          <h3>{markovText(locale, "The agent must cross the same corridor twice")}</h3>
         </figcaption>
-        <DoorBoard state={createDoorEpisode()} showRoute />
-        <p className={styles.figureNote}>The useful direction reverses after the key is collected.</p>
+        <DoorBoard state={createDoorEpisode()} showRoute locale={locale} />
+        <p className={styles.figureNote}>{markovText(locale, "The useful direction reverses after the key is collected.")}</p>
       </figure>
     );
   }
@@ -134,37 +139,37 @@ export function DoorKeyFigure({ kind }: { kind: "environment" | "state" }) {
   return (
     <figure className={`${styles.figure} ${styles.stateFigure}`} data-door-key-figure="state">
       <figcaption>
-        <p className={styles.kicker}>The hidden difference</p>
-        <h3>Same position. Same action. Different next state.</h3>
+        <p className={styles.kicker}>{markovText(locale, "The hidden difference")}</p>
+        <h3>{markovText(locale, "Same position. Same action. Different next state.")}</h3>
       </figcaption>
       <div className={styles.statePair}>
         <div>
-          <span className={styles.stateLabel}>physical state (p, 0)</span>
+          <span className={styles.stateLabel}>{markovText(locale, "physical state (p, 0)")}</span>
           <div className={styles.doorMoment} data-door-state="closed">
             <span className={styles.miniAgent} />
             <span className={styles.moveArrow}>→</span>
             <span className={styles.miniDoor} />
           </div>
-          <strong>Blocked</strong>
-          <small>key not collected</small>
+          <strong>{markovText(locale, "Blocked")}</strong>
+          <small>{markovText(locale, "key not collected")}</small>
         </div>
         <div>
-          <span className={styles.stateLabel}>physical state (p, 1)</span>
+          <span className={styles.stateLabel}>{markovText(locale, "physical state (p, 1)")}</span>
           <div className={styles.doorMoment} data-door-state="open">
             <span className={styles.miniAgent}><KeyShape /></span>
             <span className={styles.moveArrow}>→</span>
             <span className={`${styles.miniDoor} ${styles.miniDoorOpen}`} />
           </div>
-          <strong>Passes through</strong>
-          <small>key collected</small>
+          <strong>{markovText(locale, "Passes through")}</strong>
+          <small>{markovText(locale, "key collected")}</small>
         </div>
       </div>
-      <p className={styles.figureNote}>Position alone merges these two states. The key bit keeps them separate.</p>
+      <p className={styles.figureNote}>{markovText(locale, "Position alone merges these two states. The key bit keeps them separate.")}</p>
     </figure>
   );
 }
 
-export function DoorKeyPlayground({ mode }: { mode: DoorObservationMode }) {
+export function DoorKeyPlayground({ mode, locale = "en" }: { mode: DoorObservationMode; locale?: MarkovLocale }) {
   const titleId = `markov-door-title-${mode}`;
   const results = useMemo(() => trainMarkovDoor(mode), [mode]);
   const [curveIndex, setCurveIndex] = useState(0);
@@ -250,73 +255,73 @@ export function DoorKeyPlayground({ mode }: { mode: DoorObservationMode }) {
       style={{ "--training-frame-ms": `${trainingFrameMs}ms` } as React.CSSProperties}
     >
       <header className={styles.header}>
-        <p className={styles.kicker}>{remembersKey ? "Experiment 2 · Markov state" : "Experiment 1 · Broken state"}</p>
-        <h3 id={titleId}>{remembersKey ? "What changes when the key is part of the state?" : "Can position alone encode the return route?"}</h3>
+        <p className={styles.kicker}>{remembersKey ? markovText(locale, "Experiment 2 · Markov state") : markovText(locale, "Experiment 1 · Broken state")}</p>
+        <h3 id={titleId}>{remembersKey ? markovText(locale, "What changes when the key is part of the state?") : markovText(locale, "Can position alone encode the return route?")}</h3>
       </header>
 
       <div className={styles.experimentBand}>
-        <span>Agent sees</span>
+        <span>{markovText(locale, "Agent sees")}</span>
         <code>{remembersKey ? "z = (p, has_key)" : "z = p"}</code>
-        <strong>{remembersKey ? "Key remembered" : "Key status hidden"}</strong>
+        <strong>{remembersKey ? markovText(locale, "Key remembered") : markovText(locale, "Key status hidden")}</strong>
       </div>
 
       <div className={styles.body}>
         <div className={styles.environmentColumn}>
-          <DoorBoard state={state} visited={visited} />
+          <DoorBoard state={state} visited={visited} locale={locale} />
           {curveIndex >= maximumCurveIndex ? <div className={styles.runScore} aria-live="polite" data-run-goals={runResult.goals} data-run-timeouts={runResult.timeouts}>
-            <strong>{runResult.goals}</strong> goals <span>· {runResult.timeouts} timed out</span>
+            <strong>{runResult.goals}</strong> {markovCountWord(locale, runResult.goals, "goals")} <span>· {runResult.timeouts} {markovCountWord(locale, runResult.timeouts, "timeouts")}</span>
           </div> : null}
         </div>
 
         <div className={styles.learningColumn} data-training-episodes={currentPoint.episode} data-active-success-rate={Math.round(currentPoint.successRate * 100)}>
           <div className={styles.result}>
             <strong>{percent(currentPoint.successRate)}</strong>
-            <span>goal rate</span>
-            <small>{currentPoint.episode.toLocaleString()} / 3,000 episodes</small>
+            <span>{markovText(locale, "goal rate")}</span>
+            <small>{markovNumber(locale, currentPoint.episode)} / {markovNumber(locale, 3000)} {markovText(locale, "episodes")}</small>
           </div>
-          <LearningChart points={revealedCurve} mode={mode} />
+          <LearningChart points={revealedCurve} mode={mode} locale={locale} />
           {curveIndex < maximumCurveIndex ? <label className={styles.speedControl}>
-            <span>Training speed <strong>{episodesPerSecond.toLocaleString()} episodes/s</strong></span>
-            <input type="range" min="100" max="1500" step="100" value={episodesPerSecond} onChange={(event) => setEpisodesPerSecond(Number(event.target.value))} aria-label="Door training speed in episodes per second" />
+            <span>{markovText(locale, "Training speed")} <strong>{markovNumber(locale, episodesPerSecond)} {markovText(locale, "episodes/s")}</strong></span>
+            <input type="range" min="100" max="1500" step="100" value={episodesPerSecond} onChange={(event) => setEpisodesPerSecond(Number(event.target.value))} aria-label={locale === "pt-BR" ? "Velocidade do treinamento da porta em episódios por segundo" : "Door training speed in episodes per second"} />
           </label> : null}
           <button type="button" className={styles.trainButton} onClick={toggleAgent}>
             {curveIndex >= maximumCurveIndex
-              ? running ? "Stop agent" : "Run agent"
-              : training ? "Pause" : curveIndex === 0 ? "Train agent" : "Continue"}
+              ? running ? markovText(locale, "Stop agent") : markovText(locale, "Run agent")
+              : training ? markovText(locale, "Pause") : curveIndex === 0 ? markovText(locale, "Train agent") : markovText(locale, "Continue")}
           </button>
         </div>
       </div>
 
       <p className={styles.srOnly} aria-live="polite" aria-atomic="true">
         {training
-          ? "Training in progress."
+          ? markovText(locale, "Training in progress.")
           : curveIndex >= maximumCurveIndex
-            ? `Training complete after ${currentPoint.episode} episodes. Final goal result ${percent(currentPoint.successRate)}.`
+            ? locale === "pt-BR" ? `Treinamento concluído após ${markovNumber(locale, currentPoint.episode)} episódios. Resultado final: ${percent(currentPoint.successRate)} dos objetivos alcançados.` : `Training complete after ${currentPoint.episode} episodes. Final goal result ${percent(currentPoint.successRate)}.`
             : curveIndex > 0
-              ? `Training paused after ${currentPoint.episode} episodes. Goal result ${percent(currentPoint.successRate)}.`
-              : "Training has not started."}
+              ? locale === "pt-BR" ? `Treinamento pausado após ${markovNumber(locale, currentPoint.episode)} episódios. Objetivos alcançados: ${percent(currentPoint.successRate)}.` : `Training paused after ${currentPoint.episode} episodes. Goal result ${percent(currentPoint.successRate)}.`
+              : markovText(locale, "Training has not started.")}
       </p>
     </section>
   );
 }
 
-export function DoorKeyComparison() {
+export function DoorKeyComparison({ locale = "en" }: { locale?: MarkovLocale }) {
   const results = trainDoorPair();
   return (
     <figure className={`${styles.lab} ${styles.comparison}`} aria-labelledby="markov-door-comparison-title" data-markov-door-comparison>
       <figcaption className={styles.comparisonHeader}>
-        <p className={styles.kicker}>Matched result</p>
-        <h3 id="markov-door-comparison-title">One bit of memory makes the route learnable</h3>
-        <p>Same corridor and training budget. Only the state representation differs.</p>
+        <p className={styles.kicker}>{markovText(locale, "Matched result")}</p>
+        <h3 id="markov-door-comparison-title">{markovText(locale, "One bit of memory makes the route learnable")}</h3>
+        <p>{markovText(locale, "Same corridor and training budget. Only the state representation differs.")}</p>
       </figcaption>
       <div className={styles.comparisonBody}>
-        <ChartFrame axisTitles label={`After 3,000 episodes, the position-only policy reaches the goal ${percent(results.position.finalSuccessRate)} of the time and the key-aware policy reaches it ${percent(results.memory.finalSuccessRate)} of the time.`}>
+        <ChartFrame locale={locale} axisTitles label={locale === "pt-BR" ? `Após 3.000 episódios, a política que só vê a posição alcança o objetivo em ${percent(results.position.finalSuccessRate)} das avaliações; a política que conhece a chave alcança em ${percent(results.memory.finalSuccessRate)}.` : `After 3,000 episodes, the position-only policy reaches the goal ${percent(results.position.finalSuccessRate)} of the time and the key-aware policy reaches it ${percent(results.memory.finalSuccessRate)} of the time.`}>
           <path d={linePath(results.position.curve)} className={`${styles.curve} ${styles.positionCurve}`} />
           <path d={linePath(results.memory.curve)} className={`${styles.curve} ${styles.memoryCurve}`} />
         </ChartFrame>
         <div className={styles.comparisonStats}>
-          <div><span className={styles.positionLegend}>Position only</span><strong>{percent(results.position.finalSuccessRate)}</strong><small>key hidden</small></div>
-          <div><span className={styles.memoryLegend}>Position + key</span><strong>{percent(results.memory.finalSuccessRate)}</strong><small>Markov state</small></div>
+          <div><span className={styles.positionLegend}>{markovText(locale, "Position only")}</span><strong>{percent(results.position.finalSuccessRate)}</strong><small>{markovText(locale, "key hidden")}</small></div>
+          <div><span className={styles.memoryLegend}>{markovText(locale, "Position + key")}</span><strong>{percent(results.memory.finalSuccessRate)}</strong><small>{markovText(locale, "Markov state")}</small></div>
         </div>
       </div>
     </figure>
