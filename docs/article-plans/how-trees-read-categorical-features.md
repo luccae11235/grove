@@ -3,7 +3,7 @@
 - Título provisório: **How Trees Read Categorical Features**
 - Trilha: Tree path, Chapter 3
 - Proposed article ID: `categorical-features` (not registered as MDX)
-- Preparation status: first English draft for editorial review; approved structure: 2026-10-10
+- Preparation status: implemented English draft awaiting editorial and staging review; approved structure: 2026-10-10
 - Ideia de origem: [How to handle categorical features](https://app.notion.com/p/3a2284b2a48e80b1b486e08e42e172cf), atualmente em Building
 - Idiomas: planejamento em português; títulos e futuro artigo em inglês
 
@@ -141,7 +141,7 @@ Manter IDs de linha, letras e outcomes estáveis. A visualização deverá alinh
 
 ## 4. Visual and interaction specification
 
-These are production contracts for the six approved placeholders, not implemented assets. Throughout, the six source rows keep their IDs, categories, and outcomes. A label and outline distinguish available evidence from blocked evidence; color only reinforces that distinction. A compact table is the static and screen-reader equivalent of every state. No visual depends on hover or dragging. Controls must work by keyboard and touch, remain usable at narrow widths, and respect reduced-motion settings.
+These production contracts guided the six implemented components and remain the review checklist. Throughout, the six source rows keep their IDs, categories, and outcomes. A label and outline distinguish available evidence from blocked evidence; color only reinforces that distinction. A compact table is the static and screen-reader equivalent of every state. No visual depends on hover or dragging. Controls must work by keyboard and touch, remain usable at narrow widths, and respect reduced-motion settings.
 
 ### Opening image — numeric threshold and categorical membership
 
@@ -301,9 +301,9 @@ The practical rule is to name the evidence behind every encoded value. Ask what 
 
 ## 6. Editorial review
 
-- **Scope and structure fidelity:** The draft follows the seven approved chapters in order, with the six approved visual ideas retained as labelled placeholders at their planned points. The native categorical split is introduced as a cross-cutting tree capability. No MDX article, asset, experiment, or publication is implied.
+- **Scope and structure fidelity:** The draft follows the seven approved chapters in order, with the six approved visual ideas retained as labelled placeholders at their planned points in this source. The native categorical split is introduced as a cross-cutting tree capability. An English MDX candidate and six native components now implement them; the article remains unpublished.
 - **Correctness and source checks:** Verified the four store counts (2, 2, 1, 1), frequencies (1/3, 1/3, 1/6, 1/6), full target means (0.5, 0.5, 1, 0), smoothed values (0.5, 0.5, 0.75, 0.25), ordered sequence (0.5, 0.5, 0.75, 0.5, 0.25, 0.5), and full-history inference values. Checked the cited primary documentation and CatBoost paper for categorical splits, cross-fitting, ordered statistics, mode distinction, and embeddings. The fixed prior is an explicit assumption, not estimated from the six outcomes.
 - **Claims awaiting evidence:** No claim of predictive superiority or experimental outcome appears. Any eventual performance or usability claim requires a separately designed evaluation. The illustrative embedding coordinates must remain labelled as such when artwork is produced.
 - **Prose flow and example continuity:** Row IDs, categories, targets, and the prior stay constant through all seven chapters. The transition from smoothing to evidence separation and then to CatBoost's prefix mechanism is the central argument.
-- **Visual specification consistency:** Every planned visual has one learner question, stable and changing elements, a direct observation, a text equivalent, keyboard and small-screen behavior, and a numerical or branch-membership check. Detailed implementation and rendered review remain future work.
-- **Editor decisions and remaining questions:** Structure approved on 2026-10-10. The proposed article ID `categorical-features` still needs confirmation if the work advances to the content collection. This draft needs editorial review before any MDX implementation or staging decision.
+- **Visual specification consistency:** Every planned visual has one learner question, stable and changing elements, a direct observation, a text equivalent, keyboard and small-screen behavior, and a numerical or branch-membership check. Implementation and local desktop/mobile rendered review were completed; staging review remains future work.
+- **Editor decisions and remaining questions:** Structure approved on 2026-10-10. The article ID `categorical-features` is used for an English MDX draft. Editorial and staging review remain before any merge or publication decision.

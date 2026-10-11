@@ -224,3 +224,13 @@ export {
   SoftRoutingPlayground,
   TreeArchitectureBuilder,
 } from "./beyondCart/BeyondCartPlaygrounds";
+export {
+  CategorySplitFigure,
+  CrossFittingFigure,
+  EmbeddingFigure,
+} from "./categoricalFeatures/Figures";
+export {
+  EncodingPlayground,
+  OrderedStatisticsPlayground,
+  SmoothingAnimation,
+} from "./categoricalFeatures/Interactive";

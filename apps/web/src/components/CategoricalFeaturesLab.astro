@@ -1,0 +1,23 @@
+---
+import {
+  CategorySplitFigure,
+  CrossFittingFigure,
+  EmbeddingFigure,
+  EncodingPlayground,
+  OrderedStatisticsPlayground,
+  SmoothingAnimation,
+} from "@grove/tree-visuals";
+
+type Kind = "split" | "encoding" | "smoothing" | "cross-fitting" | "ordered" | "embedding";
+interface Props { kind: Kind; }
+const { kind } = Astro.props;
+---
+
+<div data-analytics-lab={`categorical-${kind}`} data-categorical-visual={kind}>
+  {kind === "split" ? <CategorySplitFigure /> : null}
+  {kind === "encoding" ? <EncodingPlayground client:visible /> : null}
+  {kind === "smoothing" ? <SmoothingAnimation client:visible /> : null}
+  {kind === "cross-fitting" ? <CrossFittingFigure /> : null}
+  {kind === "ordered" ? <OrderedStatisticsPlayground client:visible /> : null}
+  {kind === "embedding" ? <EmbeddingFigure /> : null}
+</div>

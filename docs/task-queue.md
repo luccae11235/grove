@@ -36,9 +36,10 @@ references for longer-term editorial direction.
 
 - [ ] **Draft How Trees Read Categorical Features — issue #226**
   - [x] Record the approved seven-chapter structure, complete English first draft, and visual specifications in `docs/article-plans/`.
-  - [ ] Complete editorial review before any article implementation or staging decision.
-  - Keep MDX, Notion stage changes, production publication, and newsletter delivery outside this writing task.
-  - Completion check: the editor accepts the manuscript and planned visuals after a separate review.
+  - [x] Add the English MDX candidate and implement the six learning visuals on the isolated branch.
+  - [ ] Complete editorial and staging review before a merge or publication decision.
+  - Keep the article in `draft`; Notion stage changes, production publication, and newsletter delivery remain separate.
+  - Completion check: the editor accepts the implemented draft after checks, desktop/mobile review, and staging review.
 
 - [ ] **Publish the Markov principle in English and Brazilian Portuguese and deliver Issue 009 — issue #221**
   - Publish only the reviewed Markov article pair and the short bilingual-link announcement dated 2026-10-09.

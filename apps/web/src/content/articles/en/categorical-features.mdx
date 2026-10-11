@@ -1,0 +1,172 @@
+---
+articleId: categorical-features
+locale: en
+routeSlug: categorical-features
+href: /learn/categorical-features
+title: How Trees Read Categorical Features
+navTitle: How trees read categories
+description: "Trace what categorical encodings let a tree ask, then follow target statistics and CatBoost's ordered evidence without leaking a row's answer."
+eyebrow: Decision trees · Categorical features
+area: Supervised learning
+topic: Categorical features
+summary: Compare category codes, counts, target statistics, and learned vectors through one six-visit example.
+status: draft
+readingTime: 16–20 min
+interactiveCount: 3
+staticVisualCount: 3
+difficulty: intermediate
+series: tree-based-machine-learning
+access: public
+prerequisites:
+  - decision-trees-from-scratch
+related:
+  - beyond-cart-tree-architectures
+implementation: mdx
+learning:
+  priorKnowledge:
+    - Follow a numeric threshold split through a decision tree.
+    - Distinguish training observations from validation and new observations.
+  likelyMisconception: Encoding a category is mechanical and cannot affect which splits a tree can ask or which targets leak into its inputs.
+  transferOutcome: Explain what a categorical representation preserves or adds, predict one-split groups, and identify which target outcomes may contribute to a training or inference encoding.
+  motivatingQuestion: What information does a representation give a tree, and what questions can the tree ask with it?
+  conceptualBottleneck: A representation changes both the possible partitions and the evidence available to each row; smoothing alone does not keep the row's answer out.
+  evidenceOfUnderstanding:
+    - Predict how swapping arbitrary integer codes changes a single threshold split.
+    - Explain why smoothing C's full-data mean retains row 4's own target.
+    - Calculate the second B row's ordered statistic and a new B visit's inference statistic.
+---
+
+import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import CategoricalFeaturesLab from "../../../components/CategoricalFeaturesLab.astro";
+
+<header className="page-header lesson-header article-hero">
+  <p className="eyebrow">Decision trees · Categorical features</p>
+  <h1>How Trees Read Categorical Features</h1>
+  <p className="lede">A store name is an identity, not a quantity. Follow one small dataset to see what a tree can ask about it—and which outcomes each representation may use.</p>
+  <div className="article-meta" aria-label="Article information">
+    <DifficultyBadge difficulty="intermediate" showDescription />
+    <span><strong>No coding</strong> required</span>
+    <span><strong>3</strong> guided interactions</span>
+    <span><strong>Draft</strong></span>
+  </div>
+</header>
+
+<article className="lesson-body deep-article categorical-article">
+
+A store name can be useful to a prediction even though it is not a quantity. If a visitor walks into store C, a tree may want to use that identity to estimate whether they will buy. But what question can the tree ask about C? The answer depends partly on how we represent the store and partly on what kinds of splits the tree supports.
+
+We will follow six visits through several representations. Their outcomes are deliberately small enough to calculate by hand, and no model performance is measured here.
+
+| Row | Store | Purchase |
+| --- | --- | --- |
+| 1 | A | 1 |
+| 2 | B | 0 |
+| 3 | A | 0 |
+| 4 | C | 1 |
+| 5 | B | 1 |
+| 6 | D | 0 |
+
+## 1. What a Tree Can Ask About a Category
+
+A familiar tree split asks whether a number is below a threshold: `value < 2`, for example. Store A is not inherently less than store B, so a numeric question only becomes possible after we assign numbers to those names. If we call A=0, B=1, C=2, and D=3, `code < 2` sends A and B to one branch and C and D to the other. Another arbitrary assignment would change that grouping without changing a single visit.
+
+Some tree implementations instead accept a column as categorical. Such a tree can ask whether `store ∈ {A, C}` and route A and C together. It may still receive categories through integer IDs internally; what matters is that it treats them as identities and searches categorical membership conditions, rather than treating their codes as measured magnitudes. [XGBoost's categorical-data documentation](https://xgboost.readthedocs.io/en/stable/tutorials/categorical.html) makes this distinction between threshold and category-set splits explicit. The algorithm's choice of candidate sets is a separate question from how we encode the input.
+
+<CategoricalFeaturesLab kind="split" />
+
+When a tree needs numbers, we have choices about where those numbers come from. We will examine codes and occurrence counts that require no purchases, summaries calculated from past purchases, and vectors whose coordinates are learned. These are teaching families, not competing tiers: a learned vector can itself be supervised by purchases, and a system can combine representations. Native categorical splits are another capability that can sit alongside any such comparison.
+
+## 2. Codes and Counts Without the Target
+
+Suppose we keep the assignment A=0, B=1, C=2, D=3 and pass it to a tree as an ordinary numeric feature. A split at 1.5 separates \{A, B\} from \{C, D\}; a split at 0.5 isolates A. In general, one numeric threshold cuts the assigned code order into contiguous blocks. Reassigning the codes changes those blocks. The tree is not measuring a real distance between shops, but the arbitrary ordering constrains its one-split questions. If the categories genuinely have an order, an ordinal code may convey useful information; these store IDs do not.
+
+One-hot encoding gives A, B, C, and D separate indicator columns. For an A row, the four entries are `1, 0, 0, 0`. A split on the A indicator can isolate A regardless of where we happened to place it in an integer sequence. The cost is four columns in this small demonstration, potentially many more when there are many categories. Those columns may be sparse, and whether the width is troublesome depends on the model and data.
+
+Binary coding compresses our four chosen integer codes into two bits: A=00, B=01, C=10, D=11. A split on the first bit separates \{A, B\} from \{C, D\}; the second separates \{A, C\} from \{B, D\}. The grouping comes from the assigned bit pattern, not a similarity the method discovered. Four one-hot columns and two binary columns are the counts for this particular four-category convention; an implementation may reserve extra values or columns for missing or unseen categories. [Category Encoders documents its binary encoder](https://contrib.scikit-learn.org/category_encoders/binary.html) as one practical implementation.
+
+Another approach replaces a name with how often it appeared in the allowed training data. A and B each occur twice, while C and D occur once. Their frequencies among six visits are therefore 1/3, 1/3, 1/6, and 1/6. Frequency tells a tree something about occurrence, but it erases identity where counts collide. C and D have different purchase outcomes here and exactly the same frequency value. These statistics must be fitted from the training portion available at the time of prediction; using validation or test rows to compute them would change the evidence boundary. [Category Encoders' count encoder](https://contrib.scikit-learn.org/category_encoders/count.html) is an example of this representation.
+
+<CategoricalFeaturesLab kind="encoding" />
+
+The right representation depends on cardinality, rare categories, unseen stores, column cost, and what the estimator can read. An unseen store needs an explicit policy, such as an unknown indicator or a reserved code. Fewer columns do not by themselves imply easier learning, and one-hot width does not by itself imply poor predictions. So far, none of these encodings has used a purchase outcome to define a store's value. That changes the next family—and changes which rows are allowed to help create that value.
+
+## 3. When the Target Enters the Representation
+
+If past visitors to a store bought often, perhaps that history can inform a later prediction. The simplest target encoding is the mean purchase outcome for each store. Across all six training rows, A has one purchase in two visits and B has one in two, so each has mean 0.5. C has one purchase in its only visit, giving 1; D has none in its only visit, giving 0. Frequency could not distinguish C from D, but this summary can.
+
+Now imagine giving each of these six rows its store's full-data mean as a feature while training a model. Row 4, the only C visit, receives 1 because row 4's own outcome was 1. Row 6, the only D visit, receives 0 because its own outcome was 0. Their encoded values reproduce their answers. For a new visit, that new outcome would be unknown. The training feature has therefore used information unavailable in the prediction situation it is meant to imitate. This is target leakage at the row level, and it can make a model trust a pattern that will not be available in use.
+
+We can temper estimates based on little history by adding a prior. For this example, fix the prior *before* looking at these outcomes at `p = 0.5`, with weight `a = 1`:
+
+`smoothed mean = (sum of store purchases + a × p) / (store visits + a)`.
+
+For C the calculation is `(1 + 0.5) / (1 + 1) = 0.75`; for D it is `(0 + 0.5) / 2 = 0.25`. A and B remain 0.5. Smoothing pulls estimates from rare stores toward the prior, but C's own `1` remains in C's numerator when we encode row 4 from all six rows. The number is less extreme; the evidence boundary has not changed. The fixed prior here is a teaching choice, not an estimate from all six outcomes and not an assertion that every library uses this exact smoothing formula.
+
+<CategoricalFeaturesLab kind="smoothing" />
+
+To stop a training row from seeing its own answer, we must change which outcomes may contribute to its encoding. That is a different job from shrinking a noisy estimate.
+
+## 4. Encode Training Rows Without Peeking
+
+One way to build honest training features is cross-fitting. Divide the training data into internal folds. To encode the rows in one fold, calculate each store's statistics from the other folds only; repeat until every training row has an encoding. If the fold being encoded contains the only C visit, the permitted rows contain no C. Under our fixed-prior demonstration, C receives 0.5 rather than a value derived from its own purchase.
+
+The encoder also needs a way to represent future observations. After producing the cross-fitted training column, it can fit a mapping on the complete allowed training set. That mapping gives a later C visit 0.75 in our example, since row 4's purchase is now historical training evidence. The later visit's own purchase is still unknown and plays no part. Training rows and later rows therefore need different procedures even when they use the same categories. Fitting one full-data mapping and applying it back to the same training rows is not cross-fitting.
+
+[scikit-learn's `TargetEncoder`](https://scikit-learn.org/stable/modules/preprocessing.html#target-encoder) makes this distinction concrete: its `fit_transform` creates cross-fitted values for training rows, whereas `fit` followed by `transform` on those same rows does not produce the same training representation. Its implementation also stores a full-training mapping for subsequent transforms. The exact smoothing and unknown-category policy of a library need not match our fixed-prior toy formula. Smoothing controls how strongly limited evidence moves an estimate; cross-fitting controls which rows are allowed to supply that evidence. Simply leaving out the current row is not a complete leakage policy: correlated rows, group structure, and time can still make supposedly available targets inappropriate.
+
+<CategoricalFeaturesLab kind="cross-fitting" />
+
+There is also an outer boundary. When evaluating a model, every encoder, prior estimated from data, and downstream model must be fitted afresh inside each outer training split. Validation outcomes cannot inform the encoding used to predict those same validation rows. If visits are grouped by person or store, or if predictions are about the future, the split must respect that structure. A past row's outcome can contribute only once it would actually have been known at the time of prediction. Cross-fitting alone cannot repair an unrealistic evaluation split.
+
+## 5. CatBoost Reads the Prefix
+
+Cross-fitting with folds is one way to keep a row's target out of its own feature. CatBoost's ordered target statistics use a different separation: put training rows in a permutation, and for each row, consult only earlier occurrences of the same category. The order is an evidence rule for constructing training features. In a usual shuffled permutation it is not necessarily the real passage of time.
+
+Start with the order already shown in our table: A1, B0, A0, C1, B1, D0, where the letter is the store and the digit is the purchase outcome. Before row 1, there is no earlier A. Before row 2, there is no earlier B. At row 3, one A with outcome 1 is available. At row 4, there is no earlier C. At row 5, one B with outcome 0 is available. At row 6, there is no earlier D. Notice that the outcome printed beside the current row is visible to *us* in the teaching table, but cannot contribute to that row's encoding.
+
+Using our fixed prior and weight, the simplified statistic is:
+
+`ordered value = (sum of earlier same-store purchases + 0.5) / (number of earlier same-store visits + 1)`.
+
+| Row | Earlier same-store outcomes | Ordered value |
+| --- | --- | --- |
+| 1, A1 | none | 0.5 |
+| 2, B0 | none | 0.5 |
+| 3, A0 | 1 | 0.75 |
+| 4, C1 | none | 0.5 |
+| 5, B1 | 0 | 0.25 |
+| 6, D0 | none | 0.5 |
+
+At row 3, A's previous `1` gives `(1 + 0.5) / 2 = 0.75`; row 3's own `0` is blocked. At row 5, B's previous `0` gives `(0 + 0.5) / 2 = 0.25`; row 5's own `1` is blocked. Most revealingly, the first C and D visits both get 0.5 even though their current targets differ. If we had encoded those same rows with their full-data means, C would get 1 and D 0. Even full-data smoothing would give 0.75 and 0.25. The difference is which observations were allowed to contribute, rather than a measured improvement in prediction quality.
+
+<CategoricalFeaturesLab kind="ordered" />
+
+For a genuinely new visit, the available evidence changes. Its target has not been observed, but all six *training* outcomes are now historical evidence. With the same smoothed rule, a new A gets `(1 + 0.5)/(2 + 1) = 0.5`, and so does B. A new C gets 0.75, D gets 0.25, and an unseen store E gets the preselected prior 0.5. Using C's old purchase to predict a new C is legitimate if it belongs to the allowed training history; using the new visitor's own purchase would not be. In an evaluation fold, “all training outcomes” means only the outer training portion, never the held-out fold.
+
+This is a hand-calculable **ordered target statistic**, not a full reproduction of CatBoost. CatBoost supports multiple categorical statistics and feature combinations, can use more than one permutation, and sometimes uses one-hot treatment. Its [categorical-feature documentation](https://catboost.ai/docs/en/features/categorical-features) and [transformation description](https://catboost.ai/docs/en/concepts/algorithm-main-stages_cat-to-numberic) describe that wider set of choices. The [CatBoost paper](https://papers.neurips.cc/paper_files/paper/2018/file/14491b756b3a51daac41c24863285549-Paper.pdf) develops ordered target statistics as a way to avoid the current row's target entering its own categorical statistic.
+
+The paper also describes **ordered boosting**, a separate technique addressing how boosting learns from training examples. Ordered target statistics construct categorical features; ordered boosting changes the boosting procedure. CatBoost has [`Ordered` and `Plain` boosting modes](https://catboost.ai/docs/en/references/training-parameters/common#boosting_type), so it would be wrong to assume every run uses ordered boosting just because it handles categories with ordered statistics. Neither mechanism is a blanket guarantee against every form of leakage. If the dataset is split in a way that exposes future or related-group outcomes, an arbitrary permutation does not make those outcomes legitimate history.
+
+## 6. Learning a Representation for Each Category
+
+We have assigned bits by hand and calculated one number per store from outcomes. A learned embedding offers another form: keep a table with one vector per category, look up the vector for A or B, and pass its numeric coordinates to a model. A tree can then split on those coordinates. Unlike the two-bit code above, the coordinates are adjusted during learning rather than fixed by our chosen alphabetic IDs.
+
+Where do the adjustments come from? In a supervised entity-embedding setup, a predictive model uses the lookup vectors while learning to predict the target; its training objective changes the vectors along with the rest of the model. The vectors can later become features for another model, including a tree, as described in [Guo and Berkhahn's entity-embedding work](https://arxiv.org/abs/1604.06737). That makes a supervised embedding dependent on target information too. Our three families overlap: “learned vector” describes the form and learning process, while “target-derived” describes a source of supervision.
+
+<CategoricalFeaturesLab kind="embedding" />
+
+The axes of such a vector do not come with intrinsic meanings like “store size” or “customer taste.” Nor do six toy rows establish a useful geometry or any advantage over other encodings. If we train an embedding for comparison, its lookup table and supervising model must be learned inside the permitted training split; validation targets cannot shape the vectors used to predict validation rows. We also need a policy for rare stores that receive little training signal and stores absent from the learned table.
+
+Sometimes a category has meaningful text, such as a product description. A pretrained text encoder, including an LLM adapted to produce [text embeddings](https://arxiv.org/abs/2404.05961), can bring information learned outside this dataset. The opaque ID `store_173` alone does not supply that description. Textual similarity might help with the task, but it needs evaluation; a pretrained text vector and a task-supervised entity embedding draw on different information sources.
+
+## 7. Choose the Information You Can Legitimately Use
+
+Return to the first question: what can the tree ask about a store? If identity matters and the tree accepts categorical membership splits, consider that capability directly. If a numeric encoding is required, decide whether to preserve identity with indicators or codes, summarize occurrence with counts, use historical outcomes through a carefully separated target statistic, or learn coordinates from an allowed training objective. Each choice changes the questions a downstream split can ask. None forms a universal ladder from primitive to advanced.
+
+A fair comparison would hold the external evaluation split fixed and fit every representation inside its training portion. For supervised representations, that includes the target statistics or embedding objective; for even a simple count, it includes the rows used to calculate the counts. Record how each method handles rare and unknown stores, its width and computation cost, and its predictive quality on untouched validation data. For grouped or temporal problems, make the split reflect when and for whom predictions will be made. We have not run such an experiment here, so the six-row arithmetic supports an explanation of information flow, not a performance ranking.
+
+Three quick checks reveal whether the distinction has landed. First, if we swap the arbitrary integer codes for B and C, which groups can a single numeric threshold now form? The set of contiguous code blocks changes, even though the visits do not. Second, why does smoothing C's full-data mean to 0.75 fail to remove leakage for row 4? Its own purchase still appears in the numerator. Third, what is the second B visit's ordered value? It is `(0 + 0.5)/2 = 0.25` because the earlier B outcome is 0. A *new* B visit instead uses both allowed training B outcomes, giving `(0 + 1 + 0.5)/3 = 0.5`.
+
+The practical rule is to name the evidence behind every encoded value. Ask what information the representation retains, what a tree can split on, and whether each contributing outcome would have been known for the prediction the row is supposed to represent. That lets the representation serve the question without quietly borrowing its answer.
+
+</article>
