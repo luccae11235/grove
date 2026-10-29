@@ -39,8 +39,8 @@ export function NativeFigure({method}:{method:NativeFigureMethod}) {
   }
   if(method==='lightgbm') {
     // Learner question: which category grouping becomes available after sorting the local gradient statistic?
-    return <MethodFigure method={method} title="Local gradient statistics order C and A before B and D" height={205} caption="With initial logistic probability 0.5 and no regularization in this illustration, the local G/H order permits CA versus BD. This is a conceptual snapshot, not a fitted LightGBM model.">
-      <Label x={240} y={27} small muted>Local gradient / Hessian</Label>
+    return <MethodFigure method={method} title="Local gradient statistics order C and A before B and D" height={205} caption="With initial logistic probability 0.5 and no regularization in this illustration, the local ordering permits CA versus BD. This is a conceptual snapshot, not a fitted LightGBM model.">
+      <Label x={240} y={27} small muted>Local correction statistic</Label>
       {['C','A','B','D'].map((c,i)=><g key={c}><Token x={66+i*116} y={78} width={70} label={c} accent={i<2}/><Label x={66+i*116} y={125}>{[-2,-1,2,2][i]}</Label></g>)}
       <line x1={240} y1={45} x2={240} y2={140} stroke="currentColor" strokeWidth={1.5} strokeDasharray="4 4"/>
       <Label x={124} y={181}>C + A</Label><Label x={356} y={181}>B + D</Label>

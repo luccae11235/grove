@@ -216,6 +216,8 @@ Before calculating anything, separate two uses of the same reference table. Its 
 
 Label leakage and unstable estimation are different problems. An estimate may use only permitted labels and still be unreliable because it rests on one observation. Conversely, making an estimate smoother does not make an impermissible source of labels acceptable.
 
+The methods in this family answer three connected questions: which statistic represents a category, how strongly it is regularized, and which rows are permitted to estimate it. OOF is a protocol across statistics; smoothing is an estimation choice. Treating every name as an independent competitor hides combinations that are often the useful ones.
+
 ### Mean or target encoding
 
 The simplest target statistic is the category mean:
@@ -282,33 +284,51 @@ A positive Ipê record receives $(3-1)/(4-1)=2/3$. The negative Ipê record rece
 
 <CategoricalMethodFigure family="supervised" method="loo" />
 
-Leave-one-out retains almost all other category observations. However, removing a row's own label does not guarantee that the resulting training representation avoids problematic label dependence. Our Ipê values already show how the excluded outcome determines what remains. The [CatBoost paper](https://papers.neurips.cc/paper_files/paper/2018/file/14491b756b3a51daac41c24863285549-Paper.pdf) gives a counterexample to the general safety of leave-one-out target statistics. LOO should therefore not be treated as a general replacement for OOF.
+Leave-one-out retains almost all other category observations. However, removing a row's own label does not guarantee that the resulting training representation avoids problematic label dependence. Within the Ipê training records, a tree could learn that an encoded value above 0.8 identifies the negative outcome, while the lower value identifies a positive one. A new Ipê receives the same full-training mean, 0.75, regardless of its still-unknown outcome, so that inverted training cue is unavailable at prediction time. The [CatBoost paper](https://papers.neurips.cc/paper_files/paper/2018/file/14491b756b3a51daac41c24863285549-Paper.pdf) gives a counterexample to the general safety of leave-one-out target statistics. LOO should therefore not be treated as a general replacement for OOF.
 
 ### James–Stein
 
-Shrinkage can also depend on estimated uncertainty instead of a single manually chosen pseudocount strength. A useful expression of the idea is
+Shrinkage can also depend on estimated uncertainty instead of a single manually chosen pseudocount strength. The aim is to let a well-supported category rely more on its own observations, while a less certain estimate borrows more from the shared prior.
 
-$$z(c)=(1-B_c)\bar y_c+B_cp,$$
-
-where $\bar y_c$ is the category mean and $B_c$ is its shrinkage weight toward the global mean. If we choose the **hypothetical** value $B_A=0.5$, A receives $0.5(0.75)+0.5(0.5)=0.625$.
+For a schematic example, give Ipê equal weight to its observed mean, 0.75, and the global mean, 0.5. The result, 0.625, sits halfway between them. That weight is chosen for illustration, not estimated from our ten records.
 
 <CategoricalMethodFigure family="supervised" method="james-stein" />
 
-That calculation illustrates a weighted mixture; it does not estimate $B_A$ from our ten rows. A complete estimator needs a rule for learning the weight and assumptions about variability. [James–Stein encoder variants](https://contrib.scikit-learn.org/category_encoders/jamesstein.html) differ in those choices, including how they adapt the idea to binary data. Their attraction is uncertainty-dependent shrinkage, and their limitation is that the name alone does not specify the estimator. Label separation is still required.
+<details className="notation-depth">
+<summary>Optional: the shrinkage formula and its assumptions</summary>
+
+A useful expression of this weighted mixture is
+
+$$z(c)=(1-B_c)\bar y_c+B_cp,$$
+
+where $\bar y_c$ is the category mean, $p$ is the prior mean, and $B_c$ is the weight toward that prior. The hypothetical choice $B_A=0.5$ gives $0.5(0.75)+0.5(0.5)=0.625$.
+
+A complete estimator needs a rule for learning the weight and assumptions about variability. [James–Stein encoder variants](https://contrib.scikit-learn.org/category_encoders/jamesstein.html) differ in those choices, including how they adapt the idea to binary data. The mixture formula alone does not specify an estimator. Label separation is still required.
+
+</details>
 
 ### GLMM
 
-A generalized linear mixed model introduces a category effect while sharing a statistical distribution across categories. For a binary target, consider
+A generalized linear mixed model, or GLMM, estimates an adjustment for each category while allowing the categories to share statistical information. An estimate supported by little evidence can remain close to the shared baseline instead of relying entirely on its own outcomes.
+
+An encoder can return that category adjustment as a numerical feature. In our hypothetical example, Ipê receives an effect of +0.6 on a log-odds scale. Zero would leave the model's baseline unchanged; +0.6 shifts it toward greater odds of germination. The feature is an adjustment, not a probability of 0.6.
+
+<CategoricalMethodFigure family="supervised" method="glmm" />
+
+<details className="notation-depth">
+<summary>Optional: the GLMM equation and the effect scale</summary>
+
+For a binary target, consider
 
 $$\operatorname{logit}P(y_i=1\mid c_i)=\beta_0+u_{c_i},\qquad u_c\sim\mathcal N(0,\tau^2).$$
 
 The logit transforms a probability $q$ into $\log(q/(1-q))$. The intercept $\beta_0$ provides a baseline, and the category effect $u_c$ shifts the log-odds relative to it. The shared variance $\tau^2$ controls the spread allowed for these effects.
 
-Here we take the encoded feature to be $z(c)=\hat u_c$, the estimated effect. With the explicitly hypothetical parameters $\beta_0=0$ and $\hat u_A=0.6$, the feature returned for A is 0.6. It is an effect on a log-odds scale, not a probability of 0.6.
+Here the encoder returns $z(c)=\hat u_c$, the estimated effect. With the explicitly hypothetical parameters $\beta_0=0$ and $\hat u_A=0.6$, the feature returned for A is 0.6. Obtaining a probability would require applying the inverse logit to the baseline plus the effect.
 
-<CategoricalMethodFigure family="supervised" method="glmm" />
+</details>
 
-Partially pooling category effects can keep poorly supported estimates near zero while allowing the data to support larger differences. It also introduces another model-fitting problem, assumptions, and possible convergence difficulties. Implementations can return effects or predictions, so check what the output means; the [Category Encoders GLMM documentation](https://contrib.scikit-learn.org/category_encoders/glmm.html) describes its convention. This is an alternative to compare when the added statistical machinery is justified, with the same care over permitted labels.
+Partially pooling category effects introduces another model-fitting problem, assumptions, and possible convergence difficulties. Implementations can return effects or predictions, so check what the output means; the [Category Encoders GLMM documentation](https://contrib.scikit-learn.org/category_encoders/glmm.html) describes its convention. This is an alternative to compare when the added statistical machinery is justified, with the same care over permitted labels.
 
 ### Ordered target statistics
 
@@ -325,7 +345,6 @@ The current target does not enter its own statistic. Early occurrences neverthel
 Ordered target statistics are part of CatBoost's approach, but they are distinct from *ordered boosting*, which addresses a separate aspect of fitting the boosted model. We will return to that distinction when the encoder moves inside the tree library.
 
 
-The methods in this family answer three connected questions: which statistic represents a category, how strongly it is regularized, and which rows are permitted to estimate it. OOF is a protocol across statistics; smoothing is an estimation choice. Treating every name as an independent competitor hides combinations that are often the useful ones.
 
 <div id="supervised-playground">
 
@@ -386,7 +405,11 @@ Now the coordinates describe a category in its current context. [TabTransformer]
 This can incorporate feature relationships before a downstream model receives its input. It also requires a more complex encoder and makes feature generation depend on the necessary context at inference time. All vectors in these examples are schematic; their purpose is to distinguish a lookup, an external encoder, and a contextual representation.
 
 
-Evaluation needs the same separation as before. Fit task-specific encoders inside the outer training split, since supervised embeddings can transport memorized outcomes. Also, vectors from independently trained networks need not share coordinate axes. Concatenating OOF embeddings from separate networks as if their columns had identical meanings is not automatically valid; a common frozen encoder simplifies coordinate consistency without guaranteeing better predictions.
+Evaluation needs the same outer separation as before: validation outcomes must not fit a task-specific encoder. There is also a distinction between learning embeddings jointly with their predictor and exporting a supervised encoder's vectors as features for a separate tree. In the second case, a high-capacity encoder may carry memorized outcomes into the tree's training features, so staying inside the outer training split does not by itself address that risk.
+
+One conservative construction divides the outer training data again: fit the supervised encoder on a reference subset, freeze it, and train the tree on a disjoint subset transformed by that frozen encoder. Transform validation and later observations with the same encoder. Their outcomes never enter its fitting, and neither do the tree-training rows' own outcomes. This uses fewer observations for each stage, and a closed lookup still needs a fallback for categories absent from the reference subset. It is one valid design, rather than a requirement for every model.
+
+OOF embeddings from independently trained networks need additional care because their coordinate axes need not align. Concatenating those outputs as if their columns had identical meanings is not automatically valid. A common frozen encoder gives all transformed rows one coordinate system, without guaranteeing better predictions.
 
 Until now, the tree has received features produced before it was fitted. We can also let the tree-training procedure decide how to handle categories as it constructs the model.
 
@@ -452,15 +475,22 @@ The codes identify categories; they are not numerical magnitudes to threshold in
 
 ### LightGBM
 
-LightGBM also searches categorical groupings through an ordering based on local statistics. A simplified illustration uses the ratio of summed gradients to summed Hessians, $G_c/H_c$. These quantities describe the current loss and predictions for the records reaching the node, rather than a permanent global target mean.
+LightGBM searches categorical groupings using local information about how the current predictions should change. At a node, categories whose records call for similar corrections can be placed near one another in an order that the split search can cut. This order depends on the current fitting state, rather than a permanent global target mean.
 
-Start binary logistic loss at predicted probability 0.5 for every record. Using derivatives with respect to the raw prediction score, an unregularized illustration gives
+In our simplified example, the local order C, A, B, D makes $CA\mid BD$ available as one consecutive cut. The values in the figure illustrate that ordering; the optional calculation below connects them to the loss derivatives.
+
+<CategoricalMethodFigure family="native" method="lightgbm" />
+
+<details className="notation-depth">
+<summary>Optional: calculate the local gradient statistic</summary>
+
+A simplified statistic is the ratio of summed gradients to summed Hessians, $G_c/H_c$. The gradient describes the loss's local direction of change, and the Hessian describes its curvature, both with respect to the raw prediction score. For binary logistic loss starting at predicted probability 0.5, an unregularized illustration gives
 
 $$G_c=\sum_{i:c_i=c}(0.5-y_i),\qquad H_c=0.25n_c.$$
 
-The resulting ratios are C → −2, A → −1, B → 2, and D → 2. Thus an order C, A, B, D makes $CA\mid BD$ available as one consecutive cut. These numbers explain a local ordering; they are not a complete execution of LightGBM, whose regularization and search details also affect the result.
+The resulting ratios are C → −2, A → −1, B → 2, and D → 2. These numbers explain a local ordering; they are not a complete execution of LightGBM, whose regularization and search details also affect the result.
 
-<CategoricalMethodFigure family="native" method="lightgbm" />
+</details>
 
 The benefit is an efficient search over useful categorical groups inside boosting. Rare categories can still overfit. In [LightGBM's documentation](https://lightgbm.readthedocs.io/en/latest/Advanced-Topics.html#categorical-feature-support), `categorical_feature` identifies categorical inputs, while `cat_smooth` and `min_data_per_group` connect to regularizing their treatment. These are practical starting points, not a recipe that removes the need for validation.
 
@@ -555,5 +585,17 @@ The evidence supports testing these choices rather than declaring one winner. [P
 Our opening question now has several precise answers. The initial integer order cannot produce $AC\mid BD$ with one threshold. One-hot exposes each identity but needs more questions to combine those two species. A particular binary ID map happens to make the grouping available in one bit. A target statistic or a native categorical procedure can make it available through information learned from outcomes, subject to the fitting protocol and algorithm.
 
 Representing a category determines which distinctions are easy, difficult, or impossible for the next model. Choose a representation that fits the available evidence and the tree's operations, then test its generalization in the intended prediction setting. Implementation details and extensive benchmarks can build on that understanding in later material.
+
+<div className="reasoning-check">
+
+Before moving on, imagine a new species that occurs only once in the training data, and that seed germinates. You give that same training record a smoothed target mean. Has smoothing kept its own answer out of its feature? What would need to change?
+
+<details>
+<summary>Check your reasoning</summary>
+
+No. Shrinking the estimate toward a prior changes the value, but the record's target still helped construct it. A suitable OOF or ordered protocol changes which labels are allowed to contribute; a prior learned from data must follow the same separation. For a later observation, those permitted training outcomes can be historical evidence, while the new outcome remains unknown.
+
+</details>
+</div>
 
 </article>

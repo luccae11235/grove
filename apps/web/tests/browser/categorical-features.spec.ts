@@ -43,6 +43,7 @@ test('supervised and contextual selectors keep training and schematic distinctio
  await expect(lab.locator('xpath=ancestor::astro-island')).not.toHaveAttribute('ssr');
  await lab.getByRole('combobox').selectOption('oof');
  await expect(lab.locator('[data-translation-input="Ipê · record 1"]')).toContainText('0.5');
+ await expect(lab).toContainText('uses records 3 and 10');
  await lab.getByRole('combobox').selectOption('loo');
  await expect(lab.locator('[data-translation-input="Ipê · record 10"]')).toContainText('1');
  await lab.getByRole('combobox').selectOption('glmm');
@@ -53,6 +54,30 @@ test('supervised and contextual selectors keep training and schematic distinctio
  await learned.getByRole('combobox').selectOption('contextual');
  await expect(learned.locator('[data-translation-input="Ipê · small specimen"]')).toContainText('[0.2, 0.8]');
  await expect(learned.locator('[data-translation-input="Ipê · medium specimen"]')).toContainText('[0.6, 0.4]');
+});
+
+test('optional mathematics and the closing reasoning check open with the keyboard',async({page})=>{
+ for(const text of [
+  'Optional: the shrinkage formula and its assumptions',
+  'Optional: the GLMM equation and the effect scale',
+  'Optional: calculate the local gradient statistic',
+ ]){
+  const summary=page.getByText(text,{exact:true});
+  const details=summary.locator('..');
+  await expect(details).not.toHaveAttribute('open');
+  await summary.scrollIntoViewIfNeeded();
+  await summary.focus();await summary.press('Enter');
+  await expect(details).toHaveAttribute('open','');
+  await expect(details.locator('.katex')).not.toHaveCount(0);
+  await summary.press('Enter');
+  await expect(details).not.toHaveAttribute('open');
+ }
+ const check=page.locator('.reasoning-check details');
+ await check.locator('summary').scrollIntoViewIfNeeded();
+ await check.locator('summary').focus();await check.locator('summary').press('Enter');
+ await expect(check).toHaveAttribute('open','');
+ await expect(check).toContainText("the record’s target still helped construct it");
+ await expect(page.locator('.katex-error')).toHaveCount(0);
 });
 
 test('figures and compact translations remain legible and operable on mobile',async({page})=>{
