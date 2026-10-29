@@ -1,0 +1,4 @@
+interface:
+  display_name: "Draft Article"
+  short_description: "Turn an approved article plan into a Grove manuscript"
+  default_prompt: "Use $draft-article to turn the structure and supporting material I supply into a complete Markdown first draft, following Grove's existing writing style."
