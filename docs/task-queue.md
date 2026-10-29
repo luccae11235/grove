@@ -257,6 +257,17 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Simplify the categorical-feature visuals after editorial review — issue #233** — 2026-10-29
+  - Preserved the prose and added 23 focused, accessible SVG figures alongside
+    the method sections, including paired variants within their shared figures.
+  - Replaced the dense dashboards with three compact family-end translation
+    playgrounds: one selector and category-to-representation outputs. Native tree
+    mechanisms are explained in their local figures; repeated source tables,
+    decision results, arithmetic panels, and secondary controls were removed.
+  - Completion check: `pnpm check`, 19 focused numerical/translation tests, four
+    browser acceptance tests, desktop/mobile visual review, and SVG text-bound
+    checks passed. The updated draft preview is ready for editorial judgment.
+
 - [x] **Rewrite the categorical-feature learning experience — issue #233** — 2026-10-29
   - Replaced the earlier PR #227 proposal with the four-family manuscript from
     PR #232, retaining the `categorical-features` draft identity and route.
