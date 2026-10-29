@@ -257,6 +257,18 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Create a project-local article drafting skill — issue #229** — 2026-10-29
+  - Added the English `draft-article` skill under `.agents/skills/`, accepting
+    ordinary outlines or the original tagged inputs and reading existing articles
+    as living style references.
+  - Preserved the supplied prompt's scope, structure, headings, literal visual
+    placeholders, language selection, input precedence, and continuous prose;
+    drafts are saved as Markdown manuscripts in the requested location or
+    `docs/article-plans/`.
+  - Completion check: `quick_validate.py`, UI metadata validation, reference-path
+    checks, and comparison with the original writing prompt passed. The change
+    affects skill instructions and the queue only; no rendered site behavior changed.
+
 - [x] **Translate the Markov principle article into Brazilian Portuguese — issue #207** — 2026-09-30
   - Added a faithful `pt-BR` draft with aligned learning metadata, structure,
     equations, figures, and all six interactive experiences.
