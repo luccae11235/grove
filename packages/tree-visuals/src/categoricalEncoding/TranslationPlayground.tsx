@@ -32,7 +32,7 @@ export function translationFor(family:Family,method:string):{rows:Entry[];note:s
  }
  if(key==='oof') {
   const ids=[1,2,4,7];
-  return {rows:ids.map(id=>{const result=supervisedValue(key,'training',id);return {input:`${NAMES[result.row.category]} · record ${id}`,output:format(result.value)};}),note:'Training features: each record uses the other fold. Unseen Acácia falls back to that fold’s mean, 0.4.'};
+  return {rows:ids.map(id=>{const result=supervisedValue(key,'training',id);return {input:`${NAMES[result.row.category]} · record ${id}`,output:format(result.value)};}),note:'Training features use the other fold: Ipê record 1 uses records 3 and 10 (0.5). Unseen Acácia uses its reference fold’s mean (0.4).'};
  }
  return {rows:CATEGORIES.map(c=>({input:NAMES[c],output:format(supervisedValue(key,'inference',1,c).value)})),note:key==='mean'?'For new observations, using the ten training outcomes as reference.':key==='m-estimate'?'For new observations, with prior 0.5 and prior weight 2.':'For new observations; positive values favor germination. Pseudocount 0.5.'};
 }

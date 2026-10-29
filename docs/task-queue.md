@@ -257,6 +257,17 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Apply the categorical-feature beta-reader revisions — issue #233** — 2026-10-29
+  - Preserved section order, all 23 method figures, and the three compact
+    playgrounds; clarified LOO's inverted training cue and a conservative frozen
+    supervised-encoder workflow with its data-efficiency tradeoff.
+  - Moved the three-decision map earlier, placed specialized James–Stein, GLMM,
+    and LightGBM mathematics in optional disclosures, added OOF reference IDs to
+    the existing legend, and added a closing transfer question with a hidden answer.
+  - Completion check: 19 focused numerical tests, five Chromium acceptance tests,
+    workspace typecheck, draft build, desktop/mobile visual review, and whitespace
+    checks passed. The refreshed preview and existing PR #234 contain the revisions.
+
 - [x] **Simplify the categorical-feature visuals after editorial review — issue #233** — 2026-10-29
   - Preserved the prose and added 23 focused, accessible SVG figures alongside
     the method sections, including paired variants within their shared figures.
