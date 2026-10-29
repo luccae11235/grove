@@ -257,6 +257,17 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Write a new categorical encoding manuscript from the supplied structure — issue #231** — 2026-10-29
+  - Added a separate English manuscript in
+    `docs/article-plans/categorical-variable-encoding-draft.md` from the editor's
+    supplied four-family structure and fictional ten-record seed example.
+  - Preserved the 29 section headings and 28 literal visual/playground placeholders;
+    developed the conceptual instructions and both comparison tables as prose and
+    Markdown without changing historical plans or implemented articles.
+  - Completion check: heading and placeholder fidelity, numerical examples,
+    primary-source references, and `git diff --check` passed. This is an editorial
+    draft; visual implementation and publication remain separate work.
+
 - [x] **Translate the Markov principle article into Brazilian Portuguese — issue #207** — 2026-09-30
   - Added a faithful `pt-BR` draft with aligned learning metadata, structure,
     equations, figures, and all six interactive experiences.
