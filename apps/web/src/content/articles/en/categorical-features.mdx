@@ -12,8 +12,8 @@ topic: Categorical features
 summary: Compare category codes, counts, target statistics, and learned vectors through one ten-record seed example.
 status: draft
 readingTime: 40–50 min
-interactiveCount: 4
-staticVisualCount: 1
+interactiveCount: 3
+staticVisualCount: 24
 difficulty: intermediate
 series: tree-based-machine-learning
 access: public
@@ -39,6 +39,7 @@ learning:
 
 import DifficultyBadge from "../../../components/DifficultyBadge.astro";
 import CategoricalEncodingLab from "../../../components/CategoricalEncodingLab.astro";
+import CategoricalMethodFigure from "../../../components/CategoricalMethodFigure.astro";
 
 <header className="page-header lesson-header article-hero">
   <p className="eyebrow">Decision trees · Categorical features</p>
@@ -47,7 +48,7 @@ import CategoricalEncodingLab from "../../../components/CategoricalEncodingLab.a
   <div className="article-meta" aria-label="Article information">
     <DifficultyBadge difficulty="intermediate" showDescription />
     <span><strong>No coding</strong> required</span>
-    <span><strong>4</strong> guided comparisons</span>
+    <span><strong>3</strong> encoding comparisons</span>
   </div>
 </header>
 
@@ -105,12 +106,6 @@ An encoder can avoid the target and still need fitting. A vocabulary, a category
 Within this family, we can preserve identity, describe prevalence, or exploit resemblance between strings. Those choices provide different information even when each produces a numerical table.
 
 
-<div id="target-free-playground">
-
-<CategoricalEncodingLab kind="target-free" />
-
-</div>
-
 ### Ordinal and integer codes
 
 Start with the specimen size. Assigning Small → 0, Medium → 1, and Large → 2 preserves a meaningful order. A threshold at 0.5 separates small specimens from the other two sizes; a threshold at 1.5 separates small and medium specimens from large ones. Neither choice requires the target to increase monotonically with size. Different nodes can use different cuts along the same legitimate order.
@@ -123,6 +118,7 @@ where $r(c)$ is the assigned integer. The difference is what that integer means.
 
 With species ordered A, B, C, D, a threshold at 1.5 creates $AB\mid CD$. No single threshold produces $AC\mid BD$, because A and C are separated by B along the number line.
 
+<CategoricalMethodFigure family="target-free" method="ordinal" />
 
 A threshold tree uses the order of these codes. It does not infer that code 2 has twice the effect of code 1. Even so, the imposed order restricts the groups available at one node and can require extra depth. Linear and distance-based models can impose additional relationships through the numerical gaps themselves.
 
@@ -138,6 +134,7 @@ The indicator is 1 when the input equals category $c_j$ and 0 otherwise. In the 
 
 A tree can now ask whether the A column exceeds 0.5, meaning “Is this Ipê?” In a tree that splits on one feature at a time, that question isolates A. Grouping A and C together still requires more than one question, although their eventual leaves can predict the same value.
 
+<CategoricalMethodFigure family="target-free" method="one-hot" />
 
 *Dummy coding* drops one reference column and retains $K-1$ indicators. Removing a redundant column can avoid exact collinearity in a linear model with an intercept. Trees do not require that removal. In particular, the omitted category is represented indirectly by all retained indicators being zero, which can change the questions needed to isolate it.
 
@@ -153,6 +150,7 @@ Here $z_j(c)$ is the digit multiplying $b^j$. For IDs from 0 through $K-1$, $d=\
 
 Using the same four IDs, binary gives A → 00, B → 01, C → 10, and D → 11. Base 3 gives 00, 01, 02, and 10. We write the most significant digit first when displaying these strings.
 
+<CategoricalMethodFigure family="target-free" method="binary" />
 
 In the binary representation, the rightmost bit is 0 for A and C and 1 for B and D. That single column happens to make our desired grouping available immediately. Nothing about the targets established this alignment: it follows from the arbitrary ID assignment. A different assignment could make a different pair easy to separate.
 
@@ -166,6 +164,7 @@ $$z_j(c)=\mathbf{1}[h(c)=j].$$
 
 Suppose an illustrative map sends four species into three buckets, with A and B sharing one bucket. Those two species now have identical encoded vectors. If this is their only representation, no downstream tree can recover which of them generated a record. Other features might help with prediction, but they do not reverse that collision.
 
+<CategoricalMethodFigure family="target-free" method="hashing" />
 
 Hashing avoids keeping an explicit category vocabulary and can accommodate an open or very large set of names at a fixed width. A previously unseen name receives a bucket too, although that does not make its prediction informative. Collisions can mix categories with different behavior and make an individual column difficult to interpret. Signed variants use values such as −1 and +1; our example keeps simple unsigned indicators so that the collision remains visible.
 
@@ -177,6 +176,7 @@ $$z_{\mathrm{count}}(c)=n_c,\qquad z_{\mathrm{frequency}}(c)=\frac{n_c}{n}.$$
 
 A therefore receives 4 or 0.4, B receives 3 or 0.3, C receives 2 or 0.2, and D receives 1 or 0.1. The tree now receives a description of prevalence. A split can distinguish rare from common categories without knowing their individual names.
 
+<CategoricalMethodFigure family="target-free" method="count" />
 
 This takes one column, but equally frequent categories become indistinguishable. A frequent category can have either a high or a low germination rate, so frequency does not directly summarize the target. Frequencies can also change across populations or periods.
 
@@ -196,10 +196,17 @@ $$\operatorname{sim}(a,b)=\frac{|G(a)\cap G(b)|}{|G(a)\cup G(b)|}.$$
 
 For this example, lowercase the strings, remove accents, and use adjacent bigrams without boundary padding. The set for `cedro` is `ce, ed, dr, ro`. The set for `cedroo` adds `oo`, so its Jaccard similarity to Cedro is $4/5=0.8$. The normalized string `ipe` shares no bigrams with `cedroo`, giving the two-prototype vector $(0.8,0)$.
 
+<CategoricalMethodFigure family="target-free" method="similarity" />
 
 A tree can threshold either similarity column. Related spellings can thus share information without first being collapsed into a single identity. [Cerda and colleagues](https://arxiv.org/abs/1806.00979) develop this idea for dirty categorical variables. It is useful when characters carry relevant resemblance; two opaque IDs that happen to share characters have no comparable justification. Prototype count also trades representation width against cost.
 
 Across this family, a code can preserve identity, describe frequency, or expose textual resemblance. None of those operations directly estimates which species have similar target behavior. For that, we need to decide how the labels may enter the representation.
+
+<div id="target-free-playground">
+
+<CategoricalEncodingLab kind="target-free" />
+
+</div>
 
 ## Supervised encodings
 
@@ -209,12 +216,6 @@ Before calculating anything, separate two uses of the same reference table. Its 
 
 Label leakage and unstable estimation are different problems. An estimate may use only permitted labels and still be unreliable because it rests on one observation. Conversely, making an estimate smoother does not make an impermissible source of labels acceptable.
 
-<div id="supervised-playground">
-
-<CategoricalEncodingLab kind="supervised" />
-
-</div>
-
 ### Mean or target encoding
 
 The simplest target statistic is the category mean:
@@ -223,6 +224,7 @@ $$z(c)=\frac{S_c}{n_c}.$$
 
 For a new observation, our reference table gives A → 0.75, B → 0, C → 1, and D → 0. The mapping is compact, and categories with similar observed responses receive similar values. For regression, average the continuous target; for multiclass classification, one can instead return a vector of class estimates.
 
+<CategoricalMethodFigure family="supervised" method="mean" />
 
 The problem appears when we calculate that map and apply it back to the same training rows. Each row helped construct its own feature. A category that occurs once receives exactly its own target, allowing an arbitrary identifier to carry the answer. Separately, D's estimate of 0 is supported by just one observation and is statistically fragile. Having many categories does not remove the need for enough observations to estimate their behavior.
 
@@ -236,6 +238,7 @@ The symbol $E$ stands for the chosen encoder. Every quantity learned from labels
 
 Take $F_1=\{1,4,5,6,7\}$ and $F_2=\{2,3,8,9,10\}$. Record 1 belongs to $F_1$, so its Ipê mean uses only records 3 and 10. Their targets are 1 and 0, giving $1/2$, rather than the full-table mean $3/4$. The full-table map remains available for new observations.
 
+<CategoricalMethodFigure family="supervised" method="oof" />
 
 This excludes direct participation of a row's label in its own statistic, at the cost of fewer reference observations per estimate. The split must also match the prediction problem: random folds can be inappropriate for repeated entities or future predictions. For a temporal task, only labels already available at the prediction time may be used, including any reporting delay. Two folds here serve illustration rather than a universal recommendation.
 
@@ -251,6 +254,7 @@ The prior mean is $p$, and $m$ controls its strength as an equivalent amount of 
 
 Both move toward the global mean, but D moves proportionally more because it has less evidence of its own. An unseen category, with no count or target sum, naturally falls back to $p$ when $m>0$.
 
+<CategoricalMethodFigure family="supervised" method="m-estimate" />
 
 Shrinkage can reduce variance, but excessive shrinkage can erase a real effect in a rare category. Its strength therefore needs choosing or estimating. When the prior is estimated from the data, this has an empirical-Bayes interpretation. For training features, fit the prior and category statistics using the permitted reference rows. Smoothing and OOF can be combined because they address different decisions.
 
@@ -262,6 +266,7 @@ $$z(c)=\log\left(\frac{(n_{c,+}+\alpha)/(N_++K\alpha)}{(n_{c,-}+\alpha)/(N_-+K\a
 
 The pseudocount $\alpha$ avoids zero class frequencies. Here $N_+=N_-=5$. With $\alpha=0.5$, A has three positives and one negative, so the shared denominators cancel and its value is $\log(3.5/1.5)\approx0.847$.
 
+<CategoricalMethodFigure family="supervised" method="woe" />
 
 Zero means neutral relative evidence under this sign convention; positive and negative values favor the respective classes. This compact expression is particularly natural for logistic models and scorecards. It is ordinarily binary and needs regularization when class counts are small or absent.
 
@@ -275,6 +280,7 @@ $$z_i=\frac{S_{c_i}-y_i}{n_{c_i}-1}.$$
 
 A positive Ipê record receives $(3-1)/(4-1)=2/3$. The negative Ipê record receives $(3-0)/(4-1)=1$. The same category therefore receives different representations for different training rows. Acácia has no remaining category observation after removal and needs a fallback estimated without the excluded label. For new observations, use the available training reference statistics.
 
+<CategoricalMethodFigure family="supervised" method="loo" />
 
 Leave-one-out retains almost all other category observations. However, removing a row's own label does not guarantee that the resulting training representation avoids problematic label dependence. Our Ipê values already show how the excluded outcome determines what remains. The [CatBoost paper](https://papers.neurips.cc/paper_files/paper/2018/file/14491b756b3a51daac41c24863285549-Paper.pdf) gives a counterexample to the general safety of leave-one-out target statistics. LOO should therefore not be treated as a general replacement for OOF.
 
@@ -286,6 +292,7 @@ $$z(c)=(1-B_c)\bar y_c+B_cp,$$
 
 where $\bar y_c$ is the category mean and $B_c$ is its shrinkage weight toward the global mean. If we choose the **hypothetical** value $B_A=0.5$, A receives $0.5(0.75)+0.5(0.5)=0.625$.
 
+<CategoricalMethodFigure family="supervised" method="james-stein" />
 
 That calculation illustrates a weighted mixture; it does not estimate $B_A$ from our ten rows. A complete estimator needs a rule for learning the weight and assumptions about variability. [James–Stein encoder variants](https://contrib.scikit-learn.org/category_encoders/jamesstein.html) differ in those choices, including how they adapt the idea to binary data. Their attraction is uncertainty-dependent shrinkage, and their limitation is that the name alone does not specify the estimator. Label separation is still required.
 
@@ -299,6 +306,7 @@ The logit transforms a probability $q$ into $\log(q/(1-q))$. The intercept $\bet
 
 Here we take the encoded feature to be $z(c)=\hat u_c$, the estimated effect. With the explicitly hypothetical parameters $\beta_0=0$ and $\hat u_A=0.6$, the feature returned for A is 0.6. It is an effect on a log-odds scale, not a probability of 0.6.
 
+<CategoricalMethodFigure family="supervised" method="glmm" />
 
 Partially pooling category effects can keep poorly supported estimates near zero while allowing the data to support larger differences. It also introduces another model-fitting problem, assumptions, and possible convergence difficulties. Implementations can return effects or predictions, so check what the output means; the [Category Encoders GLMM documentation](https://contrib.scikit-learn.org/category_encoders/glmm.html) describes its convention. This is an alternative to compare when the added statistical machinery is justified, with the same care over permitted labels.
 
@@ -310,6 +318,7 @@ $$z_i=\frac{S_{c_i,<i}+ap_0}{n_{c_i,<i}+a}.$$
 
 Here $S_{c_i,<i}$ and $n_{c_i,<i}$ summarize the category before row $i$ in that order. Set the teaching prior $p_0=0.5$ **in advance** and use $a=2$. The first Ipê has no history and receives 0.5. When record 3 arrives, record 1 supplies one positive Ipê, giving $(1+2\cdot0.5)/(1+2)=2/3$.
 
+<CategoricalMethodFigure family="supervised" method="ordered" />
 
 The current target does not enter its own statistic. Early occurrences nevertheless have little history and depend strongly on the prior. In exchangeable data, a permutation can provide the order. In a temporal application, that artificial order cannot replace actual label availability.
 
@@ -318,15 +327,15 @@ Ordered target statistics are part of CatBoost's approach, but they are distinct
 
 The methods in this family answer three connected questions: which statistic represents a category, how strongly it is regularized, and which rows are permitted to estimate it. OOF is a protocol across statistics; smoothing is an estimation choice. Treating every name as an independent competitor hides combinations that are often the useful ones.
 
+<div id="supervised-playground">
+
+<CategoricalEncodingLab kind="supervised" />
+
+</div>
+
 ## Learned representations
 
 So far, we have chosen what the category should become: an indicator, a frequency, or a target statistic. We can instead learn a vector through an objective. The signal can come from the target, from a self-supervised task, or from an external training problem. A learned representation is therefore not necessarily target-free.
-
-<div id="learned-playground">
-
-<CategoricalEncodingLab kind="learned" />
-
-</div>
 
 ### Entity embeddings
 
@@ -342,6 +351,7 @@ The loss $\ell$ measures prediction error. Other input features are omitted only
 
 As an illustration, A might receive $(0.2,0.8)$ and C might receive $(0.3,0.7)$. These coordinates are schematic, not a fitted result from our seed dataset. Similar category target means alone do not guarantee nearby vectors: the training objective, interactions, and model all influence what is learned.
 
+<CategoricalMethodFigure family="learned" method="entity" />
 
 Embeddings can learn useful sharing of signal in a small output dimension, while their lookup table still contains $Kd$ parameters. Rare categories may provide little evidence for their own vectors. To use them with a tree, export the coordinates as numerical features. The tree can threshold those coordinates; it does not automatically start computing distances between embedding vectors.
 
@@ -355,6 +365,7 @@ The parameters $\phi$ are already trained, and a meaningful description provides
 
 A fixed lookup table can only return vectors for its known entries. An encoder that processes descriptions can also receive a previously unseen description. A schematic new category could then receive $(0.4,0.6)$, whereas a closed lookup might return an `UNK` vector reserved for unknown identities.
 
+<CategoricalMethodFigure family="learned" method="pretrained" />
 
 Pretraining need not come from language. A tabular model can learn by reconstructing corrupted values and identifying masked or corrupted inputs; [VIME](https://proceedings.neurips.cc/paper_files/paper/2020/hash/7d97667a3e056acab9aaf653807b4a03-Abstract.html) is one example of self-supervised representation learning for tables.
 
@@ -368,6 +379,7 @@ $$z_i=g_\phi(c_i,x_{i,-c}),$$
 
 where $x_{i,-c}$ denotes the remaining features. Record 1 and record 3 both contain Ipê, but their specimen sizes differ. Their schematic contextual vectors might be $(0.2,0.8)$ and $(0.6,0.4)$ respectively.
 
+<CategoricalMethodFigure family="learned" method="contextual" />
 
 Now the coordinates describe a category in its current context. [TabTransformer](https://arxiv.org/abs/2012.06678) is an example of contextualizing categorical feature embeddings through interactions among categorical inputs. We do not need its full architecture to see the change: the representation can depend on the row rather than only on an identity.
 
@@ -377,6 +389,12 @@ This can incorporate feature relationships before a downstream model receives it
 Evaluation needs the same separation as before. Fit task-specific encoders inside the outer training split, since supervised embeddings can transport memorized outcomes. Also, vectors from independently trained networks need not share coordinate axes. Concatenating OOF embeddings from separate networks as if their columns had identical meanings is not automatically valid; a common frozen encoder simplifies coordinate consistency without guaranteeing better predictions.
 
 Until now, the tree has received features produced before it was fitted. We can also let the tree-training procedure decide how to handle categories as it constructs the model.
+
+<div id="learned-playground">
+
+<CategoricalEncodingLab kind="learned" />
+
+</div>
 
 ## Native categorical handling in trees
 
@@ -389,12 +407,6 @@ Choosing $S=\{A,C\}$ creates the desired grouping in one question. For $K$ categ
 For certain local objectives, an ordering based on an appropriate category statistic allows the search to consider $K-1$ consecutive cuts instead of every subset. This is a statement about particular split criteria and their assumptions. It does not imply that any category ordering works, or that greedy split search finds the globally optimal tree.
 
 A native grouping can be chosen again at every node. In boosting, it can also change with the current gradients as the ensemble changes. A single external scalar map, fitted once for the whole dataset, need not preserve the groupings useful in each of those local problems. Native support can itself include internal encodings, so it does not always mean a direct subset test on raw names.
-
-<div id="native-playground">
-
-<CategoricalEncodingLab kind="native" />
-
-</div>
 
 ### ID3 and C4.5
 
@@ -410,6 +422,7 @@ $$GR=\frac{IG}{H(C)}\approx0.366.$$
 
 This normalization is part of C4.5's attribute-selection machinery, rather than a complete description of the algorithm. The original accounts are [Quinlan's ID3 paper](https://storm.cis.fordham.edu/~gweiss/selected-papers/quinlan86.pdf) and [C4.5](https://www.educate.elsevier.com/book/details/9780080500584).
 
+<CategoricalMethodFigure family="native" method="id3" />
 
 The nominal values become branches without an artificial order. However, many distinct values fragment the available records. Raw information gain can favor attributes with many levels, and gain ratio seeks to attenuate that preference. It does not manufacture more evidence in a branch supported by one example.
 
@@ -423,6 +436,7 @@ Here $P$ is the parent, $L$ and $R$ are its children, and $I$ is the chosen impu
 
 With $S=\{A,C\}$, the left child contains six records: five positives and one negative. The right contains four negatives. Parent impurity is 0.5; weighted child impurity is $(6/10)\,2(5/6)(1/6)=1/6\approx0.167$. The gain is therefore approximately **0.333**.
 
+<CategoricalMethodFigure family="native" method="cart" />
 
 The species grouping is available in a single binary split, unlike the initial threshold on A, B, C, D integer codes. The unrestricted subset search can be combinatorial, although useful criteria admit shortcuts.
 
@@ -432,6 +446,7 @@ Distinguish CART's treatment in the literature from the interface of a library t
 
 Scikit-learn's histogram gradient boosting provides categorical handling within its split search. Conceptually, categories receive local statistics, those statistics determine an order, and the algorithm examines cuts in that order. The illustrative order B, D, A, C permits $BD\mid AC$, even though the original integer codes of A and C were 0 and 2.
 
+<CategoricalMethodFigure family="native" method="hist" />
 
 The codes identify categories; they are not numerical magnitudes to threshold in their original order. This allows grouping without expanding every species into a separate indicator. The feature must be correctly marked or recognized as categorical, and cardinality is constrained by `max_bins`; sparse evidence for rare categories also remains a concern. The [categorical-support guide](https://scikit-learn.org/stable/modules/ensemble.html#categorical-features-support) describes these requirements and the split-search mechanism.
 
@@ -445,6 +460,7 @@ $$G_c=\sum_{i:c_i=c}(0.5-y_i),\qquad H_c=0.25n_c.$$
 
 The resulting ratios are C → −2, A → −1, B → 2, and D → 2. Thus an order C, A, B, D makes $CA\mid BD$ available as one consecutive cut. These numbers explain a local ordering; they are not a complete execution of LightGBM, whose regularization and search details also affect the result.
 
+<CategoricalMethodFigure family="native" method="lightgbm" />
 
 The benefit is an efficient search over useful categorical groups inside boosting. Rare categories can still overfit. In [LightGBM's documentation](https://lightgbm.readthedocs.io/en/latest/Advanced-Topics.html#categorical-feature-support), `categorical_feature` identifies categorical inputs, while `cat_smooth` and `min_data_per_group` connect to regularizing their treatment. These are practical starting points, not a recipe that removes the need for validation.
 
@@ -452,6 +468,7 @@ The benefit is an efficient search over useful categorical groups inside boostin
 
 XGBoost distinguishes equality questions, $c=c_j$, from partition questions, $c\in S$. An equality split isolates one category; a partition split can put A and C together.
 
+<CategoricalMethodFigure family="native" method="xgboost" />
 
 Configuration controls which strategy is available or selected. `enable_categorical` enables categorical handling in supported interfaces, while the [categorical-feature parameters](https://xgboost.readthedocs.io/en/stable/parameter.html#parameters-for-categorical-feature) include `max_cat_to_onehot`, which controls the cardinality threshold for equality-style versus partition-based splitting, and `max_cat_threshold`, which constrains the partition search. The [categorical-data tutorial](https://xgboost.readthedocs.io/en/stable/tutorials/categorical.html) documents supported types and tree methods and requires categorical information to be preserved when saving the model, using JSON or UBJSON.
 
@@ -461,6 +478,7 @@ Integrating both strategies into tree training provides flexibility without exte
 
 CatBoost combines several internal treatments. For some low-cardinality features it can use one-hot handling; elsewhere, it constructs statistics from categories and category combinations, including supervised statistics. The route is therefore category → internal representation → a split on that representation, rather than a universal direct search over nominal subsets.
 
+<CategoricalMethodFigure family="native" method="catboost" />
 
 The [categorical-features documentation](https://catboost.ai/docs/en/features/categorical-features) explains the configurable one-hot treatment and its relationship to internal statistics. The ordered target statistics discussed earlier control which labels contribute to a training row's representation. Ordered boosting is a separate mechanism for addressing prediction shift during boosting, as distinguished in the [CatBoost paper](https://papers.neurips.cc/paper_files/paper/2018/file/14491b756b3a51daac41c24863285549-Paper.pdf).
 

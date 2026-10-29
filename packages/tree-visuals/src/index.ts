@@ -224,8 +224,9 @@ export {
   SoftRoutingPlayground,
   TreeArchitectureBuilder,
 } from "./beyondCart/BeyondCartPlaygrounds";
-export { TargetFreePlayground } from './categoricalEncoding/TargetFree';
-export { SupervisedPlayground } from './categoricalEncoding/Supervised';
-export { LearnedPlayground } from './categoricalEncoding/Learned';
-export { NativePlayground } from './categoricalEncoding/Native';
 export { CategoricalOverview } from './categoricalEncoding/Overview';
+export { TranslationPlayground } from './categoricalEncoding/TranslationPlayground';
+export { TargetFreeFigure } from './categoricalEncoding/TargetFreeFigures';
+export { SupervisedFigure } from './categoricalEncoding/SupervisedFigures';
+export { LearnedFigure } from './categoricalEncoding/LearnedFigures';
+export { NativeFigure } from './categoricalEncoding/NativeFigures';
