@@ -257,6 +257,18 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Rewrite the categorical-feature learning experience — issue #233** — 2026-10-29
+  - Replaced the earlier PR #227 proposal with the four-family manuscript from
+    PR #232, retaining the `categorical-features` draft identity and route.
+  - Implemented a native overview figure and four accessible, responsive method
+    playgrounds sharing the fictitious ten-record seed dataset; schematic vectors
+    and library snapshots are explicitly distinguished from fitted results.
+  - Completion check: `pnpm check`, final typecheck, 16 focused numerical tests,
+    five Chromium acceptance tests, published/draft builds, and desktop/mobile
+    visual review passed. The public route, catalog, RSS, and sitemap exclude
+    this draft. A local rendered preview is available for editorial judgment;
+    merge, staging deployment, publication, and delivery remain separate steps.
+
 - [x] **Translate the Markov principle article into Brazilian Portuguese — issue #207** — 2026-09-30
   - Added a faithful `pt-BR` draft with aligned learning metadata, structure,
     equations, figures, and all six interactive experiences.
