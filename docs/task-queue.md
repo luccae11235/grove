@@ -34,6 +34,21 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Publish the categorical-feature article — issue #235**
+  - [x] Review the current English text, ten-record numerical examples,
+    23 method figures, overview, and three playgrounds from PR #234.
+  - [x] Prepare only `categorical-features` for publication on 2026-10-31;
+    preserve unrelated drafts and newsletter issues.
+  - [x] Pass `pnpm check`, 19 numerical tests, five browser tests, and
+    desktop/mobile review; verify the published-only metadata, assets, catalog,
+    RSS, sitemap, unchanged article body, and exclusion of unrelated drafts.
+  - [ ] Review the exact staging revision after the publication PR is approved.
+  - [ ] Obtain explicit release approval and verify the production revision
+    and canonical article route.
+  - Completion check: the published-only catalog, RSS, sitemap, metadata,
+    assets, and desktop/mobile interactions pass on the exact production SHA.
+    Newsletter delivery and LinkedIn posting are outside this release.
+
 - [ ] **Publish the Markov principle in English and Brazilian Portuguese and deliver Issue 009 — issue #221**
   - Publish only the reviewed Markov article pair and the short bilingual-link announcement dated 2026-10-09.
   - Verify exact staging and production revisions, both article routes, locale links, and newsletter artifacts.
@@ -242,6 +257,13 @@ references for longer-term editorial direction.
     paths across devices.
 
 ### Content and learning experience
+
+- [ ] **Translate the categorical-feature article into Brazilian Portuguese — follow-up to #235**
+  - The 2026-10-31 publication contains only the reviewed English article.
+    Prepare and review a matched translation separately, preserving the examples,
+    label-separation rules, figures, interactions, and immutable article ID.
+  - Completion check: a separately approved Portuguese article, locale links,
+    metadata, and desktop/mobile interactions pass the release workflow.
 
 - [ ] **Publish the next curriculum articles**
   - Prioritize the next article from `docs/curriculum-plan.md`; create a task per
