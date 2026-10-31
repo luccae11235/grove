@@ -34,20 +34,19 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
-- [ ] **Publish the categorical-feature article — issue #235**
-  - [x] Review the current English text, ten-record numerical examples,
-    23 method figures, overview, and three playgrounds from PR #234.
-  - [x] Prepare only `categorical-features` for publication on 2026-10-31;
-    preserve unrelated drafts and newsletter issues.
-  - [x] Pass `pnpm check`, 19 numerical tests, five browser tests, and
-    desktop/mobile review; verify the published-only metadata, assets, catalog,
-    RSS, sitemap, unchanged article body, and exclusion of unrelated drafts.
-  - [ ] Review the exact staging revision after the publication PR is approved.
-  - [ ] Obtain explicit release approval and verify the production revision
-    and canonical article route.
-  - Completion check: the published-only catalog, RSS, sitemap, metadata,
-    assets, and desktop/mobile interactions pass on the exact production SHA.
-    Newsletter delivery and LinkedIn posting are outside this release.
+- [ ] **Prepare and deliver categorical-feature Issue 010 — issue #238**
+  - [x] Add the approved English subject, preheader, body, and single article CTA
+    as edition `2026-010`; keep the issue in `draft`.
+  - [x] Pass `pnpm check`; validate all ten issue artifact sets and review
+    web, HTML email, and plain text at desktop/mobile widths. The single CTA
+    reaches the live article; draft-only visibility and unsubscribe markers pass.
+  - [ ] Verify the existing production opt-in audience and any prior broadcast
+    before promoting the edition or creating a provider draft.
+  - Publish the edition and deliver it only through the controlled workflow;
+    do not import contacts or include pending, unsubscribed, bounced,
+    complained, or suppressed recipients.
+  - Completion check: the reviewed edition reaches the verified existing Aflora
+    audience once, with a recorded provider broadcast and delivery report.
 
 - [ ] **Publish the Markov principle in English and Brazilian Portuguese and deliver Issue 009 — issue #221**
   - Publish only the reviewed Markov article pair and the short bilingual-link announcement dated 2026-10-09.
@@ -278,6 +277,16 @@ references for longer-term editorial direction.
 ## Done
 
 ### Publishing and content
+
+- [x] **Publish the categorical-feature article — issue #235** — 2026-10-31
+  - Merged publication PR #236 and approved selective release PR #237, preserving
+    the reviewed article, 23 method figures, overview, and three playgrounds.
+  - Verified exact production revision
+    `6a45f9f915532c0ec19dddd86353188be48ef7d2`: all 15 platform checks,
+    five public article browser tests, desktop/mobile rendering, assets,
+    metadata, catalog, RSS, sitemap, and exclusion of unrelated drafts passed.
+  - Completion check: canonical article is live; automatic production proof
+    `41246044461` passed. Newsletter delivery is tracked separately in #238.
 
 - [x] **Make the categorical-feature article easier to read — issue #233** — 2026-10-31
   - Preserved the section sequence, ten-record example, 23 method figures and
