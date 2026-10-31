@@ -1,0 +1,516 @@
+---
+articleId: categorical-features
+locale: en
+routeSlug: categorical-features
+href: /learn/categorical-features
+title: How Trees Read Categorical Features
+navTitle: How trees read categories
+description: "See how category names become model inputs, using plain explanations, simple diagrams, and one ten-record seed example."
+eyebrow: Decision trees · Categorical features
+area: Supervised learning
+topic: Categorical features
+summary: Follow ten seed records to compare category codes, counts, averages, learned vectors, and native tree handling.
+status: draft
+readingTime: 35–45 min
+interactiveCount: 3
+staticVisualCount: 24
+difficulty: intermediate
+series: tree-based-machine-learning
+access: public
+prerequisites:
+  - decision-trees-from-scratch
+related:
+  - beyond-cart-tree-architectures
+implementation: mdx
+learning:
+  priorKnowledge:
+    - Follow a numeric threshold split through a decision tree.
+    - Distinguish training observations from validation and new observations.
+  likelyMisconception: Encoding a category is mechanical and cannot affect which splits a tree can ask or which targets leak into its inputs.
+  transferOutcome: Explain what a categorical representation preserves or adds, predict one-split groups, and identify which target outcomes may contribute to a training or inference encoding.
+  motivatingQuestion: What information does a representation give a tree, and what questions can the tree ask with it?
+  conceptualBottleneck: A representation changes both the possible partitions and the evidence available to each row; smoothing alone does not keep the row's answer out.
+  evidenceOfUnderstanding:
+    - Predict how swapping arbitrary integer codes changes a single threshold split.
+    - Distinguish regularizing an estimate from controlling which labels may construct it.
+    - Explain the OOF and ordered statistics for Ipê, and distinguish training features from inference mappings.
+    - Compare an external representation with category groupings chosen inside a tree.
+---
+
+import DifficultyBadge from "../../../components/DifficultyBadge.astro";
+import CategoricalEncodingLab from "../../../components/CategoricalEncodingLab.astro";
+import CategoricalMethodFigure from "../../../components/CategoricalMethodFigure.astro";
+
+<header className="page-header lesson-header article-hero">
+  <p className="eyebrow">Decision trees · Categorical features</p>
+  <h1>How Trees Read Categorical Features</h1>
+  <p className="lede">How do we turn a name into something a model can use? Follow ten seed records to see what each method keeps, changes, or learns.</p>
+  <div className="article-meta" aria-label="Article information">
+    <DifficultyBadge difficulty="intermediate" showDescription />
+    <span><strong>No coding</strong> required</span>
+    <span><strong>3</strong> encoding comparisons</span>
+  </div>
+</header>
+
+<article className="lesson-body deep-article categorical-encoding-article">
+
+## Introduction
+
+In the articles on [classification trees](/learn/decision-trees/) and [regression trees](/learn/regression-trees/), a tree learned by asking questions. Each question divided the training records into groups. With a measurement, the question might be “Is the height at most 10 cm?” The tree tried different cut points and kept the ones that helped it predict.
+
+But what if the column contains names, such as a species, a shop, or a product family? There is no natural halfway point between Cedro and Jacarandá. We need a way for the model to use those names. **Encoding** means turning a category into one or more numbers.
+
+The choice matters. Small, medium, and large have an order. Species names do not. Giving them numbers can add an order that was never there, and that changes which questions a tree can ask.
+
+We will use ten fictional seed records. The label, `germinated`, is 1 if the seed germinated and 0 if it did not. The names help us follow the example; these invented results say nothing about the real species.
+
+<div className="categorical-table-scroll" role="region" aria-label="Fictitious seed records" tabIndex={0}>
+
+| Record | Species | Specimen size | Germinated |
+| --- | --- | --- | --- |
+| 1 | Ipê | Small | 1 |
+| 2 | Cedro | Large | 0 |
+| 3 | Ipê | Medium | 1 |
+| 4 | Jacarandá | Large | 1 |
+| 5 | Cedro | Small | 0 |
+| 6 | Ipê | Large | 1 |
+| 7 | Acácia | Medium | 0 |
+| 8 | Jacarandá | Medium | 1 |
+| 9 | Cedro | Medium | 0 |
+| 10 | Ipê | Small | 0 |
+
+</div>
+
+The diagrams sometimes shorten the names to **A = Ipê**, **B = Cedro**, **C = Jacarandá**, and **D = Acácia**. Of the four Ipê seeds, three germinated. Neither of the three Cedro seeds germinated. Both Jacarandá seeds germinated, and the one Acácia seed did not. Overall, five of the ten seeds germinated.
+
+Could a tree put **Ipê and Jacarandá together**, with Cedro and Acácia on the other side, **in one question**? We will return to that same grouping as we change how the species is represented.
+
+Our route has four families:
+
+- **Target-free encodings** turn categories into numbers without using the answers we want to predict.
+- **Supervised encodings** use known answers to decide how to encode each category.
+- **Learned representations** learn a list of numbers, called a vector, for a category.
+- **Native categorical handling** lets the tree's training procedure handle the categories itself.
+
+The first three can provide inputs to models beyond trees. The fourth describes what happens inside a tree library. The families can overlap: a learned vector can use labels, and a tree library can build supervised encodings internally.
+
+In the diagrams, **X is the input table** and **y is its column of labels**. Each label lines up with one input row. An encoder changes X into a numerical table. Some encoders use y to learn that change; others do not. To keep the diagrams small, they show only the species column or a few relevant rows; the other input columns can stay in the table. Each diagram identifies the new or training record being encoded.
+
+<CategoricalEncodingLab kind="overview" />
+
+## Encodings without the target
+
+We can turn species names into numbers without checking which seeds germinated. We might keep each name separate, count how often it appears, or compare its spelling with other names.
+
+Even without labels, an encoder may need to learn a list of names or their counts. Learn those from the training data, then reuse the same rules for validation and new records. That gives us a fair test of how the model handles data it has not seen.
+
+### Ordinal and integer codes
+
+For specimen size, Small → 0, Medium → 1, and Large → 2 keep an order that already makes sense. A tree can separate small specimens from the rest, or large specimens from the rest. This does not mean germination must always rise with size. Different branches can ask different questions.
+
+We could also assign species A → 0, B → 1, C → 2, and D → 3. This uses one column, but the order is now our invention.
+
+A cut between 1 and 2 puts A and B on one side and C and D on the other. No single cut puts A and C together: B sits between them.
+
+<CategoricalMethodFigure family="target-free" method="ordinal" />
+
+A threshold tree uses the order of the codes. It does not assume that code 2 has twice the effect of code 1. Still, a poor order can force it to ask more questions. Models that use numerical distances may also treat the gaps between these codes as meaningful.
+
+Integer codes are a useful starting point when the category has a real order. For names without an order, remember what the codes add. In scikit-learn, [OrdinalEncoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OrdinalEncoder.html) encodes input columns. Despite its familiar name, [LabelEncoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html) is for the labels being predicted.
+
+### One-hot and dummy
+
+How can we keep the names separate without putting them in order? Give each species its own column. Put 1 in its column and 0 in the others.
+
+With columns A, B, C, D, Ipê becomes `[1, 0, 0, 0]`. Jacarandá becomes `[0, 0, 1, 0]`. This is **one-hot encoding**.
+
+A tree can ask “Is this Ipê?” by checking the A column. But a tree that checks one column at a time needs more than one question to group Ipê and Jacarandá together.
+
+<CategoricalMethodFigure family="target-free" method="one-hot" />
+
+*Dummy coding* leaves out one species column. With four species, it keeps three columns; the missing species is the one with zeros in all three. This can avoid redundant inputs in a linear model. A tree does not need that removal, and leaving out a column can make that species harder to isolate.
+
+The more categories there are, the more columns one-hot creates. More columns can mean more training work. They do not always require storing every zero: a *sparse* table saves space by storing the nonzero entries.
+
+### Binary and base-N
+
+One-hot can become wide. Binary encoding keeps fewer columns by writing each category's integer code in binary, with one column per digit.
+
+Our four IDs become A → `00`, B → `01`, C → `10`, and D → `11`. Two columns replace the four one-hot columns. Base-3 coding uses digits 0, 1, and 2 instead; the same IDs become `00`, `01`, `02`, and `10`. Extra codes for missing or unknown values may require another column.
+
+<CategoricalMethodFigure family="target-free" method="binary" />
+
+Notice the last binary digit. It is 0 for A and C, and 1 for B and D. That happens to give us the grouping we wanted in one question.
+
+The method did not discover that these species have similar outcomes. This grouping came from our choice of IDs. Assign different IDs and a different pair may share a digit. Binary and base-N coding save columns, but the groups they create need not be useful.
+
+### Hashing
+
+What if there are too many names to keep a complete list? Hashing uses a fixed rule to turn each name into a position in a fixed number of columns. The same name always goes to the same position. A new name can go through the same rule.
+
+The price is that two names can land in the same position. In our example, A and B get the same encoded vector. This is called a **collision**.
+
+<CategoricalMethodFigure family="target-free" method="hashing" />
+
+If these vectors are the only species information we keep, the tree can no longer tell A from B. Other columns may still help it predict, but they do not undo the collision.
+
+Hashing keeps the number of columns fixed and avoids storing every category name. It is useful when names keep arriving or the list is very large. But a numerical output for a new name does not mean the model knows anything useful about it. Some hashing methods use −1 as well as 1; our example uses only 0 and 1 to make the collision clear.
+
+### Count and frequency
+
+Perhaps we care less about the name and more about how common it is. Count encoding replaces a category with the number of times it appears in the training data.
+
+Ipê appears four times, so A becomes 4. B becomes 3, C becomes 2, and D becomes 1. Frequency encoding uses the share of records instead: 0.4, 0.3, 0.2, and 0.1.
+
+<CategoricalMethodFigure family="target-free" method="count" />
+
+The tree can now separate common categories from rare ones. It cannot tell apart two categories with the same count. And common does not mean likely to germinate: this method never looks at germination.
+
+Counts and frequencies keep the categories in the same order. For a tree that checks every possible cut, they allow the same groups. The scale changes, not the information. Approximate implementations can differ, and a category's frequency may change over time.
+
+### Similarity encoding
+
+Suppose someone typed `Cedroo` for record 5 instead of `Cedro`. One-hot treats these as unrelated names. Their spelling suggests that they might refer to the same thing.
+
+Similarity encoding turns that clue into numbers. Choose a few reference names, here Cedro and Ipê, and give each input a score for how much it resembles each one. The example uses the typed name only here; all other sections use the species as shown in the table.
+
+One way to compare spelling is to look at neighboring letter pairs. After lowercasing and removing accents, `cedro` has `ce`, `ed`, `dr`, and `ro`. `cedroo` has those four pairs plus `oo`. Four of their five different pairs match, so the similarity score is 0.8. It shares no pairs with `ipe`, giving the vector `[0.8, 0]`.
+
+<CategoricalMethodFigure family="target-free" method="similarity" />
+
+The tree can use those scores to treat related spellings alike. [Cerda and colleagues](https://arxiv.org/abs/1806.00979) describe this approach for messy category names. It helps when spelling carries useful meaning. Two arbitrary account IDs do not become meaningfully related because they share a few letters. More reference names also mean more columns and more comparisons.
+
+The playground below keeps the input names fixed. Change the method and watch what each name becomes. Which methods keep every species distinct, and which can give two species the same output?
+
+<div id="target-free-playground">
+
+<CategoricalEncodingLab kind="target-free" />
+
+</div>
+
+## Supervised encodings
+
+The previous methods ignored which seeds germinated. A supervised encoder uses those known results to change the species column in X. The label vector y helps decide which number replaces each name.
+
+Think of the results as reports from earlier seeds. To describe a new Ipê seed, we can ask what happened to the Ipê seeds we already observed. Species with similar results may then get similar numbers, making them easier for a tree to group.
+
+There is an important boundary: **a training record must not receive its own answer disguised as an input**. Known training results can help encode a new seed whose result is unknown. Encoding the training records themselves needs more care.
+
+There are also two different problems to solve. A number based on one seed can be unreliable. A number built using a record's own label can reveal its answer. Making the number less extreme helps with the first problem; it does not automatically solve the second.
+
+Keep three questions in mind: **What do we summarize? How much do we trust a small sample? Whose labels may we use?** The methods below often work together. For example, we can smooth an average and use OOF to choose which records may supply it.
+
+### Mean or target encoding
+
+Start with the average result for each species. Three of four Ipê seeds germinated, so a new Ipê gets 0.75. Cedro gets 0, Jacarandá gets 1, and Acácia gets 0.
+
+Each species now becomes one number. For a target such as growth in centimeters, we could use the average growth instead. For several possible labels, we could return one value for each label.
+
+<CategoricalMethodFigure family="supervised" method="mean" />
+
+Why not use this same map for the training records? Because each record helped build its own input. Acácia appears only once. Its code would be exactly its own answer, 0. The model could learn to read the answer instead of learning a pattern that works for new seeds.
+
+Acácia also shows the small-sample problem: one seed is too little evidence to be confident that future Acácia seeds will never germinate. That remains true even when we encode a genuinely new record.
+
+### Cross-fitting or OOF
+
+OOF changes **whose answers are available**, not the kind of number we calculate. Imagine dividing the training records into groups. To encode one group, use only labels from the other groups. Its own answer sheet stays closed.
+
+We will use two groups. F₁ contains records 1, 4, 5, 6, and 7. F₂ contains records 2, 3, 8, 9, and 10. Record 1 is in F₁, so its Ipê code can use only the Ipê records in F₂: records 3 and 10. One germinated and one did not. Record 1 therefore gets 0.5, rather than the full-table average of 0.75.
+
+<CategoricalMethodFigure family="supervised" method="oof" />
+
+Repeat this for every group, then train the model on the assembled encodings. These are **out-of-fold**, or OOF, features. Any overall average used as a fallback must come from the other groups too.
+
+For validation or new records, build a map from all the training records and use that map without consulting the new labels. This is why scikit-learn's [TargetEncoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.TargetEncoder.html) uses cross-fitting in `fit_transform`: training encodings differ from fitting a map and applying it back to the same data.
+
+OOF leaves fewer examples for each average. Its groups must also match the task. If we want to predict future results, records must not borrow labels from the future or from results that have not arrived yet. If we want to predict new entities, repeated records from the same entity may need to stay together. Two groups make the example small; they are not a rule for every dataset.
+
+### M-estimate and smoothing
+
+Would you trust one seed's result as much as a hundred seeds' results? Smoothing gives a small sample less say. It blends the species' results with a starting estimate, called a **prior**.
+
+Our starting estimate is 0.5. Give it the weight of two extra observations: one germinated seed and one that did not. These are not real seeds. They describe how much weight we give the starting estimate.
+
+Acácia's single negative result now becomes about 0.333 instead of 0. Ipê becomes about 0.667 instead of 0.75. Acácia moves farther toward 0.5 because it has fewer real observations. A species with no observations uses the starting estimate itself.
+
+<CategoricalMethodFigure family="supervised" method="m-estimate" />
+
+This is the idea behind the M-estimate: choose how much weight the prior gets. Too little may leave rare species with extreme estimates; too much may hide a real difference. If we learn the prior from the data, it must use only the labels allowed for that training row. Smoothing can therefore be combined with OOF. It does not replace it.
+
+### Weight of Evidence
+
+Weight of Evidence, or WoE, asks a different question: **Does this category appear more often among positive results or among negative results?** It compares the category's share of the two groups and expresses the comparison as one score.
+
+Our table has five positive and five negative results. Ipê appears in three of the positives but only one of the negatives. Under our sign convention, that is positive evidence for germination. Add a small allowance to each count so that an empty count does not break the comparison; adding 0.5 gives Ipê a WoE score of about +0.847.
+
+<CategoricalMethodFigure family="supervised" method="woe" />
+
+Zero means the category provides no preference between the two labels. Positive scores point toward germination, and negative scores toward no germination. Libraries may reverse the sign, so check the convention. When one label is more common overall, comparing shares within each label group matters: raw category counts alone are not enough.
+
+WoE is common in logistic models and scorecards. It uses a logarithm to express the comparison, but a tree does not automatically gain useful groups from that change of scale. For the same smoothed comparison, an exact threshold tree can make the same cuts before or after taking the logarithm. Small counts still need care, and training encodings still need label separation.
+
+### Leave-one-out
+
+Instead of closing a whole group's answer sheet, leave-one-out hides just the current record's label. To encode a positive Ipê record, use the other three Ipê records: two positives and one negative. Its code is about 0.667. To encode the negative Ipê record, use the other three, all positive. Its code is 1.
+
+<CategoricalMethodFigure family="supervised" method="loo" />
+
+This uses almost all the other records, but notice the trap. Within the Ipê training records, the higher code belongs to the seed that did **not** germinate. A tree could learn that a code above 0.8 identifies that negative result. For a new Ipê, we use the full training average, 0.75, whatever its still-unknown result will be. The training shortcut has disappeared.
+
+So removing the current label does not make leave-one-out a general substitute for OOF. The [CatBoost paper](https://papers.neurips.cc/paper_files/paper/2018/file/14491b756b3a51daac41c24863285549-Paper.pdf) discusses this problem. A category that occurs only once also has no same-category examples left; its fallback must be estimated without the excluded label.
+
+### James–Stein
+
+The M-estimate chooses one prior weight. James–Stein-style encoders try to adjust how strongly an estimate is pulled toward a shared average based on how uncertain it is. The guiding idea is familiar: trust a shaky estimate less, and let it borrow more from the other categories.
+
+For an illustration, give equal weight to Ipê's average of 0.75 and the overall average of 0.5. Ipê becomes 0.625, halfway between them. We chose that weight to show the idea; it was not learned from these ten records.
+
+<CategoricalMethodFigure family="supervised" method="james-stein" />
+
+A real encoder needs a way to estimate uncertainty and choose the weight. [James–Stein encoder variants](https://contrib.scikit-learn.org/category_encoders/jamesstein.html) make different choices, including how to handle binary labels. The name does not specify one universal calculation. Whichever version we use, its training features must still follow the label-separation rule.
+
+### GLMM
+
+A GLMM encoder learns a shared starting point and an adjustment for each species. Picture a common starting line: a species can move above or below it, but one seed alone should not be enough to move it very far. The model learns these adjustments together, so categories with little evidence can stay closer to the shared starting point.
+
+In our hypothetical example, the encoder gives Ipê an adjustment of +0.6. Positive means a push toward germination; zero would leave the starting point unchanged. **This is an adjustment score, not a 60% probability.** For binary labels, this score can be on the *log-odds* scale, the scale used inside logistic models.
+
+<CategoricalMethodFigure family="supervised" method="glmm" />
+
+GLMM stands for generalized linear mixed model. Fitting one adds another model, with its own assumptions and possible fitting failures. Check whether an implementation returns a category adjustment or a prediction; the [Category Encoders documentation](https://contrib.scikit-learn.org/category_encoders/glmm.html) explains its convention. The adjustments are learned from labels, so the same separation rules apply.
+
+### Ordered target statistics
+
+Imagine reading the records one at a time, keeping a notebook of earlier results. When a record arrives, encode its species using only what was already in the notebook. Write down its label afterward. Neither its own answer nor later answers can help encode it.
+
+We set a starting estimate of 0.5 in advance, with the weight of two observations. The first Ipê has no history, so it gets 0.5. At record 3, the notebook contains one earlier Ipê result: record 1 germinated. Combining that result with our starting estimate gives about 0.667.
+
+<CategoricalMethodFigure family="supervised" method="ordered" />
+
+Early records rely more on the starting estimate because the notebook is nearly empty. Later records have more history. If the data has no time order, a shuffled order can supply this sequence. For future predictions, a shuffle cannot make future labels available sooner. The prior must also be fixed in advance or learned without the labels that the rule excludes.
+
+CatBoost uses ordered target statistics. These control which labels build each encoding. *Ordered boosting* is a separate part of how CatBoost trains its prediction model; the two names do not mean the same thing.
+
+The next playground keeps the records fixed while changing the encoding. Notice when the same species gets different training values because different labels are allowed to contribute.
+
+<div id="supervised-playground">
+
+<CategoricalEncodingLab kind="supervised" />
+
+</div>
+
+## Learned representations
+
+So far, we chose what the numbers mean: “is this Ipê?”, “how common is Ipê?”, or “how often did Ipê germinate?” A learned representation lets a model choose the numbers during training.
+
+The result is a **vector**, a short list of numbers. The model adjusts those numbers to help with a task. That task might use our labels, hide and reconstruct parts of the data, or use a different dataset. Learned does not necessarily mean target-free.
+
+### Entity embeddings
+
+An entity embedding gives each species its own vector. Imagine a small table with one row per species and a few numerical columns. Looking up Ipê returns Ipê's row.
+
+One way to learn this table is to train it together with a prediction model. When predictions are wrong, training adjusts both the model and the vectors to reduce those errors. Other input columns can help shape which vectors are useful. [Guo and Berkhahn](https://arxiv.org/abs/1604.06737) describe learning category vectors this way and reusing them with other models.
+
+Ipê might become `[0.2, 0.8]`, while Jacarandá becomes `[0.3, 0.7]`. These values are invented to illustrate the output. They were not fitted to our seed table. Similar germination averages do not guarantee similar vectors: the task and the other features also matter.
+
+<CategoricalMethodFigure family="learned" method="entity" />
+
+A short vector can replace many one-hot columns. But the lookup table still needs a vector for every known category, and rare categories have few examples to teach theirs. To use the result with a tree, give each vector position its own numerical column. The tree checks those numbers; it does not automatically compare distances between entire vectors.
+
+### Pretrained representations
+
+Instead of learning from scratch, we can reuse a model trained elsewhere. A model that reads a category's description can turn that description into a vector. We can keep it *frozen*, meaning its learned settings do not change while we train our new predictor.
+
+For a real seed catalog, useful descriptions or metadata might give the encoder information that transfers to our task. An arbitrary ID alone does not provide that meaning. Our fictional species labels are only examples; we have not supplied useful botanical descriptions or demonstrated such a transfer.
+
+A description encoder can also process a description of a new category. Our schematic category E becomes `[0.4, 0.6]`. A fixed lookup table cannot invent an entry for E; it needs a fallback such as an `UNK` vector for unknown categories.
+
+<CategoricalMethodFigure family="learned" method="pretrained" />
+
+Pretraining is not limited to text. A model can learn patterns in tables by reconstructing hidden or altered values. [VIME](https://proceedings.neurips.cc/paper_files/paper/2020/hash/7d97667a3e056acab9aaf653807b4a03-Abstract.html) is one example.
+
+The benefit is a chance to reuse information when our labels are scarce. The question is whether that information helps with this prediction. A description may be meaningful but irrelevant to germination. Running and maintaining the encoder also has a cost.
+
+### Contextual embeddings
+
+A fixed lookup gives Ipê the same vector every time. A contextual encoder also reads the rest of the row, so its output can change with the setting.
+
+Records 1 and 3 are both Ipê, but record 1 has a small specimen and record 3 a medium one. Their schematic vectors become `[0.2, 0.8]` and `[0.6, 0.4]`. The species stays the same; the context changes the representation.
+
+<CategoricalMethodFigure family="learned" method="contextual" />
+
+[TabTransformer](https://arxiv.org/abs/2012.06678) is an example of learning categorical representations that depend on other categorical inputs. This can capture relationships before a tree sees the numbers. It also needs a more complex encoder and the same context columns when making new predictions. All vectors shown here are illustrations, not measured results.
+
+For every learned encoder, keep validation labels out of its training. There is another risk when we export a supervised encoder's vectors to a separate tree: the encoder might have memorized the labels of the very rows we use to train that tree.
+
+One cautious way to avoid this is to divide the training data again. Fit the encoder on one part, freeze it, and use it to transform a different part on which we train the tree. Use that same frozen encoder for validation and new records. The tree-training rows' labels never trained the encoder. This spends fewer records on each stage, and a lookup still needs a rule for categories missing from the encoder's training part. It is one possible design, not a requirement for every model trained jointly with its predictor.
+
+Training separate encoders for OOF groups adds a different problem. Column 1 in one learned vector need not mean the same thing as column 1 in another. We cannot assume their coordinates line up. A single frozen encoder keeps one shared coordinate system, though that alone does not guarantee useful predictions.
+
+In the playground, compare a fixed species vector, a vector from another encoder, and a vector that changes with the row. The numbers are schematic; the comparison is about where they come from.
+
+<div id="learned-playground">
+
+<CategoricalEncodingLab kind="learned" />
+
+</div>
+
+## Native categorical handling in trees
+
+We wanted to put Ipê and Jacarandá together in one question. Instead of building a numerical code first, a tree could ask **“Is the species Ipê or Jacarandá?”** The other branch would contain Cedro and Acácia.
+
+This moves the choice of groups inside training. With four categories, there are seven different ways to divide them into two nonempty groups, counting a left-right swap as the same choice. That number grows quickly as we add categories.
+
+Some split rules have a shortcut: arrange categories using a suitable summary of their records, then try cuts along that order. Our four categories then need only three cuts. This works for particular scoring rules and assumptions. It does not mean any order will work or that the tree will find the best possible full structure.
+
+The groups can change at each node. In a boosted model, they can also change as the model corrects its earlier mistakes. A single code made once for the whole dataset may miss those local needs. Native support can also build encodings internally, rather than split the raw names directly.
+
+### ID3 and C4.5
+
+One direct approach gives each species its own branch. The species node would have four children: four Ipê records, three Cedro, two Jacarandá, and one Acácia.
+
+ID3 favors questions that make the labels less mixed. It calls that improvement *information gain*. A column with many names can score well just by creating many small groups. C4.5 adjusts the score, using *gain ratio*, to reduce that preference. The original descriptions are [Quinlan's ID3 paper](https://storm.cis.fordham.edu/~gweiss/selected-papers/quinlan86.pdf) and [C4.5](https://www.educate.elsevier.com/book/details/9780080500584).
+
+<CategoricalMethodFigure family="native" method="id3" />
+
+The names become branches without an invented order. But more names mean more branches with fewer records in each. An adjustment to the score cannot give Acácia more than its one example.
+
+### Classical CART
+
+Classical categorical CART makes two branches. It looks for a group of categories that separates the labels well.
+
+Put Ipê and Jacarandá on the left: six records, with five germinated seeds and one that did not. The right holds Cedro and Acácia: four records, all negative. The tree prefers this split because the two groups have clearer outcomes than the original table.
+
+<CategoricalMethodFigure family="native" method="cart" />
+
+This grouping takes one question. Our earlier integer order could not do that. Trying every possible category group can be expensive, so shortcuts matter.
+
+Check the library as well as the algorithm's name. Scikit-learn's [decision-tree guide](https://scikit-learn.org/stable/modules/tree.html) describes numerical input for `DecisionTreeClassifier`, not this native category-group search. Its categorical support differs from that of `HistGradientBoostingClassifier`.
+
+### HistGradientBoosting
+
+Scikit-learn's histogram gradient boosting can handle a column marked as categorical. At each node, it summarizes how the categories relate to the current training problem, orders them using that information, and tries cuts in that order.
+
+Our illustrative order B, D, A, C puts Cedro and Acácia together, followed by Ipê and Jacarandá. One cut now gives us the groups we wanted, even though the original IDs placed A before B before C before D.
+
+<CategoricalMethodFigure family="native" method="hist" />
+
+The IDs identify the names; their original numerical order does not dictate the split. This avoids creating one one-hot column per species. The library must recognize the column as categorical, and `max_bins` limits how many categories it can handle. Rare categories still provide little evidence. The [categorical-support guide](https://scikit-learn.org/stable/modules/ensemble.html#categorical-features-support) explains the requirements.
+
+### LightGBM
+
+A boosted model learns by correcting earlier predictions. LightGBM can group categories according to the corrections their records currently need. Categories calling for similar corrections can sit near one another in the search order.
+
+In our simplified example, that order is C, A, B, D. Cutting between A and B separates Jacarandá and Ipê from Cedro and Acácia. The figure shows categories that need higher or lower predictions, starting from a germination chance of 0.5. It illustrates one local training step, not a complete LightGBM run. The order can change as training progresses.
+
+<CategoricalMethodFigure family="native" method="lightgbm" />
+
+This makes useful category groups cheaper to search. It does not prevent the model from trusting a rare category too much. [LightGBM's documentation](https://lightgbm.readthedocs.io/en/latest/Advanced-Topics.html#categorical-feature-support) describes `categorical_feature` for identifying these columns and controls such as `cat_smooth` and `min_data_per_group` for limiting unreliable category effects. Those settings still need validation.
+
+### XGBoost
+
+XGBoost can ask “Is this one category?” or “Does this belong to this group of categories?” The first isolates a species. The second can place Ipê and Jacarandá together.
+
+<CategoricalMethodFigure family="native" method="xgboost" />
+
+With a supported input format and tree method, `enable_categorical` turns on categorical handling. The [category parameters](https://xgboost.readthedocs.io/en/stable/parameter.html#parameters-for-categorical-feature) control the search: `max_cat_to_onehot` helps choose between single-category and group questions, and `max_cat_threshold` limits the group search. The [categorical-data tutorial](https://xgboost.readthedocs.io/en/stable/tutorials/categorical.html) explains the supported inputs and how to preserve category information when saving with JSON or UBJSON.
+
+The tree can choose its strategy without always needing external one-hot columns. We still need consistent category names and types when training, saving, and using the model. Library support can change, so check the version's documentation.
+
+### CatBoost
+
+CatBoost handles categories in several ways. It may use one-hot treatment for a column with few categories. It can also build numbers from category results and combinations of categories, then split on those numbers.
+
+The path is therefore category → internal representation → tree question. Native support does not always mean a direct question about a group of raw names.
+
+<CategoricalMethodFigure family="native" method="catboost" />
+
+The [categorical-features documentation](https://catboost.ai/docs/en/features/categorical-features) explains when these treatments are available. Its ordered target statistics follow the earlier notebook idea: a training row's encoding uses permitted earlier labels. Ordered boosting addresses a separate problem in training the boosted predictor, as explained in the [CatBoost paper](https://papers.neurips.cc/paper_files/paper/2018/file/14491b756b3a51daac41c24863285549-Paper.pdf).
+
+Keeping these steps inside one library can make category handling convenient. It also adds calculations that can be harder to inspect. Internal safeguards cannot repair a validation split that gives training access to future information, or mixes the same entity across both sides when the goal is to predict new entities.
+
+## Comparisons and conclusions
+
+Every method answers the same basic question: **What numbers will the model receive instead of this name?** Those numbers may keep identities separate, merge them, describe past results, or come from a learned model.
+
+The table compares one categorical input column. The one-number supervised examples assume binary labels or a numerical target; several labels may need several output columns.
+
+<div className="categorical-table-scroll" role="region" aria-label="Encoding comparison" tabIndex={0}>
+
+| Method | Uses labels? | Output per input column | Main benefit | Main caution |
+| --- | --- | --- | --- | --- |
+| Ordinal / integer codes | No | 1 column | Keeps a real order with few columns | Invented order limits which names a tree can group |
+| One-hot / dummy | No | One column per category; dummy drops one | Keeps names separate without an order | Many categories mean many columns |
+| Binary / base-N | No | One column per digit | Uses fewer columns | Shared digits come from chosen IDs |
+| Hashing | No | A fixed number of columns | No complete name list needed | Collisions make different names look identical |
+| Count / frequency | No | 1 column | Shows how common a category is | Equal counts look identical; counts can change |
+| Similarity | No | One column per reference name | Connects related spellings | Similar spelling may have no useful meaning |
+| Mean / target | Yes | 1 column | Summarizes past results | Few records give shaky averages; own labels can leak |
+| OOF / cross-fitting | Depends on the encoder | Same as the chosen encoder | Keeps a group's labels out of its encodings | Fewer records per estimate; groups must fit the task |
+| M-estimate | Yes | 1 column | Pulls small-sample averages toward a prior | Too much smoothing can hide real differences |
+| WoE | Yes | 1 column for binary labels | Compares evidence for two labels | Small counts and the score's sign need care |
+| Leave-one-out | Yes | 1 column | Uses the other same-category records | Can still create a misleading training shortcut |
+| James–Stein | Yes | 1 column in our example | Adjusts shrinkage using uncertainty | Different versions estimate it differently |
+| GLMM | Yes | One category adjustment here | Lets categories share evidence | Adds another model and its assumptions |
+| Ordered statistics | Yes | 1 column in our example | Uses earlier permitted results | Early records have little history |
+| Entity embeddings | Often | A short vector | Learns useful category features | Rare categories have little data to learn from |
+| Pretrained representations | Depends on earlier training | A vector | Reuses information learned elsewhere | Earlier knowledge may not help this task |
+| Contextual embeddings | Depends on the task | A vector for each row | Lets the same name change with context | Needs a more complex encoder and context inputs |
+| ID3 / C4.5 | During tree training | Handled internally | Gives names their own branches | Many branches can leave little data in each |
+| Classical categorical CART | During tree training | Handled internally | Splits names into two groups | Searching groups can be expensive; check library support |
+| HistGradientBoosting | During tree training | Handled internally | Searches groups using a local order | Category limits and rare groups need care |
+| LightGBM | During tree training | Handled internally | Searches useful groups efficiently | Small groups can still be overfit |
+| XGBoost | During tree training | Handled internally | Offers single-name and group questions | Needs supported inputs and consistent saved categories |
+| CatBoost | For some internal encodings | Handled internally | Builds category features during training | More internal work; validation still matters |
+
+</div>
+
+OOF can be combined with several rows in this table. It tells us whose labels may build an encoding; it does not choose the summary or how much to smooth it.
+
+Fewer columns do not always mean faster training or better predictions. Storage, library implementation, and tree size also matter. One-hot may need extra questions to form a category group. A single target average may lose differences that matter when combined with specimen size.
+
+The data can help us choose sensible first comparisons:
+
+<div className="categorical-table-scroll" role="region" aria-label="First tests by scenario" tabIndex={0}>
+
+| Situation | First methods to compare | What to check |
+| --- | --- | --- |
+| Categories have a real order | Ordinal, one-hot, native handling | Does keeping the order help? |
+| Only a few category names | One-hot and native handling | Prediction quality, columns, and tree size |
+| Many names occur repeatedly | Native handling, smoothed target encoding with OOF | Counts per name, stable estimates, and training cost |
+| Many names and little memory | Hashing, binary/base-N | Collisions and arbitrary shared digits |
+| Names occur only once or rarely | Group rare names; use useful metadata | Does the name help predict new cases, or just identify old ones? |
+| Misspellings and inconsistent names | Cleaning, similarity, one-hot after cleaning | Does spelling capture the relationship we need? |
+| Useful descriptions but few labels | Pretrained vectors and ordinary table encodings | Do the descriptions improve predictions enough to justify the cost? |
+| Plenty of data and useful feature relationships | Entity or contextual vectors and native handling | Does the extra training and maintenance help? |
+| Binary scorecards or logistic models | One-hot/dummy and smoothed WoE | Score meaning, empty counts, and changes in label frequency |
+| Future records or new entities | Choose the split before the encoder | Which labels would actually be available? |
+
+</div>
+
+The number of category names is only part of the story. Four species in ten records already leave Acácia with one example. Four species spread evenly across a million records give us much more evidence. Look at the number of records per category and how often entirely new categories will arrive.
+
+Also decide what to do when a value is **missing** or **new**. Missing means no value was supplied. New means the name exists but was absent from training. These are different cases. A lookup can reserve an unknown entry; one-hot needs an explicit unknown-value rule; hashing always returns a position. Similarity and description encoders can process new text, while supervised encoders can fall back to a permitted prior. Native libraries have their own rules. Save these choices with the model and reuse them for new records.
+
+A fair test starts with the prediction we expect to make: another record from familiar entities, an entirely new entity, or a future result. Split the data accordingly. Learn encoders from the training side only, build supervised training features with suitable label separation, and compare the complete encoder-plus-model combinations. Check prediction quality, variation across runs, training time, memory, and results for rare or new names.
+
+Benchmarks help suggest candidates, but they do not choose for every dataset. [Pargent and colleagues](https://arxiv.org/abs/2104.00629) found strong results for regularized target encoding in their study of many-category data. [Matteucci and colleagues' broader benchmark](https://proceedings.neurips.cc/paper_files/paper/2023/hash/ac01e21bb14609416760f790dd8966ae-Abstract-Datasets_and_Benchmarks.html) shows how results depend on the datasets and experimental choices. Our test still needs to match the conditions in which we will use the model.
+
+Return to Ipê and Jacarandá. The first integer order could not group them with one cut. One-hot keeps their identities but needs more questions to combine them. Our binary IDs happen to put them together in one digit. A supervised encoding or native tree procedure can group them using what training results reveal.
+
+Choosing an encoding changes what the next model can see. Ask what information the numbers contain, whether that information was available fairly, and whether it helps predict new records.
+
+<div className="reasoning-check">
+
+Imagine a new species that occurs only once in the training data, and that seed germinates. You give that same training record a smoothed target average. Has smoothing kept its own answer out of its feature? What would need to change?
+
+<details>
+<summary>Check your reasoning</summary>
+
+No. Smoothing changes the number, but the record's target still helped construct it. OOF or a suitable ordered protocol changes whose labels may contribute. A prior learned from data must follow that separation too. For a later record, past training outcomes can be useful evidence while the new outcome remains unknown.
+
+</details>
+</div>
+
+</article>
