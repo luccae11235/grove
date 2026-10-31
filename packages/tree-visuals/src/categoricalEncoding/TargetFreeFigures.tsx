@@ -24,7 +24,7 @@ function OrdinalFigure() {
 function OneHotFigure() {
  // Learner question: how does an identity occupy its own column, and what does dummy coding remove?
  const xs=[210,280,350,420];
- return <MethodFigure method="one-hot" title="One-hot identity columns and the dummy reference omission" height={252} caption="One-hot keeps four indicators. Dummy coding omits the D reference column.">
+ return <MethodFigure method="one-hot" title="One column per species; dummy coding leaves one out" height={252} caption="One-hot gives each species a column. Dummy coding leaves out the Acácia column.">
   <Label x={25} y={28} small muted anchor="start">One-hot</Label>
   {CATEGORIES.map((c,i)=><Label key={c} x={xs[i]} y={28} small>{c}</Label>)}
   {[{name:'Ipê',values:[1,0,0,0]},{name:'Jacarandá',values:[0,0,1,0]}].map((row,r)=><g key={row.name}>
@@ -41,7 +41,7 @@ function OneHotFigure() {
 
 function BinaryFigure() {
  // Learner question: how do the same IDs change when written in different bases?
- return <MethodFigure method="binary" title="The same species IDs in base two and base three" height={258} caption="Digits compress the chosen IDs; they do not learn category similarity.">
+ return <MethodFigure method="binary" title="The same species IDs in base two and base three" height={258} caption="Writing IDs as digits uses fewer columns. It does not tell us which species behave alike.">
   {['Species','ID','Base 2','Base 3'].map((label,i)=><Label key={label} x={[70,180,290,410][i]} y={28} small muted>{label}</Label>)}
   <line x1={25} y1={43} x2={455} y2={43} stroke={line}/>
   {CATEGORIES.map((c,i)=><g key={c}>
@@ -66,9 +66,9 @@ function CountFigure() {
  // Learner question: how do count and frequency express the same category prevalence?
  const count=ROWS.filter(row=>row.category==='A').length;
  const frequency=count/ROWS.length;
- return <MethodFigure method="count" title="Ipê prevalence as a count and as a frequency" height={237} caption="The same four Ipê records become count 4 or frequency 0.4.">
+ return <MethodFigure method="count" title="How often Ipê appears" height={237} caption="The same four Ipê records become count 4 or frequency 0.4.">
   <Token x={88} y={85} width={130} label="A · Ipê"/>
-  <Label x={321} y={29} small muted>Ten reference records</Label>
+  <Label x={321} y={29} small muted>Ten training records</Label>
   {ROWS.map((_,i)=><circle key={i} cx={233+(i%5)*43} cy={64+Math.floor(i/5)*43} r={12} fill={i<count?accent:'none'} stroke={i<count?accent:line} strokeWidth={1.6}/>)}
   <Label x={176} y={176} small muted>Count</Label><Label x={355} y={176} small muted>Frequency</Label>
   <Token x={176} y={210} width={110} label={String(count)} accent/><Token x={355} y={210} width={110} label={String(frequency)} accent/>

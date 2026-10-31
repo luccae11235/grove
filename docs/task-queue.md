@@ -257,6 +257,18 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Make the categorical-feature article easier to read — issue #233** — 2026-10-31
+  - Preserved the section sequence, ten-record example, 23 method figures and
+    three compact playgrounds; rewrote the article in plain English, removed
+    formulas and unnecessary split-score arithmetic, and used concrete examples
+    for smoothing, shared evidence, and label exclusion.
+  - Matched the introduction's single four-family list to the overview labels;
+    added X/y-to-encoded-X diagrams, consistent category-to-vector figures,
+    and a small native category-grouping tree.
+  - Completion check: `pnpm check`, 19 focused numerical tests, final typecheck
+    and draft build, five Chromium tests, desktop/mobile visual review, and
+    SVG text-bound checks passed. Preview and PR #234 updated for editorial review.
+
 - [x] **Apply the categorical-feature beta-reader revisions — issue #233** — 2026-10-29
   - Preserved section order, all 23 method figures, and the three compact
     playgrounds; clarified LOO's inverted training cue and a conservative frozen
