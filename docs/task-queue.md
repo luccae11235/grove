@@ -34,6 +34,21 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Publish the categorical-feature article — issue #235**
+  - [x] Review the current English text, ten-record numerical examples,
+    23 method figures, overview, and three playgrounds from PR #234.
+  - [x] Prepare only `categorical-features` for publication on 2026-10-31;
+    preserve unrelated drafts and newsletter issues.
+  - [x] Pass `pnpm check`, 19 numerical tests, five browser tests, and
+    desktop/mobile review; verify the published-only metadata, assets, catalog,
+    RSS, sitemap, unchanged article body, and exclusion of unrelated drafts.
+  - [ ] Review the exact staging revision after the publication PR is approved.
+  - [ ] Obtain explicit release approval and verify the production revision
+    and canonical article route.
+  - Completion check: the published-only catalog, RSS, sitemap, metadata,
+    assets, and desktop/mobile interactions pass on the exact production SHA.
+    Newsletter delivery and LinkedIn posting are outside this release.
+
 - [ ] **Publish the Markov principle in English and Brazilian Portuguese and deliver Issue 009 — issue #221**
   - Publish only the reviewed Markov article pair and the short bilingual-link announcement dated 2026-10-09.
   - Verify exact staging and production revisions, both article routes, locale links, and newsletter artifacts.
@@ -243,6 +258,13 @@ references for longer-term editorial direction.
 
 ### Content and learning experience
 
+- [ ] **Translate the categorical-feature article into Brazilian Portuguese — follow-up to #235**
+  - The 2026-10-31 publication contains only the reviewed English article.
+    Prepare and review a matched translation separately, preserving the examples,
+    label-separation rules, figures, interactions, and immutable article ID.
+  - Completion check: a separately approved Portuguese article, locale links,
+    metadata, and desktop/mobile interactions pass the release workflow.
+
 - [ ] **Publish the next curriculum articles**
   - Prioritize the next article from `docs/curriculum-plan.md`; create a task per
     article when it is ready to be scoped.
@@ -256,6 +278,52 @@ references for longer-term editorial direction.
 ## Done
 
 ### Publishing and content
+
+- [x] **Make the categorical-feature article easier to read — issue #233** — 2026-10-31
+  - Preserved the section sequence, ten-record example, 23 method figures and
+    three compact playgrounds; rewrote the article in plain English, removed
+    formulas and unnecessary split-score arithmetic, and used concrete examples
+    for smoothing, shared evidence, and label exclusion.
+  - Matched the introduction's single four-family list to the overview labels;
+    added X/y-to-encoded-X diagrams, consistent category-to-vector figures,
+    and a small native category-grouping tree.
+  - Completion check: `pnpm check`, 19 focused numerical tests, final typecheck
+    and draft build, five Chromium tests, desktop/mobile visual review, and
+    SVG text-bound checks passed. Preview and PR #234 updated for editorial review.
+
+- [x] **Apply the categorical-feature beta-reader revisions — issue #233** — 2026-10-29
+  - Preserved section order, all 23 method figures, and the three compact
+    playgrounds; clarified LOO's inverted training cue and a conservative frozen
+    supervised-encoder workflow with its data-efficiency tradeoff.
+  - Moved the three-decision map earlier, placed specialized James–Stein, GLMM,
+    and LightGBM mathematics in optional disclosures, added OOF reference IDs to
+    the existing legend, and added a closing transfer question with a hidden answer.
+  - Completion check: 19 focused numerical tests, five Chromium acceptance tests,
+    workspace typecheck, draft build, desktop/mobile visual review, and whitespace
+    checks passed. The refreshed preview and existing PR #234 contain the revisions.
+
+- [x] **Simplify the categorical-feature visuals after editorial review — issue #233** — 2026-10-29
+  - Preserved the prose and added 23 focused, accessible SVG figures alongside
+    the method sections, including paired variants within their shared figures.
+  - Replaced the dense dashboards with three compact family-end translation
+    playgrounds: one selector and category-to-representation outputs. Native tree
+    mechanisms are explained in their local figures; repeated source tables,
+    decision results, arithmetic panels, and secondary controls were removed.
+  - Completion check: `pnpm check`, 19 focused numerical/translation tests, four
+    browser acceptance tests, desktop/mobile visual review, and SVG text-bound
+    checks passed. The updated draft preview is ready for editorial judgment.
+
+- [x] **Rewrite the categorical-feature learning experience — issue #233** — 2026-10-29
+  - Replaced the earlier PR #227 proposal with the four-family manuscript from
+    PR #232, retaining the `categorical-features` draft identity and route.
+  - Implemented a native overview figure and four accessible, responsive method
+    playgrounds sharing the fictitious ten-record seed dataset; schematic vectors
+    and library snapshots are explicitly distinguished from fitted results.
+  - Completion check: `pnpm check`, final typecheck, 16 focused numerical tests,
+    five Chromium acceptance tests, published/draft builds, and desktop/mobile
+    visual review passed. The public route, catalog, RSS, and sitemap exclude
+    this draft. A local rendered preview is available for editorial judgment;
+    merge, staging deployment, publication, and delivery remain separate steps.
 
 - [x] **Translate the Markov principle article into Brazilian Portuguese — issue #207** — 2026-09-30
   - Added a faithful `pt-BR` draft with aligned learning metadata, structure,

@@ -1,0 +1,8 @@
+---
+import {CategoricalOverview,TranslationPlayground} from '@grove/tree-visuals';
+interface Props {kind:'overview'|'target-free'|'supervised'|'learned'}
+const {kind}=Astro.props;
+---
+<div data-analytics-lab={`categorical-${kind}`} data-categorical-lab={kind}>
+ {kind==='overview' ? <CategoricalOverview /> : <TranslationPlayground client:visible family={kind} />}
+</div>
