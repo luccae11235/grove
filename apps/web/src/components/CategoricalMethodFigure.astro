@@ -1,0 +1,9 @@
+---
+import {TargetFreeFigure,SupervisedFigure,LearnedFigure,NativeFigure} from '@grove/tree-visuals';
+interface Props {family:'target-free'|'supervised'|'learned'|'native';method:string}
+const {family,method}=Astro.props;
+---
+{family==='target-free' && <TargetFreeFigure method={method as Parameters<typeof TargetFreeFigure>[0]['method']} />}
+{family==='supervised' && <SupervisedFigure method={method as Parameters<typeof SupervisedFigure>[0]['method']} />}
+{family==='learned' && <LearnedFigure method={method as Parameters<typeof LearnedFigure>[0]['method']} />}
+{family==='native' && <NativeFigure method={method as Parameters<typeof NativeFigure>[0]['method']} />}
