@@ -56,28 +56,28 @@ test('supervised and contextual selectors keep training and schematic distinctio
  await expect(learned.locator('[data-translation-input="Ipê · medium specimen"]')).toContainText('[0.6, 0.4]');
 });
 
-test('optional mathematics and the closing reasoning check open with the keyboard',async({page})=>{
- for(const text of [
-  'Optional: the shrinkage formula and its assumptions',
-  'Optional: the GLMM equation and the effect scale',
-  'Optional: calculate the local gradient statistic',
- ]){
-  const summary=page.getByText(text,{exact:true});
-  const details=summary.locator('..');
-  await expect(details).not.toHaveAttribute('open');
-  await summary.scrollIntoViewIfNeeded();
-  await summary.focus();await summary.press('Enter');
-  await expect(details).toHaveAttribute('open','');
-  await expect(details.locator('.katex')).not.toHaveCount(0);
-  await summary.press('Enter');
-  await expect(details).not.toHaveAttribute('open');
+test('family names stay consistent and explanations need no formulas',async({page})=>{
+ const overview=page.locator('[data-categorical-overview]');
+ const names=['Target-free encodings','Supervised encodings','Learned representations','Native categorical handling'];
+ await expect(overview.locator('strong')).toHaveText(names);
+ await expect(overview.getByRole('img')).toHaveCount(4);
+ const article=page.locator('.categorical-encoding-article');
+ await expect(article.locator('ul')).toHaveCount(1);
+ for(const name of names) await expect(article.locator('li').filter({hasText:name})).toHaveCount(1);
+ await expect(article.locator('.katex')).toHaveCount(0);
+ for(const method of ['mean','oof','m-estimate','woe','loo','james-stein','glmm','ordered']){
+  const figure=page.locator(`[data-encoding-figure="${method}"]`);
+  await expect(figure).toContainText('X');
+  await expect(figure).toContainText('y');
+  await expect(figure).toContainText('Encoded X');
  }
  const check=page.locator('.reasoning-check details');
  await check.locator('summary').scrollIntoViewIfNeeded();
  await check.locator('summary').focus();await check.locator('summary').press('Enter');
  await expect(check).toHaveAttribute('open','');
- await expect(check).toContainText("the record’s target still helped construct it");
- await expect(page.locator('.katex-error')).toHaveCount(0);
+ await expect(check).toContainText('No.');
+ await check.locator('summary').press('Enter');
+ await expect(check).not.toHaveAttribute('open');
 });
 
 test('figures and compact translations remain legible and operable on mobile',async({page})=>{

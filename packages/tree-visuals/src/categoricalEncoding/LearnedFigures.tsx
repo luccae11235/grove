@@ -1,39 +1,27 @@
-import {Arrow, Label, MethodFigure, Token} from './MethodFigure';
+import {Arrow,Label,MethodFigure} from './MethodFigure';
+import {EncodingMatrix} from './EncodingMatrix';
 
-export type LearnedFigureMethod = 'entity' | 'pretrained' | 'contextual';
+export type LearnedFigureMethod='entity'|'pretrained'|'contextual';
 
 export function LearnedFigure({method}:{method:LearnedFigureMethod}) {
-  if(method==='entity') {
-    // Learner question: where does the vector for a category come from?
-    return <MethodFigure method={method} title="An entity embedding looks up a learned row" height={160} caption="Ipê selects a row in the learned embedding table. The coordinates are schematic, not estimated from these seed records.">
-      <Token x={77} y={65} width={140} label="A · Ipê"/>
-      <Arrow x1={151} y1={62} x2={178} y2={62}/>
-      <Token x={245} y={65} width={125} label="E[A, :]" accent/>
-      <Arrow x1={312} y1={62} x2={336} y2={62}/>
-      <Token x={405} y={65} width={140} label="(0.2, 0.8)"/>
-      <Label x={245} y={120} small muted>Lookup in a learned table</Label>
-    </MethodFigure>;
-  }
-  if(method==='pretrained') {
-    // Learner question: can a description encoder represent a new category?
-    return <MethodFigure method={method} title="A frozen description encoder can receive an unseen category" height={160} caption="A new category E can be encoded from its description. A closed lookup would instead need an unknown-category fallback. The vector is schematic.">
-      <Token x={80} y={65} width={150} label="E + description"/>
-      <Arrow x1={159} y1={62} x2={180} y2={62}/>
-      <Token x={245} y={65} width={125} label="Frozen gφ" accent/>
-      <Arrow x1={312} y1={62} x2={336} y2={62}/>
-      <Token x={405} y={65} width={140} label="(0.4, 0.6)"/>
-      <Label x={80} y={120} small muted>Unseen category</Label>
-      <Label x={245} y={120} small muted>No task-time fitting</Label>
-    </MethodFigure>;
-  }
-  // Learner question: can the same species receive different vectors in different rows?
-  return <MethodFigure method={method} title="The same Ipê category can receive different contextual vectors" height={225} caption="Both records are Ipê. Changing the specimen-size context changes the schematic vector; these values are not fitted results.">
-    <Label x={240} y={28}>Same category: Ipê</Label>
-    <Token x={112} y={82} width={190} label="Row 1 · Small"/>
-    <Arrow x1={212} y1={79} x2={284} y2={79}/>
-    <Token x={375} y={82} width={170} label="(0.2, 0.8)" accent/>
-    <Token x={112} y={162} width={190} label="Row 3 · Medium"/>
-    <Arrow x1={212} y1={159} x2={284} y2={159}/>
-    <Token x={375} y={162} width={170} label="(0.6, 0.4)" accent/>
-  </MethodFigure>;
+ const contextual=method==='contextual',pretrained=method==='pretrained';
+ const title=contextual?'The same species can have different vectors in different contexts':pretrained?'A model already trained on descriptions can encode a new category':'Each category looks up its own learned vector';
+ const caption=contextual?
+  'Different specimen sizes can give the same species different vectors. These numbers are illustrative, not fitted results.':pretrained?
+  'A fixed, previously trained model can turn a new description into a vector. The vector is illustrative; an ID-only lookup needs an unknown-category fallback.':
+  'Each species selects its own learned vector; every Ipê receives the same one. These numbers are illustrative, not fitted results.';
+ const input=contextual?[['Ipê','Small'],['Ipê','Medium']]:pretrained?[['E: description']]:[['Ipê'],['Cedro']];
+ const output=contextual?[['0.2','0.8'],['0.6','0.4']]:pretrained?[['0.4','0.6']]:[['0.2','0.8'],['0.8','0.2']];
+ const y=pretrained?108:88;
+ // Learner question: what stays the same, and what can change, when a category becomes a vector?
+ return <MethodFigure method={method} title={title} caption={caption} height={250}>
+  <Label x={111} y={30}>X</Label><Label x={380} y={30}>Encoded X</Label>
+  <Label x={111} y={60} small muted>{contextual?'species + size':pretrained?'new description':'species'}</Label>
+  <Label x={380} y={60} small muted>two-number vectors</Label>
+  <EncodingMatrix x={111} y={y} width={contextual?194:174} rows={input}/>
+  <Arrow x1={218} y1={128} x2={283} y2={128}/>
+  <EncodingMatrix x={380} y={y} width={162} rows={output} accent/>
+  <Label x={250} y={195} small>{contextual?'Read the whole row':pretrained?'Use the trained model':'Look up the learned row'}</Label>
+  <Label x={240} y={233} small muted>Illustrative vectors</Label>
+ </MethodFigure>;
 }
