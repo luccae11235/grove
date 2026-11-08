@@ -786,6 +786,13 @@ references for longer-term editorial direction.
 
 ### Operations and quality
 
+- [x] **Document quick production subscriber queries — issue #134** — 2026-08-17
+  - Added copy-and-paste, read-only Railway/PostgreSQL commands to list active
+    Aflora subscriber emails and to return their total without exposing
+    credentials in the documentation.
+  - Completion check: the two commands were run against production and returned
+    the expected active-subscriber list and count.
+
 - [x] **Document domain, DNS, and email-sending setup** — 2026-07-20
   - Added an ownership record, Railway custom-domain flow, Resend authentication
     flow, GitHub environment notes, launch checks, and a quarterly review cadence.

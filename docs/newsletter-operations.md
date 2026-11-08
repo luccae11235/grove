@@ -200,6 +200,45 @@ It also reports bounces, complaints, suppressions, and top links. Webhook ids ar
 deduplicated because delivery providers retry and events can arrive out of order.
 Recipient addresses are not copied into the analytics table.
 
+## Consult active subscribers in production
+
+Use these commands when you need to check who will receive the next Aflora
+issue. An address is eligible only when its database status is `active`; pending,
+unsubscribed, bounced, complained, and suppressed addresses are excluded.
+
+### Prerequisites
+
+- Run the commands in a terminal where the Railway CLI is authenticated for the
+  Aflora project.
+- Install `psql` (PostgreSQL command-line client) and `jq`.
+- Treat the output as personal data: use a private terminal and do not paste the
+  list into public issues, pull requests, or logs.
+
+The commands obtain Railway's temporary public database URL only in the current
+shell, then make a read-only `SELECT` query. They do not add, change, unsubscribe,
+or send email to anyone.
+
+### List every eligible email
+
+Copy and paste this whole line. It prints one active email address per line, in
+alphabetical order:
+
+```bash
+aflora_db_url="$(railway variable list --project d2efc164-2ee3-4174-9dd9-02a60301d3f7 --environment production --service Postgres-W7GK --json | jq -r '.DATABASE_PUBLIC_URL')" && psql "$aflora_db_url" -X -A -t -c "SELECT email FROM newsletter_subscribers WHERE status = 'active' ORDER BY email;"
+```
+
+### Show only the eligible total
+
+Copy and paste this whole line. It prints only the count of active addresses:
+
+```bash
+aflora_db_url="$(railway variable list --project d2efc164-2ee3-4174-9dd9-02a60301d3f7 --environment production --service Postgres-W7GK --json | jq -r '.DATABASE_PUBLIC_URL')" && psql "$aflora_db_url" -X -A -t -c "SELECT count(*) FROM newsletter_subscribers WHERE status = 'active';"
+```
+
+If either command reports that Railway is not authenticated, run `railway login`
+and try again. If it reports that `psql` or `jq` is missing, install that tool and
+rerun the same command.
+
 Run retention maintenance monthly. It is a dry run unless the exact deletion
 confirmation is supplied:
 
