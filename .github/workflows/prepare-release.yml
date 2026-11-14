@@ -58,7 +58,7 @@ jobs:
           ## Release gate
 
           - [ ] All required quality checks pass.
-          - [ ] The complete change was reviewed in Railway staging.
+          - [ ] The complete change was reviewed in staging and the static-site-domain artifact was reviewed for static hosting.
           - [ ] Draft content is absent from the production build.
           - [ ] Legal/contact placeholders required by this release are resolved.
           - [ ] The post-deploy platform smoke test is ready to run.

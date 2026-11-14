@@ -4,7 +4,7 @@ import { getNewsletterIssueEntry, getNewsletterIssues, type NewsletterIssue } fr
 import NewsletterEmailLayout from "../../../layouts/NewsletterEmailLayout.astro";
 
 export function getStaticPaths() {
-  return getNewsletterIssues("en").map((issue) => ({
+  return (import.meta.env.PUBLIC_STATIC_SITE === "true" ? [] : getNewsletterIssues("en")).map((issue) => ({
     params: { slug: issue.routeSlug },
     props: { issue },
   }));

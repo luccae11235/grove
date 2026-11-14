@@ -50,7 +50,28 @@ pnpm run check
 
 This runs type checks, algorithm tests, and the production build.
 
-## Newsletter workflow
+## Free static hosting
+
+The migration target is **GitHub Pages with a public repository**. Build without
+Railway, Resend, PostgreSQL or API credentials:
+
+```bash
+pnpm build:static
+pnpm test:static
+pnpm preview
+```
+
+The portable output is `apps/web/dist`. The static profile preserves articles,
+interactive labs, both languages, RSS and social previews; replaces email signup
+with RSS; and disables feedback and readership APIs. CI tests both `aflora.page`
+and the `/grove/` GitHub Pages path. Production publication consumes the exact
+artifact from a successful main Quality checks run, after explicit cutover.
+
+See the [migration and retirement checklist](docs/static-hosting-migration.md)
+for GitHub visibility, Pages setup, DNS, backup, rollback and Railway cancellation.
+Hosting can be free; retaining `aflora.page` still requires domain renewal.
+
+## Legacy newsletter workflow
 
 Draft issues render to a web archive, an email-safe HTML document, and a plain
 text alternative from the same MDX source. Subscription delivery is disabled
@@ -77,8 +98,8 @@ service URL and explicit web build switch are configured. See the
 - **Published-only navigation:** the public library reflects what exists, not a speculative roadmap.
 - **Learning graph:** stable article IDs connect prerequisites, automatic backlinks, and related paths without coupling references to URLs.
 - **Static-first:** Python produces deterministic lesson artifacts at build time,
-  keeping the published site portable while Railway serves the official
-  staging and production environments.
+  keeping the published site portable across static hosts. Railway remains the
+  transition host until the migration checklist is complete.
 - **English-first, translation-ready:** the first interface is English, with shared navigation and shell copy kept behind a locale boundary.
 
 ## Planning

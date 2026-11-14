@@ -5,7 +5,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 <BaseLayout
   title="Unsubscribe from the newsletter"
-  description="Confirm that you want to unsubscribe from Aflora's newsletter."
+  description={import.meta.env.PUBLIC_STATIC_SITE === "true" ? "Newsletter archive; follow free articles via RSS." : "Confirm that you want to unsubscribe from Aflora's newsletter."}
   translations={{ "pt-BR": "/pt-br/newsletter/unsubscribe/" }}
   noindex
 >

@@ -31,7 +31,7 @@ concurrency:
 
 jobs:
   delivery:
-    if: github.actor == 'luccae11235'
+    if: github.actor == 'luccae11235' && vars.STATIC_HOSTING_ENABLED != 'true'
     runs-on: ubuntu-latest
     env:
       ISSUE_ID: ${{ inputs.issue }}

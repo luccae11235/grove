@@ -1,14 +1,16 @@
 ---
+import NewsletterRetired from "../../../components/NewsletterRetired.astro";
 import NewsletterSignup from "../../../components/NewsletterSignup.astro";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout
   title="Newsletter"
-  description="A newsletter semanal da Aflora para tornar ideias difíceis visuais e interativas."
+  description={import.meta.env.PUBLIC_STATIC_SITE === "true" ? "Arquivo da newsletter; acompanhe os artigos gratuitos pelo RSS." : "A newsletter semanal da Aflora para tornar ideias difíceis visuais e interativas."}
   locale="pt-BR"
   translations={{ en: "/newsletter/" }}
 >
+  {import.meta.env.PUBLIC_STATIC_SITE === "true" ? <NewsletterRetired locale="pt-BR" /> : (<>
   <header class="page-header newsletter-header">
     <p class="eyebrow">A edição semanal</p>
     <h1>Uma ideia difícil.<br />Feita para explorar.</h1>
@@ -20,12 +22,13 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
 
   <NewsletterSignup locale="pt-BR" source="newsletter-archive-pt" />
 
+  </>)}
   <section class="newsletter-archive" aria-labelledby="newsletter-archive-title">
     <p class="eyebrow">Arquivo</p>
     <h2 id="newsletter-archive-title">Edições anteriores</h2>
     <div class="newsletter-empty">
       <strong>As edições em português estão em preparação.</strong>
-      <p>Enquanto isso, você já pode receber as próximas publicações e explorar as lições da Aflora.</p>
+      <p>Explore os artigos da Aflora em português.</p>
     </div>
   </section>
 </BaseLayout>

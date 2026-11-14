@@ -8,7 +8,7 @@ interface Props {
 }
 
 const { locale, contentType, contentId } = Astro.props;
-const enabled = import.meta.env.PUBLIC_OBSERVABILITY_ENABLED === "true";
+const enabled = import.meta.env.PUBLIC_STATIC_SITE !== "true" && import.meta.env.PUBLIC_OBSERVABILITY_ENABLED === "true";
 const apiBase = import.meta.env.PUBLIC_OBSERVABILITY_API_URL?.replace(/\/$/, "") ?? "";
 const consentVersion = import.meta.env.PUBLIC_OBSERVABILITY_CONSENT_VERSION?.trim() || "2026-07";
 if (enabled && !apiBase) {

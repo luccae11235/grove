@@ -7,7 +7,7 @@ interface Props {
 }
 
 const { locale, contentId } = Astro.props;
-const enabled = import.meta.env.PUBLIC_FEEDBACK_ENABLED === "true";
+const enabled = import.meta.env.PUBLIC_STATIC_SITE !== "true" && import.meta.env.PUBLIC_FEEDBACK_ENABLED === "true";
 const apiBase = import.meta.env.PUBLIC_OBSERVABILITY_API_URL?.replace(/\/$/, "") ?? "";
 if (enabled && !apiBase) {
   throw new Error("PUBLIC_OBSERVABILITY_API_URL is required when article feedback is enabled.");

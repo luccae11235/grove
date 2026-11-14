@@ -1,0 +1,82 @@
+name: Publish static Aflora
+
+on:
+  workflow_run:
+    workflows: [Quality checks]
+    branches: [main]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Deployment only consumes a successful, same-repository main push run.
+    # Enable explicitly during cutover, after the production-approved release.
+    if: >-
+      vars.STATIC_HOSTING_ENABLED == 'true' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Reject superseded release runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          EXPECTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          current_sha=$(gh api "repos/$REPOSITORY/git/ref/heads/main" --jq '.object.sha')
+          test "$current_sha" = "$EXPECTED_SHA"
+      - name: Download the exact website tested by Quality checks
+        uses: actions/download-artifact@v8
+        with:
+          name: static-site-domain
+          path: site
+          github-token: ${{ github.token }}
+          run-id: ${{ github.event.workflow_run.id }}
+      - name: Verify artifact revision and static profile
+        env:
+          EXPECTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync } from 'node:fs';
+          const version = JSON.parse(readFileSync('site/version.json', 'utf8'));
+          if (version.releaseSha !== process.env.EXPECTED_SHA || version.mode !== 'static') {
+            throw new Error('Artifact does not match the tested static release');
+          }
+          JS
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - name: Publish tested artifact
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Verify the published revision
+        if: vars.STATIC_DNS_LIVE == 'true'
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+          EXPECTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            if curl --fail --silent --show-error "${PAGE_URL%/}/version.json?revision=$EXPECTED_SHA" |
+              jq -e --arg sha "$EXPECTED_SHA" '.mode == "static" and .releaseSha == $sha'; then
+              exit 0
+            fi
+            sleep 10
+          done
+          exit 1

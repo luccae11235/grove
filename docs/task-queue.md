@@ -15,6 +15,27 @@ references for longer-term editorial direction.
 - Update the relevant phase checklist and completion check whenever its state
   changes; move completed cards to **Done** rather than deleting them.
 
+## Hosting migration — requested 2026-11-14
+
+- [ ] **Move Aflora to GitHub Pages Free and retire Railway** — In progress
+  - Issue: [#240](https://github.com/luccae11235/grove/issues/240).
+  - Owner chose GitHub Pages with a public repository; retain `aflora.page`.
+  - Implement and verify an API-free static build, localized RSS calls to action,
+    honest legacy subscription pages, CI artifacts and quality-gated deployment.
+  - Implemented: explicit static build, API-free localized reading and legacy
+    subscription notices, RSS, Pages workflow, CI review artifacts and runbook.
+  - Local verification: root and `/grove/` browser checks, desktop/mobile review,
+    type checks, unit tests, project validation, legacy newsletter artifacts,
+    actionlint and Gitleaks history review. No real credential identified.
+  - Pending: remote CI/staging review and production cutover. Railway CLI is not
+    authenticated in this session; current host and billing remain unchanged.
+  - Runbook: [static hosting migration](static-hosting-migration.md).
+  - Completion check: reviewed staging and green checks; owner-approved production
+    release; public repository and Pages configured; DNS/HTTPS and exact revision
+    verified; recoverable backup; Railway services and billing retired.
+  - Existing newsletter launch work is superseded by this requested retirement;
+    no broadcast or subscriber deletion is authorized by the migration.
+
 ## Delivery gate status
 
 | Phase | Gate | Status | Depends on |
