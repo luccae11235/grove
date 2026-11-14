@@ -30,8 +30,12 @@ references for longer-term editorial direction.
   - Repository made public as explicitly selected by the owner, after source,
     history and issue/PR-discussion credential scans. Pages Actions source and
     `aflora.page` domain prepared; no DNS change or production deployment.
-  - Pending: remote CI/staging review and production cutover. Railway CLI is not
-    authenticated in this session; current host and billing remain unchanged.
+  - Remote CI passed on `c1301cf`; Railway authentication restored 2026-11-14.
+    The exact CI static artifact `05e0cb0` was deployed to staging (deployment
+    `c19d3402-f13c-458c-b8c2-638cc737874f`) and all six remote browser scenarios
+    passed, including responsive images, bilingual navigation and lab hydration.
+  - Pending: integrate the reviewed feature and obtain production release approval;
+    DNS cutover, recoverable backups and provider/billing retirement remain open.
   - Runbook: [static hosting migration](static-hosting-migration.md).
   - Completion check: reviewed staging and green checks; owner-approved production
     release; public repository and Pages configured; DNS/HTTPS and exact revision

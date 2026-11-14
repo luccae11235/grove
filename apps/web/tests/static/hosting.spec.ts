@@ -20,7 +20,8 @@ test("static reading has RSS, no email promises and valid sharing metadata", asy
 test("old newsletter action links retire honestly without API calls", async ({ page }) => {
   const apiRequests: string[] = [];
   page.on("request", request => {
-    if (request.method() === "POST" || /\/v1\/|railway\.app|api\.aflora/.test(request.url())) apiRequests.push(request.url());
+    const url = new URL(request.url());
+    if (request.method() === "POST" || url.pathname.startsWith("/v1/") || /newsletter-api|observability-api|api\.aflora/.test(url.hostname)) apiRequests.push(request.url());
   });
   for (const locale of ["", "pt-br/"]) {
     for (const route of ["confirm", "confirmed", "manage", "unsubscribe"]) {
@@ -39,6 +40,8 @@ test("article labs and Portuguese navigation work without a backend", async ({ p
   await page.goto(path("learn/decision-trees/"));
   await expect(page.locator("h1")).toBeVisible();
   const lab = page.locator('[data-analytics-lab="threshold-intuition"]');
+  // The server-rendered button exists before React finishes loading over a network.
+  await lab.locator('astro-island:not([ssr])').waitFor();
   await lab.getByRole("button", { name: "Reveal the clearest first division" }).click();
   await expect(lab.getByText("After checking every possible position,", { exact: false })).toBeVisible();
   await page.getByRole("link", { name: "Português (Brasil)", exact: true }).first().click();

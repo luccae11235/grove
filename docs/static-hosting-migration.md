@@ -123,6 +123,32 @@ has been assumed or added. RSS is the optional follow mechanism.
       if the artifact has expired, trigger a new Quality checks **push** via a new
       reviewed release (manual Quality checks runs cannot publish).
 
+## Staging evidence — 2026-11-14
+
+The exact `static-site-domain` artifact from successful CI run `43614313786`
+(feature code revision `c1301cf`, tested PR merge SHA `05e0cb052314942e766f0f2324982c7107773945`)
+was copied byte-for-byte into a temporary Caddy container and deployed to the
+existing Railway staging web service. Deployment:
+`c19d3402-f13c-458c-b8c2-638cc737874f`.
+
+[Review staging](https://grove-web-staging.up.railway.app/).
+`version.json` reports `mode=static` and the tested merge SHA. The container serves
+files only and adds `X-Robots-Tag: noindex, nofollow`; no service variables, APIs,
+production services or databases were changed. All six remote browser scenarios
+passed, including mobile/desktop, article hydration, locales, images/srcset, RSS,
+legacy action links and correct 404 behavior. Wait for the Astro island to finish
+hydrating before testing its first button interaction over a real network.
+
+Repeat the remote verification without starting a local server:
+
+```bash
+PLAYWRIGHT_STATIC_URL=https://grove-web-staging.up.railway.app/ pnpm test:static
+```
+
+Railway's normal `develop` autodeploy may replace this temporary artifact after
+integration; the deployment ID and artifact SHA above are the immutable review
+evidence. Production still requires its own approved release and Pages deployment.
+
 ## DNS cutover and verification
 
 Keep Railway running through this stage. Configure the custom domain on GitHub
