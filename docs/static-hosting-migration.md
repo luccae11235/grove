@@ -77,12 +77,15 @@ has been assumed or added. RSS is the optional follow mechanism.
       `observability-test-secret-at-least-32-characters` test fixture in test/CI
       files. No real credential was identified. Initial heuristic scan found zero private-key, GitHub-token,
       Resend-token or nonlocal database-credential patterns; this is not a complete
-      secret or personal-data audit. No tracked environment file besides `.env.example`,
+      personal-data audit. A further local scan of GitHub issues, PR conversations
+      and review comments (1.30 MB) found one generic-key match, verified as a
+      deployment UUID rather than a credential; email references belonged to the
+      operator. No tracked environment file besides `.env.example`,
       database dump, private key or backup archive was found in the local refs.
 - [ ] Review contact data and sender postal details; redact/move anything the owner
       does not intend to publish. Consider old attachments and delivery logs too.
-- [ ] Once disclosure review is accepted, change `luccae11235/grove` to public in
-      repository Settings → General → Danger Zone. The owner already selected
+- [x] After local disclosure review, changed `luccae11235/grove` to public in
+      repository Settings → General → Danger Zone (completed 2026-11-14). The owner already selected
       public visibility; the remaining gate is disclosure review, not choosing
       the provider again. GitHub visibility changes expose historical content.
 
@@ -91,9 +94,11 @@ has been assumed or added. RSS is the optional follow mechanism.
 - [ ] Complete the feature PR into `develop`, all checks and staging review.
 - [ ] Verify ownership of `aflora.page` in the account Pages settings before DNS
       cutover. Preserve the existing registrar/DNS zone and export its records.
-- [ ] Repository Settings → Pages → Source: **GitHub Actions**. Set custom domain
+- [x] Repository Settings → Pages → Source: **GitHub Actions**. Set custom domain
       `aflora.page` in Pages settings; an Actions deployment does not use a CNAME
-      file as its domain configuration.
+      file as its domain configuration. Actions source and `aflora.page` were
+      configured on 2026-11-14; DNS still points to Railway and no Pages artifact
+      has been deployed.
 - [ ] Configure the `github-pages` environment to permit only `main` deployments;
       add owner review protection if available. Keep `STATIC_HOSTING_ENABLED`
       unset/false until the approved production release is ready.
@@ -175,7 +180,8 @@ redeploying the previous tested static release through a reviewed release PR.
 
 ## Current boundary
 
-Implementation and tests prepare the migration. Public disclosure review, the
-production-approved release, DNS/TLS checks, verified backups and actual service /
+Implementation, tests, public repository and Pages configuration prepare the
+migration. The production-approved release, remote staging review, DNS/TLS checks,
+verified backups and actual service /
 subscription cancellation must be recorded separately. A green PR alone does not
 prove Railway billing stopped.

@@ -27,6 +27,9 @@ references for longer-term editorial direction.
   - Local verification: root and `/grove/` browser checks, desktop/mobile review,
     type checks, unit tests, project validation, legacy newsletter artifacts,
     actionlint and Gitleaks history review. No real credential identified.
+  - Repository made public as explicitly selected by the owner, after source,
+    history and issue/PR-discussion credential scans. Pages Actions source and
+    `aflora.page` domain prepared; no DNS change or production deployment.
   - Pending: remote CI/staging review and production cutover. Railway CLI is not
     authenticated in this session; current host and billing remain unchanged.
   - Runbook: [static hosting migration](static-hosting-migration.md).

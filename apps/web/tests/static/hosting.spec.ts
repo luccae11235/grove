@@ -87,7 +87,22 @@ test("published article images and licensing links stay within the deployment ba
 test("mobile reading and historical data contact remain usable", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(path("pt-br/"));
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  for (const font of ["system-ui", "Arial", "Verdana", "monospace"]) {
+    const fontStyle = await page.addStyleTag({ content: `:root { font-family: ${font}, sans-serif; }` });
+    for (const width of [320, 390]) {
+      await page.setViewportSize({ width, height: 844 });
+      const overflow = await page.evaluate(() => ({
+        title: (() => { const title = document.querySelector("h1")!; const range = document.createRange(); range.selectNodeContents(title); return { textRight: range.getBoundingClientRect().right, boxRight: title.getBoundingClientRect().right }; })(),
+        viewport: window.innerWidth,
+        page: document.documentElement.scrollWidth,
+        elements: [...document.querySelectorAll("body *")]
+          .filter(element => element.getBoundingClientRect().right > window.innerWidth + 1)
+          .slice(0, 5).map(element => element.tagName + "." + element.className),
+      }));
+      expect(overflow.page, JSON.stringify({ font, ...overflow })).toBeLessThanOrEqual(overflow.viewport);
+    }
+    await fontStyle.evaluate(node => node.remove());
+  }
   await page.screenshot({ path: "/tmp/aflora-240-mobile.png", fullPage: true });
   for (const locale of ["", "pt-br/"]) {
     await page.goto(path(`${locale}privacy/`));

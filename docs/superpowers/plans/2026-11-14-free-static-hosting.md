@@ -50,3 +50,7 @@ Files: .github/workflows/ci.yml; .github/workflows/deploy-pages.yml; .github/wor
   identified by Gitleaks across all 221 local commits; five test-fixture matches.
 - Production release approval, remote staging authentication, DNS, backup and
   billing cancellation remain external cutover gates, tracked in issue #240.
+
+- Remote CI exposed Portuguese hero text overflow with Linux fonts. Reproduced
+  locally with Verdana at 320px (text right=334.25, box right=304); allowed long
+  hero words to wrap without clipping. Regression checks four fonts at two widths.
