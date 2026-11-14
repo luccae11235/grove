@@ -101,7 +101,7 @@ test("mobile reading and historical data contact remain usable", async ({ page }
       }));
       expect(overflow.page, JSON.stringify({ font, ...overflow })).toBeLessThanOrEqual(overflow.viewport);
     }
-    await fontStyle.evaluate(node => node.remove());
+    await fontStyle.evaluate(node => node.parentNode?.removeChild(node));
   }
   await page.screenshot({ path: "/tmp/aflora-240-mobile.png", fullPage: true });
   for (const locale of ["", "pt-br/"]) {
