@@ -8,7 +8,8 @@ interface Props {
 }
 
 const { locale = "en", source = "website", compact = false } = Astro.props;
-const apiBase = import.meta.env.PUBLIC_NEWSLETTER_API_URL?.replace(/\/$/, "") ?? "";
+const staticSite = import.meta.env.PUBLIC_STATIC_SITE === "true";
+const apiBase = staticSite ? "" : (import.meta.env.PUBLIC_NEWSLETTER_API_URL?.replace(/\/$/, "") ?? "");
 const privacyContact = import.meta.env.PUBLIC_PRIVACY_CONTACT_EMAIL?.trim() ?? "";
 if (apiBase && !privacyContact) {
   throw new Error("PUBLIC_PRIVACY_CONTACT_EMAIL is required when newsletter signup is enabled.");
@@ -67,6 +68,7 @@ const copy = locale === "pt-BR"
       manage: "Already on the list? Manage or unsubscribe",
     };
 ---
+{staticSite ? <section class:list={["newsletter-signup", { compact }]}><p>{locale === "pt-BR" ? "Novos artigos, direto no seu leitor RSS." : "New articles, straight to your RSS reader."} <a href={`${base}${locale === "pt-BR" ? "/pt-br" : ""}/rss.xml`}>RSS →</a></p></section> : (<>
 
 <section class:list={["newsletter-signup", { compact }]} aria-labelledby={`newsletter-signup-${source}`}>
   <div class="newsletter-signup-copy">
@@ -115,6 +117,7 @@ const copy = locale === "pt-BR"
   </form>
 </section>
 
+</>)}
 <script>
   document.querySelectorAll<HTMLFormElement>("[data-newsletter-signup]").forEach((form) => {
     if (form.dataset.bound === "true") return;

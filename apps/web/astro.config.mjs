@@ -5,6 +5,7 @@ import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
+import remarkBasePath from "./remark-base-path.mjs";
 
 export default defineConfig({
   output: "static",
@@ -16,7 +17,7 @@ export default defineConfig({
     sitemap({ filter: (page) => !page.endsWith("/404/") }),
   ],
   markdown: {
-    processor: unified({ remarkPlugins: [remarkMath], rehypePlugins: [rehypeKatex] }),
+    processor: unified({ remarkPlugins: [remarkMath, [remarkBasePath, { base: process.env.BASE_PATH ?? "/" }]], rehypePlugins: [rehypeKatex] }),
   },
   vite: {
     resolve: {

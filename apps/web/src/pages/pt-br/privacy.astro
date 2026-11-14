@@ -1,4 +1,5 @@
 ---
+import StaticPrivacy from "../../components/StaticPrivacy.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
 const privacyContact = import.meta.env.PUBLIC_PRIVACY_CONTACT_EMAIL?.trim();
@@ -6,10 +7,11 @@ const privacyContact = import.meta.env.PUBLIC_PRIVACY_CONTACT_EMAIL?.trim();
 
 <BaseLayout
   title="Privacidade"
-  description="Como a Aflora trata consentimento e dados de entrega da newsletter."
+  description={import.meta.env.PUBLIC_STATIC_SITE === "true" ? "Privacidade no site estático da Aflora e dados de inscrições anteriores." : "Como a Aflora trata consentimento e dados de entrega da newsletter."}
   locale="pt-BR"
   translations={{ en: "/privacy", "pt-BR": "/pt-br/privacy" }}
 >
+  {import.meta.env.PUBLIC_STATIC_SITE === "true" ? <StaticPrivacy locale="pt-BR" contact={privacyContact} /> : (<>
   <header class="page-header">
     <p class="eyebrow">Última atualização · 2 de agosto de 2026</p>
     <h1>Privacidade na Aflora</h1>
@@ -46,4 +48,5 @@ const privacyContact = import.meta.env.PUBLIC_PRIVACY_CONTACT_EMAIL?.trim();
       <p>A pessoa responsável precisa configurar um contato público antes de habilitar as inscrições.</p>
     )}
   </article>
+  </>)}
 </BaseLayout>

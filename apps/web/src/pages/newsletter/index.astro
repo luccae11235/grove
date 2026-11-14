@@ -1,4 +1,5 @@
 ---
+import NewsletterRetired from "../../components/NewsletterRetired.astro";
 import NewsletterSignup from "../../components/NewsletterSignup.astro";
 import { getPublishedNewsletterIssues } from "../../content/issues";
 import BaseLayout from "../../layouts/BaseLayout.astro";
@@ -9,9 +10,10 @@ const issues = getPublishedNewsletterIssues("en");
 
 <BaseLayout
   title="Newsletter"
-  description="A weekly Aflora newsletter for difficult ideas made visual and interactive."
+  description={import.meta.env.PUBLIC_STATIC_SITE === "true" ? "Newsletter archive; follow free articles via RSS." : "A weekly Aflora newsletter for difficult ideas made visual and interactive."}
   translations={{ "pt-BR": "/pt-br/newsletter/" }}
 >
+  {import.meta.env.PUBLIC_STATIC_SITE === "true" ? <NewsletterRetired locale="en" /> : (<>
   <header class="page-header newsletter-header">
     <p class="eyebrow">The weekly edition</p>
     <h1>One difficult idea.<br />Made inspectable.</h1>
@@ -23,13 +25,14 @@ const issues = getPublishedNewsletterIssues("en");
 
   <NewsletterSignup source="newsletter-archive" />
 
+  </>)}
   <section class="newsletter-archive" aria-labelledby="newsletter-archive-title">
     <p class="eyebrow">Archive</p>
     <h2 id="newsletter-archive-title">Previous issues</h2>
     {issues.length === 0 ? (
       <div class="newsletter-empty">
         <strong>The first issue is in preparation.</strong>
-        <p>The complete decision-tree lesson is already available while the email edition goes through its delivery checks.</p>
+        <p>Explore the published articles in the Aflora library.</p>
       </div>
     ) : (
       <ol>

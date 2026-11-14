@@ -360,6 +360,7 @@ h1 {
 
 .home-intro h1 {
   max-width: 1020px;
+  overflow-wrap: anywhere;
   font-size: clamp(3.5rem, 7.7vw, 7.1rem);
   letter-spacing: -0.075em;
   line-height: 0.91;

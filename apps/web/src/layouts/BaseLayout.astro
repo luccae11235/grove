@@ -48,7 +48,10 @@ const localePrefix = locale === "pt-BR" ? "/pt-br" : "";
 const homeHref = `${base}${localePrefix}/` || "/";
 const articlesPath = locale === "pt-BR" ? "/pt-br/artigos" : "/articles";
 const articlesHref = `${base}${articlesPath}`;
+const staticSite = import.meta.env.PUBLIC_STATIC_SITE === "true";
 const newsletterHref = `${base}${localePrefix}/newsletter`;
+const updatesHref = staticSite ? `${base}${localePrefix}/rss.xml` : newsletterHref;
+const updatesLabel = staticSite ? "RSS" : siteCopy.navigation.newsletter;
 const aboutHref = `${base}${localePrefix}/about`;
 const availableTranslations = { [locale]: activePath, ...translations };
 const documentTitle = title === siteCopy.brand ? title : `${title} · ${siteCopy.brand}`;
@@ -125,7 +128,7 @@ const alternateOgLocales = Object.keys(availableTranslations)
         <Brand href={homeHref} locale={locale} />
         <nav class="header-nav" aria-label={siteCopy.navigation.primary}>
           <a href={articlesHref} aria-current={activePath === articlesPath ? "page" : undefined}>{locale === "pt-BR" ? "Artigos" : "Articles"}</a>
-          <a href={newsletterHref}>{siteCopy.navigation.newsletter}</a>
+          <a href={updatesHref}>{updatesLabel}</a>
           <a href={aboutHref}>{siteCopy.navigation.about}</a>
         </nav>
         <div class="header-actions">
@@ -136,7 +139,7 @@ const alternateOgLocales = Object.keys(availableTranslations)
             </summary>
             <nav class="header-menu-panel" aria-label={siteCopy.navigation.primary}>
               <a href={articlesHref} aria-current={activePath === articlesPath ? "page" : undefined}>{locale === "pt-BR" ? "Artigos" : "Articles"}</a>
-              <a href={newsletterHref}>{siteCopy.navigation.newsletter}</a>
+              <a href={updatesHref}>{updatesLabel}</a>
               <a href={aboutHref}>{siteCopy.navigation.about}</a>
               <LanguageSwitcher locale={locale} translations={availableTranslations} base={base} />
             </nav>

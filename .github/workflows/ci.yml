@@ -231,3 +231,52 @@ jobs:
             apps/web/dist/_astro
           if-no-files-found: error
           retention-days: 14
+
+  static-site:
+    name: Static site (${{ matrix.profile }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        include:
+          - profile: domain
+            site: https://aflora.page
+            base: /
+          - profile: github-subpath
+            site: https://luccae11235.github.io
+            base: /grove/
+    env:
+      SITE_URL: ${{ matrix.site }}
+      BASE_PATH: ${{ matrix.base }}
+      RELEASE_SHA: ${{ github.sha }}
+      PUBLIC_PRIVACY_CONTACT_EMAIL: ${{ vars.PUBLIC_PRIVACY_CONTACT_EMAIL }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @grove/web exec playwright install chromium --with-deps
+      - name: Build without runtime services despite inherited legacy flags
+        env:
+          SHOW_DRAFTS: "true"
+          PUBLIC_NEWSLETTER_API_URL: https://retired.invalid
+          PUBLIC_OBSERVABILITY_ENABLED: "true"
+          PUBLIC_OBSERVABILITY_API_URL: https://retired.invalid
+          PUBLIC_FEEDBACK_ENABLED: "true"
+        run: pnpm build:static
+      - name: Test static reading without APIs or PostgreSQL
+        run: pnpm test:static
+      - name: Upload the tested static website for review and deployment
+        uses: actions/upload-artifact@v7
+        with:
+          name: static-site-${{ matrix.profile }}
+          path: apps/web/dist
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14

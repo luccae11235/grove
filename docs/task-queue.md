@@ -15,6 +15,34 @@ references for longer-term editorial direction.
 - Update the relevant phase checklist and completion check whenever its state
   changes; move completed cards to **Done** rather than deleting them.
 
+## Hosting migration — requested 2026-11-14
+
+- [ ] **Move Aflora to GitHub Pages Free and retire Railway** — In progress
+  - Issue: [#240](https://github.com/luccae11235/grove/issues/240).
+  - Owner chose GitHub Pages with a public repository; retain `aflora.page`.
+  - Implement and verify an API-free static build, localized RSS calls to action,
+    honest legacy subscription pages, CI artifacts and quality-gated deployment.
+  - Implemented: explicit static build, API-free localized reading and legacy
+    subscription notices, RSS, Pages workflow, CI review artifacts and runbook.
+  - Local verification: root and `/grove/` browser checks, desktop/mobile review,
+    type checks, unit tests, project validation, legacy newsletter artifacts,
+    actionlint and Gitleaks history review. No real credential identified.
+  - Repository made public as explicitly selected by the owner, after source,
+    history and issue/PR-discussion credential scans. Pages Actions source and
+    `aflora.page` domain prepared; no DNS change or production deployment.
+  - Remote CI passed on `c1301cf`; Railway authentication restored 2026-11-14.
+    The exact CI static artifact `05e0cb0` was deployed to staging (deployment
+    `c19d3402-f13c-458c-b8c2-638cc737874f`) and all six remote browser scenarios
+    passed, including responsive images, bilingual navigation and lab hydration.
+  - Pending: integrate the reviewed feature and obtain production release approval;
+    DNS cutover, recoverable backups and provider/billing retirement remain open.
+  - Runbook: [static hosting migration](static-hosting-migration.md).
+  - Completion check: reviewed staging and green checks; owner-approved production
+    release; public repository and Pages configured; DNS/HTTPS and exact revision
+    verified; recoverable backup; Railway services and billing retired.
+  - Existing newsletter launch work is superseded by this requested retirement;
+    no broadcast or subscriber deletion is authorized by the migration.
+
 ## Delivery gate status
 
 | Phase | Gate | Status | Depends on |
