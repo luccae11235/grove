@@ -7,7 +7,7 @@ import {
 import { renderIssueText } from "../../../content/newsletterArtifacts";
 
 export const getStaticPaths = (() =>
-  getNewsletterIssues("en").map((issue) => ({
+  (import.meta.env.PUBLIC_STATIC_SITE === "true" ? [] : getNewsletterIssues("en")).map((issue) => ({
     params: { slug: issue.routeSlug },
     props: { issue },
   }))) satisfies GetStaticPaths;

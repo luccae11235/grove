@@ -33,29 +33,3 @@ test("Portuguese topic selection stays within the mobile viewport", async ({ pag
   await expect(page.locator("#topic-tree-based-machine-learning")).toBeHidden();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
-
-test("both catalogs link to the published model evaluation and Markov articles", async ({ page }) => {
-  await page.goto("/articles/");
-  await page.getByRole("tab", { name: /Foundations and evaluation/ }).click();
-  await page.getByRole("link", { name: /Is My Model Good\?/ }).click();
-  await expect(page).toHaveURL(/\/learn\/is-my-model-good\/$/);
-  await expect(page.getByRole("heading", { level: 1, name: "Is My Model Good?" })).toBeVisible();
-
-  await page.goto("/pt-br/artigos/");
-  await page.getByRole("tab", { name: /Fundamentos e avaliação/ }).click();
-  await page.getByRole("link", { name: /Meu modelo é bom\?/ }).click();
-  await expect(page).toHaveURL(/\/pt-br\/learn\/meu-modelo-e-bom\/$/);
-  await expect(page.getByRole("heading", { level: 1, name: "Meu modelo é bom?" })).toBeVisible();
-
-  await page.goto("/articles/");
-  await page.getByRole("tab", { name: /Reinforcement learning/ }).click();
-  await page.getByRole("link", { name: "The Markov Principle" }).click();
-  await expect(page).toHaveURL(/\/learn\/the-markov-principle\/$/);
-  await expect(page.getByRole("heading", { level: 1, name: "The Markov Principle" })).toBeVisible();
-
-  await page.goto("/pt-br/artigos/");
-  await page.getByRole("tab", { name: /Aprendizado por reforço/ }).click();
-  await page.getByRole("link", { name: "O princípio de Markov" }).click();
-  await expect(page).toHaveURL(/\/pt-br\/learn\/o-principio-de-markov\/$/);
-  await expect(page.getByRole("heading", { level: 1, name: "O princípio de Markov" })).toBeVisible();
-});

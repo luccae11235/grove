@@ -1,10 +1,12 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import NewsletterSignup from "../../components/NewsletterSignup.astro";
-import { getPublishedArticles } from "../../content/articles";
+import { getVisibleArticles } from "../../content/articles";
 
+const staticSite = import.meta.env.PUBLIC_STATIC_SITE === "true";
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-const libraryArticles = getPublishedArticles("pt-BR");
+const libraryArticles = getVisibleArticles("pt-BR");
+const latestArticleId = libraryArticles.find((article) => article.status === "published" && article.publishedAt)?.id;
 const formatDate = (date?: Date) => date?.toLocaleDateString("pt-BR", {
   day: "numeric",
   month: "short",
@@ -29,7 +31,7 @@ const formatDate = (date?: Date) => date?.toLocaleDateString("pt-BR", {
     </p>
     <div class="hero-actions">
       <a class="button-link" href={`${base}/pt-br/artigos`}>Explore os artigos por tema <span aria-hidden="true">→</span></a>
-      <a class="quiet-link" href={`${base}/pt-br/newsletter`}>Receba o próximo artigo por e-mail</a>
+      <a class="quiet-link" href={`${base}/pt-br/${staticSite ? "rss.xml" : "newsletter"}`}>{staticSite ? "Acompanhe pelo RSS" : "Receba o próximo artigo por e-mail"}</a>
     </div>
     <p class="publication-note"><span aria-hidden="true"></span>Recém-plantada. Novos artigos são publicados com cuidado.</p>
   </section>
@@ -44,16 +46,19 @@ const formatDate = (date?: Date) => date?.toLocaleDateString("pt-BR", {
     </div>
 
     <div class="article-shelf" tabindex="0" aria-label="Todos os artigos">
-      {libraryArticles.map((article, index) => (
+      {libraryArticles.map((article) => (
         <a class="library-card" href={`${base}${article.href}`}>
           <span class="library-card-topline">
             <span class="library-card-topic">{article.topic}</span>
-            {article.publishedAt && (
+            {article.quickRead && <span class="quick-read-badge">Leitura rápida</span>}
+            {article.status === "published" && article.publishedAt
+              ? (
               <span class="library-card-publication">
-                {index === 0 && <span class="library-card-latest">Mais recente</span>}
+                {article.id === latestArticleId && <span class="library-card-latest">Mais recente</span>}
                 <time datetime={article.publishedAt.toISOString()}>{formatDate(article.publishedAt)}</time>
               </span>
-            )}
+              )
+              : <span class="library-card-status">Rascunho</span>}
           </span>
           <h3>{article.title}</h3>
           <p>{article.summary}</p>

@@ -19,6 +19,7 @@ export async function getStaticPaths() {
     "is-my-model-good",
     "the-markov-principle",
     "beyond-cart-tree-architectures",
+    "why-regression-trees-do-not-extrapolate",
     "categorical-features",
   ]);
   const includeDrafts =
@@ -63,6 +64,11 @@ const translations = entry.data.articleId === "reward-hacking-three-mdps"
     ? {
         en: "/learn/the-markov-principle/",
         "pt-BR": "/pt-br/learn/o-principio-de-markov/",
+      }
+  : entry.data.articleId === "why-regression-trees-do-not-extrapolate"
+    ? {
+        en: "/learn/why-regression-trees-stop-at-the-edge/",
+        "pt-BR": "/pt-br/learn/por-que-arvores-de-regressao-param-na-borda/",
       }
     : undefined;
 ---

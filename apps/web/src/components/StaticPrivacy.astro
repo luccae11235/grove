@@ -1,0 +1,20 @@
+---
+import type { Locale } from "../i18n";
+interface Props { locale: Locale; contact?: string }
+const { locale, contact } = Astro.props;
+const pt = locale === "pt-BR";
+---
+<header class="page-header">
+  <p class="eyebrow">{pt ? "Última atualização · 14 de novembro de 2026" : "Last updated · November 14, 2026"}</p>
+  <h1>{pt ? "Privacidade na Aflora" : "Privacy at Aflora"}</h1>
+  <p class="lede">{pt ? "Artigos gratuitos, sem inscrição e sem medição de leitura pela Aflora." : "Free articles, without signup or readership tracking by Aflora."}</p>
+</header>
+<article class="lesson-body policy-page">
+  <h2>{pt ? "Site estático" : "Static website"}</h2>
+  <p>{pt ? "Esta versão não coleta e-mails, avaliações ou atividade de leitura e não envia dados para as antigas APIs da Aflora. O provedor de hospedagem pode tratar registros técnicos, como o endereço de rede, para entregar e proteger os arquivos." : "This version does not collect email addresses, feedback or reading activity, and does not send data to Aflora’s former APIs. The hosting provider may process technical logs, such as network addresses, to deliver and protect files."} <a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement">{pt ? "Privacidade do GitHub" : "GitHub privacy"}</a>.</p>
+  <h2>{pt ? "Preferências no navegador" : "Browser preferences"}</h2>
+  <p>{pt ? "A preferência de idioma e o estado de alguns experimentos podem ficar no seu navegador. Você pode removê-los limpando os dados do site. RSS permite acompanhar os artigos sem informar um e-mail." : "Your language preference and the state of some experiments may stay in your browser. Clear site data to remove them. RSS lets you follow articles without providing an email address."}</p>
+  <h2>{pt ? "Inscrições anteriores" : "Previous subscriptions"}</h2>
+  <p>{pt ? "A newsletter foi desativada. Os links antigos não confirmam nem alteram inscrições e nenhum novo envio é solicitado por este site. A migração não implica a exclusão dos registros históricos de consentimento, supressão ou entrega. Solicitações sobre esses registros devem ser encaminhadas à pessoa responsável pela Aflora." : "The newsletter has been retired. Old links do not confirm or change subscriptions, and this site requests no new deliveries. Migration does not imply deletion of historical consent, suppression or delivery records. Requests about those records should be directed to the Aflora operator."}</p>
+  {contact && <p><a href={`mailto:${contact}`}>{contact}</a></p>}
+</article>

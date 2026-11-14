@@ -1,4 +1,5 @@
 ---
+import NewsletterRetired from "./NewsletterRetired.astro";
 import type { Locale } from "../i18n";
 
 interface Props {
@@ -6,7 +7,8 @@ interface Props {
 }
 
 const { locale = "en" } = Astro.props;
-const apiBase = import.meta.env.PUBLIC_NEWSLETTER_API_URL?.replace(/\/$/, "") ?? "";
+const staticSite = import.meta.env.PUBLIC_STATIC_SITE === "true";
+const apiBase = staticSite ? "" : (import.meta.env.PUBLIC_NEWSLETTER_API_URL?.replace(/\/$/, "") ?? "");
 const endpoint = apiBase ? `${apiBase}/v1/subscriptions/manage` : "";
 const copy = locale === "pt-BR"
   ? {
@@ -46,6 +48,7 @@ const copy = locale === "pt-BR"
       unavailable: "Management will be available when the newsletter service is connected.",
     };
 ---
+{staticSite ? <NewsletterRetired locale={locale} /> : (<>
 
 <section class="newsletter-management" aria-labelledby="newsletter-management-title">
   <p class="eyebrow">{copy.eyebrow}</p>
@@ -90,6 +93,7 @@ const copy = locale === "pt-BR"
   <p class="newsletter-management-privacy">{copy.privacy}</p>
 </section>
 
+</>)}
 <script>
   document.querySelectorAll<HTMLFormElement>("[data-newsletter-management]").forEach((form) => {
     if (form.dataset.bound === "true") return;

@@ -60,7 +60,7 @@ const utilitySections = [
             >
               <span class="nav-article">
                 <span>{article.navTitle}</span>
-                <small>{article.topic} · {getDifficultyLevel(article.difficulty, locale).label}</small>
+                <small>{article.topic} · {getDifficultyLevel(article.difficulty, locale).label}{article.quickRead && <> · {locale === "pt-BR" ? "Leitura rápida" : "Quick read"}</>}</small>
               </span>
             </a>
           </li>

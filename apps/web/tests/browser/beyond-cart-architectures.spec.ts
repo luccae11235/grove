@@ -54,6 +54,9 @@ test("soft routing exposes the threshold exception and an explicit hard-rule mod
 
   const input = playground.getByRole("slider", { name: /Input x/i });
   const temperature = playground.getByRole("slider", { name: /Temperature/i });
+  await expect(playground.getByRole("slider")).toHaveCount(2);
+  await expect(input).toHaveAttribute("data-beyond-cart-axis-slider", "true");
+  await expect(temperature.locator("xpath=ancestor::div[contains(@class, 'softControls')]")).toBeVisible();
   await input.fill("0");
   await expect(playground).toHaveAttribute("data-p-left", "0.500");
   await expect(playground).toHaveAttribute("data-p-right", "0.500");
@@ -70,6 +73,18 @@ test("soft routing exposes the threshold exception and an explicit hard-rule mod
   await expect(playground).toHaveAttribute("data-p-left", "0.000");
   await expect(playground).toHaveAttribute("data-p-right", "1.000");
   await expect(playground).toHaveAttribute("data-prediction", "8.00");
+
+  await temperature.fill("1");
+  await input.fill("0.2");
+  const axis = await input.boundingBox();
+  expect(axis).not.toBeNull();
+  if (!axis) return;
+  const thumbX = axis.x + 13 + (axis.width - 26) * (3.2 / 6);
+  await page.mouse.move(thumbX, axis.y + axis.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(thumbX - 36, axis.y + axis.height / 2, { steps: 8 });
+  await page.mouse.up();
+  await expect.poll(async () => Number(await playground.getAttribute("data-x"))).toBeLessThan(0);
 });
 
 test("the architecture builder guides one-axis changes without implying model fitting", async ({ page }) => {
@@ -134,7 +149,7 @@ test("the architecture builder guides one-axis changes without implying model fi
   await expect(builder.locator('[data-point-id^="offset-steps-"]')).toHaveCount(36);
 });
 
-test("both animations support explicit steps and timed playback", async ({ page }) => {
+test("hard routing uses the dot on the input axis while batch playback keeps its steps", async ({ page }) => {
   const hardRouting = page.locator('[data-beyond-cart-animation="hard-routing"]');
   const batch = page.locator('[data-beyond-cart-animation="batch-evaluation"]');
   await hardRouting.scrollIntoViewIfNeeded();
@@ -146,26 +161,29 @@ test("both animations support explicit steps and timed playback", async ({ page 
     element.closest("astro-island")?.hasAttribute("ssr") ?? false
   ))).toBe(false);
 
-  await expect(hardRouting).toHaveAttribute("data-beyond-cart-frame", "0");
-  await hardRouting.getByRole("button", { name: "Next" }).click();
-  await expect(hardRouting).toHaveAttribute("data-beyond-cart-frame", "1");
-  await hardRouting.locator("[data-beyond-cart-scrubber]").fill("3");
+  const input = hardRouting.getByRole("slider", { name: /Input x on the tree axis/i });
+  await expect(hardRouting.getByRole("slider")).toHaveCount(1);
+  await expect(hardRouting.getByRole("button")).toHaveCount(0);
+  await expect(input).toHaveAttribute("data-beyond-cart-axis-slider", "true");
   await expect(hardRouting).toHaveAttribute("data-beyond-cart-branch", "left");
   await expect(hardRouting.getByText(/Observation x = −0\.05 follows the left branch/)).toBeVisible();
-  await hardRouting.locator("[data-beyond-cart-scrubber]").fill("4");
+  await input.focus();
+  await page.keyboard.press("ArrowRight");
   await expect(hardRouting).toHaveAttribute("data-beyond-cart-branch", "right");
-  await expect(hardRouting.getByText(/Observation x = 0\.05 follows the right branch/)).toBeVisible();
+  await expect(hardRouting.getByText(/Observation x = 0\.0 follows the right branch/)).toBeVisible();
   await expect(hardRouting.getByText("Current prediction: 8", { exact: true })).toBeVisible();
-  await hardRouting.getByRole("button", { name: "Reset" }).click();
-  await expect(hardRouting).toHaveAttribute("data-beyond-cart-frame", "0");
 
-  await hardRouting.getByRole("button", { name: "Play", exact: true }).click();
-  await expect(hardRouting).toHaveAttribute("data-beyond-cart-playing", "true");
-  await expect.poll(async () => Number(await hardRouting.getAttribute("data-beyond-cart-frame")), {
-    timeout: 2_500,
-  }).toBeGreaterThan(0);
-  await hardRouting.getByRole("button", { name: "Pause", exact: true }).click();
-  await expect(hardRouting).toHaveAttribute("data-beyond-cart-playing", "false");
+  await input.fill("-0.05");
+  await input.scrollIntoViewIfNeeded();
+  const axis = await input.boundingBox();
+  expect(axis).not.toBeNull();
+  if (!axis) return;
+  const thumbX = axis.x + 13 + (axis.width - 26) * (1.45 / 3);
+  await page.mouse.move(thumbX, axis.y + axis.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(thumbX + 25, axis.y + axis.height / 2, { steps: 8 });
+  await page.mouse.up();
+  await expect(hardRouting).toHaveAttribute("data-beyond-cart-branch", "right");
 
   await batch.getByRole("button", { name: "Next" }).click();
   await batch.getByRole("button", { name: "Next" }).click();
@@ -180,22 +198,27 @@ test("both animations support explicit steps and timed playback", async ({ page 
   await expect(batch).toHaveAttribute("data-beyond-cart-step", "0");
 });
 
-test("reduced motion disables timed play while preserving manual explanation steps", async ({ page }) => {
+test("reduced motion preserves direct routing control and manual batch steps", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.reload();
 
-  for (const kind of ["hard-routing", "batch-evaluation"]) {
-    const animation = page.locator(`[data-beyond-cart-animation="${kind}"]`);
-    await animation.scrollIntoViewIfNeeded();
-    await expect.poll(() => animation.evaluate((element) => (
-      element.closest("astro-island")?.hasAttribute("ssr") ?? false
-    ))).toBe(false);
-    await expect(animation.locator("[data-beyond-cart-play]")).toBeDisabled();
-    await animation.locator("[data-beyond-cart-next]").click();
-  }
-  await expect(page.locator('[data-beyond-cart-animation="hard-routing"]')).toHaveAttribute("data-beyond-cart-frame", "1");
-  await expect(page.locator('[data-beyond-cart-animation="batch-evaluation"]')).toHaveAttribute("data-beyond-cart-step", "1");
-  await expect(page.getByText(/Timed play is off/)).toHaveCount(2);
+  const hardRouting = page.locator('[data-beyond-cart-animation="hard-routing"]');
+  const batch = page.locator('[data-beyond-cart-animation="batch-evaluation"]');
+  await hardRouting.scrollIntoViewIfNeeded();
+  await expect.poll(() => hardRouting.evaluate((element) => (
+    element.closest("astro-island")?.hasAttribute("ssr") ?? false
+  ))).toBe(false);
+  await hardRouting.getByRole("slider", { name: /Input x/i }).fill("0.05");
+  await expect(hardRouting).toHaveAttribute("data-beyond-cart-branch", "right");
+
+  await batch.scrollIntoViewIfNeeded();
+  await expect.poll(() => batch.evaluate((element) => (
+    element.closest("astro-island")?.hasAttribute("ssr") ?? false
+  ))).toBe(false);
+  await expect(batch.locator("[data-beyond-cart-play]")).toBeDisabled();
+  await batch.locator("[data-beyond-cart-next]").click();
+  await expect(batch).toHaveAttribute("data-beyond-cart-step", "1");
+  await expect(batch.getByText(/Timed play is off/)).toBeVisible();
 });
 
 for (const viewport of [

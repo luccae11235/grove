@@ -1,14 +1,16 @@
 ---
+import NewsletterRetired from "../../../components/NewsletterRetired.astro";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout
   title="Inscrição confirmada"
-  description="Sua inscrição na newsletter da Aflora foi confirmada."
+  description={import.meta.env.PUBLIC_STATIC_SITE === "true" ? "Arquivo da newsletter; acompanhe os artigos gratuitos pelo RSS." : "Sua inscrição na newsletter da Aflora foi confirmada."}
   locale="pt-BR"
   noindex
 >
+  {import.meta.env.PUBLIC_STATIC_SITE === "true" ? <NewsletterRetired locale="pt-BR" /> : (<>
   <header class="page-header newsletter-confirmation" data-confirmation>
     <p class="eyebrow">Newsletter</p>
     <h1 data-confirmation-title>Você está na lista.</h1>
@@ -17,6 +19,7 @@ const base = import.meta.env.BASE_URL;
     </p>
     <p><a class="button-link" href={`${base}pt-br/`} data-confirmation-action>Explorar a Aflora →</a></p>
   </header>
+  </>)}
 </BaseLayout>
 
 <script>

@@ -90,13 +90,6 @@ function SoftRoutingDiagram({
       <text className={styles.axisText} x="80" y="72" textAnchor="middle">−3</text>
       <text className={styles.axisText} x="320" y="20" textAnchor="middle">threshold 0</text>
       <text className={styles.axisText} x="560" y="72" textAnchor="middle">3</text>
-      <circle
-        className={styles.observation}
-        cx={observationX}
-        cy="47"
-        r="8"
-        data-observation-x={format(x, 1)}
-      />
       <text className={styles.observationLabel} x={observationX} y="91" textAnchor="middle">
         x = {format(x, 1)}
       </text>
@@ -146,7 +139,6 @@ export function SoftRoutingPlayground() {
   const [x, setX] = useState(0.2);
   const [temperature, setTemperature] = useState(1);
   const result = softRoutingPrediction(x, temperature);
-  const modeLabel = result.hard ? "Explicit hard rule" : "Both paths contribute";
 
   return (
     <section
@@ -166,24 +158,38 @@ export function SoftRoutingPlayground() {
           <p className={styles.kicker}>Routing</p>
           <h3 id={`${id}-title`}>Soften one threshold</h3>
         </div>
-        <span className={result.hard ? styles.modeHard : styles.modeSoft}>{modeLabel}</span>
       </header>
 
-      <p className={styles.learningPrompt}>
-        <strong>Try one controlled change.</strong> Keep <i>x</i> at 0.2 and lower
-        temperature toward 0.1. Predict how the right-path weight will move. Then
-        cross the threshold without changing temperature.
+      <p className={styles.learningPrompt} id={`${id}-instruction`}>
+        <strong>Try one controlled change.</strong> Lower temperature with the slider
+        below while <i>x</i> stays at 0.2. Predict the right-path weight. Then drag
+        the green dot across zero (or focus it and use the arrow keys).
       </p>
 
       <div className={styles.softCanvas}>
-        <SoftRoutingDiagram
-          x={x}
-          temperature={temperature}
-          pLeft={result.pLeft}
-          pRight={result.pRight}
-          titleId={`${id}-diagram-title`}
-          descriptionId={`${id}-diagram-description`}
-        />
+        <div className={styles.softDiagramSurface}>
+          <SoftRoutingDiagram
+            x={x}
+            temperature={temperature}
+            pLeft={result.pLeft}
+            pRight={result.pRight}
+            titleId={`${id}-diagram-title`}
+            descriptionId={`${id}-diagram-description`}
+          />
+          <input
+            className={styles.axisSlider}
+            type="range"
+            min="-3"
+            max="3"
+            step="0.1"
+            value={x}
+            onInput={(event) => setX(Number(event.currentTarget.value))}
+            onChange={(event) => setX(Number(event.currentTarget.value))}
+            aria-label="Input x on the tree axis"
+            aria-describedby={`${id}-instruction`}
+            data-beyond-cart-axis-slider
+          />
+        </div>
       </div>
 
       <div className={styles.routingReadouts} aria-label="Current routing calculation">
@@ -202,21 +208,6 @@ export function SoftRoutingPlayground() {
       </div>
 
       <div className={styles.softControls}>
-        <label htmlFor={`${id}-input`}>
-          <span>Input x</span>
-          <strong>{format(x, 1)}</strong>
-          <input
-            id={`${id}-input`}
-            type="range"
-            min="-3"
-            max="3"
-            step="0.1"
-            value={x}
-            onInput={(event) => setX(Number(event.currentTarget.value))}
-            onChange={(event) => setX(Number(event.currentTarget.value))}
-          />
-          <small><span>−3</span><span>threshold 0</span><span>3</span></small>
-        </label>
         <label htmlFor={`${id}-temperature`}>
           <span>Temperature τ</span>
           <strong>{format(temperature, 1)}{temperature === 0 ? " · hard" : ""}</strong>

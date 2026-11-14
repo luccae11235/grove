@@ -75,8 +75,6 @@
   line-height: 1.2;
 }
 
-.modeHard,
-.modeSoft,
 .depthBadge {
   flex: 0 0 auto;
   margin-top: 3px;
@@ -90,16 +88,62 @@
   white-space: nowrap;
 }
 
-.modeSoft {
-  border-color: color-mix(in srgb, var(--beyond-green) 45%, var(--border));
-  background: var(--accent-soft);
-  color: var(--beyond-green-dark);
-}
-
 .softCanvas {
   border-block: 1px solid var(--border);
   background: color-mix(in srgb, var(--surface-subtle) 68%, var(--surface-raised));
   padding: 8px 20px 5px;
+}
+
+.softDiagramSurface {
+  position: relative;
+}
+
+.axisSlider {
+  position: absolute;
+  top: 16.4336%;
+  left: calc(12.5% - 13px);
+  width: calc(75% + 26px);
+  height: 44px;
+  margin: 0;
+  transform: translateY(-50%);
+  appearance: none;
+  box-sizing: border-box;
+  background: transparent;
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.axisSlider:active { cursor: grabbing; }
+.axisSlider:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.axisSlider::-webkit-slider-runnable-track { height: 4px; background: transparent; }
+.axisSlider::-moz-range-track { height: 4px; background: transparent; }
+
+.axisSlider::-webkit-slider-thumb {
+  width: 26px;
+  height: 26px;
+  margin-top: -11px;
+  appearance: none;
+  box-sizing: border-box;
+  border: 3px solid var(--surface-raised);
+  border-radius: 50%;
+  background: var(--beyond-green);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--beyond-green) 38%, transparent);
+  animation: axisPulse 2s ease-out infinite;
+}
+
+.axisSlider::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  box-sizing: border-box;
+  border: 3px solid var(--surface-raised);
+  border-radius: 50%;
+  background: var(--beyond-green);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--beyond-green) 38%, transparent);
+  animation: axisPulse 2s ease-out infinite;
+}
+
+@keyframes axisPulse {
+  65%, 100% { box-shadow: 0 0 0 11px transparent; }
 }
 
 .softDiagram,
@@ -144,13 +188,6 @@
   fill: var(--text-muted);
   font-size: 11px;
   font-weight: 650;
-}
-
-.observation {
-  fill: var(--text);
-  stroke: var(--surface-raised);
-  stroke-width: 4;
-  transition: cx 160ms ease;
 }
 
 .observationLabel {
@@ -283,8 +320,7 @@
 
 .softControls {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
+  grid-template-columns: 1fr;
   background: var(--surface-subtle);
   padding: 18px 24px 20px;
 }
@@ -680,8 +716,6 @@
   }
 
   .softControls {
-    grid-template-columns: 1fr;
-    gap: 17px;
     padding-right: 18px;
     padding-left: 18px;
   }
@@ -731,8 +765,6 @@
 }
 
 @container (max-width: 430px) {
-  .modeHard,
-  .modeSoft,
   .depthBadge {
     white-space: normal;
     text-align: center;
@@ -794,6 +826,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .axisSlider::-webkit-slider-thumb,
+  .axisSlider::-moz-range-thumb {
+    animation: none;
+  }
+
   .playground *,
   .playground *::before,
   .playground *::after {

@@ -5,7 +5,7 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
 
 <BaseLayout
   title="Gerenciar inscrição na newsletter"
-  description="Consulte ou cancele sua inscrição na newsletter da Aflora com segurança."
+  description={import.meta.env.PUBLIC_STATIC_SITE === "true" ? "Arquivo da newsletter; acompanhe os artigos gratuitos pelo RSS." : "Consulte ou cancele sua inscrição na newsletter da Aflora com segurança."}
   locale="pt-BR"
   translations={{ en: "/newsletter/manage/" }}
   noindex

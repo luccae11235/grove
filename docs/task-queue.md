@@ -15,6 +15,34 @@ references for longer-term editorial direction.
 - Update the relevant phase checklist and completion check whenever its state
   changes; move completed cards to **Done** rather than deleting them.
 
+## Hosting migration — requested 2026-11-14
+
+- [ ] **Move Aflora to GitHub Pages Free and retire Railway** — In progress
+  - Issue: [#240](https://github.com/luccae11235/grove/issues/240).
+  - Owner chose GitHub Pages with a public repository; retain `aflora.page`.
+  - Implement and verify an API-free static build, localized RSS calls to action,
+    honest legacy subscription pages, CI artifacts and quality-gated deployment.
+  - Implemented: explicit static build, API-free localized reading and legacy
+    subscription notices, RSS, Pages workflow, CI review artifacts and runbook.
+  - Local verification: root and `/grove/` browser checks, desktop/mobile review,
+    type checks, unit tests, project validation, legacy newsletter artifacts,
+    actionlint and Gitleaks history review. No real credential identified.
+  - Repository made public as explicitly selected by the owner, after source,
+    history and issue/PR-discussion credential scans. Pages Actions source and
+    `aflora.page` domain prepared; no DNS change or production deployment.
+  - Remote CI passed on `c1301cf`; Railway authentication restored 2026-11-14.
+    The exact CI static artifact `05e0cb0` was deployed to staging (deployment
+    `c19d3402-f13c-458c-b8c2-638cc737874f`) and all six remote browser scenarios
+    passed, including responsive images, bilingual navigation and lab hydration.
+  - Pending: integrate the reviewed feature and obtain production release approval;
+    DNS cutover, recoverable backups and provider/billing retirement remain open.
+  - Runbook: [static hosting migration](static-hosting-migration.md).
+  - Completion check: reviewed staging and green checks; owner-approved production
+    release; public repository and Pages configured; DNS/HTTPS and exact revision
+    verified; recoverable backup; Railway services and billing retired.
+  - Existing newsletter launch work is superseded by this requested retirement;
+    no broadcast or subscriber deletion is authorized by the migration.
+
 ## Delivery gate status
 
 | Phase | Gate | Status | Depends on |
@@ -42,9 +70,7 @@ references for longer-term editorial direction.
   - [x] Pass `pnpm check`, 19 numerical tests, five browser tests, and
     desktop/mobile review; verify the published-only metadata, assets, catalog,
     RSS, sitemap, unchanged article body, and exclusion of unrelated drafts.
-  - [x] Merge the approved publication PR #236 into `develop`.
-  - [x] Review exact staging revision `998049b50c7337885c713a97265d3e1cc7202ff6`:
-    15 platform checks and all five article browser tests passed.
+  - [ ] Review the exact staging revision after the publication PR is approved.
   - [ ] Obtain explicit release approval and verify the production revision
     and canonical article route.
   - Completion check: the published-only catalog, RSS, sitemap, metadata,
@@ -57,7 +83,6 @@ references for longer-term editorial direction.
   - Use the controlled owner-only delivery workflow once, then record accepted sends and observed delivery separately.
   - Completion check: production routes and the Issue 009 delivery report are verified without exposing the regression-tree extrapolation draft.
 
-
 - [ ] **Publish bilingual model evaluation and prepare owner-only Issue 008 test — issue #214**
   - Review both article locales, calculations, links, interactions, and email previews.
   - Publish only the selected article and Issue 008 after staging and production gates.
@@ -65,15 +90,15 @@ references for longer-term editorial direction.
   - Completion check: exact-SHA production verification and canonical routes pass;
     the Issue 008 test reaches the owner without a subscriber send or schedule.
 
-- [ ] **Publish Beyond CART — issue #202**
-  - Publish the reviewed English article on 2026-09-18 while keeping the Markov
-    principle article in draft.
-  - Record the missing Brazilian Portuguese counterpart under issue #203.
-  - Treat the production promotion and any newsletter work as separate gates;
-    this release must not create, send, or schedule a broadcast.
-  - Completion check: the full repository gate passes, exact-SHA staging and
-    production verification succeed, and the canonical article, library, RSS,
-    sitemap, and responsive layouts are reviewed.
+- [ ] **Explain why constant-leaf regression trees do not extrapolate — issue #209**
+  - [x] Record the learning scope, complete English editorial draft, visual contract,
+    and unsent email/LinkedIn drafts in `docs/article-plans/`.
+  - [x] Add matched English and Brazilian Portuguese article drafts and one
+    focused interactive example; keep both articles in `draft`.
+  - [x] Complete focused tests, full repository checks, and desktop/mobile
+    rendered review before requesting staging review.
+  - Completion check: the approved reader-facing drafts and interaction pass
+    all checks, with publication and newsletter delivery remaining separate.
 
 - [ ] **Develop the Markov principle article — issue #158**
   - [x] Add the complete supplied English manuscript with the title, chapter
@@ -148,26 +173,6 @@ references for longer-term editorial direction.
     two decision-tree articles, with exact-SHA deployment verification passing.
 
 ### Learning experience
-
-- [ ] **Release the topic article library — issue #217**
-  - Promote the bilingual catalog from issue #197; keep all article drafts
-    unpublished and exclude unrelated changes on `develop`.
-  - Completion check: CI passes and exact-SHA production checks confirm both
-    catalog routes, topic controls, mobile layout, existing article links, and
-    inaccessible draft routes.
-
-- [ ] **Organize the article library by editorial series — issue #197**
-  - Keep the home page's chronological horizontal shelf as the compact release
-    view, and add a dedicated, responsive library grouped by the existing
-    decision-tree, reinforcement-learning, and time-series metadata, with a
-    fallback for ungrouped articles.
-  - Let readers select one area from a left-side vertical topic list on desktop
-    and show only that area's articles; keep the selection usable on mobile and
-    by keyboard.
-  - Preserve article visibility rules, publication details, and both English
-    and Brazilian Portuguese experiences without changing article content.
-  - Completion check: focused grouping tests and relevant typecheck/build checks
-    pass, followed by representative desktop and mobile rendered review.
 
 - [ ] **Prepare the Reward Hacking article for release — issue #123**
   - Make the first checkpoint playground clearly explain that readers can move
@@ -302,6 +307,71 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [x] **Make the categorical-feature article easier to read — issue #233** — 2026-10-31
+  - Preserved the section sequence, ten-record example, 23 method figures and
+    three compact playgrounds; rewrote the article in plain English, removed
+    formulas and unnecessary split-score arithmetic, and used concrete examples
+    for smoothing, shared evidence, and label exclusion.
+  - Matched the introduction's single four-family list to the overview labels;
+    added X/y-to-encoded-X diagrams, consistent category-to-vector figures,
+    and a small native category-grouping tree.
+  - Completion check: `pnpm check`, 19 focused numerical tests, final typecheck
+    and draft build, five Chromium tests, desktop/mobile visual review, and
+    SVG text-bound checks passed. Preview and PR #234 updated for editorial review.
+
+- [x] **Apply the categorical-feature beta-reader revisions — issue #233** — 2026-10-29
+  - Preserved section order, all 23 method figures, and the three compact
+    playgrounds; clarified LOO's inverted training cue and a conservative frozen
+    supervised-encoder workflow with its data-efficiency tradeoff.
+  - Moved the three-decision map earlier, placed specialized James–Stein, GLMM,
+    and LightGBM mathematics in optional disclosures, added OOF reference IDs to
+    the existing legend, and added a closing transfer question with a hidden answer.
+  - Completion check: 19 focused numerical tests, five Chromium acceptance tests,
+    workspace typecheck, draft build, desktop/mobile visual review, and whitespace
+    checks passed. The refreshed preview and existing PR #234 contain the revisions.
+
+- [x] **Simplify the categorical-feature visuals after editorial review — issue #233** — 2026-10-29
+  - Preserved the prose and added 23 focused, accessible SVG figures alongside
+    the method sections, including paired variants within their shared figures.
+  - Replaced the dense dashboards with three compact family-end translation
+    playgrounds: one selector and category-to-representation outputs. Native tree
+    mechanisms are explained in their local figures; repeated source tables,
+    decision results, arithmetic panels, and secondary controls were removed.
+  - Completion check: `pnpm check`, 19 focused numerical/translation tests, four
+    browser acceptance tests, desktop/mobile visual review, and SVG text-bound
+    checks passed. The updated draft preview is ready for editorial judgment.
+
+- [x] **Rewrite the categorical-feature learning experience — issue #233** — 2026-10-29
+  - Replaced the earlier PR #227 proposal with the four-family manuscript from
+    PR #232, retaining the `categorical-features` draft identity and route.
+  - Implemented a native overview figure and four accessible, responsive method
+    playgrounds sharing the fictitious ten-record seed dataset; schematic vectors
+    and library snapshots are explicitly distinguished from fitted results.
+  - Completion check: `pnpm check`, final typecheck, 16 focused numerical tests,
+    five Chromium acceptance tests, published/draft builds, and desktop/mobile
+    visual review passed. The public route, catalog, RSS, and sitemap exclude
+    this draft. A local rendered preview is available for editorial judgment;
+    merge, staging deployment, publication, and delivery remain separate steps.
+
+- [x] **Translate the Markov principle article into Brazilian Portuguese — issue #207** — 2026-09-30
+  - Added a faithful `pt-BR` draft with aligned learning metadata, structure,
+    equations, figures, and all six interactive experiences.
+  - Localized reader-facing and accessible text in the shared figures and labs.
+  - Completion check: repository quality gates passed; both locales received
+    desktop and mobile rendered review; the pull request revision was reviewed
+    on staging before merging to `develop`.
+
+- [x] **Publish Beyond CART — issue #202** — 2026-09-18
+  - Published the reviewed English article through implementation PR #204 and
+    production release PR #205; exact staging revision `e8211c1` and production
+    revision `46a18e6` passed deployment verification in runs `35379494138` and
+    `35380532188`, respectively.
+  - Verified the canonical article, latest-library position, RSS, sitemap,
+    desktop/mobile containment, and continued production exclusion of the
+    Markov principle and model-evaluation drafts.
+  - Recorded Brazilian Portuguese translation parity under issue #203. No
+    provider draft, newsletter broadcast, or schedule was created.
+
 - [x] **Correct and simplify the Beyond CART learning experience — issue #199** — 2026-09-16
   - Corrected the soft-routing limit, oblique-tree comparison, split geometry,
     optimization language, and architecture terminology from the beta-reader
@@ -377,6 +447,19 @@ references for longer-term editorial direction.
     and the exact production revision passed verification.
 
 ### Learning experience
+
+- [x] **Organize and release the article library by topic — issues #197 and #217** — 2026-10-02
+  - Kept the chronological home shelf and added responsive English and Brazilian
+    Portuguese catalogs with keyboard-accessible topic selection.
+  - Promoted only the catalog and navigation from PR #198 through release PR
+    #218; drafts and unrelated `develop` changes stayed out of production.
+  - Completion check: full CI, five focused browser tests, desktop/mobile
+    rendered review, exact-SHA production smoke at `c24f3eb`, both catalog
+    routes, all 16 published article links, and draft-route 404s passed.
+
+- [x] **Simplify Beyond CART routing controls — issue #212** — 2026-10-01
+  - Moved both input controls onto the axis, removed hard-routing playback and duplicate x controls, kept the temperature slider, and added drag and keyboard guidance with a reduced-motion-aware pulse.
+  - Completion check: PR #213 passed all required checks; seven focused browser scenarios and desktop/mobile rendered review passed locally and on Railway staging at code revision `c95f86c`.
 
 - [x] **Refine the Beyond CART architecture builder — issue #192** — 2026-09-12
   - Expanded the fixed sample from 16 to 36 observations and added Diagonal,

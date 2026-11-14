@@ -36,6 +36,8 @@
     "test": "pnpm test:python && pnpm test:operations && pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
     "check": "pnpm typecheck && pnpm test && pnpm projects:validate && pnpm build && pnpm newsletter:prepare",
-    "newsletter:remind": "pnpm --filter @grove/newsletter-api remind"
+    "newsletter:remind": "pnpm --filter @grove/newsletter-api remind",
+    "build:static": "node scripts/operations/build-static.mjs",
+    "test:static": "pnpm --filter @grove/web exec playwright test --config playwright.static.config.ts"
   }
 }

@@ -8,6 +8,13 @@ release tasks. Update the relevant card's status and completion check when work
 changes its state; do not implement a queued task unless it is explicitly in
 scope for the current request.
 
+For Aflora article preparation in Notion's Building stage, read
+[`docs/article-plans/README.md`](docs/article-plans/README.md). Present
+research, learning scope, and a proposed bracketed learning structure to the
+editor, including visual ideas needed to judge the structure; wait for explicit
+structure approval before detailed visual design, the full first draft, or
+implementation. Preserve historical examples as source evidence.
+
 ## Required GitFlow
 
 Every repository change must follow this sequence:
