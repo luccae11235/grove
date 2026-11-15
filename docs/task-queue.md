@@ -38,6 +38,8 @@ references for longer-term editorial direction.
   - [x] Integrate only the editor's supplied writing style into structure preparation,
     including fluid titles and near-elimination of rhetorical colon/dash separators.
     Keep placeholder syntax and the prose-writing skill outside this amendment.
+  - [x] Apply the style to the data-systems preparation, including headings and
+    conceptual instructions; verify unchanged visual placeholders and source links.
   - PR: [#246](https://github.com/luccae11235/grove/pull/246), against `develop`.
     The editor rejected the initial narrative on 2026-11-15. The researched revision
     and new preparation are ready for editorial review; remote quality gates remain

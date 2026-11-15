@@ -152,3 +152,13 @@ No drafting workflow or article content was changed. Official skill validation a
 a fresh-context check of three titles, one conceptual block and one literal image
 placeholder passed. Full application checks were not repeated for this Markdown-only
 amendment.
+
+## Apply style to the preparation — 2026-11-15
+
+Revised the working title, headings, narrative thread and conceptual instructions
+in `docs/article-plans/data-systems-trade-offs.md` without changing the topic order
+or writing the draft. A comparative review identified one narrowed formulation
+about propagating/processing changes and two overloaded sentences; these were
+corrected. All visual placeholders, reference links and structural counts remain
+unchanged. Source and rejected-trial files were not edited. `git diff --check`
+passed; application tests were not repeated for this editorial-only change.
