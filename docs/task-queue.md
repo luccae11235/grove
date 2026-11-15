@@ -15,47 +15,6 @@ references for longer-term editorial direction.
 - Update the relevant phase checklist and completion check whenever its state
   changes; move completed cards to **Done** rather than deleting them.
 
-## Hosting migration — requested 2026-11-14
-
-- [ ] **Move Aflora to GitHub Pages Free and retire Railway** — In progress
-  - Issue: [#240](https://github.com/luccae11235/grove/issues/240).
-  - Owner chose GitHub Pages with a public repository; retain `aflora.page`.
-  - Implement and verify an API-free static build, localized RSS calls to action,
-    honest legacy subscription pages, CI artifacts and quality-gated deployment.
-  - Implemented: explicit static build, API-free localized reading and legacy
-    subscription notices, RSS, Pages workflow, CI review artifacts and runbook.
-  - Local verification: root and `/grove/` browser checks, desktop/mobile review,
-    type checks, unit tests, project validation, legacy newsletter artifacts,
-    actionlint and Gitleaks history review. No real credential identified.
-  - Repository made public as explicitly selected by the owner, after source,
-    history and issue/PR-discussion credential scans. Pages Actions source and
-    `aflora.page` domain configured.
-  - Remote CI passed on `c1301cf`; Railway authentication restored 2026-11-14.
-    The exact CI static artifact `05e0cb0` was deployed to staging (deployment
-    `c19d3402-f13c-458c-b8c2-638cc737874f`) and all six remote browser scenarios
-    passed, including responsive images, bilingual navigation and lab hydration.
-  - Feature PR #241 and owner-approved release #243 merged; production revision
-    `d8009c63579a08b9bfa643a684f0e9f099156e6b` passed all seven checks and
-    Pages publication run `43628322160`. The Pages backend serves `mode=static`
-    and that exact revision.
-  - Namecheap apex DNS changed to the four GitHub Pages A records and `www` to
-    `luccae11235.github.io` on 2026-11-15; both authoritative nameservers and
-    public resolvers confirm the records. GitHub certificate issuance is pending.
-  - Production and staging backups were encrypted and fully restored into
-    isolated temporary databases on 2026-11-15. The old detached PostgreSQL
-    volume was also archived, decrypted and verified by per-file hashes.
-    Recovery material is outside Git, in the owner's private backup folder.
-  - Pending: public-domain HTTPS and browser verification, Resend cleanup,
-    Railway resource and subscription retirement. Owner additionally authorized
-    retiring the other shared-workspace project after backup; its database
-    restores passed, but object-storage export currently returns `AccessDenied`.
-  - Runbook: [static hosting migration](static-hosting-migration.md).
-  - Completion check: reviewed staging and green checks; owner-approved production
-    release; public repository and Pages configured; DNS/HTTPS and exact revision
-    verified; recoverable backup; Railway services and billing retired.
-  - Existing newsletter launch work is superseded by this requested retirement;
-    no broadcast or subscriber deletion is authorized by the migration.
-
 ## Delivery gate status
 
 | Phase | Gate | Status | Depends on |
@@ -67,8 +26,8 @@ references for longer-term editorial direction.
 | 5 | Formalize publication | Done | Phases 2–4 |
 | 6 | Prove the newsletter in staging | Done | Phase 3 |
 | 7 | Configure the `aflora.page` domain | Done | Stable Railway services |
-| 8 | Open the newsletter | In progress | Phases 6 and 7 |
-| 9 | Protect operations | In progress | First encrypted local backup |
+| 8 | Open the newsletter | Retired by #240 | Static RSS publication |
+| 9 | Protect operations | Done for static retirement | Verified encrypted backups and live Pages probe |
 | 10 | Prepare future visualizations | Backlog | Current performance baseline |
 
 ## In progress
@@ -220,63 +179,6 @@ references for longer-term editorial direction.
   - Completion check: focused checks and the full repository gate pass, and
     representative desktop, tablet, and mobile layouts are visually verified.
 
-### Release and platform readiness
-
-- [ ] **Phase 8 — Open the newsletter**
-  - [x] Configure postal/contact details and the production segment.
-  - [x] Publish Issue 001, perform an internal send, and verify its report.
-  - [x] Review Gmail, mobile rendering, and plain text.
-  - [x] Enable public double-opt-in signup; the platform smoke verifies an
-    enabled form and public API audience.
-  - [x] Close issue #49: make confirmation failures recoverable and add secure
-    website subscription management.
-    - [x] Preserve delivered confirmation links when a reader requests another.
-    - [x] Allow provider failures to retry immediately and normal retries after
-      a one-minute per-address cooldown.
-    - [x] Add private status emails, expired-link recovery, and explicit
-      website unsubscribe in English and Brazilian Portuguese.
-    - [x] Cover the API, database migration, UI build, and deployment smoke
-      boundaries with automated tests.
-    - [x] Prove the complete flow in staging and promote the verified release to
-      production. Staging inbox delivery and the exact-release smoke passed on
-      `f2058f1`; production smoke passed all ten checks on `8d07633`.
-  - [ ] Make signup and confirmation feedback immediate on a real iPhone.
-  - [ ] Review a received issue in one non-Gmail mailbox provider.
-  - [x] Separate transactional confirmation reputation from broadcasts — issue #152.
-    - [x] Add a dedicated, verified transactional sending subdomain and keep
-      tracking disabled for confirmation and subscription-management mail.
-    - [x] Verify a real received confirmation passes SPF, DKIM, and DMARC and
-      review its placement before enabling the new identity in production.
-    - Completed 2026-08-21: `confirm.aflora.page` was verified in Resend with
-      dedicated DKIM, SPF, return-path MX, and monitored DMARC. Exact staging
-      revision `24ba23f7bd8f87a2960b4dad16d1064ee5135fe3` sent untracked
-      transactional messages that Gmail authenticated and placed in Personal.
-  - [ ] Require explicit reader action before confirmation — issue #154.
-    - In progress: add an explicit POST confirmation, scanner regression tests,
-      and a manual, audited expired-link reminder pipeline for the three
-      owner-selected pending recipients. Production release and recipient delivery
-      remain separate completion gates.
-    - A staging proof subscriber changed from pending to active 18 seconds after
-      delivery without an intentional link click; replace the confirmation
-      page's automatic redirect with an explicit, scanner-safe action.
-  - Completion check: real readers can subscribe, confirm, receive, and
-    unsubscribe safely.
-
-- [ ] **Phase 9 — Protect operations**
-  - [x] Run an exact-SHA production smoke after releases and every six hours.
-  - [x] Open or update one actionable GitHub incident on failure and close it
-    after recovery.
-  - [x] Prove PostgreSQL restoration in an isolated non-production database and
-    record the procedure in `database-recovery.md`.
-  - [x] Verify the existing Railway $5 usage alert and $10 hard usage limit.
-  - [x] Record operational ownership and the incident path.
-  - [x] Approve encrypted local PostgreSQL backups as the current small-audience
-    recovery policy.
-  - [x] Create, checksum, and decrypt-verify the first encrypted local backup
-    with `pnpm newsletter:backup`; the passphrase is stored in macOS Keychain.
-  - Completion check: failures are detected and data can be restored through a
-    tested procedure.
-
 ## Ready
 
 ### Public release
@@ -317,6 +219,101 @@ references for longer-term editorial direction.
     reader semantics, contrast, reduced motion, and small-screen behavior.
 
 ## Done
+
+### Static hosting retirement — 2026-11-15
+
+- [x] **Move Aflora to GitHub Pages Free and retire Railway** — issue [#240](https://github.com/luccae11235/grove/issues/240).
+  - Public repository and API-free static publication at `https://aflora.page`;
+    RSS replaces email signup and old subscription URLs explain retirement.
+  - Feature PR #241 and owner-approved release #243 merged. All seven quality
+    jobs passed; Pages run `43628322160`, attempt 3, passed the live exact-SHA probe.
+    Production: `d8009c63579a08b9bfa643a684f0e9f099156e6b`, `mode=static`.
+  - Namecheap apex and `www` now point to GitHub Pages. Both names have valid
+    TLS, HTTPS enforcement is on, and the old API/Railway DNS records are removed.
+    Mail records were preserved.
+  - Six remote browser scenarios passed on production, with desktop/mobile visual
+    review, both locales, labs, images, RSS, archives, retirement links and sharing
+    metadata. The historical privacy contact matches the configured address.
+  - Production/staging database archives were encrypted and fully restored;
+    all 15 tables matched, including a final source comparison before deletion.
+    The detached historical volume was also archived and hash-verified.
+    Backups and recovery instructions are in the owner's private backup folder.
+  - Retired both Resend webhooks and both application keys; contacts and sent
+    history remain. Removed six obsolete repository secrets and the temporary SSH
+    backup identity. No email was sent or scheduled.
+  - Railway accepted deletion of both Aflora environments, services and volumes;
+    permanent deletion is scheduled for 2026-11-17. The shared Hobby subscription
+    is already cancelled, with the current period ending 2026-11-21. Historical
+    usage may still appear on the final invoice. No renewal was requested.
+  - The owner also authorized retirement of the other shared-workspace project:
+    its database backups passed full restoration; inaccessible object files and
+    historical object backups were explicitly authorized for disposal without copy.
+  - Runbook: [static hosting migration](static-hosting-migration.md).
+  - Completion check: reviewed staging, green checks, approved production release,
+    public exact-SHA HTTPS verification, recoverable backups, provider retirement
+    accepted and subscription cancellation verified.
+
+### Historical runtime retirement
+
+- [x] **Retire the Phase 8 newsletter platform** — 2026-11-15
+  - Superseded by #240. The checklist below is historical; its unfinished email
+    improvements were not implemented or authorized for delivery by this migration.
+  - [x] Configure postal/contact details and the production segment.
+  - [x] Publish Issue 001, perform an internal send, and verify its report.
+  - [x] Review Gmail, mobile rendering, and plain text.
+  - [x] Enable public double-opt-in signup; the platform smoke verifies an
+    enabled form and public API audience.
+  - [x] Close issue #49: make confirmation failures recoverable and add secure
+    website subscription management.
+    - [x] Preserve delivered confirmation links when a reader requests another.
+    - [x] Allow provider failures to retry immediately and normal retries after
+      a one-minute per-address cooldown.
+    - [x] Add private status emails, expired-link recovery, and explicit
+      website unsubscribe in English and Brazilian Portuguese.
+    - [x] Cover the API, database migration, UI build, and deployment smoke
+      boundaries with automated tests.
+    - [x] Prove the complete flow in staging and promote the verified release to
+      production. Staging inbox delivery and the exact-release smoke passed on
+      `f2058f1`; production smoke passed all ten checks on `8d07633`.
+  - [ ] Make signup and confirmation feedback immediate on a real iPhone.
+  - [ ] Review a received issue in one non-Gmail mailbox provider.
+  - [x] Separate transactional confirmation reputation from broadcasts — issue #152.
+    - [x] Add a dedicated, verified transactional sending subdomain and keep
+      tracking disabled for confirmation and subscription-management mail.
+    - [x] Verify a real received confirmation passes SPF, DKIM, and DMARC and
+      review its placement before enabling the new identity in production.
+    - Completed 2026-08-21: `confirm.aflora.page` was verified in Resend with
+      dedicated DKIM, SPF, return-path MX, and monitored DMARC. Exact staging
+      revision `24ba23f7bd8f87a2960b4dad16d1064ee5135fe3` sent untracked
+      transactional messages that Gmail authenticated and placed in Personal.
+  - [ ] Require explicit reader action before confirmation — issue #154.
+    - In progress: add an explicit POST confirmation, scanner regression tests,
+      and a manual, audited expired-link reminder pipeline for the three
+      owner-selected pending recipients. Production release and recipient delivery
+      remain separate completion gates.
+    - A staging proof subscriber changed from pending to active 18 seconds after
+      delivery without an intentional link click; replace the confirmation
+      page's automatic redirect with an explicit, scanner-safe action.
+  - Completion check: real readers can subscribe, confirm, receive, and
+    unsubscribe safely.
+
+- [x] **Phase 9 — Protect operations** — static retirement completed 2026-11-15
+  - The final database archives passed full restoration; Pages now checks the
+    exact public SHA after deployment. The prior runtime checklist below is historical.
+  - [x] Run an exact-SHA production smoke after releases and every six hours.
+  - [x] Open or update one actionable GitHub incident on failure and close it
+    after recovery.
+  - [x] Prove PostgreSQL restoration in an isolated non-production database and
+    record the procedure in `database-recovery.md`.
+  - [x] Verify the existing Railway $5 usage alert and $10 hard usage limit.
+  - [x] Record operational ownership and the incident path.
+  - [x] Approve encrypted local PostgreSQL backups as the current small-audience
+    recovery policy.
+  - [x] Create, checksum, and decrypt-verify the first encrypted local backup
+    with `pnpm newsletter:backup`; the passphrase is stored in macOS Keychain.
+  - Completion check: failures are detected and data can be restored through a
+    tested procedure.
+
 
 ### Publishing and content
 

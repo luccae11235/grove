@@ -91,8 +91,9 @@ has been assumed or added. RSS is the optional follow mechanism.
 ## Prepare Pages and release
 
 - [ ] Complete the feature PR into `develop`, all checks and staging review.
-- [ ] Verify ownership of `aflora.page` in the account Pages settings before DNS
-      cutover. Preserve the existing registrar/DNS zone and export its records.
+- [x] Preserve the existing registrar/DNS zone and export its records.
+- [ ] Optional hardening: verify ownership of `aflora.page` in the account Pages
+      settings in addition to the active repository custom-domain association.
 - [x] Repository Settings → Pages → Source: **GitHub Actions**. Set custom domain
       `aflora.page` in Pages settings; an Actions deployment does not use a CNAME
       file as its domain configuration. Actions source and `aflora.page` were
@@ -146,7 +147,7 @@ PLAYWRIGHT_STATIC_URL=https://grove-web-staging.up.railway.app/ pnpm test:static
 
 Railway's normal `develop` autodeploy may replace this temporary artifact after
 integration; the deployment ID and artifact SHA above are the immutable review
-evidence. Production still requires its own approved release and Pages deployment.
+evidence. The production approval and publication evidence is recorded below.
 
 ## DNS cutover and verification
 
@@ -171,8 +172,32 @@ evidence. Production still requires its own approved release and Pages deploymen
 - Backup location: the owner's `Documents/Aflora Backups` folder, outside Git,
   owner-only permissions. Passphrase: macOS Keychain item
   `aflora-newsletter-backup`; never put it in issues, logs or this repository.
-- Pending: GitHub's custom-domain TLS certificate, public-domain browser checks,
-  `STATIC_DNS_LIVE`, provider cleanup and confirmed billing cancellation.
+- Completed: valid TLS for apex and `www` (certificate expires 2027-02-13),
+  HTTPS enforcement and canonical redirects. All six remote browser scenarios
+  passed on `https://aflora.page`; desktop/mobile visual review also passed.
+  Both privacy pages match the configured public contact. Sharing title/image
+  metadata was checked in the browser suite; LinkedIn posting was not performed.
+- `STATIC_DNS_LIVE=true`; Pages run `43628322160`, attempt 3, passed the public
+  exact-revision probe after publication. `STATIC_HOSTING_ENABLED=true` also
+  keeps the old newsletter delivery workflow disabled.
+- Resend: zero active/scheduled broadcasts; removed both retired webhooks and
+  the `grove-staging` / `aflora-production` keys. Both old keys subsequently
+  returned `API key is invalid`. Contacts, consent backups and sent history were
+  preserved; no email was sent. The unrelated Onboarding key was left in place.
+- Removed six obsolete GitHub repository secrets and revoked/removed the temporary
+  SSH backup identity. Mail DNS was preserved; `api` and the three Railway
+  verification records were removed after retirement.
+- Railway accepted project deletion at 2026-11-15T14:21:22Z, scheduled for permanent
+  deletion at 2026-11-17T14:21:22Z. The CLI reports the project as deleted. Billing
+  shows the Hobby subscription already cancelled, active only until 2026-11-21;
+  no renewal was requested. Previously accrued usage may still be invoiced.
+- The owner separately authorized deleting the other shared-workspace project.
+  Its two database archives were fully restored and its configuration encrypted.
+  Object storage returned `AccessDenied`; after being told the object counts and
+  sizes, the owner explicitly authorized disposal of those files and historical
+  backups without copy. That deletion is scheduled for 2026-11-17T14:03:48Z.
+- Recovery instructions and private verification/cancellation receipts are in the
+  same owner-only backup folder. Do not publish subscriber counts or config dumps.
 
 ### Cutover procedure
 
@@ -193,7 +218,8 @@ Propagation can take up to 24 hours. Verify from a clean browser/network:
       interactions; no forms/API calls or console errors; unknown URLs return 404.
 - [ ] `/rss.xml`, `/pt-br/rss.xml`, sitemap, robots, canonical/hreflang and OG image.
 - [ ] Existing newsletter web issues and old token/action URLs explain retirement.
-- [ ] LinkedIn Post Inspector sees correct title/image for a shared article URL.
+- [ ] Optional LinkedIn-specific check: inspect a shared article in Post Inspector.
+      The automated suite already verifies its HTML sharing title/image metadata.
 
 ## Retire recurring costs (only after verification)
 
