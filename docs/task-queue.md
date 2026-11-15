@@ -26,10 +26,19 @@ references for longer-term editorial direction.
     [proposed preparation](article-plans/data-systems-trade-offs.md).
   - [x] Run `pnpm check` successfully; seven database-dependent integration tests
     skip without a configured test database.
-  - [x] Complete independent final review with no important findings.
+  - [x] Complete an initial independent review; it checked format and preservation
+    but did not catch the narrative weaknesses later identified by the editor.
+  - [x] Rebuild the skill around researched storytelling and visual explanation,
+    with focused parallel research and synthesis; repeat the original and cache trials.
+  - [x] Review the new proposal with three independent simulated readers and edit
+    conceptual bridges, scope and visual development from their specific findings.
+    These hypotheses do not replace the editor's judgment or real reader research.
+  - [x] Validate the revised skill and rerun `pnpm check`; original input and rejected
+    first trial are preserved separately.
   - PR: [#246](https://github.com/luccae11235/grove/pull/246), against `develop`.
-    Skill creation and local testing are complete; remote quality gates and the
-    repository's staging review remain before merge. Article approval is separate.
+    The editor rejected the initial narrative on 2026-11-15. The researched revision
+    and new preparation are ready for editorial review; remote quality gates remain
+    before merge. Article approval is separate.
   - Keep the prose-writing skill and article publication outside this task.
   - Completion check: metadata validates, behavioral trials are reviewed, the example
     is available for editorial review, and an issue-linked PR passes repository gates.

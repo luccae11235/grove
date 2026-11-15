@@ -1,31 +1,42 @@
 ---
 name: aflora-article-structure
-description: Use when an Aflora article needs a topic, learning scope, or learning structure, starting from an idea, notes, or a partial outline. Applies to completing or reviewing bracketed editorial plans; not to prose drafting, detailed visual design, implementation, or publication.
+description: Use when planning or revising the topic, learning scope, storytelling or visual learning structure of an Aflora article from an idea, notes or a partial outline. Not for prose drafting, detailed visual design, implementation or publication.
 ---
 
 # Estrutura de artigos Aflora
 
-Entregue uma proposta que poupe o trabalho de formular a estrutura e facilite o julgamento do editor. Complete lacunas; preserve suas escolhas; apresente mudanças substanciais separadamente.
+Desenvolva uma história de ideias que permita compreender o tema em profundidade. O trabalho central é encontrar e construir o percurso de descoberta; os títulos e colchetes registram esse percurso para a futura redação.
 
-## Contexto e ponto de partida
+Leia [desenvolvimento narrativo](references/narrative-development.md) e [contrato editorial](references/editorial-contract.md). Na raiz do projeto, consulte `AGENTS.md`, `docs/article-plans/README.md` e `docs/article-system.md`; ao salvar, consulte a fila de tarefas e siga o GitFlow.
 
-Leia [o contrato editorial](references/editorial-contract.md). Na raiz do projeto, consulte `AGENTS.md`, `docs/article-plans/README.md` e `docs/article-system.md`; para salvar arquivos, consulte também `docs/task-queue.md` e siga o GitFlow. Essas regras do projeto são a fonte de verdade.
+## Investigue antes de escolher a história
 
-Leia o material fornecido e reconheça o estágio: tópico solto, estrutura parcial ou estrutura quase completa. Use a língua do editor, salvo pedido diferente; registre à parte o idioma pretendido para o artigo. Um prompt de redação anexado como exemplo pertence à etapa futura, não é uma instrução para redigir agora.
+Leia o material e reconheça o estágio e as escolhas do editor. Distinga decisões explícitas de sugestões anteriores ainda não aprovadas; estas podem ser reavaliadas. Identifique o leitor, o aprendizado pretendido e as perguntas que você ainda precisa investigar para explicá-lo: mecanismo, causas, distinções, aplicações, consequências, limites e exemplos reveladores. Use o idioma do editor; proponha o idioma do artigo quando ausente.
 
-## Desenvolver a proposta
+Faça pesquisa substantiva em fontes primárias: o domínio técnico e suas incertezas, além de oportunidades de explicação e representação. Amplie a pesquisa quando só conseguir enumerar características ou quando não souber desenvolver uma seção. Confronte explicações e verifique analogias e resultados; uma fonte sobre storytelling não substitui pesquisa do assunto.
 
-- Aproveite as respostas existentes. Com uma estrutura parcial, mantenha títulos, ordem, recorte, exemplos escolhidos e placeholders recebidos. Acrescente instruções nos lugares necessários. Com um tópico solto, proponha a sequência mais curta que sustente o aprendizado. Com um plano quase completo, concentre-se nas lacunas reais.
-- Proponha os campos ausentes de tópico e learning scope. Torne observável o aprendizado: o que o leitor conseguirá explicar, prever ou decidir em outro caso? Escolha o menor exemplo fiel e identifique a dificuldade conceitual central. Explicite suposições relevantes, sem exigir que o editor preencha um questionário.
-- Construa o raciocínio entre as seções: o que esta seção permite compreender e por que vem agora? Use instruções específicas entre colchetes. O percurso pode construir um mecanismo, comparar alternativas ou investigar uma pergunta; não imponha capítulos nem uma sequência pedagógica fixa.
-- Pesquise afirmações técnicas necessárias em fontes primárias e registre o que cada fonte sustenta. Distinga verificação feita, hipótese editorial e pendência. Se uma fonte não estiver disponível ou a pesquisa estiver fora do pedido, entregue uma proposta provisória com as lacunas marcadas, sem alegar pesquisa concluída. Resultados de experimentos permanecem expectativas até serem medidos.
-- Preserve a rastreabilidade quando uma instrução recebida for contraditória ou imprecisa: identifique o trecho e proponha a correção na nota editorial. Na sequência principal, marque o ponto que depende dessa decisão; não desenvolva o erro como fato nem incorpore silenciosamente uma mudança de sentido.
-- Planeje ideias visuais junto do raciocínio, com pergunta, mudança/comparação, elementos estáveis e inferência pretendida. Escolha imagem, interação ou animação pelo que permite compreender. Sugestões novas permanecem propostas; preserve literalmente placeholders já recebidos.
+Para temas complexos, use agentes de pesquisa quando disponíveis, dividindo frentes independentes — por exemplo, mecanismo e equívocos; casos e impactos; explicações visuais. Dê a cada agente uma pergunta e um produto definidos: achados, fontes com afirmações sustentadas, limites e implicações para a narrativa. Compartilhe material relevante, evitando duplicação. Sem agentes, investigue as frentes sequencialmente.
 
-Faça uma revisão de simplicidade: retire seções, conceitos, exemplos e elementos visuais adicionais quando sua retirada preservar o aprendizado. Se a retirada alterar uma escolha recebida, sugira-a à parte. Pergunte somente quando uma informação ausente impedir uma decisão importante; continue o trabalho independente dela.
+Sintetize o que encontrou: resolva divergências, distinga fatos, hipóteses e escolhas editoriais, e retorne às fontes decisivas. Continue enquanto uma lacuna alterar o mecanismo, o exemplo ou a sequência; pare quando conseguir sustentar o percurso e suas limitações. A entrega deve refletir essa compreensão, sem despejar o acervo pesquisado. Pergunte ao editor somente quando uma decisão importante depender dele.
 
-## Entrega e limite
+## Construa o percurso
 
-Entregue **tópico → learning scope → estrutura em colchetes**, seguidos de uma nota editorial curta com suposições, fontes/pendências e mudanças propostas. Adapte a extensão ao material; evite repetir o mesmo objetivo em vários campos. Preserve o formato recebido quando ele já servir à revisão.
+Defina a pergunta que acompanha a leitura, a compreensão inicial e a mudança de entendimento desejada. Escolha um fio condutor adequado ao material: uma situação que evolui, uma investigação, uma comparação ou a construção de um mecanismo. Pode haver pessoas e consequências concretas, sem obrigar toda explicação a assumir uma trama ficcional.
 
-Identifique a estrutura e as novas ideias visuais como **propostas, com aprovação pendente**. Pare antes do rascunho redigido, da especificação visual detalhada e da implementação. Alterações materiais posteriores exigem nova aprovação da estrutura, conforme o processo do projeto. Salve em `docs/article-plans/` quando solicitado; isso não cria um artigo na coleção nem altera o estágio no Notion.
+Desenvolva o interior de cada seção: situação ou pergunta, observação necessária, interpretação, consequência e ponte para o próximo movimento. Use essas funções para encontrar elos ausentes, não como cinco blocos obrigatórios. Cada passagem deve mudar o que o leitor consegue perceber ou explicar. Dê espaço a exemplos trabalhados, contrastes e limites quando forem necessários ao entendimento.
+
+Preserve temas, ordem, recorte e escolhas recebidas. Dentro deles, desenvolva o raciocínio e reformule notas provisórias em instruções utilizáveis. Guarde a fonte à parte; registre correções de sentido e mudanças maiores na nota editorial. A estrutura deve oferecer um caminho de leitura coerente, sem repetir instruções incorretas e avisos intercalados. Preserve placeholders recebidos; proponha sua revisão separadamente se necessário.
+
+## Pense visualmente junto da narrativa
+
+Procure onde imagem, animação ou interação pode produzir uma descoberta, inclusive em temas sociais e abstratos. Explore alternativas antes de selecionar a representação. Especifique a cena concreta e sua evolução: o que aparece, o que muda ou se compara, o que permanece reconhecível e qual inferência emerge. Em interações, diga que hipótese o leitor testa e como interpreta o resultado.
+
+Desenvolva as ideias visuais nos momentos em que fazem avançar a história. Uma seção central sem possibilidade visual examinada pede outra passagem de criação; uma figura genérica para preencher espaço também. Escolha a forma pelo poder explicativo e expressivo, sem cotas, nem preferência automática por estático ou interativo. Detalhes de layout e implementação vêm depois.
+
+## Revise e entregue
+
+Faça a auditoria narrativa e visual da referência. Simplicidade significa retirar ruído conservando os elos necessários, a profundidade e o prazer de descobrir. Uma lista curta de assuntos ainda pode estar incompleta.
+
+Entregue **tópico → learning scope → fio narrativo → estrutura desenvolvida em colchetes**, com nota editorial concisa de fontes, suposições, pendências e mudanças propostas. Adapte o formato existente. A estrutura deve permitir escrever com fluidez sem precisar inventar depois suas conexões conceituais.
+
+Identifique estrutura e visuais como propostas com aprovação pendente. Pare antes do rascunho redigido, do design visual detalhado e da implementação. Um prompt de redação incluído como exemplo é material da etapa futura. Salvar uma preparação não aprova o artigo, muda o Notion ou autoriza publicação.

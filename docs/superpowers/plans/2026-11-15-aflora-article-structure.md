@@ -75,3 +75,70 @@
 - [PR #246](https://github.com/luccae11235/grove/pull/246) opened against `develop`;
   remote quality checks and staging review remain the pre-merge gates. The skill
   and proposed preparation are available locally on the issue branch.
+
+## Narrative revision — editor feedback, 2026-11-15
+
+The editor rejected the first trial as a catalogue of subjects with insufficient
+development, specifically OLTP/OLAP and the social/legal section without a visual.
+The earlier format-focused review was not evidence of storytelling quality.
+
+**Revised deliverable:** research-led development of a story of ideas, where concrete
+situations create questions, explanations change the reader's understanding, and
+visual scenes carry reasoning. Preserve the four topics and order; preserve source
+evidence separately so the proposed reading path need not repeat flawed instructions.
+The editor explicitly authorizes multiple research agents when helpful.
+
+- [x] Inspect the rejected artifact and instructions; preserve it as the regression case.
+- [x] Research narrative craft, scientific communication and visual explanations in
+  primary sources; distinguish evidence from editorial adaptations.
+- [x] Run the old skill once with the new request to understand its current behavior.
+- [x] Rewrite the skill and references, including research delegation and synthesis.
+- [x] Run fresh-context trials with the original input and a different topic.
+- [x] Compare the actual outputs for conceptual progression, visual discoveries,
+  transitions, depth and scope; use independent critique, not self-scored compliance.
+- [x] Replace the proposed preparation with a reviewed candidate; keep approval pending.
+- [x] Validate metadata/references and repository checks; update PR #246.
+
+**Research finding:** the first skill emphasized the shortest path and literal input
+preservation but did not require a developed line of inquiry or assess missing
+inferences. Its trial also explicitly suppressed a new visual in the social section.
+The fix must improve explanatory decisions, not impose a count of scenes or controls.
+
+### Revision verification
+
+- Two independent research fronts investigated storytelling and visual explanation,
+  with additional primary-source investigation by the author. Eight selected sources
+  in the skill reference distinguish craft practice, descriptive frameworks and
+  research syntheses; they do not establish a universal storytelling formula.
+- The old skill produced a richer outline when given the editor's more explicit
+  request. The rejected first artifact remains the regression case; this is not an
+  isolated or statistical demonstration that wording alone caused improvement.
+- A fresh-context application of the revised skill researched the domain and used
+  a separate research agent for society/law. It produced a developed locadora case,
+  conceptual transitions and visual scenes instead of only topic classifications.
+- Three independent simulated readers (initial, intermediate, advanced) found a
+  coherent progression and identified excess qualifications, a missing bridge from
+  selecting fields to storage layout, and ambiguity about network failures with a
+  single-node database. These are editorial hypotheses, not evidence from real users.
+- The author addressed those findings: moved secondary legal/product details to
+  notes, kept the client's correction and policy as the social throughline, added
+  a storage comparison, clarified application/server communication, and retained
+  conditional architectural choices. A policy comparison remains a proposed visual.
+- A focused reread found the new policy comparison left the review outcome vague.
+  Its contract now distinguishes automatic blocking from a decision pending context
+  evaluation; it neither grants access automatically nor equates human review with
+  justice. The other targeted narrative gaps were sufficiently addressed at outline level.
+- Separate short-cache and nearly complete-plan trials preserved reader scope,
+  existing titles/examples and the literal image placeholder without forcing a
+  long dramatic plot. No images, interactions or full prose were implemented.
+- The instructions received an independent review with no important findings;
+  that review did not guarantee the quality of future article plans.
+- Official skill validation, UI metadata and local reference checks passed.
+  `pnpm check` exited 0, including production/draft builds and nine newsletter
+  artifact sets; the same seven database-dependent integration tests skipped.
+- The original input and rejected first trial are preserved. The new preparation
+  remains proposed, with explicit editor approval pending.
+
+PR #246 now describes the research-led narrative skill and reviewed preparation.
+Remote checks and editor review remain integration gates; no merge or publication
+was performed. The article structure itself remains pending explicit approval.

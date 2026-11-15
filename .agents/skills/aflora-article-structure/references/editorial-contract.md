@@ -1,56 +1,41 @@
 # Contrato editorial para a estrutura
 
-## Critérios que orientam decisões
+## Entrega utilizável pelo editor
 
-- **Visuais como parte da explicação:** cada visual responde a uma pergunta do leitor e revela uma relação. Interação testa uma hipótese; animação explica uma mudança ou processo; uma imagem estática pode permitir melhor comparação. Não há cota de visuais nem obrigação de um por seção.
-- **Simplicidade com profundidade:** mantenha o menor percurso que entrega o aprendizado, sem esconder pré-requisitos ou limites. Retire taxonomias, recapitulações e representações redundantes. Use aprofundamentos opcionais quando houver uma necessidade real.
-- **Aprendizado observável:** prefira uma capacidade central que possa ser aplicada em outro caso, acompanhada de uma previsão, explicação ou decisão que a torne verificável. Não transforme todo artigo em uma bateria de exercícios.
-- **Progressão e continuidade:** apresente o problema antes do vocabulário especializado que o resolve. Reutilize o exemplo quando ele continuar fiel; varie-o quando a variação ensinar uma diferença necessária. Ajuste a formalização ao conhecimento do leitor.
-- **Rigor:** explicite simplificações, limites de analogias e condições de afirmações. Separe resultados calculados de comportamentos esperados e conteúdo verificado de propostas. A estrutura deve funcionar para temas técnicos além de ML.
-- **Acessibilidade desde a ideia:** preserve a inferência sem depender só de cor, movimento ou interação. Na etapa de estrutura, registre apenas os requisitos que afetem a escolha pedagógica; layouts e especificações de teclado/mobile vêm depois.
-- **Decisão editorial humana:** uma sugestão plausível não é uma escolha aprovada. Distingua complementação, correção conceitual e mudança de arquitetura do artigo.
+Preserve o formato recebido quando ele ajudar a revisão. Uma base possível:
 
-## Forma de uma entrega
+1. **Tópico:** título provisório, pergunta ou ideia central, razão de existir.
+2. **Learning scope:** leitor e conhecimentos prévios, capacidade final, conceitos necessários, dificuldade central, exemplo e limites. Combine campos que expressem a mesma informação.
+3. **Fio narrativo:** um parágrafo ou sequência curta que mostre como a pergunta evolui e como os principais pontos se conectam. É uma proposta de história, não uma repetição do sumário.
+4. **Estrutura desenvolvida:** títulos e instruções entre colchetes que tornem concretos os movimentos de pensamento e as ideias visuais. Dê a cada movimento a extensão necessária para que o próximo redator consiga desenvolver o raciocínio, em vez de precisar planejá-lo de novo.
+5. **Nota editorial:** fontes com afirmações sustentadas e limitações; suposições relevantes; correções e mudanças maiores propostas; decisões ainda abertas. Mantenha a documentação da pesquisa separada da sequência de leitura.
 
-Use o formato do editor. Quando faltar um, esta é uma base adaptável:
+Um bloco pode orientar mais de um parágrafo e uma seção pode precisar de várias descobertas. Nem três tópicos genéricos nem uma trama extensa tornam uma seção boa por si só. A extensão depende do trabalho de compreensão necessário.
 
-### 1. Tópico
+## Preservar intenção sem congelar notas provisórias
 
-Título provisório; pergunta ou ideia central; por que merece um artigo.
+Com material parcial, mantenha temas, ordem, recorte, exemplos escolhidos e decisões do editor. Desenvolva e organize as ideias dentro dessas escolhas. Reformular uma anotação para torná-la útil ao raciocínio não equivale a aprovar uma mudança no sentido dela: registre correções conceituais na nota editorial e indique a proposta adotada. Guarde o original separadamente para comparação. Quando um ponto essencial não puder ser resolvido com pesquisa, destaque a decisão pendente sem apresentar o erro como fato.
 
-### 2. Learning scope
+Proponha à parte mudanças de ordem, exclusões de temas, troca de exemplos escolhidos ou outro recorte. Num plano quase completo, aprofunde lacunas reais; num tópico solto, proponha o percurso sem exigir um formulário ao editor.
 
-Tema central; objetivo observável e transferência; persona e pré-requisitos; conceitos de apoio; limites; dificuldade conceitual e menor exemplo fiel. Combine itens relacionados em vez de repetir informação. Inclua uma evidência simples de compreensão.
+Preserve literalmente placeholders já recebidos. Os marcadores `[IMAGE: ...]`, `[ANIMATION: ...]`, `[PLAYGROUND: ...]` e `[VISUALIZATION: ...]` são propostas editoriais, não pedidos de implementação. Planeje cenas conceituais suficientes para julgar a história, sem especificar agora pixels, componentes ou código. Colchetes também existem em matemática; interprete o significado.
 
-### 3. Estrutura do artigo
+## Critérios do Aflora
 
-Títulos e instruções que permitam redigir o raciocínio sem ter de planejá-lo novamente. Evite tanto indicações vagas como `[Explicar OLTP]` quanto parágrafos de artigo prontos disfarçados de colchetes.
+O diferencial é integrar narrativa, imagem e exploração para construir entendimento. Simplicidade retira trabalho desnecessário da leitura; não reduz a ambição do aprendizado a uma lista superficial. Acessibilidade, fidelidade técnica, limites de analogias e resultados verificáveis fazem parte da explicação. A skill funciona além de machine learning e não exige programação como pré-requisito por hábito.
 
-Exemplo de uma seção, não de um modelo obrigatório de artigo:
-
-```markdown
-## [Título da seção]
-
-[Retomar o problema concreto. Comparar duas alternativas e explicar a relação que distingue suas consequências. Indicar o limite da comparação e a pergunta que leva à próxima seção.]
-
-[VISUALIZATION: qual pergunta o leitor responde; o que muda; o que fica fixo; o que observar.]
-```
-
-Os marcadores `[IMAGE: ...]`, `[ANIMATION: ...]`, `[PLAYGROUND: ...]` e `[VISUALIZATION: ...]` são propostas editoriais, não pedidos de implementação. Interprete colchetes pelo significado; eles também aparecem em matemática. Não normalize nem traduza marcadores existentes sem solicitação.
-
-### Nota editorial
-
-Registre apenas o necessário para avaliar: suposições relevantes; fontes primárias com a afirmação que sustentam e limitações de acesso; pendências técnicas; mudanças propostas com motivo. Identifique mudanças maiores como não aplicadas. Encerre com aprovação da estrutura pendente.
+O editor julga o resultado. Mantenha aprovação de estrutura pendente; somente depois dela cabem redação integral, design visual detalhado e implementação. Uma nova preparação não altera o estágio no Notion nem autoriza publicação.
 
 ## Referências do projeto
 
-Caminhos relativos à raiz do repositório; consulte somente exemplos pertinentes:
+Caminhos relativos à raiz; consulte exemplos pertinentes, sem carregar todos:
 
 - `docs/article-plans/README.md`: sequência editorial e aprovação.
 - `docs/article-system.md`: contrato de aprendizagem e pré-requisitos.
-- `docs/article-plans/template.md`: preparação completa; aqui a entrega termina antes do design detalhado e do draft.
-- `docs/article-plans/why-regression-trees-stop-at-the-edge.md`: uma pergunta concentrada em uma interação.
-- `docs/article-plans/beyond-cart.md`: comparações orientadas por perguntas.
-- `docs/article-plans/gradient-boosting.md`: construção gradual de um mecanismo.
+- `docs/article-plans/template.md`: preparação completa; esta skill termina na revisão da estrutura.
+- `docs/article-plans/bagging-reduces-tree-variance.md`: situação recorrente e transições construídas por novas perguntas.
+- `docs/article-plans/gradient-boosting.md`: construção gradual com transformações visuais.
+- `docs/article-plans/beyond-cart.md`: comparação de escolhas por perguntas.
+- `docs/article-plans/why-regression-trees-stop-at-the-edge.md`: investigação concentrada.
 
-Os históricos preservam alternativas e problemas conhecidos; leia suas notas de revisão. Não são modelos integralmente aprovados. Não os corrija ou substitua durante uma nova preparação.
+Os exemplos têm escalas e estilos diferentes. Históricos podem conter dúvidas e problemas identificados em suas notas; preserve-os como fonte, sem tratá-los como modelos integralmente aprovados.
