@@ -29,13 +29,26 @@ references for longer-term editorial direction.
     actionlint and Gitleaks history review. No real credential identified.
   - Repository made public as explicitly selected by the owner, after source,
     history and issue/PR-discussion credential scans. Pages Actions source and
-    `aflora.page` domain prepared; no DNS change or production deployment.
+    `aflora.page` domain configured.
   - Remote CI passed on `c1301cf`; Railway authentication restored 2026-11-14.
     The exact CI static artifact `05e0cb0` was deployed to staging (deployment
     `c19d3402-f13c-458c-b8c2-638cc737874f`) and all six remote browser scenarios
     passed, including responsive images, bilingual navigation and lab hydration.
-  - Pending: integrate the reviewed feature and obtain production release approval;
-    DNS cutover, recoverable backups and provider/billing retirement remain open.
+  - Feature PR #241 and owner-approved release #243 merged; production revision
+    `d8009c63579a08b9bfa643a684f0e9f099156e6b` passed all seven checks and
+    Pages publication run `43628322160`. The Pages backend serves `mode=static`
+    and that exact revision.
+  - Namecheap apex DNS changed to the four GitHub Pages A records and `www` to
+    `luccae11235.github.io` on 2026-11-15; both authoritative nameservers and
+    public resolvers confirm the records. GitHub certificate issuance is pending.
+  - Production and staging backups were encrypted and fully restored into
+    isolated temporary databases on 2026-11-15. The old detached PostgreSQL
+    volume was also archived, decrypted and verified by per-file hashes.
+    Recovery material is outside Git, in the owner's private backup folder.
+  - Pending: public-domain HTTPS and browser verification, Resend cleanup,
+    Railway resource and subscription retirement. Owner additionally authorized
+    retiring the other shared-workspace project after backup; its database
+    restores passed, but object-storage export currently returns `AccessDenied`.
   - Runbook: [static hosting migration](static-hosting-migration.md).
   - Completion check: reviewed staging and green checks; owner-approved production
     release; public repository and Pages configured; DNS/HTTPS and exact revision

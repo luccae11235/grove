@@ -3,8 +3,7 @@
 Issue: [#240](https://github.com/luccae11235/grove/issues/240). Owner selected
 GitHub Pages with a public repository on 2026-11-14. This runbook supersedes the
 Railway/newsletter launch instructions **for the static migration**. Historical
-runbooks and runtime code remain available for recovery; existing production
-continues to use them until cutover.
+runbooks and runtime code remain available for recovery.
 
 ## Cost and choice
 
@@ -97,8 +96,8 @@ has been assumed or added. RSS is the optional follow mechanism.
 - [x] Repository Settings → Pages → Source: **GitHub Actions**. Set custom domain
       `aflora.page` in Pages settings; an Actions deployment does not use a CNAME
       file as its domain configuration. Actions source and `aflora.page` were
-      configured on 2026-11-14; DNS still points to Railway and no Pages artifact
-      has been deployed.
+      configured on 2026-11-14. The approved production artifact was deployed by
+      run `43628322160`; DNS was switched on 2026-11-15.
 - [ ] Configure the `github-pages` environment to permit only `main` deployments;
       add owner review protection if available. Keep `STATIC_HOSTING_ENABLED`
       unset/false until the approved production release is ready.
@@ -150,6 +149,32 @@ integration; the deployment ID and artifact SHA above are the immutable review
 evidence. Production still requires its own approved release and Pages deployment.
 
 ## DNS cutover and verification
+
+### Execution record — 2026-11-15
+
+- Feature PR #241 merged into `develop`; release #243 received explicit owner
+  approval and the `production-approved` label before merging into `main`.
+- Production SHA: `d8009c63579a08b9bfa643a684f0e9f099156e6b`.
+  Quality checks run `43627931553` passed all seven jobs; Pages publication
+  `43628322160` deployed its tested artifact. `STATIC_HOSTING_ENABLED=true`.
+- Namecheap BasicDNS now has the four documented apex A records and
+  `www CNAME luccae11235.github.io`, each with a one-minute TTL. Both authoritative
+  nameservers and public resolvers confirm them. Mail records were preserved.
+  The original 14-record DNS snapshot is in the private backup folder.
+- Final production/staging archives are dated `20261115T135542Z`. Both were
+  decrypted and fully restored into temporary staging databases; all 15 public
+  tables' row counts matched. Temporary restore databases were removed.
+- An additional detached historical production volume was exported as a cold
+  PostgreSQL directory archive dated `20261115T135529Z`; decryption and all 1,281
+  file hashes were verified. This is a cold archive, separate from the two
+  application dumps that passed full database restoration.
+- Backup location: the owner's `Documents/Aflora Backups` folder, outside Git,
+  owner-only permissions. Passphrase: macOS Keychain item
+  `aflora-newsletter-backup`; never put it in issues, logs or this repository.
+- Pending: GitHub's custom-domain TLS certificate, public-domain browser checks,
+  `STATIC_DNS_LIVE`, provider cleanup and confirmed billing cancellation.
+
+### Cutover procedure
 
 Keep Railway running through this stage. Configure the custom domain on GitHub
 **before** pointing DNS at it. For apex `aflora.page`, replace Railway web records
