@@ -25,8 +25,11 @@ preparation. It develops conceptual and visual progression while preserving the
 editor's order and scope; substantial changes are proposed separately. Complex
 topics may use focused parallel research followed by synthesis. Its scope ends
 at structure review.
-The [data-systems trial](data-systems-trade-offs.md) is a proposed preparation,
-not an approved structure or manuscript.
+The [data-systems preparation](data-systems-trade-offs.md) preserves the structure
+and its original proposal metadata. On 2026-11-15 the editor explicitly approved
+the current structure for a drafting test. The resulting
+[Portuguese first draft](data-systems-trade-offs-draft-pt-br.md) is saved separately
+for editorial review; this is not approval of the manuscript or publication.
 The [rejected first trial](data-systems-trade-offs-trial-v1.md) is preserved as
 editorial evidence, not a model to copy.
 
@@ -42,8 +45,8 @@ but placeholders remain unchanged. Existing approval in the conversation is enou
 For example: `$aflora-article-draft Redija em português a estrutura aprovada em
 <arquivo>, usando o learning scope e os exemplos de escrita anexados.` The draft
 remains outside the publication collection unless implementation is separately
-requested. The skill does not approve the data-systems proposal or implement its
-visuals.
+requested. Invoking the skill does not itself approve a structure or implement
+its visuals.
 
 ## Historical examples
 

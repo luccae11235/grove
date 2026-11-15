@@ -60,8 +60,13 @@ references for longer-term editorial direction.
     writing style; no consequential omission was identified.
   - [x] Open [PR #248](https://github.com/luccae11235/grove/pull/248) against
     `develop`; local authoring and behavioral validation are complete.
+  - [x] Apply the skill to the data-systems structure explicitly approved for a
+    drafting test on 2026-11-15, and save the delivered
+    [Portuguese first draft](article-plans/data-systems-trade-offs-draft-pt-br.md)
+    separately for editorial revision. Preserve the structure and original sources.
   - [ ] Pass remote repository gates before integration; no merge was performed.
-  - Depends on the structure tooling in PR #246; no article approval is implied.
+  - Depends on the structure tooling in PR #246. Structure approval covers this
+    drafting test; manuscript approval, implementation and publication remain separate.
   - Completion check: the skill validates, behavioral trials are reviewed, and
     the issue-linked PR passes applicable repository gates before integration.
 
