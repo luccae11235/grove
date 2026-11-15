@@ -27,7 +27,9 @@ references for longer-term editorial direction.
   - [x] Run `pnpm check` successfully; seven database-dependent integration tests
     skip without a configured test database.
   - [x] Complete independent final review with no important findings.
-  - Pending: issue-linked PR quality gates.
+  - PR: [#246](https://github.com/luccae11235/grove/pull/246), against `develop`.
+    Skill creation and local testing are complete; remote quality gates and the
+    repository's staging review remain before merge. Article approval is separate.
   - Keep the prose-writing skill and article publication outside this task.
   - Completion check: metadata validates, behavioral trials are reviewed, the example
     is available for editorial review, and an issue-linked PR passes repository gates.

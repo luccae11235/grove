@@ -43,8 +43,8 @@
 - [x] Verify primary sources for the trial, preserving uncertainties and separating proposed corrections.
 - [x] Save the completed outline as a proposed preparation, not an approved manuscript.
 - [x] Record behavioral results and limitations below; review the final diff independently.
-- [ ] Run repository checks, commit with `Refs #245`, and open a PR against `develop` with `Closes #245`.
-- [ ] Leave merge pending the repository's staging gate; publication is outside scope.
+- [x] Run repository checks, commit with `Refs #245`, and open a PR against `develop` with `Closes #245`.
+- [x] Leave merge pending the repository's staging gate; publication is outside scope.
 
 ## Verification record
 
@@ -71,4 +71,7 @@
 - Original outline excerpt preserved unchanged with the full attachment SHA-256.
 - Independent final review found no important issues in the skill, references,
   proposed preparation or source preservation. The reviewer did not revalidate
-  external sources or rerun behavioral trials. PR gates pending.
+  external sources or rerun behavioral trials.
+- [PR #246](https://github.com/luccae11235/grove/pull/246) opened against `develop`;
+  remote quality checks and staging review remain the pre-merge gates. The skill
+  and proposed preparation are available locally on the issue branch.
