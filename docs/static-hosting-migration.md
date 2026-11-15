@@ -5,6 +5,11 @@ GitHub Pages with a public repository on 2026-11-14. This runbook supersedes the
 Railway/newsletter launch instructions **for the static migration**. Historical
 runbooks and runtime code remain available for recovery.
 
+**Completed 2026-11-15.** The execution record below is the current state.
+Checklist sections explicitly labelled **reference** are reusable procedures,
+not open migration tasks. Optional domain ownership hardening and LinkedIn Post
+Inspector checks are identified separately; neither is a publication gate.
+
 ## Cost and choice
 
 | Option | Hosting cost | Repository | Operations |
@@ -64,7 +69,7 @@ Distribution is the article URL posted on LinkedIn. Existing Open Graph title,
 description and 1200×630 image remain in HTML for crawlers. No LinkedIn account URL
 has been assumed or added. RSS is the optional follow mechanism.
 
-## Before making the repository public
+## Disclosure review checklist (reference)
 
 - [ ] Review **all branches, history, issues, PRs and Actions logs/artifacts** for
       disclosure. Public source includes article drafts and internal operational
@@ -88,7 +93,7 @@ has been assumed or added. RSS is the optional follow mechanism.
       public visibility; the remaining gate is disclosure review, not choosing
       the provider again. GitHub visibility changes expose historical content.
 
-## Prepare Pages and release
+## Prepare Pages and release (reference)
 
 - [ ] Complete the feature PR into `develop`, all checks and staging review.
 - [x] Preserve the existing registrar/DNS zone and export its records.
@@ -199,7 +204,7 @@ evidence. The production approval and publication evidence is recorded below.
 - Recovery instructions and private verification/cancellation receipts are in the
   same owner-only backup folder. Do not publish subscriber counts or config dumps.
 
-### Cutover procedure
+### Reusable cutover procedure (reference)
 
 Keep Railway running through this stage. Configure the custom domain on GitHub
 **before** pointing DNS at it. For apex `aflora.page`, replace Railway web records
@@ -221,7 +226,7 @@ Propagation can take up to 24 hours. Verify from a clean browser/network:
 - [ ] Optional LinkedIn-specific check: inspect a shared article in Post Inspector.
       The automated suite already verifies its HTML sharing title/image metadata.
 
-## Retire recurring costs (only after verification)
+## Retirement procedure (reference; only after verification)
 
 - [ ] Pause old subscription ingress and cancel **all scheduled** Resend broadcasts,
       provider automations and external jobs. Do not send a final email implicitly.
@@ -255,10 +260,10 @@ The legacy runtime build is `pnpm build`; static mode is explicit. After deletio
 rollback requires rebuilding services and restoring the encrypted backup. Prefer
 redeploying the previous tested static release through a reviewed release PR.
 
-## Current boundary
+## Current production state
 
-Implementation, tests, public repository and Pages configuration prepare the
-migration. The production-approved release, remote staging review, DNS/TLS checks,
-verified backups and actual service /
-subscription cancellation must be recorded separately. A green PR alone does not
-prove Railway billing stopped.
+Aflora serves the approved static release on GitHub Pages with valid, enforced
+HTTPS. Railway project deletion was accepted and no deployments remain active;
+permanent deletion is scheduled for 2026-11-17. The Hobby subscription is cancelled,
+with the current period ending 2026-11-21. The execution record distinguishes
+these provider dates from completed site, backup and integration verification.

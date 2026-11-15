@@ -179,16 +179,6 @@ references for longer-term editorial direction.
   - Completion check: focused checks and the full repository gate pass, and
     representative desktop, tablet, and mobile layouts are visually verified.
 
-## Ready
-
-### Public release
-
-- [ ] **Finalize public-release essentials**
-  - Replace publication placeholders required for newsletter sending, including
-    the postal address, and verify privacy/contact information.
-  - Done when the repository and published site have complete, consistent legal
-    and contact information.
-
 ## Backlog
 
 ### Delivery phases
@@ -219,6 +209,17 @@ references for longer-term editorial direction.
     reader semantics, contrast, reduced motion, and small-screen behavior.
 
 ## Done
+
+### Static public-release readiness — 2026-11-15
+
+- [x] **Replace newsletter-only release essentials with static publication requirements**
+  - Sender postal details and other newsletter sending placeholders are
+    superseded by #240; email delivery is retired.
+  - Both static privacy pages expose the configured public historical-data
+    contact, and existing licensing links remain valid. These were verified
+    against the public HTTPS site; this records product checks, not a new legal review.
+  - Completion check: no retired email requirement blocks static publication;
+    the site's public privacy contact and licensing links are verified.
 
 ### Static hosting retirement — 2026-11-15
 
