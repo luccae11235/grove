@@ -142,3 +142,13 @@ The fix must improve explanatory decisions, not impose a count of scenes or cont
 PR #246 now describes the research-led narrative skill and reviewed preparation.
 Remote checks and editor review remain integration gates; no merge or publication
 was performed. The article structure itself remains pending explicit approval.
+
+## Writing-style amendment — 2026-11-15
+
+Imported only the five writing-style instructions from the editor's new attachment,
+adapted to structure preparation. Added the requested near-elimination of rhetorical
+colon/dash separators and split titles while preserving technical/placeholder syntax.
+No drafting workflow or article content was changed. Official skill validation and
+a fresh-context check of three titles, one conceptual block and one literal image
+placeholder passed. Full application checks were not repeated for this Markdown-only
+amendment.

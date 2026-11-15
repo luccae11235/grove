@@ -35,7 +35,7 @@ Desenvolva as ideias visuais nos momentos em que fazem avançar a história. Uma
 
 ## Revise e entregue
 
-Faça a auditoria narrativa e visual da referência. Simplicidade significa retirar ruído conservando os elos necessários, a profundidade e o prazer de descobrir. Uma lista curta de assuntos ainda pode estar incompleta.
+Aplique o estilo de escrita do contrato editorial também aos títulos, subtítulos e instruções da estrutura. Faça a auditoria narrativa e visual da referência. Simplicidade significa retirar ruído conservando os elos necessários, a profundidade e o prazer de descobrir. Uma lista curta de assuntos ainda pode estar incompleta.
 
 Entregue **tópico → learning scope → fio narrativo → estrutura desenvolvida em colchetes**, com nota editorial concisa de fontes, suposições, pendências e mudanças propostas. Adapte o formato existente. A estrutura deve permitir escrever com fluidez sem precisar inventar depois suas conexões conceituais.
 
