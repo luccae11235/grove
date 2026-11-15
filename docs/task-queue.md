@@ -58,7 +58,9 @@ references for longer-term editorial direction.
     calculations, narrative continuity and placeholder preservation.
   - [x] Complete an independent contract review against the supplied prompt and
     writing style; no consequential omission was identified.
-  - [ ] Open the issue-linked PR against `develop` and review remote checks.
+  - [x] Open [PR #248](https://github.com/luccae11235/grove/pull/248) against
+    `develop`; local authoring and behavioral validation are complete.
+  - [ ] Pass remote repository gates before integration; no merge was performed.
   - Depends on the structure tooling in PR #246; no article approval is implied.
   - Completion check: the skill validates, behavioral trials are reviewed, and
     the issue-linked PR passes applicable repository gates before integration.

@@ -82,3 +82,7 @@ validation passes. No application code or publication records changed, so local
 verification is scoped to skill metadata, contract review and behavioral outputs;
 the PR also runs the repository's remote quality gates. There is no changed web
 experience to review in staging, and no merge is performed as part of this task.
+
+Opened [PR #248](https://github.com/luccae11235/grove/pull/248) against `develop`,
+with `Closes #247` and the dependency on #246 documented. Local creation and trials
+are complete; remote integration gates remain separate from this validation.
