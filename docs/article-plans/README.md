@@ -30,6 +30,21 @@ not an approved structure or manuscript.
 The [rejected first trial](data-systems-trade-offs-trial-v1.md) is preserved as
 editorial evidence, not a model to copy.
 
+## Drafting assistance
+
+After explicit structure approval, use the repository-local
+`$aflora-article-draft` skill to turn conceptual instructions into a complete first
+draft. It preserves the approved scope, explanatory order, headings and literal
+visual placeholders while developing natural, connected prose. Supply the article
+language when it differs from the plan; headings can be translated faithfully,
+but placeholders remain unchanged. Existing approval in the conversation is enough.
+
+For example: `$aflora-article-draft Redija em português a estrutura aprovada em
+<arquivo>, usando o learning scope e os exemplos de escrita anexados.` The draft
+remains outside the publication collection unless implementation is separately
+requested. The skill does not approve the data-systems proposal or implement its
+visuals.
+
 ## Historical examples
 
 | Preparation | Article ID in the current content collection | Source state |

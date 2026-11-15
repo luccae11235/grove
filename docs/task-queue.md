@@ -48,6 +48,21 @@ references for longer-term editorial direction.
   - Completion check: metadata validates, behavioral trials are reviewed, the example
     is available for editorial review, and an issue-linked PR passes repository gates.
 
+- [ ] **Create and test the Aflora article drafting skill — issue #247** — In progress
+  - [x] Create `aflora-article-draft` from the supplied drafting prompt and writing
+    style, with validated discoverable metadata and a self-contained contract.
+  - [x] Preserve approved scope, headings, explanatory progression and literal
+    visual placeholders; separate writing from planning, visual implementation
+    and publication. Document invocation after structure approval.
+  - [x] Review independent drafting trials and check approval, language, evidence,
+    calculations, narrative continuity and placeholder preservation.
+  - [x] Complete an independent contract review against the supplied prompt and
+    writing style; no consequential omission was identified.
+  - [ ] Open the issue-linked PR against `develop` and review remote checks.
+  - Depends on the structure tooling in PR #246; no article approval is implied.
+  - Completion check: the skill validates, behavioral trials are reviewed, and
+    the issue-linked PR passes applicable repository gates before integration.
+
 ## Delivery gate status
 
 | Phase | Gate | Status | Depends on |
