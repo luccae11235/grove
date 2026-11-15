@@ -15,6 +15,23 @@ references for longer-term editorial direction.
 - Update the relevant phase checklist and completion check whenever its state
   changes; move completed cards to **Done** rather than deleting them.
 
+## Editorial tooling — requested 2026-11-15
+
+- [ ] **Create and test the Aflora article structure skill — issue #245** — In progress
+  - [x] Create the discoverable repository-local skill with validated metadata.
+  - [x] Complete topic, learning scope and bracketed structures from partial material,
+    preserving the editor's order and scope and separating proposed corrections.
+  - [x] Review fresh-context trials with the supplied data-systems outline, a topic
+    only, and a nearly complete plan. Preserve the original excerpt and save the
+    [proposed preparation](article-plans/data-systems-trade-offs.md).
+  - [x] Run `pnpm check` successfully; seven database-dependent integration tests
+    skip without a configured test database.
+  - [x] Complete independent final review with no important findings.
+  - Pending: issue-linked PR quality gates.
+  - Keep the prose-writing skill and article publication outside this task.
+  - Completion check: metadata validates, behavioral trials are reviewed, the example
+    is available for editorial review, and an issue-linked PR passes repository gates.
+
 ## Hosting migration — requested 2026-11-14
 
 - [ ] **Move Aflora to GitHub Pages Free and retire Railway** — In progress
