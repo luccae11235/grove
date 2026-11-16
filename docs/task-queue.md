@@ -15,6 +15,61 @@ references for longer-term editorial direction.
 - Update the relevant phase checklist and completion check whenever its state
   changes; move completed cards to **Done** rather than deleting them.
 
+## Editorial tooling — requested 2026-11-15
+
+- [ ] **Create and test the Aflora article structure skill — issue #245** — In progress
+  - [x] Create the discoverable repository-local skill with validated metadata.
+  - [x] Complete topic, learning scope and bracketed structures from partial material,
+    preserving the editor's order and scope and separating proposed corrections.
+  - [x] Review fresh-context trials with the supplied data-systems outline, a topic
+    only, and a nearly complete plan. Preserve the original excerpt and save the
+    [proposed preparation](article-plans/data-systems-trade-offs.md).
+  - [x] Run `pnpm check` successfully; seven database-dependent integration tests
+    skip without a configured test database.
+  - [x] Complete an initial independent review; it checked format and preservation
+    but did not catch the narrative weaknesses later identified by the editor.
+  - [x] Rebuild the skill around researched storytelling and visual explanation,
+    with focused parallel research and synthesis; repeat the original and cache trials.
+  - [x] Review the new proposal with three independent simulated readers and edit
+    conceptual bridges, scope and visual development from their specific findings.
+    These hypotheses do not replace the editor's judgment or real reader research.
+  - [x] Validate the revised skill and rerun `pnpm check`; original input and rejected
+    first trial are preserved separately.
+  - [x] Integrate only the editor's supplied writing style into structure preparation,
+    including fluid titles and near-elimination of rhetorical colon/dash separators.
+    Keep placeholder syntax and the prose-writing skill outside this amendment.
+  - [x] Apply the style to the data-systems preparation, including headings and
+    conceptual instructions; verify unchanged visual placeholders and source links.
+  - PR: [#246](https://github.com/luccae11235/grove/pull/246), against `develop`.
+    The editor rejected the initial narrative on 2026-11-15. The researched revision
+    and new preparation are ready for editorial review; remote quality gates remain
+    before merge. Article approval is separate.
+  - Keep the prose-writing skill and article publication outside this task.
+  - Completion check: metadata validates, behavioral trials are reviewed, the example
+    is available for editorial review, and an issue-linked PR passes repository gates.
+
+- [ ] **Create and test the Aflora article drafting skill — issue #247** — In progress
+  - [x] Create `aflora-article-draft` from the supplied drafting prompt and writing
+    style, with validated discoverable metadata and a self-contained contract.
+  - [x] Preserve approved scope, headings, explanatory progression and literal
+    visual placeholders; separate writing from planning, visual implementation
+    and publication. Document invocation after structure approval.
+  - [x] Review independent drafting trials and check approval, language, evidence,
+    calculations, narrative continuity and placeholder preservation.
+  - [x] Complete an independent contract review against the supplied prompt and
+    writing style; no consequential omission was identified.
+  - [x] Open [PR #248](https://github.com/luccae11235/grove/pull/248) against
+    `develop`; local authoring and behavioral validation are complete.
+  - [x] Apply the skill to the data-systems structure explicitly approved for a
+    drafting test on 2026-11-15, and save the delivered
+    [Portuguese first draft](article-plans/data-systems-trade-offs-draft-pt-br.md)
+    separately for editorial revision. Preserve the structure and original sources.
+  - [ ] Pass remote repository gates before integration; no merge was performed.
+  - Depends on the structure tooling in PR #246. Structure approval covers this
+    drafting test; manuscript approval, implementation and publication remain separate.
+  - Completion check: the skill validates, behavioral trials are reviewed, and
+    the issue-linked PR passes applicable repository gates before integration.
+
 ## Delivery gate status
 
 | Phase | Gate | Status | Depends on |
