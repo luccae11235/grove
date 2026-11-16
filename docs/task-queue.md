@@ -32,6 +32,20 @@ references for longer-term editorial direction.
 
 ## In progress
 
+### Static navigation
+
+- [ ] **Remove visible RSS/XML invitations — issue #249**
+  - [x] Remove feed links from desktop/mobile navigation, homepages, shared signup
+    areas and retired newsletter pages in both languages.
+  - [x] Preserve RSS files and feed autodiscovery for applications; six browser
+    scenarios pass at both `/` and `/grove/`, and all generated pages have no
+    RSS navigation anchors. Full unit tests and type checks pass.
+  - [ ] Complete CI and exact-artifact staging review; integrate into develop
+    and prepare the production release for separate owner approval.
+  - Completion check: root/subpath browser checks, legacy newsletter checks and
+    exact-artifact staging review pass; integrate through develop and prepare
+    the separately approved production release.
+
 ### Publishing and content
 
 - [ ] **Publish the categorical-feature article — issue #235**

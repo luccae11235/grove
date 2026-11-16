@@ -4,16 +4,30 @@ const base = process.env.BASE_PATH ?? "/";
 const origin = process.env.SITE_URL ?? "https://aflora.page";
 const path = (route: string) => `${base.replace(/\/$/, "")}/${route}`;
 
-test("static reading has RSS, no email promises and valid sharing metadata", async ({ page }) => {
+test("static reading avoids XML invitations and preserves feed discovery", async ({ page }) => {
   for (const locale of ["", "pt-br/"]) {
     await page.goto(path(locale));
     await expect(page.locator('input[type="email"], [data-newsletter-signup], [data-analytics-consent], [data-article-feedback]')).toHaveCount(0);
     await expect(page.getByText(/Get the next article by email|Receba o próximo artigo por e-mail/)).toHaveCount(0);
-    await expect(page.locator('.hero-actions a[href$="rss.xml"]')).toBeVisible();
+    await expect(page.locator('a[href*="rss.xml"]')).toHaveCount(0);
+    await expect(page.locator('link[rel="alternate"][type="application/rss+xml"]')).toHaveAttribute("href", path(`${locale}rss.xml`));
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", new URL(path(locale), origin).href);
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", new URL(path("og/aflora-card.png"), origin).href);
     await expect(page.locator('.library-card-status')).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    for (const route of [locale ? "artigos/" : "articles/", "about/", "newsletter/", "learn/decision-trees/"]) {
+      await page.goto(path(`${locale}${route}`));
+      await expect(page.locator('a[href*="rss.xml"]')).toHaveCount(0);
+      await expect(page.locator('link[rel="alternate"][type="application/rss+xml"]')).toHaveAttribute("href", path(`${locale}rss.xml`));
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.locator('.header-menu summary').click();
+    await expect(page.locator('.header-menu-panel')).toBeVisible();
+    for (const name of locale ? ["Artigos", "Sobre"] : ["Articles", "About"]) {
+      await expect(page.locator('.header-menu-panel').getByRole("link", { name, exact: true })).toBeVisible();
+    }
+    await expect(page.locator('.header-menu-panel').getByRole("link", { name: "RSS", exact: true })).toHaveCount(0);
+    await page.setViewportSize({ width: 1280, height: 720 });
   }
 });
 
@@ -28,7 +42,8 @@ test("old newsletter action links retire honestly without API calls", async ({ p
       await page.goto(path(`${locale}newsletter/${route}/?token=old-token&status=expired`));
       await expect(page.locator("[data-newsletter-retired]")).toBeVisible();
       await expect(page.locator("form")).toHaveCount(0);
-      await expect(page.locator('[data-newsletter-retired] a[href$="rss.xml"]')).toBeVisible();
+      await expect(page.locator('a[href*="rss.xml"]')).toHaveCount(0);
+      await expect(page.locator('[data-newsletter-retired] a.button-link')).toHaveAttribute("href", path(`${locale}${locale ? "artigos" : "articles"}/`));
     }
   }
   expect(apiRequests).toEqual([]);
