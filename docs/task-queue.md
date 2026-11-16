@@ -89,6 +89,20 @@ references for longer-term editorial direction.
 
 ### Publishing and content
 
+- [ ] **Develop the data-systems article from its official working draft — issue #254**
+  - [x] Create `feature/254-data-systems-article` from the latest `origin/develop`
+    and carry the existing editorial dependencies without rewriting the article.
+  - [x] Record the editor's 2026-11-16 designation of the
+    [Portuguese manuscript](article-plans/data-systems-trade-offs-draft-pt-br.md)
+    as the official working draft, separately from its structure. Verify that
+    the text, eight visual placeholders and historical preparations are unchanged.
+  - [ ] Develop and review the planned images, animations and playground, applying
+    one pedagogical question per visual and the repository's simplicity principles.
+  - [ ] Review the complete learning experience and applicable integration gates.
+  - Preparation depends on PRs #246 and #248. Publication remains separate.
+  - Completion check: the official manuscript and its visual explanations are
+    reviewed together, required checks pass, and staging is reviewed before merge.
+
 - [ ] **Publish the categorical-feature article — issue #235**
   - [x] Review the current English text, ten-record numerical examples,
     23 method figures, overview, and three playgrounds from PR #234.

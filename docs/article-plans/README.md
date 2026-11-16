@@ -29,7 +29,12 @@ The [data-systems preparation](data-systems-trade-offs.md) preserves the structu
 and its original proposal metadata. On 2026-11-15 the editor explicitly approved
 the current structure for a drafting test. The resulting
 [Portuguese first draft](data-systems-trade-offs-draft-pt-br.md) is saved separately
-for editorial review; this is not approval of the manuscript or publication.
+for editorial review. On 2026-11-16 the editor designated it as the official
+working draft for subsequent visual development on
+`feature/254-data-systems-article`, tracked in
+[issue #254](https://github.com/luccae11235/grove/issues/254). The text and its eight
+visual placeholders remain unchanged; it is still a draft, with publication
+remaining a separate decision.
 The [rejected first trial](data-systems-trade-offs-trial-v1.md) is preserved as
 editorial evidence, not a model to copy.
 
