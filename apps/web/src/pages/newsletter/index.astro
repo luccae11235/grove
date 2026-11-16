@@ -10,7 +10,7 @@ const issues = getPublishedNewsletterIssues("en");
 
 <BaseLayout
   title="Newsletter"
-  description={import.meta.env.PUBLIC_STATIC_SITE === "true" ? "Newsletter archive; follow free articles via RSS." : "A weekly Aflora newsletter for difficult ideas made visual and interactive."}
+  description={import.meta.env.PUBLIC_STATIC_SITE === "true" ? "Newsletter archive; explore free articles and experiments." : "A weekly Aflora newsletter for difficult ideas made visual and interactive."}
   translations={{ "pt-BR": "/pt-br/newsletter/" }}
 >
   {import.meta.env.PUBLIC_STATIC_SITE === "true" ? <NewsletterRetired locale="en" /> : (<>

@@ -68,7 +68,7 @@ const copy = locale === "pt-BR"
       manage: "Already on the list? Manage or unsubscribe",
     };
 ---
-{staticSite ? <section class:list={["newsletter-signup", { compact }]}><p>{locale === "pt-BR" ? "Novos artigos, direto no seu leitor RSS." : "New articles, straight to your RSS reader."} <a href={`${base}${locale === "pt-BR" ? "/pt-br" : ""}/rss.xml`}>RSS →</a></p></section> : (<>
+{!staticSite && (<>
 
 <section class:list={["newsletter-signup", { compact }]} aria-labelledby={`newsletter-signup-${source}`}>
   <div class="newsletter-signup-copy">
