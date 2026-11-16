@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import ArticleDraft from "../../../drafts/data-systems-pt-br.mdx";
+import "../../../styles/data-systems-visuals.css";
+
+export function getStaticPaths() {
+  const includeDrafts = import.meta.env.DEV || import.meta.env.SHOW_DRAFTS === "true";
+  return includeDrafts ? [{ params: { slug: "sistemas-de-dados" } }] : [];
+}
+---
+
+<BaseLayout
+  title="Como escolher a arquitetura de um sistema de dados"
+  description="Acompanhe uma locadora para compreender as decisões de organização, hospedagem e distribuição dos dados e suas consequências para as pessoas."
+  locale="pt-BR"
+  canonicalPath="/pt-br/rascunhos/sistemas-de-dados/"
+  pageType="article"
+  noindex
+  wide
+>
+  <header class="page-header lesson-header article-hero">
+    <p class="eyebrow">Sistemas de dados</p>
+    <h1>Como escolher a arquitetura de um sistema de dados</h1>
+    <div class="article-meta" aria-label="Informações sobre o artigo">
+      <span><strong>Rascunho para revisão</strong></span>
+      <span>Texto e visuais em desenvolvimento</span>
+    </div>
+  </header>
+  <article class="lesson-body deep-article data-systems-article">
+    <ArticleDraft />
+  </article>
+</BaseLayout>

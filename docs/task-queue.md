@@ -103,8 +103,14 @@ references for longer-term editorial direction.
     Desktop/mobile, keyboard, reduced-motion states, data and export bounds pass;
     a separate simulated reader prompted two focused simplifications.
     The official text and its placeholders remain intact.
-  - [ ] Review the visual candidates with the editor and incorporate the approved
-    versions into the article. These prototypes do not imply publication approval.
+  - [x] Integrate all eight candidates into the Portuguese MDX review draft with
+    native, independently scoped components. Preserve every source paragraph and
+    expose the draft-only route in a local Docker review container.
+  - [x] Pass the repository gate and integrated browser tests for eight coexisting
+    scenes, independent controls, phone layout, keyboard and reduced motion.
+    Seven database-dependent integration tests skip without a configured database.
+  - [ ] Review the combined text and visual candidates with the editor; Docker
+    review is not publication approval or a production deployment.
   - [ ] Review the complete learning experience and applicable integration gates.
   - Preparation depends on PRs #246 and #248. Publication remains separate.
   - Completion check: the official manuscript and its visual explanations are

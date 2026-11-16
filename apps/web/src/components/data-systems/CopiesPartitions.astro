@@ -1,0 +1,66 @@
+<section class="data-systems-visual copies" id="ds-copies-partitions" aria-label="Cópias ou partes?">
+  <h4 class="scene-question">Cópias ou partes?</h4>
+  <p>Quais nós precisam receber a consulta?</p>
+  <div class="controls" role="group" aria-label="Consulta às reservas">
+    <button type="button" data-query="local" aria-pressed="true">Só unidade A</button>
+    <button type="button" data-query="all" aria-pressed="false">Todas as unidades</button>
+  </div>
+  <figure aria-label="Comparação entre replicação e particionamento com as mesmas seis reservas">
+    <section aria-labelledby="ds-copies-partitions-replication">
+      <p class="section-heading" id="ds-copies-partitions-replication">Replicação</p>
+      <div class="nodes">
+        <div class="node queried"><p class="node-heading">Nó 1</p><span class="destination">Consultado</span><p class="unit"><span class="unit-name">Unidade A</span><span class="ids"><span>101</span><span>102</span><span>103</span></span></p><p class="unit"><span class="unit-name">Unidade B</span><span class="ids"><span>104</span><span>105</span><span>106</span></span></p></div>
+        <div class="node"><p class="node-heading">Nó 2</p><span class="destination">Não necessário</span><p class="unit"><span class="unit-name">Unidade A</span><span class="ids"><span>101</span><span>102</span><span>103</span></span></p><p class="unit"><span class="unit-name">Unidade B</span><span class="ids"><span>104</span><span>105</span><span>106</span></span></p></div>
+      </div>
+      <p class="result">Uma cópia completa contém as reservas necessárias.</p>
+    </section>
+    <section aria-labelledby="ds-copies-partitions-partitioning">
+      <p class="section-heading" id="ds-copies-partitions-partitioning">Particionamento por unidade</p>
+      <div class="nodes">
+        <div class="node queried" id="ds-copies-partitions-part-a"><p class="node-heading">Nó 1</p><span class="destination">Consultado</span><p class="unit"><span class="unit-name">Unidade A</span><span class="ids"><span>101</span><span>102</span><span>103</span></span></p></div>
+        <div class="node" id="ds-copies-partitions-part-b"><p class="node-heading">Nó 2</p><span class="destination">Não necessário</span><p class="unit"><span class="unit-name">Unidade B</span><span class="ids"><span>104</span><span>105</span><span>106</span></span></p></div>
+      </div>
+      <p class="result" id="ds-copies-partitions-partition-result">A parte da unidade A contém as reservas necessárias.</p>
+    </section>
+    <figcaption class="note">Mesmo conjunto de seis reservas. Na replicação, escolhemos uma das cópias completas. O esquema mostra destinos, sem representar velocidade, atualização ou disponibilidade.</figcaption>
+  </figure>
+  <p class="sr-only" role="status" aria-live="polite" id="ds-copies-partitions-status"></p>
+</section>
+
+<script is:inline>
+(() => {
+  const root = document.getElementById('ds-copies-partitions');
+  if (!root) return;
+  const buttons = root.querySelectorAll('[data-query]');
+  buttons.forEach(button => button.addEventListener('click', () => {
+    const all = button.dataset.query === 'all';
+    buttons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    root.querySelector('#ds-copies-partitions-part-b').classList.toggle('queried', all);
+    root.querySelector('#ds-copies-partitions-part-b .destination').textContent = all ? 'Consultado' : 'Não necessário';
+    root.querySelector('#ds-copies-partitions-partition-result').textContent = all ? 'É preciso reunir as partes das unidades A e B.' : 'A parte da unidade A contém as reservas necessárias.';
+    root.querySelector('#ds-copies-partitions-status').textContent = all ? 'Todas as unidades. Replicação: consultamos o nó 1, que contém todas as seis reservas. Particionamento: consultamos os nós 1 e 2 para reunir as duas unidades.' : 'Só unidade A. Nos dois arranjos, consultamos apenas o nó 1. Ele contém as reservas 101, 102 e 103 da unidade A.';
+  }));
+})();
+</script>
+
+<style>
+.copies .controls { display:flex; flex-wrap:wrap; gap:.5rem; margin-block:1.5rem; }
+.copies button { min-height:44px; padding:.65rem .9rem; font:inherit; color:var(--ink); background:white; border:1px solid var(--line); cursor:pointer; }
+.copies button[aria-pressed="true"] { border-color:var(--accent); background:var(--soft); font-weight:700; }
+.copies button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+.copies section + section { margin-block-start:2rem; }
+.copies .section-heading { font-size:1.2rem; font-weight:700; margin-block:0 .75rem; }
+.copies .nodes { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
+.copies .node { border-block:2px solid var(--line); padding:.75rem .375rem; }
+.copies .node.queried { border-color:var(--accent); background:var(--soft); }
+.copies .node-heading { font-size:1rem; font-weight:700; margin:0; }
+.copies .destination { display:block; min-height:1.4em; font-size:.875rem; color:var(--muted); }
+.copies .queried .destination { color:var(--accent); font-weight:700; }
+.copies .unit { margin-block:.6rem 0; }
+.copies .unit-name { display:block; font-size:.875rem; color:var(--muted); }
+.copies .ids { display:flex; gap:.4rem; font-variant-numeric:tabular-nums; }
+.copies .ids span { min-width:0; }
+.copies .result { margin:.75rem 0 0; font-size:.9375rem; }
+.copies .note { color:var(--muted); font-size:.9375rem; margin-block-start:1.5rem; }
+.copies .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
+</style>

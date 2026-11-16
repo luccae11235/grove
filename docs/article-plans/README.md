@@ -55,6 +55,35 @@ remains outside the publication collection unless implementation is separately
 requested. Invoking the skill does not itself approve a structure or implement
 its visuals.
 
+## Integrated data-systems review
+
+The editor requested a joint text/visual review on 2026-11-16. The eight visual
+candidates now appear in place within the
+[integrated Portuguese MDX draft](../../apps/web/src/drafts/data-systems-pt-br.mdx),
+using native Astro components rather than embedded gallery pages. All source
+paragraphs and their order are preserved. The separate preparation and first
+Markdown draft remain editorial evidence.
+
+The Docker review is at
+[`/pt-br/rascunhos/sistemas-de-dados/`](http://127.0.0.1:4321/pt-br/rascunhos/sistemas-de-dados/).
+The route exists only in development or builds with `SHOW_DRAFTS=true`, carries
+`noindex, nofollow`, and is outside the published article catalog. The integrated
+MDX is the working text for this review; incorporating the candidates is not
+editorial approval or publication.
+
+To recreate the local preview from the repository root:
+
+```sh
+docker build -f apps/web/Dockerfile -t aflora-data-systems-review:local \
+  --build-arg SHOW_DRAFTS=true --build-arg SITE_URL=http://localhost:4321 .
+docker run -d --name aflora-data-systems-review \
+  -p 127.0.0.1:4321:8080 aflora-data-systems-review:local
+```
+
+The existing Dockerfile produces a static site, so source changes require a
+rebuild and replacement of this named review container. No database or API service
+is needed. The current container leaves API integrations disabled.
+
 ## Historical examples
 
 | Preparation | Article ID in the current content collection | Source state |

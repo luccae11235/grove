@@ -1,0 +1,83 @@
+<section class="data-systems-visual query-visual" id="ds-query-paths" aria-label="Quais dados cada pergunta precisa?">
+  <h4 class="scene-question">Quais dados cada pergunta precisa?</h4>
+  <div class="controls" role="group" aria-label="Escolha a consulta">
+    <button type="button" data-mode="row" aria-pressed="true">Reserva 104</button>
+    <button type="button" data-mode="fields" aria-pressed="false">Confirmadas por tipo · março</button>
+  </div>
+  <figure aria-describedby="ds-query-query-caption">
+    <table data-highlight="row" aria-label="Seis reservas de março">
+      <colgroup><col><col><col><col></colgroup>
+      <thead><tr><th scope="col">ID</th><th scope="col">Tipo</th><th scope="col">Mês</th><th scope="col">Situação</th></tr></thead>
+      <tbody>
+        <tr data-id="101"><th scope="row">101</th><td>furadeira</td><td><abbr title="março">mar.</abbr></td><td>confirmada</td></tr>
+        <tr data-id="102"><th scope="row">102</th><td>furadeira</td><td><abbr title="março">mar.</abbr></td><td>confirmada</td></tr>
+        <tr data-id="103"><th scope="row">103</th><td>furadeira</td><td><abbr title="março">mar.</abbr></td><td>cancelada</td></tr>
+        <tr data-id="104"><th scope="row">104</th><td>furadeira</td><td><abbr title="março">mar.</abbr></td><td>confirmada</td></tr>
+        <tr data-id="105"><th scope="row">105</th><td>serra</td><td><abbr title="março">mar.</abbr></td><td>confirmada</td></tr>
+        <tr data-id="106"><th scope="row">106</th><td>serra</td><td><abbr title="março">mar.</abbr></td><td>confirmada</td></tr>
+      </tbody>
+    </table>
+    <p class="sr-only" id="ds-query-selection" role="status" aria-live="polite" aria-atomic="true">Uma reserva: a linha 104.</p>
+    <div class="answer" id="ds-query-aggregate-result" hidden>
+      <p><strong>Março · somente confirmadas</strong></p>
+      <div class="bars" aria-label="Reservas confirmadas por tipo">
+        <div class="bar-row"><span>Furadeiras</span><span class="bar" id="ds-query-drill-bar" aria-hidden="true"></span><strong id="ds-query-drill-count">3</strong></div>
+        <div class="bar-row"><span>Serras</span><span class="bar" id="ds-query-saw-bar" aria-hidden="true"></span><strong id="ds-query-saw-count">2</strong></div>
+      </div>
+    </div>
+    <figcaption id="ds-query-query-caption">O destaque indica os dados necessários. Não representa um percurso físico de leitura nem mede desempenho.</figcaption>
+  </figure>
+  <noscript><p>Sem JavaScript: a consulta da reserva 104 usa sua linha. Comparar as confirmadas de março usa tipo, mês e situação de várias linhas: 3 furadeiras e 2 serras.</p></noscript>
+</section>
+
+<script is:inline>
+(() => {
+  const root = document.getElementById('ds-query-paths');
+  if (!root) return;
+  const byId = (id) => root.querySelector('#ds-query-' + id);
+  const table = root.querySelector('table');
+  const records = Array.from(table.tBodies[0].rows, row => ({
+    id: Number(row.dataset.id), type: row.cells[1].textContent.trim(),
+    month: row.cells[2].querySelector('abbr').title, status: row.cells[3].textContent.trim()
+  }));
+  const confirmed = records.filter(record => record.month === 'março' && record.status === 'confirmada');
+  const counts = ['furadeira', 'serra'].map(type => confirmed.filter(record => record.type === type).length);
+  ['drill', 'saw'].forEach((type, index) => {
+    byId(type + '-count').textContent = counts[index];
+    byId(type + '-bar').style.width = (counts[index] / Math.max(...counts) * 100) + '%';
+  });
+  const buttons = root.querySelectorAll('[data-mode]');
+  buttons.forEach(button => button.addEventListener('click', () => {
+    const aggregate = button.dataset.mode === 'fields';
+    table.dataset.highlight = button.dataset.mode;
+    buttons.forEach(choice => choice.setAttribute('aria-pressed', String(choice === button)));
+    byId('selection').textContent = aggregate ? 'Tipo, mês e situação de várias reservas: três furadeiras e duas serras confirmadas em março. A reserva 103, cancelada, fica fora da comparação.' : 'Uma reserva: a linha 104, furadeira, março, confirmada.';
+    byId('aggregate-result').hidden = !aggregate;
+  }));
+})();
+</script>
+
+<style>
+.query-visual .controls { display:flex; gap:.5rem; flex-wrap:wrap; margin:1rem 0; }
+    .query-visual button { min-height:44px; }
+    .query-visual button[aria-pressed="true"] { border-color:var(--accent); background:var(--soft); font-weight:700; }
+    .query-visual table { width:100%; table-layout:fixed; border-collapse:collapse; font-size:.94rem; }
+    .query-visual col:nth-child(1) { width:13%; }
+    .query-visual col:nth-child(2) { width:27%; }
+    .query-visual col:nth-child(3) { width:17%; }
+    .query-visual col:nth-child(4) { width:43%; }
+    .query-visual th,.query-visual td { padding:.65rem .2rem; text-align:left; border-bottom:1px solid var(--line); }
+    .query-visual thead th { color:var(--muted); font-weight:500; font-size:.9rem; }
+    .query-visual tbody th { font-weight:500; }
+    .query-visual [data-highlight="row"] tr[data-id="104"] > * { background:var(--soft); border-top:2px solid var(--accent); border-bottom:2px solid var(--accent); font-weight:700; }
+    .query-visual [data-highlight="fields"] td { background:var(--soft); }
+    .query-visual [data-highlight="fields"] td:last-child { font-weight:700; }
+    .query-visual [data-highlight="fields"] tr[data-id="103"] td:last-child { text-decoration:line-through; text-decoration-thickness:2px; }
+    .query-visual .answer { margin-top:1.5rem; }
+    .query-visual .answer p { margin:0 0 .7rem; }
+    .query-visual .bars { display:grid; gap:.65rem; }
+    .query-visual .bar-row { display:grid; grid-template-columns:5.8rem 1fr 1rem; gap:.6rem; align-items:center; }
+    .query-visual .bar { height:1.25rem; background:var(--accent); }
+    .query-visual figcaption { margin-top:.8rem; color:var(--muted); font-size:.9rem; }
+    @media (min-width:520px) { .query-visual col:nth-child(4) { width:33%; } .query-visual col:nth-child(2) { width:32%; } .query-visual col:nth-child(3) { width:22%; } }
+</style>

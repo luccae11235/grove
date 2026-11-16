@@ -6,8 +6,9 @@ de simplicidade. As cenas estão reunidas numa
 [galeria de revisão](data-systems-visuals/index.html). Os arquivos HTML funcionam
 sem dependências externas; cada cena tem também uma imagem SVG editável.
 Há também prévias PNG em resolução dupla para revisão.
-A incorporação ao artigo vem depois da revisão visual. O texto, a estrutura e os
-placeholders originais permanecem preservados.
+Os candidatos também estão na [página integrada para revisão](http://127.0.0.1:4321/pt-br/rascunhos/sistemas-de-dados/),
+conforme solicitado pelo editor. O texto fonte, a estrutura e os placeholders
+originais permanecem preservados.
 
 ## Percurso visual
 
@@ -58,5 +59,8 @@ nem conformidade jurídica.
   O manuscrito, a estrutura e as fontes históricas não têm alterações.
 
 Esta é uma primeira versão para revisão editorial, não evidência de aprendizagem
-com leitores reais. Não foi feita uma sessão com leitor de tela. Nenhuma entrada
-na coleção de artigos, publicação ou implantação foi criada.
+com leitores reais. Não foi feita uma sessão com leitor de tela. A integração usa
+componentes nativos no [MDX de revisão](../../apps/web/src/drafts/data-systems-pt-br.mdx),
+sem iframes nem IDs compartilhados. A página não é criada no build normal de
+publicação e não altera a coleção de artigos publicados. O Docker serve apenas
+a revisão local.
