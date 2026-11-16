@@ -1,0 +1,48 @@
+<section class="data-systems-visual storage-visual" id="ds-row-columns" aria-label="Quais valores ficam juntos?">
+  <h4 class="scene-question">Quais valores ficam juntos?</h4>
+  <figure aria-describedby="ds-storage-storage-caption">
+    <section aria-labelledby="ds-storage-rows-heading">
+      <p class="grouping-heading" id="ds-storage-rows-heading">Por linhas: uma reserva por grupo</p>
+      <p class="group-label">Cada contorno reúne os campos de um registro.</p>
+      <div class="fields" aria-hidden="true"><span>ID</span><span>Tipo</span><span>Mês</span><span>Situação</span></div>
+      <div class="records" role="list" aria-label="Valores agrupados por reserva">
+        <div class="record" role="listitem" aria-label="Reserva 101: tipo furadeira, mês março, situação confirmada"><span>101</span><span>furadeira</span><span><abbr title="março">mar.</abbr></span><span>confirmada</span></div>
+        <div class="record" role="listitem" aria-label="Reserva 102: tipo furadeira, mês março, situação confirmada"><span>102</span><span>furadeira</span><span><abbr title="março">mar.</abbr></span><span>confirmada</span></div>
+        <div class="record" role="listitem" aria-label="Reserva 103: tipo furadeira, mês março, situação cancelada"><span>103</span><span>furadeira</span><span><abbr title="março">mar.</abbr></span><span>cancelada</span></div>
+        <div class="record" role="listitem" aria-label="Reserva 104: tipo furadeira, mês março, situação confirmada"><span>104</span><span>furadeira</span><span><abbr title="março">mar.</abbr></span><span>confirmada</span></div>
+        <div class="record" role="listitem" aria-label="Reserva 105: tipo serra, mês março, situação confirmada"><span>105</span><span>serra</span><span><abbr title="março">mar.</abbr></span><span>confirmada</span></div>
+        <div class="record" role="listitem" aria-label="Reserva 106: tipo serra, mês março, situação confirmada"><span>106</span><span>serra</span><span><abbr title="março">mar.</abbr></span><span>confirmada</span></div>
+      </div>
+    </section>
+    <section aria-labelledby="ds-storage-columns-heading">
+      <p class="grouping-heading" id="ds-storage-columns-heading">Por colunas: um atributo por grupo</p>
+      <p class="group-label">Mesmas reservas e mesma ordem, de 101 a 106.</p>
+      <div class="attributes" aria-label="Valores agrupados por atributo, na ordem das reservas 101 a 106">
+        <div class="attribute"><p class="attribute-heading">ID</p><ol aria-label="Identificadores"><li>101</li><li>102</li><li>103</li><li>104</li><li>105</li><li>106</li></ol></div>
+        <div class="attribute"><p class="attribute-heading">Tipo</p><ol aria-label="Tipo, reservas 101 a 106"><li>furadeira</li><li>furadeira</li><li>furadeira</li><li>furadeira</li><li>serra</li><li>serra</li></ol></div>
+        <div class="attribute"><p class="attribute-heading">Mês</p><ol aria-label="Mês, reservas 101 a 106"><li><abbr title="março">mar.</abbr></li><li><abbr title="março">mar.</abbr></li><li><abbr title="março">mar.</abbr></li><li><abbr title="março">mar.</abbr></li><li><abbr title="março">mar.</abbr></li><li><abbr title="março">mar.</abbr></li></ol></div>
+        <div class="attribute"><p class="attribute-heading">Situação</p><ol aria-label="Situação, reservas 101 a 106"><li>confirmada</li><li>confirmada</li><li>cancelada</li><li>confirmada</li><li>confirmada</li><li>confirmada</li></ol></div>
+      </div>
+    </section>
+    <figcaption id="ds-storage-storage-caption">Contornos representam agrupamentos no armazenamento. Tipo e mês estão marcados nas duas organizações. Selecionar colunas na tela não muda onde os valores ficam guardados.</figcaption>
+  </figure>
+</section>
+
+<style>
+.storage-visual .grouping-heading { margin:1.4rem 0 .4rem; font-size:1.1rem; font-weight:700; }
+    .storage-visual .group-label { margin:.3rem 0 .8rem; color:var(--muted); font-size:.92rem; }
+    .storage-visual .fields,.storage-visual .record { display:grid; grid-template-columns:12% 29% 17% 42%; }
+    .storage-visual .fields { color:var(--muted); font-size:.9rem; padding:0 .35rem .35rem; }
+    .storage-visual .records { display:grid; gap:.4rem; }
+    .storage-visual .record { border:1.5px solid var(--ink); padding:.6rem .35rem; font-size:.9rem; }
+    .storage-visual .attributes { display:grid; grid-template-columns:12% 29% 17% 42%; }
+    .storage-visual .attribute { min-width:0; padding-right:.4rem; }
+    .storage-visual .attribute:last-child { padding-right:0; }
+    .storage-visual .attribute .attribute-heading { font-size:.9rem; font-weight:500; color:var(--muted); margin:0 0 .35rem; padding-left:.15rem; }
+    .storage-visual .attribute ol { list-style:none; margin:0; padding:.25rem .15rem; border:1.5px solid var(--ink); }
+    .storage-visual .attribute li { padding:.6rem 0; font-size:.9rem; white-space:nowrap; }
+    .storage-visual .attribute:nth-child(2) ol,.storage-visual .attribute:nth-child(3) ol { background:var(--soft); border-width:2px; }
+    .storage-visual .record span:nth-child(2),.storage-visual .record span:nth-child(3) { text-decoration:underline; text-underline-offset:.18em; }
+    .storage-visual figcaption { margin-top:1rem; color:var(--muted); font-size:.9rem; }
+    @media(min-width:520px) { .storage-visual .record,.storage-visual .attribute li { font-size:1rem; } .storage-visual .attribute { padding-right:.8rem; } .storage-visual .attribute ol { padding-left:.5rem; } }
+</style>

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="882" viewBox="0 0 360 882" role="img" aria-labelledby="title desc">
+  <title id="title">Quem faz cada tarefa?</title>
+  <desc id="desc">Em equipamento próprio, a organização cuida das quatro tarefas. Em uma máquina virtual na nuvem, o provedor cuida do equipamento, mas a organização administra o banco. No banco gerenciado, o provedor também atualiza o banco conforme o contrato. Configurar acessos e decidir o uso dos dados permanecem com a organização. Divisão ilustrativa e dependente do serviço e do contrato.</desc>
+  <style>text{font-family:system-ui,sans-serif;fill:#17231e;font-size:15px}.title{font-size:23px;font-weight:700}.heading{font-size:17px;font-weight:700}.role{fill:#157451;font-weight:700}.muted{fill:#53645b;font-size:14px}.line{stroke:#d9e2dc;stroke-width:1}</style>
+  <rect width="360" height="882" fill="white"/>
+  <text class="title" x="20" y="38">Quem faz cada tarefa?</text>
+  <text class="heading" x="20" y="87">Equipamento próprio</text>
+  <text class="muted" x="20" y="109">Banco autogerido</text>
+  <g transform="translate(20 143)">
+    <text x="0" y="0">Cuidar do</text><text x="0" y="19">equipamento</text><text class="role" x="174" y="10">Organização</text>
+    <path class="line" d="M0 32H320"/>
+    <text x="0" y="61">Atualizar o banco</text><text class="role" x="174" y="61">Organização</text>
+    <path class="line" d="M0 77H320"/>
+    <text x="0" y="106">Configurar acessos</text><text class="role" x="174" y="106">Organização</text>
+    <path class="line" d="M0 122H320"/>
+    <text x="0" y="151">Decidir o uso</text><text x="0" y="170">dos dados</text><text class="role" x="174" y="160">Organização</text>
+  </g>
+  <text class="heading" x="20" y="362">Máquina na nuvem</text>
+  <text class="muted" x="20" y="384">Banco autogerido</text>
+  <g transform="translate(20 418)">
+    <text x="0" y="0">Cuidar do</text><text x="0" y="19">equipamento</text><text class="role" x="174" y="10">Provedor</text>
+    <path class="line" d="M0 32H320"/>
+    <text x="0" y="61">Atualizar o banco</text><text class="role" x="174" y="61">Organização</text>
+    <path class="line" d="M0 77H320"/>
+    <text x="0" y="106">Configurar acessos</text><text class="role" x="174" y="106">Organização</text>
+    <path class="line" d="M0 122H320"/>
+    <text x="0" y="151">Decidir o uso</text><text x="0" y="170">dos dados</text><text class="role" x="174" y="160">Organização</text>
+  </g>
+  <text class="heading" x="20" y="637">Banco gerenciado</text>
+  <g transform="translate(20 671)">
+    <text x="0" y="0">Cuidar do</text><text x="0" y="19">equipamento</text><text class="role" x="174" y="10">Provedor</text>
+    <path class="line" d="M0 32H320"/>
+    <text x="0" y="61">Atualizar o banco</text><text class="role" x="174" y="52">Provedor</text><text class="muted" x="174" y="71">conforme contrato</text>
+    <path class="line" d="M0 87H320"/>
+    <text x="0" y="116">Configurar acessos</text><text class="role" x="174" y="116">Organização</text>
+    <path class="line" d="M0 132H320"/>
+    <text x="0" y="161">Decidir o uso</text><text x="0" y="180">dos dados</text><text class="role" x="174" y="170">Organização</text>
+  </g>
+  <text class="muted" x="20" y="875">Divisão ilustrativa; depende do contrato.</text>
+</svg>

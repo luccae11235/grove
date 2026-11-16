@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="1000" viewBox="0 0 360 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Por que o bloqueio continua depois de corrigir o registro?</title>
+  <desc id="desc">A mesma cliente C17 passa por três estados. No primeiro, uma devolução no prazo foi registrada como atrasada, C17 entrou na lista e a reserva foi bloqueada. No segundo, o registro é corrigido para no prazo, mas a lista ainda antiga mantém o bloqueio. No terceiro, a lista é atualizada e a tentativa é reavaliada. Neste exemplo, C17 sai da lista e a reserva é permitida.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M1 1 5.5 3.5 1 6" fill="none" stroke="#53645b" stroke-width="1.2"/></marker>
+  </defs>
+  <rect width="360" height="1000" fill="#fff"/>
+  <g font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" fill="#17231e">
+    <text x="24" y="38" font-size="26" font-weight="650">Por que o bloqueio</text>
+    <text x="24" y="70" font-size="26" font-weight="650">continua?</text>
+    <text x="24" y="101" font-size="14" fill="#53645b">A mesma cliente C17 nas três etapas.</text>
+
+    <g transform="translate(0 136)">
+      <text x="24" y="0" font-size="18" font-weight="650">1 · Registro errado</text>
+      <text x="24" y="33" font-size="14" fill="#53645b">Registro de devolução</text>
+      <text x="24" y="58" font-size="18" font-weight="600">Atrasada · registro errado</text>
+      <path d="M180 72V88" stroke="#53645b" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <text x="24" y="116" font-size="14" fill="#53645b">Lista de bloqueio</text>
+      <text x="24" y="141" font-size="18" font-weight="600">C17 na lista</text>
+      <path d="M180 155V171" stroke="#53645b" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <text x="24" y="199" font-size="14" fill="#53645b">Tentativa de reserva</text>
+      <text x="24" y="224" font-size="20" font-weight="650">Reserva bloqueada</text>
+    </g>
+
+    <path d="M24 387H336" stroke="#d9e2dc"/>
+    <g transform="translate(0 420)">
+      <text x="24" y="0" font-size="18" font-weight="650">2 · Corrigir só a origem</text>
+      <text x="24" y="33" font-size="14" fill="#53645b">Registro de devolução</text>
+      <text x="24" y="58" font-size="18" font-weight="600" fill="#157451">No prazo · corrigido</text>
+      <path d="M180 72V88" stroke="#53645b" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrow)"/>
+      <text x="24" y="116" font-size="14" fill="#53645b">Lista de bloqueio · ainda antiga</text>
+      <text x="24" y="141" font-size="18" font-weight="600">C17 na lista</text>
+      <path d="M180 155V171" stroke="#53645b" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <text x="24" y="199" font-size="14" fill="#53645b">Tentativa de reserva</text>
+      <text x="24" y="224" font-size="20" font-weight="650">Reserva bloqueada</text>
+    </g>
+
+    <path d="M24 671H336" stroke="#d9e2dc"/>
+    <g transform="translate(0 704)">
+      <text x="24" y="0" font-size="18" font-weight="650">3 · Atualizar e reavaliar</text>
+      <text x="24" y="33" font-size="14" fill="#53645b">Registro de devolução</text>
+      <text x="24" y="58" font-size="18" font-weight="600">No prazo · corrigido</text>
+      <path d="M180 72V88" stroke="#53645b" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <text x="24" y="116" font-size="14" fill="#53645b">Lista de bloqueio · atualizada</text>
+      <text x="24" y="141" font-size="18" font-weight="600" fill="#157451">C17 fora da lista</text>
+      <path d="M180 155V171" stroke="#53645b" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <text x="24" y="199" font-size="14" fill="#53645b">Tentativa de reserva · reavaliada</text>
+      <text x="24" y="224" font-size="20" font-weight="650" fill="#157451">Reserva permitida</text>
+    </g>
+    <text x="24" y="973" font-size="14" fill="#53645b">A permissão é o desfecho deste exemplo.</text>
+  </g>
+</svg>

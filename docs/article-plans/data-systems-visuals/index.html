@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visuais do artigo sobre sistemas de dados</title>
+  <link rel="stylesheet" href="visual.css">
+  <style>
+    .gallery { max-width: 850px; margin: 0 auto; padding: 36px 24px 56px; }
+    .eyebrow { color: var(--accent); font-size: .8rem; margin: 0 0 10px; }
+    header h1 { font-size: clamp(1.8rem, 5vw, 2.3rem); margin-bottom: 12px; }
+    header p { max-width: 66ch; color: var(--muted); }
+    .chooser { display:block; margin:24px 0 8px; font-size:.9rem; color:var(--muted); }
+    select { display:block; width:100%; max-width:100%; padding:10px 8px; border:1px solid var(--line); border-radius:6px; color:var(--ink); background:#fff; margin-bottom:16px; }
+    .review { margin: 0 -20px; }
+    iframe { width: 100%; min-height: 240px; height: 720px; border: 0; display: block; }
+    .export { display: flex; flex-wrap: wrap; gap: 12px 24px; margin-top: 12px; padding-top: 18px; border-top: 1px solid var(--line); }
+    .export a { color: var(--accent); text-underline-offset: 3px; font-size: .9rem; }
+    @media(max-width: 540px) { .gallery { padding: 24px 16px 36px; } .review { margin: 0 -4px; } }
+  </style>
+</head>
+<body>
+<main class="gallery">
+  <header>
+    <p class="eyebrow">Aflora · Sistemas de dados</p>
+    <h1>Visuais para acompanhar a história</h1>
+    <p>Uma pergunta por visual. Escolha uma cena para comparar os dados ou acompanhar o que muda.</p>
+  </header>
+  <label class="chooser" for="visual-choice">Escolha uma cena</label>
+  <select id="visual-choice">
+    <option value="01-query-paths">1. Consultar uma reserva ou analisar muitas</option>
+    <option value="02-row-columns">2. Organizar por reserva ou por atributo</option>
+    <option value="03-analytical-update">3. A mudança que ainda não chegou ao relatório</option>
+    <option value="04-responsibilities">4. Quem faz cada trabalho</option>
+    <option value="05-copies-partitions">5. Copiar ou dividir os dados</option>
+    <option value="06-missing-response">6. Quando a confirmação não chega</option>
+    <option value="07-correction-path">7. Corrigir o registro e rever o bloqueio</option>
+    <option value="08-policy-choice">8. O mesmo fato sob regras diferentes</option>
+  </select>
+  <section class="review" aria-label="Visual selecionado">
+    <iframe id="scene" src="01-query-paths.html" title="Consultar uma reserva ou analisar muitas"></iframe>
+  </section>
+  <div class="export">
+    <a id="svg-link" href="01-query-paths.svg">Abrir imagem estática em SVG</a>
+    <a id="html-link" href="01-query-paths.html">Abrir apenas este visual</a>
+  </div>
+</main>
+<script>
+  const choice = document.getElementById('visual-choice');
+  const options = [...choice.options];
+  const frame = document.getElementById('scene');
+  function select() {
+    const selected = options.find(option => '#' + option.value === location.hash) || options[0];
+    const name = selected.value;
+    choice.value = name;
+    if (frame.getAttribute('src') !== name + '.html') frame.setAttribute('src', name + '.html');
+    frame.title = selected.textContent.replace(/^\d+\. /, '');
+    document.getElementById('svg-link').href = name + '.svg';
+    document.getElementById('html-link').href = name + '.html';
+  }
+  window.addEventListener('message', event => {
+    if (event.source !== frame.contentWindow || event.data?.type !== 'aflora-visual-height') return;
+    const height = Number(event.data.height);
+    if (Number.isFinite(height) && height >= 100 && height < 5000) frame.style.height = height + 'px';
+  });
+  choice.addEventListener('change', () => { location.hash = choice.value; });
+  window.addEventListener('hashchange', select);
+  select();
+</script>
+</body>
+</html>

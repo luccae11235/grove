@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>O que sabemos sem resposta? — Aflora</title>
+  <link rel="stylesheet" href="./visual.css">
+  <style>
+    .missing .controls { display:flex; flex-wrap:wrap; gap:.5rem; margin-block:1.5rem; }
+    .missing button { min-height:44px; padding:.65rem .9rem; font:inherit; color:var(--ink); background:var(--soft); border:1px solid var(--accent); cursor:pointer; }
+    .missing button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+    .missing .scenario { padding-block:1.25rem; border-block-start:1px solid var(--line); }
+    .missing h2 { font-size:1.1rem; margin:0 0 1rem; }
+    .missing .endpoints { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.5rem; }
+    .missing .endpoint { min-width:0; }
+    .missing h3 { font-size:1rem; color:var(--muted); font-weight:500; margin:0 0 .4rem; }
+    .missing .state { margin:0; font-size:1.125rem; font-weight:700; min-height:3.2em; }
+    .missing .client .state { color:var(--ink); }
+    .missing .server .state { color:var(--accent); }
+    .missing .event { color:var(--muted); font-size:.9375rem; margin:.75rem 0 0; min-height:3em; }
+    .missing .note { color:var(--muted); font-size:.9375rem; margin-block-start:1rem; }
+    .missing .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
+  </style>
+</head>
+<body>
+<main class="visual missing">
+  <h1>O que sabemos sem resposta?</h1>
+  <p>O cliente enviou uma reserva. Sem receber confirmação, ele sabe se ela foi registrada?</p>
+  <div class="controls">
+    <button type="button" id="reveal" aria-expanded="false" aria-controls="comparison">Revelar o que ocorreu</button>
+  </div>
+  <figure id="comparison" aria-label="Duas situações com a mesma ausência de confirmação para o cliente">
+    <section class="scenario" aria-labelledby="scenario-one">
+      <h2 id="scenario-one">Situação 1</h2>
+      <div class="endpoints">
+        <div class="endpoint client"><h3>Cliente</h3><p class="state">Sem confirmação</p></div>
+        <div class="endpoint server"><h3>Servidor</h3><p class="state" id="server-one">Estado não revelado</p></div>
+      </div>
+      <p class="event" id="event-one"></p>
+    </section>
+    <section class="scenario" aria-labelledby="scenario-two">
+      <h2 id="scenario-two">Situação 2</h2>
+      <div class="endpoints">
+        <div class="endpoint client"><h3>Cliente</h3><p class="state">Sem confirmação</p></div>
+        <div class="endpoint server"><h3>Servidor</h3><p class="state" id="server-two">Estado não revelado</p></div>
+      </div>
+      <p class="event" id="event-two"></p>
+    </section>
+    <figcaption class="note" id="inference">Compare o que o cliente consegue observar nas duas situações.</figcaption>
+  </figure>
+  <p class="sr-only" role="status" aria-live="polite" id="status"></p>
+</main>
+<script>
+(() => {
+  let revealed = false;
+  const button = document.querySelector('#reveal');
+  button.addEventListener('click', () => {
+    revealed = !revealed;
+    button.setAttribute('aria-expanded', String(revealed));
+    button.textContent = revealed ? 'Ocultar o que ocorreu' : 'Revelar o que ocorreu';
+    document.querySelector('#server-one').textContent = revealed ? 'Reserva não registrada' : 'Estado não revelado';
+    document.querySelector('#server-two').textContent = revealed ? 'Reserva registrada' : 'Estado não revelado';
+    document.querySelector('#event-one').textContent = revealed ? 'O pedido não chegou ao servidor.' : '';
+    document.querySelector('#event-two').textContent = revealed ? 'O servidor registrou a reserva, mas a resposta se perdeu.' : '';
+    document.querySelector('#inference').textContent = revealed ? 'A mesma ausência de confirmação é compatível com dois estados no servidor.' : 'Compare o que o cliente consegue observar nas duas situações.';
+    document.querySelector('#status').textContent = revealed ? 'Situação 1: o pedido não chegou e a reserva não foi registrada. Situação 2: a reserva foi registrada, mas a resposta se perdeu. Nos dois casos, o cliente continua sem confirmação.' : 'Estados do servidor ocultos. Nos dois casos, o cliente continua sem confirmação.';
+  });
+})();
+</script>
+<script src="frame.js"></script>
+</body>
+</html>

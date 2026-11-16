@@ -1,0 +1,201 @@
+# Como escolher a arquitetura de um sistema de dados
+
+## Apresentação
+
+Este é o primeiro artigo de uma trilha que acompanha os capítulos da segunda edição de [*Designing Data-Intensive Applications*, de Martin Kleppmann e Chris Riccomini](https://www.oreilly.com/library/view/designing-data-intensive-applications/9781098119058/ch01.html). Vamos explorar suas decisões por meio de situações concretas, imagens e pequenas investigações, construindo a intuição necessária para compreender os mecanismos apresentados no livro.
+
+A leitura do original continua importante para aprofundar esses mecanismos, conhecer suas referências e examinar condições que ficarão fora de cada artigo. Aqui, começaremos pelas perguntas que ajudam a escolher uma arquitetura, acompanhando o que acontece quando os mesmos dados precisam sustentar trabalhos diferentes.
+
+## Os trabalhos que os mesmos dados precisam realizar
+
+Imagine uma pequena locadora de ferramentas. A equipe mantém uma planilha com os equipamentos, as reservas e as devoluções. Durante algum tempo, ela oferece uma maneira simples de organizar a rotina. As pessoas conseguem consultar o que está disponível e conversar antes de confirmar um empréstimo.
+
+A locadora passa então a aceitar reservas pelo site, enquanto continua atendendo no balcão. Para amanhã, resta apenas uma furadeira. Uma pessoa a encontra disponível na página de reservas no mesmo instante em que outra pede a ferramenta a uma atendente.
+
+Se cada uma consultar a disponibilidade antes de a outra confirmar a reserva, ambas poderão receber a mesma promessa. Podemos ter poucos equipamentos e poucos registros e, ainda assim, precisar resolver esse problema. A dificuldade aparece porque duas ações dependem do mesmo estado e podem modificá-lo ao mesmo tempo.
+
+A equipe também quer decidir o que comprar para a próxima estação. Para isso, precisa comparar o histórico de reservas dos diferentes tipos de ferramenta. Consultar se uma furadeira está disponível amanhã ajuda no atendimento de hoje, mas oferece pouca informação sobre quais equipamentos foram mais procurados ao longo dos meses.
+
+Os registros de reserva participam das duas tarefas. Em uma delas, precisamos confirmar uma ação respeitando as reservas já assumidas. Na outra, precisamos relacionar muitos acontecimentos para reconhecer um padrão. Essa diferença no trabalho pedido aos dados vai orientar nossas primeiras escolhas.
+
+Chamaremos de **sistema de dados** o conjunto que permite registrar, guardar, consultar e processar essas informações. Ele pode começar com uma única ferramenta e, conforme as necessidades, incorporar um banco de dados, uma busca, um cache para consultas frequentes ou processos que preparam informações em momentos diferentes. Por enquanto, acompanharemos apenas a confirmação das reservas e a análise de seu histórico.
+
+Todos os acontecimentos da locadora neste artigo são hipotéticos. Vamos usá-los para investigar o que distingue o trabalho operacional do analítico, quem mantém o sistema, quando faz sentido distribuí-lo entre máquinas e como suas decisões afetam as pessoas.
+
+## 1. O que distingue os sistemas operacionais dos analíticos
+
+### Confirmar reservas sem comprometer a disponibilidade
+
+Voltemos à última furadeira. O site consulta a disponibilidade e encontra a ferramenta livre. Antes de registrar a reserva, o atendimento do balcão faz a mesma consulta e recebe a mesma resposta. Se os dois caminhos prosseguirem sem coordenação, cada um poderá criar uma reserva válida aos seus próprios olhos, embora a locadora tenha apenas uma ferramenta para entregar.
+
+Precisamos preservar uma regra comum aos dois caminhos. Depois que uma reserva for confirmada para aquele período, uma tentativa concorrente deve reconhecer o novo compromisso antes de prometer a ferramenta novamente.
+
+Também precisamos lidar com falhas durante o registro. Se a operação cria uma reserva e atualiza a disponibilidade, seria inadequado confirmar apenas uma dessas mudanças. Podemos agrupá-las em uma unidade de trabalho que se confirma por inteiro ou tem seus efeitos desfeitos quando não consegue terminar. Essa unidade recebe o nome de [transação](https://www.postgresql.org/docs/current/tutorial-transactions.html).
+
+Para preservar a regra sob concorrência, porém, ainda precisamos escolher como as tentativas interferem umas nas outras. Colocar instruções dentro de uma transação não corrige, por si só, qualquer sequência de leituras e alterações. A aplicação precisa usar [garantias de isolamento e coordenação](https://www.postgresql.org/docs/current/transaction-iso.html) adequadas à regra que pretende manter.
+
+Abrir uma reserva, consultar o cadastro de uma cliente e registrar uma devolução são ações da operação cotidiana. Em geral, cada uma precisa localizar ou alterar uma pequena parte dos dados e responder em tempo adequado para quem está sendo atendido. Esse tipo de trabalho é associado a **[OLTP](https://learn.microsoft.com/en-us/azure/architecture/data-guide/relational-data/online-transaction-processing)**, sigla em inglês para processamento de transações on-line. A categoria inclui interações como pedidos, movimentações de estoque e serviços prestados; uma transação de banco de dados não precisa envolver dinheiro.
+
+O que caracteriza esse trabalho é a necessidade atendida. Tanto uma consulta quanto uma alteração podem fazer parte da operação, independentemente do cargo de quem criou o programa ou de quem usa a informação.
+
+### Analisar padrões que dependem de muitas reservas
+
+Agora queremos saber quais tipos de ferramenta tiveram mais reservas confirmadas em cada mês. Encontrar uma reserva específica já não resolve a pergunta, porque precisamos reunir acontecimentos de períodos e categorias diferentes.
+
+Suponha que um pequeno trecho do histórico contenha, em março, três reservas confirmadas de furadeiras e uma cancelada, além de duas reservas confirmadas de serras. Ao agrupar somente as confirmadas por tipo e mês, encontramos três para furadeiras e duas para serras. Cada linha registra uma reserva individual; a comparação surge quando tratamos várias delas em conjunto.
+
+Esse é um trabalho analítico. A expressão **[OLAP](https://learn.microsoft.com/en-us/azure/architecture/data-guide/relational-data/online-analytical-processing)**, processamento analítico on-line, está associada à exploração e à análise de conjuntos de dados para responder perguntas desse tipo. Uma consulta pode produzir apenas duas barras na tela depois de examinar milhões de registros. O tamanho da resposta não revela, sozinho, a quantidade de dados necessária para produzi-la.
+
+[VISUALIZATION: Pergunta do leitor: “Por que duas consultas aos mesmos dados exigem percursos diferentes?”. Mostrar uma pequena tabela de reservas, com identificador, tipo de ferramenta, mês e situação. Manter a tabela na mesma posição. Primeiro, “consultar reserva 104” destaca uma linha; depois, “reservas confirmadas por tipo no mês” destaca os campos necessários em várias linhas e produz uma comparação simples entre tipos. Os registros continuam reconhecíveis; muda o percurso de leitura. O leitor deve perceber acesso localizado versus combinação de muitos registros, sem acompanhar somas linha por linha. A tabela é uma janela didática, não evidência de desempenho.]
+
+A diferença entre os percursos também nos faz perguntar como facilitar cada leitura. Para encontrar a reserva 104, um **[índice](https://www.postgresql.org/docs/current/indexes-intro.html)** pode oferecer um caminho até os registros correspondentes, evitando procurar a reserva em toda a tabela. Esse caminho ocupa espaço e precisa acompanhar as alterações nos dados. Sua utilidade depende das consultas que queremos atender.
+
+Já a comparação mensal precisa de valores de muitas reservas, mas usa apenas alguns campos. Para contar as confirmadas por tipo e mês, precisamos desses atributos; o telefone da cliente, por exemplo, não participa do cálculo. Podemos investigar uma organização que mantenha próximos os valores de um mesmo atributo, facilitando a leitura dos campos de interesse sem trazer todos os demais.
+
+[IMAGE: Pergunta: “Que valores ficam próximos quando mudamos a organização dos mesmos registros?”. Reutilizar as reservas da figura anterior. Comparar faixas de valores organizadas por reserva e por atributo, sem apagar nenhum campo. Destacar os valores de tipo e mês que a análise precisa. O leitor acompanha os mesmos valores mudando de agrupamento e percebe por que ler campos de muitas reservas pode evitar trazer outros atributos. Comparação esquemática, sem simular operações de disco ou provar desempenho. A imagem revela organização física; a figura anterior revelou o trabalho pedido pela consulta.]
+
+Quando os campos de cada registro ficam agrupados, temos uma organização por **linhas**. Quando agrupamos os valores de um mesmo atributo, temos uma organização por **colunas**. Marcar uma coluna numa tabela na tela apenas indica os valores que queremos ver; armazenar seus valores juntos altera a organização usada para acessá-los. Essa proximidade ajuda a compreender por que uma [organização por colunas](https://web.stanford.edu/class/cs245/readings/c-store.pdf) pode favorecer análises que percorrem poucos atributos de muitos registros.
+
+OLTP e OLAP descrevem padrões de trabalho, enquanto linhas, colunas e índices são escolhas de implementação. Há leituras na operação cotidiana e há gravações na preparação analítica. Os nomes também não determinam uma organização física obrigatória. O desenho nos ajuda a reconhecer uma razão para especializar o armazenamento, mas a escolha de um sistema mais rápido para a locadora ainda dependeria de suas consultas, de seus dados e de medições.
+
+### O que precisamos manter ao separar os trabalhos
+
+A locadora já tem um banco que registra reservas. Podemos começar executando nele a comparação mensal. Se as consultas são pequenas, pouco frequentes e não prejudicam o atendimento, essa solução mantém a operação simples.
+
+À medida que o trabalho analítico cresce, ele pode disputar processador, memória e acesso ao armazenamento com as reservas. Essa competição pode ocorrer mesmo em bancos que permitem leituras e escritas simultâneas sem bloqueio direto entre elas, como explica a [documentação de concorrência do PostgreSQL](https://www.postgresql.org/docs/current/mvcc-intro.html). Uma consulta longa ainda consome recursos que outros trabalhos também precisam usar.
+
+Separar a análise passa a ter uma justificativa quando queremos, por exemplo, proteger o tempo de resposta das reservas, reunir informações de várias unidades ou conservar um histórico organizado para perguntas diferentes. Ganhamos liberdade para preparar cada trabalho de uma forma adequada, assumindo também a manutenção do caminho que os conecta.
+
+Essa preparação começa pelo significado dos registros. Uma reserva confirmada não é uma devolução, e uma reserva cancelada não deve entrar inadvertidamente na contagem de confirmadas. Se outra unidade registra categorias ou datas de modo diferente, precisamos compatibilizar essas informações antes de comparar os resultados. Extrair dados de suas origens, transformá-los e carregá-los em outro repositório constitui um processo de integração frequentemente chamado de [ETL](https://learn.microsoft.com/en-us/azure/architecture/data-guide/relational-data/etl).
+
+Podemos manter o banco de reservas como fonte de referência para os compromissos da locadora e preparar uma representação derivada para a análise. A relação entre essas representações precisa ficar clara. Se uma reserva muda de situação, como essa mudança chega à contagem mensal?
+
+[ANIMATION: Pergunta do leitor: “O que acontece entre registrar uma mudança e enxergá-la no relatório?”. Usar apenas origem → atualização → visão analítica. Manter uma reserva cancelada identificável nos dois lados. A origem muda primeiro; o relatório mantém a versão anterior até passar a atualização. Comparar poucos estados, sem cronômetros de desempenho inventados. A inferência é que duas respostas diferentes podem se referir a instantes diferentes. A narrativa distingue um atraso tolerável na compra do próximo mês de um atraso inaceitável ao prometer a última ferramenta. Versão estática: estados antes e depois com os mesmos objetos.]
+
+Imagine que o relatório seja atualizado durante a noite. Uma reserva cancelada pela manhã pode continuar aparecendo como confirmada na visão analítica até a próxima atualização. As duas consultas usam representações referentes a momentos diferentes. Para planejar compras do próximo mês, talvez esse atraso seja aceitável; para decidir se podemos prometer a última furadeira amanhã, precisamos de uma informação adequada à confirmação daquela reserva.
+
+Uma atualização por **lotes** reúne mudanças para processá-las em conjunto. Uma preparação noturna pode bastar para as compras mensais. Quando precisamos reagir às mudanças conforme elas acontecem, podemos trabalhar com **eventos**, como a confirmação ou o cancelamento de uma reserva. O momento em que esses eventos são recebidos e processados ainda depende do desenho do sistema. Eles podem esperar numa fila ou exigir nova tentativa depois de uma falha.
+
+Atualizar com maior frequência exige acompanhar esse caminho e perceber quando ele deixa de funcionar. Além disso, uma representação derivada pode conter histórico ou transformações que o estado atual da origem já não permite reconstruir. Precisamos saber como conservá-la e recuperá-la, em vez de tratá-la automaticamente como uma cópia dispensável.
+
+Se o banco existente continua atendendo bem às duas tarefas, esse trabalho adicional pode não se justificar. Quando a separação é necessária, ela traz uma nova pergunta prática. Quem fará as atualizações, acompanhará as falhas e recuperará o conjunto quando algo der errado?
+
+## 2. Quem cuida do sistema em cada forma de hospedagem
+
+Suponha que o armazenamento apresente uma falha ou que uma atualização do banco seja necessária. O trabalho para manter as reservas funcionando existe independentemente do lugar onde executamos o sistema. Podemos realizá-lo com equipe própria ou contratar serviços que assumem partes dele.
+
+Se a locadora usa equipamento próprio, alguém precisa cuidar da máquina, do ambiente em que ela funciona e do software instalado. Se aluga uma máquina virtual na nuvem e instala o banco por conta própria, parte do trabalho com a infraestrutura física passa ao provedor, enquanto a administração do software continua com a equipe. Essa fronteira aparece no [modelo de responsabilidade compartilhada da AWS](https://aws.amazon.com/compliance/shared-responsibility-model/), por exemplo, e varia conforme o serviço contratado.
+
+A contratação de um banco gerenciado pode deslocar outras tarefas, como parte das atualizações e da administração do banco, conforme o serviço. A equipe ainda precisa configurar os acessos e compreender as opções que está usando. A [documentação de segurança do Amazon RDS](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.html), um exemplo dessa categoria, mantém sob responsabilidade do cliente decisões sobre acesso, requisitos da organização e uso de seus dados.
+
+Por isso, localização da infraestrutura e nível de serviço são escolhas diferentes. Administrar um banco instalado numa máquina de nuvem continua sendo uma forma de autogestão do software. Também podemos contratar mais ou menos administração dentro do mesmo provedor.
+
+[VISUALIZATION: Pergunta do leitor: “Qual responsabilidade realmente mudou quando contratamos mais serviço?”. Manter uma lista curta de tarefas reconhecíveis — cuidar do equipamento, atualizar o banco, definir acessos e decidir o uso dos dados. Comparar os três arranjos, deslocando somente a indicação de quem executa cada tarefa. Marcar as fronteiras como ilustrativas e dependentes do contrato. A descoberta é que um trabalho delegado continua existindo e que algumas decisões permanecem com a organização. Preferir essa comparação à fotografia de um datacenter ou a uma nuvem com muitos ícones.]
+
+Para a locadora, a comparação ganha conteúdo quando chegamos às tarefas concretas. Quem aplica uma atualização? Quem recebe o aviso de falha? Como recuperamos as reservas depois de perder o armazenamento? Quem verifica se a recuperação realmente funciona?
+
+Uma equipe pequena pode valorizar um serviço que a dispense de manter equipamentos e reduza o trabalho de administração do banco. Isso deixa mais tempo para desenvolver e acompanhar a aplicação. Uma organização com equipe preparada e carga previsível pode avaliar a conveniência de manter maior controle direto. Em ambos os casos, precisamos considerar o serviço contratado, a capacidade que ficará ociosa, o tempo dos especialistas e as condições de recuperação.
+
+Também importa entender como sair de uma escolha. Um recurso específico do provedor pode resolver uma necessidade de maneira conveniente, ao mesmo tempo que exige adaptações se quisermos migrar. Essa dependência participa da avaliação junto dos benefícios; o custo relevante inclui o trabalho ao longo do uso do sistema e de uma eventual mudança.
+
+As decisões sobre quem pode acessar os dados e para que a organização pretende usá-los continuam precisando de responsáveis. Delegar tarefas operacionais muda a divisão do trabalho, sem determinar por si só essas finalidades.
+
+Depois de escolher quem opera o sistema, ainda precisamos decidir de quantas máquinas ele necessita. Alugar infraestrutura na nuvem não exige dividir os dados entre várias delas. Essa divisão precisa responder a uma necessidade própria.
+
+## 3. Quando vale a pena distribuir um sistema entre máquinas
+
+A locadora considera abrir outra unidade. É razoável investigar se o sistema atual suportará o novo atendimento, mas a abertura de uma filial não demonstra, por si só, que os dados precisam ser distribuídos.
+
+Uma única máquina pode ter vários núcleos de processamento e executar trabalhos em paralelo. Antes de acrescentar outras, podemos examinar se uma consulta está lendo dados desnecessários, se faltam índices úteis, se há memória suficiente ou se ainda existe capacidade disponível. Também podemos avaliar uma máquina maior. Essas possibilidades ajudam a distinguir um problema na forma de usar os recursos de um limite que realmente pede outra organização.
+
+Distribuir pode fazer sentido quando a capacidade de uma única máquina se torna insuficiente, quando precisamos de um desenho que sustente o atendimento diante de certas falhas ou quando a localização dos usuários cria necessidades específicas. Cada máquina que participa desse conjunto é chamada de **nó**, e precisamos examinar o que a nova configuração oferece. Um sistema analítico pode funcionar numa única máquina, assim como um sistema na nuvem pode usar apenas um nó de banco de dados.
+
+Ao adicionar uma segunda máquina, podemos estar fazendo trabalhos bastante diferentes. Pela **replicação**, mantemos cópias dos dados. Conforme o desenho, essas cópias podem ajudar na recuperação ou atender parte das leituras. Isso exige verificar como são atualizadas e que operações aceitam. As [réplicas de leitura do Amazon RDS](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html), por exemplo, recebem atualizações de forma assíncrona e podem apresentar dados defasados em relação à origem.
+
+Pelo **particionamento**, dividimos os dados entre partes. Na locadora, poderíamos separar as reservas por unidade. Uma consulta às reservas da unidade A teria um destino definido; uma comparação de disponibilidade em todas as unidades precisaria reunir informações das partes envolvidas.
+
+[VISUALIZATION: Pergunta do leitor: “Esta segunda máquina está copiando ou dividindo os dados?”. Manter as mesmas seis reservas. Na primeira comparação, elas aparecem completas em dois nós; na segunda, são separadas por unidade. Escolher uma consulta local e uma consulta sobre todas as unidades e indicar os destinos necessários. O leitor percebe duplicação versus divisão e por que a consulta global precisa reunir partes. O visual explica organização dos dados, sem simular ganho de velocidade ou disponibilidade.]
+
+Essa divisão pode ampliar a capacidade disponível para o conjunto, mas seu efeito depende de como o trabalho se distribui. Se quase toda a procura continuar concentrada na unidade A, a parte responsável por ela poderá permanecer sobrecarregada, mesmo com capacidade livre na unidade B. Operações que atravessam as partes também passam a exigir coordenação entre elas.
+
+A comunicação merece atenção mesmo antes de distribuirmos o próprio banco. Uma aplicação pode enviar pedidos pela rede a um banco executado num único nó. Acrescentar réplicas, partições ou outros serviços amplia o número de relações entre partes, que podem continuar funcionando enquanto uma mensagem se atrasa ou se perde. Essa possibilidade de falha parcial é uma das diferenças fundamentais discutidas em [*A Note on Distributed Computing*](https://www.cs.cmu.edu/~aldrich/papers/classic/note-on-distributed-computing.pdf).
+
+Imagine uma reserva enviada pelo aplicativo. O prazo de espera termina sem que a confirmação apareça. Talvez o pedido não tenha chegado ao servidor. Talvez a reserva tenha sido registrada e apenas a resposta tenha se perdido. Para a pessoa diante da tela, os dois acontecimentos podem produzir a mesma ausência de confirmação.
+
+[ANIMATION: Pergunta do leitor: “O que o cliente sabe quando a resposta não chega?”. Manter cliente e servidor fixos e apresentar dois percursos: pedido não chega; pedido chega e só a resposta se perde. Em ambos, o cliente vê a mesma ausência de confirmação. Depois revelar o estado no servidor. A descoberta é uma incerteza de conhecimento, não apenas uma máquina desligada. Dois quadros estáticos preservam a mesma inferência.]
+
+Repetir o pedido sem reconhecer essa possibilidade pode executar a ação novamente. Podemos projetar a operação para que novas tentativas da mesma solicitação preservem o efeito de uma única execução, propriedade chamada de **[idempotência](https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/)**. Um identificador da solicitação ajuda o servidor a reconhecer a repetição, desde que o processamento e o registro desse identificador sejam coordenados. É o contrato da operação que oferece a garantia; acrescentar um código ao pedido, isoladamente, não resolve a duplicação.
+
+A continuidade do atendimento depende, portanto, dos protocolos, da configuração e da operação do conjunto. Manter uma cópia em outra máquina pode ajudar diante da perda de um equipamento, mas um erro lógico também pode se propagar para ela. Uma exclusão indevida reproduzida em todas as cópias pede recursos de recuperação apropriados a esse tipo de perda.
+
+As ferramentas assumem parte dessa coordenação. Para usá-las, a equipe precisa compreender quais garantias estão disponíveis e em que condições a aplicação pode depender delas.
+
+Já conseguimos formular perguntas sobre a confirmação de uma reserva, a atualização de suas representações e a recuperação de falhas. Podemos agora acompanhar como esses registros participam de uma regra que decide algo sobre uma pessoa.
+
+## 4. As consequências das decisões tomadas com dados sobre pessoas
+
+### Por que corrigir o registro pode não resolver o bloqueio
+
+Uma cliente devolveu uma ferramenta dentro do prazo, mas a devolução foi registrada como atrasada. Esse registro alimentou uma lista usada pela locadora para impedir novas reservas de clientes com atraso.
+
+Quando tenta reservar outra ferramenta, a cliente recebe um bloqueio. Ela apresenta o comprovante, e uma atendente corrige a informação no sistema de devoluções. Mesmo assim, uma nova tentativa de reserva continua sendo recusada.
+
+No nosso exemplo, a lista de bloqueio foi produzida antes da correção e ainda não recebeu a mudança. Corrigimos a origem, mas a decisão continua consultando uma representação antiga. Precisamos atualizar essa representação e fazer com que a tentativa de reserva seja reavaliada a partir da informação corrigida.
+
+[VISUALIZATION: Pergunta do leitor: “Por que a cliente continua bloqueada depois da correção?”. Mostrar registro de devolução → lista de bloqueio → tentativa de reserva, mantendo a mesma cliente reconhecível por um identificador. Primeiro mudar apenas o registro e deixar a consequência visivelmente igual. Depois atualizar a lista e indicar a reavaliação da tentativa. A inferência é que dados e consequências têm caminhos relacionados, mas diferentes. Não acrescentar toda a infraestrutura dos capítulos anteriores: são suficientes a origem, um derivado e a consequência.]
+
+Corrigir o registro, atualizar a lista e reexaminar a decisão são trabalhos relacionados, com efeitos distintos. Se ninguém acompanha o caminho entre eles, a equipe pode considerar o atendimento concluído enquanto a cliente continua enfrentando a mesma consequência.
+
+Há ainda uma escolha anterior ao erro. Registrar uma devolução atrasada descreve um acontecimento. Usar esse acontecimento para impedir reservas futuras depende de uma política da locadora. Mesmo quando o registro é verdadeiro, podemos perguntar por quanto tempo ele deve afetar novas reservas, que contexto importa e como a pessoa pode contestar o resultado.
+
+Para a empresa, a automação pode reduzir o trabalho de atendimento. Para a cliente, o erro pode impedir o acesso a uma ferramenta necessária e consumir tempo para demonstrar algo que já havia feito corretamente. O benefício de automatizar e o custo de corrigir um problema podem recair sobre pessoas diferentes. As escolhas de projeto ajudam a definir quem consegue identificar o que aconteceu e agir sobre a consequência.
+
+### Como a escolha dos dados afeta seu uso
+
+Parte dessas decisões começa quando escolhemos quais informações encaminhar a cada trabalho. Voltemos à comparação das reservas por tipo e mês. O telefone da cliente não contribui para essa contagem. Podemos preparar os campos de que a análise precisa e limitar o envio de informações pessoais que não participam de sua finalidade.
+
+Essa escolha reduz o que os componentes e as pessoas envolvidos recebem desnecessariamente. Seu alcance, porém, depende do conjunto que permanece disponível. Trocar o nome por um identificador pode conservar a possibilidade de relacionar as reservas à cliente. A redução de campos é uma decisão concreta de projeto, que precisa ser examinada antes de chamarmos o resultado de anônimo.
+
+Também precisamos reconhecer o que a medida escolhida deixa de mostrar. Nosso relatório conta reservas confirmadas. Ele pode ajudar a entender o uso registrado, mas não revela, sozinho, quantas pessoas desistiram porque a ferramenta desejada estava indisponível.
+
+Se todas as serras ficaram reservadas durante um período, a quantidade de reservas pode ter sido limitada pela oferta. Compará-la com a de outra categoria sem investigar essa condição pode levar a uma leitura inadequada da procura. O sistema pode contar corretamente cada reserva e ainda fornecer informação insuficiente para a decisão de compra.
+
+Precisamos, então, investigar o que falta para responder à pergunta, avaliando também a necessidade dos dados adicionais. Esse cuidado aproxima a qualidade técnica da definição do problema que a organização pretende resolver.
+
+### As condições para exercer direitos sobre os dados
+
+No Brasil, perguntas sobre por que usamos dados pessoais e como as pessoas podem conhecer e corrigir essas informações encontram referência na Lei Geral de Proteção de Dados Pessoais, a LGPD.
+
+Seus princípios relacionam o tratamento a finalidades específicas e à limitação dos dados ao necessário, além de exigir atenção à qualidade e ao acesso. Entre os direitos previstos estão o acesso aos próprios dados e a correção de informações incompletas, inexatas ou desatualizadas. O consentimento é uma das hipóteses legais de tratamento, cuja adequação depende do caso; ele não funciona como uma autorização genérica para qualquer uso posterior. Essas referências aparecem nos arts. 6º, 7º, 8º e 18 da [LGPD](https://anttlegis.antt.gov.br/action/ActionDatalegis.php?acao=abrirTextoAto&cod_menu=5408&cod_modulo=161&link=S&numeroAto=00013709&orgao=NI&seqAto=000&tipo=LEI&valorAno=2018).
+
+A lei não escolhe o banco da locadora. Para responder à cliente, a organização precisa traduzir essas exigências em capacidades e responsabilidades concretas, considerando as condições aplicáveis ao tratamento.
+
+No nosso exemplo, isso nos leva a localizar o registro de devolução, identificar a lista que depende dele e reconhecer o caminho pelo qual ela interfere numa reserva. A equipe precisa saber quem corrige a informação, quem acompanha a atualização e quem pode reexaminar o bloqueio. Manter esse percurso compreensível é uma escolha de projeto que ajuda a responder ao problema; um protocolo técnico específico não decorre automaticamente da existência do direito.
+
+### A influência das regras sobre a decisão
+
+[PLAYGROUND: Pergunta: “Um registro verdadeiro determina sozinho o que fazer com uma pessoa?”. Variar explicitamente o caso: suponha agora que o atraso tenha sido confirmado. Manter esse registro e a mesma cliente ao comparar políticas, distinguindo essa variação da correção anterior. Antes da escolha, pedir que o leitor preveja se esse fato exige necessariamente um bloqueio. Comparar duas regras didáticas explícitas e seus estados: impedir nova reserva ao existir atraso, mostrando “bloqueio automático”; encaminhar a situação para avaliar contexto do atraso e adequação da restrição, mostrando “decisão pendente de avaliação”. O segundo caminho não libera automaticamente a reserva nem produz uma decisão final no modelo. A escolha altera o caminho e o estado da decisão, mantendo o registro fixo. O leitor deve distinguir evidência registrada e política de uso; encaminhar uma decisão a alguém não garante justiça, e nenhuma alternativa recebe um selo universal de correção ética ou legal. Uma comparação textual/estática preserva essa inferência sem interação. Esta cena aprofunda a pergunta sobre a política; a anterior explicava a propagação da correção.]
+
+Para examinar a política, vamos mudar explicitamente uma condição do exemplo. Suponha agora que a cliente tenha realmente devolvido a ferramenta com atraso e que o registro esteja correto. Antes de escolher uma regra, pense se esse fato determina, por si só, que uma nova reserva deve ser bloqueada.
+
+Uma política pode impedir automaticamente novas reservas sempre que houver atraso. Outra pode encaminhar o caso para avaliar o contexto e a adequação da restrição, deixando a decisão pendente. Na segunda possibilidade, a reserva ainda não está liberada e o resultado final permanece em aberto.
+
+Conservamos o mesmo acontecimento e alteramos a regra que o utiliza. A diferença entre os caminhos permite perceber o papel da política na consequência produzida. Encaminhar o caso a alguém também exige critérios, informação e meios de contestação; a presença de uma pessoa na avaliação não assegura uma decisão justa.
+
+Essas duas regras simplificadas servem para investigar a relação entre evidência e decisão. Para escolher uma política real, precisaríamos examinar seus objetivos, efeitos e condições de aplicação, incluindo as exigências jurídicas pertinentes.
+
+As escolhas técnicas que discutimos participam desse trabalho. Preparar uma análise com menos campos pode limitar a circulação de dados pessoais. Conhecer as dependências entre origem e derivados pode ajudar a corrigir consequências. Compreender um serviço contratado permite avaliar o que a equipe consegue inspecionar e alterar. Precisamos considerar essas capacidades junto das regras que pretendemos automatizar.
+
+Quem recebe o benefício de uma decisão, quem suporta o custo de um erro e quem tem meios de mudar o resultado são perguntas que orientam requisitos desde o início do projeto.
+
+### Justificar uma escolha de arquitetura
+
+A necessidade inicial da locadora era confirmar reservas e compreender seu histórico. Ao acompanhar esses trabalhos, encontramos razões para manter tudo junto e condições que poderiam justificar uma separação. Depois, investigamos quem opera o conjunto, o que copiar ou dividir entre máquinas e como uma informação pode continuar produzindo efeitos mesmo após uma correção.
+
+Uma arquitetura inicial com um banco atendendo às reservas e a análises pequenas pode ser suficiente para a situação apresentada. Separar a análise exigiria uma razão, como interferência no atendimento ou uma necessidade de histórico que o desenho atual não atende. Contratar mais serviço deslocaria tarefas operacionais, enquanto distribuir dados acrescentaria relações que precisam ser coordenadas. A capacidade de explicar e rever consequências para clientes também participa dessa avaliação.
+
+Agora considere uma biblioteca que precisa reservar o último exemplar de um livro e planejar novas compras. Como você organizaria inicialmente esses dois trabalhos? Que condição justificaria separar a análise do atendimento? Antes de usar o histórico de empréstimos para classificar leitores e limitar seu acesso, que pergunta precisaria ser investigada?
+
+Procure formular uma justificativa curta, indicando também o que falta saber. Podemos chegar a mais de uma arquitetura defensável, dependendo da frequência das consultas, da necessidade de atualização, das condições de recuperação e das consequências das regras adotadas.
+
+Nos próximos capítulos da trilha, aprofundaremos os mecanismos que permitem avaliar essas escolhas. A situação da locadora já nos oferece perguntas para orientar essa leitura e reconhecer a necessidade que cada peça do sistema deve atender.

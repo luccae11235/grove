@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cópias ou partes? — Aflora</title>
+  <link rel="stylesheet" href="./visual.css">
+  <style>
+    .copies .controls { display:flex; flex-wrap:wrap; gap:.5rem; margin-block:1.5rem; }
+    .copies button { min-height:44px; padding:.65rem .9rem; font:inherit; color:var(--ink); background:white; border:1px solid var(--line); cursor:pointer; }
+    .copies button[aria-pressed="true"] { border-color:var(--accent); background:var(--soft); font-weight:700; }
+    .copies button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+    .copies section + section { margin-block-start:2rem; }
+    .copies h2 { font-size:1.2rem; margin-block:0 .75rem; }
+    .copies .nodes { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
+    .copies .node { border-block:2px solid var(--line); padding:.75rem .375rem; }
+    .copies .node.queried { border-color:var(--accent); background:var(--soft); }
+    .copies h3 { font-size:1rem; margin:0; }
+    .copies .destination { display:block; min-height:1.4em; font-size:.875rem; color:var(--muted); }
+    .copies .queried .destination { color:var(--accent); font-weight:700; }
+    .copies .unit { margin-block:.6rem 0; }
+    .copies .unit-name { display:block; font-size:.875rem; color:var(--muted); }
+    .copies .ids { display:flex; gap:.4rem; font-variant-numeric:tabular-nums; }
+    .copies .ids span { min-width:0; }
+    .copies .result { margin:.75rem 0 0; font-size:.9375rem; }
+    .copies .note { color:var(--muted); font-size:.9375rem; margin-block-start:1.5rem; }
+    .copies .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
+  </style>
+</head>
+<body>
+<main class="visual copies">
+  <h1>Cópias ou partes?</h1>
+  <p>Quais nós precisam receber a consulta?</p>
+  <div class="controls" role="group" aria-label="Consulta às reservas">
+    <button type="button" data-query="local" aria-pressed="true">Só unidade A</button>
+    <button type="button" data-query="all" aria-pressed="false">Todas as unidades</button>
+  </div>
+  <figure aria-label="Comparação entre replicação e particionamento com as mesmas seis reservas">
+    <section aria-labelledby="replication">
+      <h2 id="replication">Replicação</h2>
+      <div class="nodes">
+        <div class="node queried"><h3>Nó 1</h3><span class="destination">Consultado</span><p class="unit"><span class="unit-name">Unidade A</span><span class="ids"><span>101</span><span>102</span><span>103</span></span></p><p class="unit"><span class="unit-name">Unidade B</span><span class="ids"><span>104</span><span>105</span><span>106</span></span></p></div>
+        <div class="node"><h3>Nó 2</h3><span class="destination">Não necessário</span><p class="unit"><span class="unit-name">Unidade A</span><span class="ids"><span>101</span><span>102</span><span>103</span></span></p><p class="unit"><span class="unit-name">Unidade B</span><span class="ids"><span>104</span><span>105</span><span>106</span></span></p></div>
+      </div>
+      <p class="result">Uma cópia completa contém as reservas necessárias.</p>
+    </section>
+    <section aria-labelledby="partitioning">
+      <h2 id="partitioning">Particionamento por unidade</h2>
+      <div class="nodes">
+        <div class="node queried" id="part-a"><h3>Nó 1</h3><span class="destination">Consultado</span><p class="unit"><span class="unit-name">Unidade A</span><span class="ids"><span>101</span><span>102</span><span>103</span></span></p></div>
+        <div class="node" id="part-b"><h3>Nó 2</h3><span class="destination">Não necessário</span><p class="unit"><span class="unit-name">Unidade B</span><span class="ids"><span>104</span><span>105</span><span>106</span></span></p></div>
+      </div>
+      <p class="result" id="partition-result">A parte da unidade A contém as reservas necessárias.</p>
+    </section>
+    <figcaption class="note">Mesmo conjunto de seis reservas. Na replicação, escolhemos uma das cópias completas. O esquema mostra destinos, sem representar velocidade, atualização ou disponibilidade.</figcaption>
+  </figure>
+  <p class="sr-only" role="status" aria-live="polite" id="status"></p>
+</main>
+<script>
+(() => {
+  const buttons = document.querySelectorAll('[data-query]');
+  buttons.forEach(button => button.addEventListener('click', () => {
+    const all = button.dataset.query === 'all';
+    buttons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    document.querySelector('#part-b').classList.toggle('queried', all);
+    document.querySelector('#part-b .destination').textContent = all ? 'Consultado' : 'Não necessário';
+    document.querySelector('#partition-result').textContent = all ? 'É preciso reunir as partes das unidades A e B.' : 'A parte da unidade A contém as reservas necessárias.';
+    document.querySelector('#status').textContent = all ? 'Todas as unidades. Replicação: consultamos o nó 1, que contém todas as seis reservas. Particionamento: consultamos os nós 1 e 2 para reunir as duas unidades.' : 'Só unidade A. Nos dois arranjos, consultamos apenas o nó 1. Ele contém as reservas 101, 102 e 103 da unidade A.';
+  }));
+})();
+</script>
+<script src="frame.js"></script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<section class="data-systems-visual missing" id="ds-missing-response" aria-label="O que sabemos sem resposta?">
+  <h4 class="scene-question">O que sabemos sem resposta?</h4>
+  <p>O cliente enviou uma reserva. Sem receber confirmação, ele sabe se ela foi registrada?</p>
+  <div class="controls">
+    <button type="button" id="ds-missing-response-reveal" aria-expanded="false" aria-controls="ds-missing-response-comparison">Revelar o que ocorreu</button>
+  </div>
+  <figure id="ds-missing-response-comparison" aria-label="Duas situações com a mesma ausência de confirmação para o cliente">
+    <section class="scenario" aria-labelledby="ds-missing-response-scenario-one">
+      <p class="section-heading" id="ds-missing-response-scenario-one">Situação 1</p>
+      <div class="endpoints">
+        <div class="endpoint client"><p class="node-heading">Cliente</p><p class="state">Sem confirmação</p></div>
+        <div class="endpoint server"><p class="node-heading">Servidor</p><p class="state" id="ds-missing-response-server-one">Estado não revelado</p></div>
+      </div>
+      <p class="event" id="ds-missing-response-event-one"></p>
+    </section>
+    <section class="scenario" aria-labelledby="ds-missing-response-scenario-two">
+      <p class="section-heading" id="ds-missing-response-scenario-two">Situação 2</p>
+      <div class="endpoints">
+        <div class="endpoint client"><p class="node-heading">Cliente</p><p class="state">Sem confirmação</p></div>
+        <div class="endpoint server"><p class="node-heading">Servidor</p><p class="state" id="ds-missing-response-server-two">Estado não revelado</p></div>
+      </div>
+      <p class="event" id="ds-missing-response-event-two"></p>
+    </section>
+    <figcaption class="note" id="ds-missing-response-inference">Compare o que o cliente consegue observar nas duas situações.</figcaption>
+  </figure>
+  <p class="sr-only" role="status" aria-live="polite" id="ds-missing-response-status"></p>
+</section>
+
+<script is:inline>
+(() => {
+  const root = document.getElementById('ds-missing-response');
+  if (!root) return;
+  let revealed = false;
+  const button = root.querySelector('#ds-missing-response-reveal');
+  button.addEventListener('click', () => {
+    revealed = !revealed;
+    button.setAttribute('aria-expanded', String(revealed));
+    button.textContent = revealed ? 'Ocultar o que ocorreu' : 'Revelar o que ocorreu';
+    root.querySelector('#ds-missing-response-server-one').textContent = revealed ? 'Reserva não registrada' : 'Estado não revelado';
+    root.querySelector('#ds-missing-response-server-two').textContent = revealed ? 'Reserva registrada' : 'Estado não revelado';
+    root.querySelector('#ds-missing-response-event-one').textContent = revealed ? 'O pedido não chegou ao servidor.' : '';
+    root.querySelector('#ds-missing-response-event-two').textContent = revealed ? 'O servidor registrou a reserva, mas a resposta se perdeu.' : '';
+    root.querySelector('#ds-missing-response-inference').textContent = revealed ? 'A mesma ausência de confirmação é compatível com dois estados no servidor.' : 'Compare o que o cliente consegue observar nas duas situações.';
+    root.querySelector('#ds-missing-response-status').textContent = revealed ? 'Situação 1: o pedido não chegou e a reserva não foi registrada. Situação 2: a reserva foi registrada, mas a resposta se perdeu. Nos dois casos, o cliente continua sem confirmação.' : 'Estados do servidor ocultos. Nos dois casos, o cliente continua sem confirmação.';
+  });
+})();
+</script>
+
+<style>
+.missing .controls { display:flex; flex-wrap:wrap; gap:.5rem; margin-block:1.5rem; }
+.missing button { min-height:44px; padding:.65rem .9rem; font:inherit; color:var(--ink); background:var(--soft); border:1px solid var(--accent); cursor:pointer; }
+.missing button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+.missing .scenario { padding-block:1.25rem; border-block-start:1px solid var(--line); }
+.missing .section-heading { font-size:1.1rem; font-weight:700; margin:0 0 1rem; }
+.missing .endpoints { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.5rem; }
+.missing .endpoint { min-width:0; }
+.missing .node-heading { font-size:1rem; color:var(--muted); font-weight:500; margin:0 0 .4rem; }
+.missing .state { margin:0; font-size:1.125rem; font-weight:700; min-height:3.2em; }
+.missing .client .state { color:var(--ink); }
+.missing .server .state { color:var(--accent); }
+.missing .event { color:var(--muted); font-size:.9375rem; margin:.75rem 0 0; min-height:3em; }
+.missing .note { color:var(--muted); font-size:.9375rem; margin-block-start:1rem; }
+.missing .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
+</style>

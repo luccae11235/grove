@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Por que o bloqueio continua?</title>
+  <link rel="stylesheet" href="./visual.css">
+  <style>
+    .correction { max-width: 36rem; }
+    .correction .identity { margin: 0 0 1.5rem; color: var(--muted, #53645b); }
+    .correction .step { font-size: 1rem; font-weight: 650; margin: 0 0 1.25rem; }
+    .correction .path { display: grid; margin: 0; }
+    .correction .object { padding: .9rem 0; border-top: 1px solid var(--line, #d9e2dc); min-height: 5.2rem; box-sizing: border-box; }
+    .correction .object-label { font-size: .95rem; color: var(--muted, #53645b); margin: 0 0 .3rem; }
+    .correction .value { font-size: clamp(1.15rem, 4.8vw, 1.45rem); font-weight: 650; line-height: 1.3; margin: 0; }
+    .correction .link { display: flex; align-items: center; gap: .7rem; min-height: 3rem; color: var(--muted, #53645b); font-size: .9rem; }
+    .correction .arrow { font-size: 1.4rem; color: var(--ink, #17231e); line-height: 1; }
+    .correction .changed { border-top-color: var(--accent, #157451); }
+    .correction .changed .value { color: var(--accent, #157451); }
+    .correction .controls { display: grid; grid-template-columns: 1fr 2fr; gap: .6rem; margin-top: 1.5rem; }
+    .correction button { min-height: 44px; white-space: normal; padding: .7rem .8rem; font: inherit; }
+    .correction button:disabled { opacity: .5; cursor: default; }
+    .correction .note { min-height: 2.8em; margin: 1rem 0 0; font-size: .95rem; }
+    @media (max-width: 390px) {
+      .correction .controls { grid-template-columns: 1fr; }
+      .correction .object { min-height: 5.1rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="visual correction">
+    <h1>Por que o bloqueio continua?</h1>
+    <p class="identity">A mesma cliente, <strong>C17</strong>, nas três etapas.</p>
+    <p class="step" id="step" aria-live="polite" aria-atomic="true">1 de 3 · Registro errado</p>
+    <figure aria-label="Do registro de devolução à tentativa de reserva da cliente C17">
+      <div class="path">
+        <section class="object" id="source" aria-labelledby="source-label">
+          <p class="object-label" id="source-label">Registro de devolução</p>
+          <p class="value" id="source-value">Atrasada · registro errado</p>
+        </section>
+        <div class="link"><span class="arrow" aria-hidden="true">↓</span><span id="source-link">Alimenta a lista</span></div>
+        <section class="object" id="list" aria-labelledby="list-label">
+          <p class="object-label" id="list-label">Lista de bloqueio</p>
+          <p class="value" id="list-value">C17 na lista</p>
+        </section>
+        <div class="link"><span class="arrow" aria-hidden="true">↓</span><span id="attempt-link">A tentativa consulta a lista</span></div>
+        <section class="object" id="attempt" aria-labelledby="attempt-label">
+          <p class="object-label" id="attempt-label">Tentativa de reserva</p>
+          <p class="value" id="attempt-value" aria-live="polite" aria-atomic="true">Reserva bloqueada</p>
+        </section>
+      </div>
+    </figure>
+    <div class="controls" aria-label="Etapas da correção">
+      <button type="button" id="previous" disabled>Anterior</button>
+      <button type="button" id="next" disabled>Corrigir o registro</button>
+    </div>
+    <p class="note" id="explanation">A devolução foi no prazo. O registro errado levou C17 à lista de bloqueio.</p>
+    <noscript><p>Compare as três etapas na <a href="./07-correction-path.svg">versão estática</a>.</p></noscript>
+  </main>
+  <script>
+    (() => {
+      const states = [
+        { title: 'Registro errado', source: 'Atrasada · registro errado', sourceLink: 'Alimenta a lista', listLabel: 'Lista de bloqueio', list: 'C17 na lista', attemptLink: 'A tentativa consulta a lista', attemptLabel: 'Tentativa de reserva', attempt: 'Reserva bloqueada', explanation: 'A devolução foi no prazo. O registro errado levou C17 à lista de bloqueio.', next: 'Corrigir o registro', changed: [] },
+        { title: 'Corrigir só a origem', source: 'No prazo · registro corrigido', sourceLink: 'Atualização da lista pendente', listLabel: 'Lista de bloqueio · ainda antiga', list: 'C17 na lista', attemptLink: 'A tentativa ainda consulta a lista antiga', attemptLabel: 'Tentativa de reserva', attempt: 'Reserva bloqueada', explanation: 'Só a origem mudou. A lista antiga continua produzindo o mesmo bloqueio.', next: 'Atualizar e reavaliar', changed: ['source'] },
+        { title: 'Atualizar e reavaliar', source: 'No prazo · registro corrigido', sourceLink: 'Lista atualizada a partir da correção', listLabel: 'Lista de bloqueio · atualizada', list: 'C17 fora da lista', attemptLink: 'Reavaliar a tentativa com a lista atualizada', attemptLabel: 'Tentativa de reserva · reavaliada', attempt: 'Reserva permitida', explanation: 'Neste exemplo, atualizar a lista e reavaliar a tentativa permite a reserva.', next: 'Percurso completo', changed: ['list', 'attempt'] }
+      ];
+      let index = 0;
+      const byId = id => document.getElementById(id);
+      function render() {
+        const state = states[index];
+        byId('step').textContent = `${index + 1} de 3 · ${state.title}`;
+        byId('source-value').textContent = state.source;
+        byId('source-link').textContent = state.sourceLink;
+        byId('list-label').textContent = state.listLabel;
+        byId('list-value').textContent = state.list;
+        byId('attempt-link').textContent = state.attemptLink;
+        byId('attempt-label').textContent = state.attemptLabel;
+        byId('attempt-value').textContent = state.attempt;
+        byId('explanation').textContent = state.explanation;
+        ['source', 'list', 'attempt'].forEach(id => byId(id).classList.toggle('changed', state.changed.includes(id)));
+        byId('previous').disabled = index === 0;
+        byId('next').disabled = index === states.length - 1;
+        byId('next').textContent = state.next;
+      }
+      byId('previous').addEventListener('click', () => { if (index > 0) { index -= 1; render(); } });
+      byId('next').addEventListener('click', () => { if (index < states.length - 1) { index += 1; render(); } });
+      render();
+    })();
+  </script>
+<script src="frame.js"></script>
+</body>
+</html>

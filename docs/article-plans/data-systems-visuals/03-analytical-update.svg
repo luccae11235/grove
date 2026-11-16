@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="743" viewBox="0 0 360 743" role="img" aria-labelledby="title desc">
+<title id="title">Quando o cancelamento chega ao relatório?</title>
+<desc id="desc">Três momentos da mesma reserva 104. Primeiro, origem e relatório mostram confirmada e não há atualização pendente. Depois do cancelamento, a origem mostra cancelada, mas o relatório ainda mostra confirmada: há um cancelamento pendente. Após a propagação, ambos mostram cancelada. Não há duração definida para o intervalo. Um relatório analítico não substitui a informação necessária para confirmar a última ferramenta.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#17231e;font-size:14px}.title{font-size:19px;font-weight:700}.heading{font-size:16px;font-weight:700}.muted{fill:#53645b}.strong{font-weight:700}.warm{fill:#986a30}</style>
+<rect width="360" height="100%" fill="#fff"/>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M1 1 L7 4 L1 7" fill="none" stroke="#17231e" stroke-width="1.5"/></marker></defs>
+<text x="20" y="30" class="title" >Quando o cancelamento</text>
+<text x="20" y="54" class="title" >chega ao relatório?</text>
+<text x="20" y="102" class="heading" >1. Antes</text>
+<line x1="20" y1="122" x2="20" y2="185" stroke="#17231e" stroke-width="3"/>
+<text x="27" y="136" class="muted" >Origem</text>
+<text x="27" y="159" class="" >Reserva 104</text>
+<text x="27" y="182" class="strong" >confirmada</text>
+<line x1="203" y1="122" x2="203" y2="185" stroke="#17231e" stroke-width="3"/>
+<text x="210" y="136" class="muted" >Relatório</text>
+<text x="210" y="159" class="" >Reserva 104</text>
+<text x="210" y="182" class="strong" >confirmada</text>
+<line x1="98" y1="202" x2="264" y2="202" stroke="#17231e" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="180" y="226" class="muted" text-anchor="middle">Atualização:</text>
+<text x="180" y="247" class="" text-anchor="middle">Sem mudança pendente</text>
+<text x="20" y="280" class="heading" >2. Cancelamento na origem</text>
+<line x1="20" y1="300" x2="20" y2="363" stroke="#17231e" stroke-width="3"/>
+<text x="27" y="314" class="muted" >Origem</text>
+<text x="27" y="337" class="" >Reserva 104</text>
+<text x="27" y="360" class="strong" >cancelada</text>
+<line x1="203" y1="300" x2="203" y2="363" stroke="#17231e" stroke-width="3"/>
+<text x="210" y="314" class="muted" >Relatório</text>
+<text x="210" y="337" class="" >Reserva 104</text>
+<text x="210" y="360" class="strong" >confirmada</text>
+<line x1="98" y1="380" x2="264" y2="380" stroke="#17231e" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="180" y="404" class="muted" text-anchor="middle">Atualização:</text>
+<text x="180" y="425" class="strong warm" text-anchor="middle" text-decoration="underline">Cancelamento pendente</text>
+<text x="20" y="458" class="heading" >3. Depois da propagação</text>
+<line x1="20" y1="478" x2="20" y2="541" stroke="#17231e" stroke-width="3"/>
+<text x="27" y="492" class="muted" >Origem</text>
+<text x="27" y="515" class="" >Reserva 104</text>
+<text x="27" y="538" class="strong" >cancelada</text>
+<line x1="203" y1="478" x2="203" y2="541" stroke="#17231e" stroke-width="3"/>
+<text x="210" y="492" class="muted" >Relatório</text>
+<text x="210" y="515" class="" >Reserva 104</text>
+<text x="210" y="538" class="strong" >cancelada</text>
+<line x1="98" y1="558" x2="264" y2="558" stroke="#17231e" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="180" y="582" class="muted" text-anchor="middle">Atualização:</text>
+<text x="180" y="603" class="" text-anchor="middle">Cancelamento propagado</text>
+<text x="20" y="666" class="muted" >Intervalo sem duração definida.</text>
+<text x="20" y="695" class="" >A última ferramenta exige informação</text>
+<text x="20" y="717" class="" >adequada à confirmação da reserva.</text>
+</svg>
