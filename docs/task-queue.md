@@ -32,20 +32,6 @@ references for longer-term editorial direction.
 
 ## In progress
 
-### Static navigation
-
-- [ ] **Remove visible RSS/XML invitations — issue #249**
-  - [x] Remove feed links from desktop/mobile navigation, homepages, shared signup
-    areas and retired newsletter pages in both languages.
-  - [x] Preserve RSS files and feed autodiscovery for applications; six browser
-    scenarios pass at both `/` and `/grove/`, and all generated pages have no
-    RSS navigation anchors. Full unit tests and type checks pass.
-  - [ ] Complete CI and exact-artifact staging review; integrate into develop
-    and prepare the production release for separate owner approval.
-  - Completion check: root/subpath browser checks, legacy newsletter checks and
-    exact-artifact staging review pass; integrate through develop and prepare
-    the separately approved production release.
-
 ### Publishing and content
 
 - [ ] **Publish the categorical-feature article — issue #235**
@@ -223,6 +209,22 @@ references for longer-term editorial direction.
     reader semantics, contrast, reduced motion, and small-screen behavior.
 
 ## Done
+
+### RSS navigation correction — 2026-11-16
+
+- [x] **Remove visible RSS/XML invitations — issue #249**
+  - Removed XML links from desktop/mobile menus, both homepages, article/signup
+    areas and retired newsletter pages; feeds and HTML autodiscovery remain.
+  - PR #250 passed independent review, all seven CI jobs and exact-artifact
+    desktop/mobile staging review before merging into develop.
+  - Owner explicitly approved release #251; `production-approved` was recorded
+    before main merge `c83a7ce68a74a1dcbeed5fb92ba35b2aa06d29e1`.
+  - Main Quality checks `43892642251` and Pages publication `43893501433` passed,
+    including the live exact-revision probe. Six browser scenarios then passed
+    on the public HTTPS site, with visual desktop/mobile menu review.
+  - Completion check: exact static production SHA verified, no visible RSS/XML
+    invitations in either language, feeds preserved and production tests green.
+  - Release history/verification record: issue #252. No email or social post sent.
 
 ### Static public-release readiness — 2026-11-15
 
