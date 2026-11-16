@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quem faz cada tarefa? — Aflora</title>
+  <link rel="stylesheet" href="./visual.css">
+  <style>
+    .responsibilities .controls { display:flex; flex-wrap:wrap; gap:.5rem; margin-block:1.5rem; }
+    .responsibilities button { min-height:44px; padding:.65rem .9rem; font:inherit; color:var(--ink); background:white; border:1px solid var(--line); cursor:pointer; }
+    .responsibilities button[aria-pressed="true"] { border-color:var(--accent); background:var(--soft); font-weight:700; }
+    .responsibilities button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+    .responsibilities h2 { font-size:1.1rem; margin:0 0 1rem; }
+    .responsibilities table { border-collapse:collapse; width:100%; table-layout:fixed; }
+    .responsibilities th, .responsibilities td { text-align:left; vertical-align:top; padding:1rem .5rem; border-block-end:1px solid var(--line); overflow-wrap:break-word; }
+    .responsibilities th { width:49%; padding-inline-start:0; font-weight:500; }
+    .responsibilities td { color:var(--accent); font-weight:700; padding-inline-end:0; }
+    .responsibilities .note { color:var(--muted); font-size:.9375rem; margin-block-start:1rem; }
+    .responsibilities .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
+  </style>
+</head>
+<body>
+<main class="visual responsibilities">
+  <h1>Quem faz cada tarefa?</h1>
+  <p>O que muda quando a locadora contrata mais serviço?</p>
+  <div class="controls" role="group" aria-label="Forma de hospedagem">
+    <button type="button" data-mode="own" aria-pressed="true">Equipamento próprio</button>
+    <button type="button" data-mode="vm" aria-pressed="false">Máquina na nuvem</button>
+    <button type="button" data-mode="managed" aria-pressed="false">Banco gerenciado</button>
+  </div>
+  <figure aria-labelledby="arrangement">
+    <h2 id="arrangement">Equipamento próprio, banco autogerido</h2>
+    <table aria-label="Quem executa cada uma das quatro tarefas">
+      <tbody>
+        <tr><th scope="row">Cuidar do equipamento</th><td data-owner="equipment">Organização</td></tr>
+        <tr><th scope="row">Atualizar o banco</th><td data-owner="updates">Organização</td></tr>
+        <tr><th scope="row">Configurar acessos</th><td data-owner="access">Organização</td></tr>
+        <tr><th scope="row">Decidir o uso dos dados</th><td data-owner="purpose">Organização</td></tr>
+      </tbody>
+    </table>
+    <figcaption class="note">Divisão ilustrativa. As tarefas do provedor dependem do serviço e do contrato.</figcaption>
+  </figure>
+  <p class="sr-only" role="status" aria-live="polite" id="status"></p>
+</main>
+<script>
+(() => {
+  const arrangements = {
+    own: { title: 'Equipamento próprio, banco autogerido', equipment: 'Organização', updates: 'Organização' },
+    vm: { title: 'Banco autogerido na nuvem', equipment: 'Provedor', updates: 'Organização' },
+    managed: { title: 'Banco gerenciado', equipment: 'Provedor', updates: 'Provedor conforme contrato' }
+  };
+  const buttons = document.querySelectorAll('[data-mode]');
+  buttons.forEach(button => button.addEventListener('click', () => {
+    const current = arrangements[button.dataset.mode];
+    buttons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    document.querySelector('#arrangement').textContent = current.title;
+    document.querySelector('[data-owner="equipment"]').textContent = current.equipment;
+    document.querySelector('[data-owner="updates"]').textContent = current.updates;
+    document.querySelector('#status').textContent = `${current.title}. Equipamento: ${current.equipment}. Atualizações: ${current.updates}. Configurar acessos e decidir o uso dos dados continuam com a organização.`;
+  }));
+})();
+</script>
+<script src="frame.js"></script>
+</body>
+</html>

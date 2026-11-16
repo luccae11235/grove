@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="570" viewBox="0 0 360 570" role="img" aria-labelledby="title desc">
+  <title id="title">Um atraso verdadeiro exige que a reserva seja bloqueada?</title>
+  <desc id="desc">Mudamos o caso: agora o atraso da mesma cliente C17 é verdadeiro e confirmado. O fato permanece fixo nas duas rotas. A política bloquear por atraso produz bloqueio automático. A política avaliar o contexto produz uma decisão pendente de avaliação, sem liberar a reserva nem determinar o resultado final. São regras didáticas, sem parecer ético ou jurídico.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M1 1 5.5 3.5 1 6" fill="none" stroke="#53645b" stroke-width="1.2"/></marker>
+  </defs>
+  <rect width="360" height="570" fill="#fff"/>
+  <g font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" fill="#17231e">
+    <text x="24" y="36" font-size="26" font-weight="650">O fato exige</text>
+    <text x="24" y="68" font-size="26" font-weight="650">um bloqueio?</text>
+    <text x="24" y="102" font-size="14" fill="#53645b">Novo caso · mesma cliente C17</text>
+    <text x="24" y="125" font-size="14" fill="#53645b">Agora, o atraso é verdadeiro.</text>
+    <path d="M24 148H336" stroke="#d9e2dc"/>
+    <text x="180" y="180" text-anchor="middle" font-size="14" fill="#53645b">Fato fixo</text>
+    <text x="180" y="209" text-anchor="middle" font-size="22" font-weight="650">Atraso confirmado</text>
+    <path d="M180 225V247M92 247H268M92 247V271M268 247V271" fill="none" stroke="#53645b" stroke-width="1.5"/>
+    <g text-anchor="middle">
+      <text x="92" y="299" font-size="18" font-weight="600">Bloquear</text>
+      <text x="92" y="324" font-size="18" font-weight="600">por atraso</text>
+      <text x="268" y="299" font-size="18" font-weight="600">Avaliar</text>
+      <text x="268" y="324" font-size="18" font-weight="600">o contexto</text>
+      <path d="M92 339V366" stroke="#53645b" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <path d="M268 339V366" stroke="#53645b" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <text x="92" y="400" font-size="20" font-weight="650">Bloqueio</text>
+      <text x="92" y="427" font-size="20" font-weight="650">automático</text>
+      <text x="268" y="399" font-size="16" font-weight="650">Decisão pendente</text>
+      <text x="268" y="423" font-size="16" font-weight="650">de avaliação</text>
+      <text x="268" y="452" font-size="14" fill="#53645b">Reserva ainda</text>
+      <text x="268" y="473" font-size="14" fill="#53645b">sem liberação.</text>
+    </g>
+    <path d="M24 501H336" stroke="#d9e2dc"/>
+    <text x="24" y="529" font-size="14" fill="#53645b">Regras didáticas, sem parecer</text>
+    <text x="24" y="550" font-size="14" fill="#53645b">ético ou jurídico.</text>
+  </g>
+</svg>

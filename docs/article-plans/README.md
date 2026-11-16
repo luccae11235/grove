@@ -35,6 +35,8 @@ working draft for subsequent visual development on
 [issue #254](https://github.com/luccae11235/grove/issues/254). The text and its eight
 visual placeholders remain unchanged; it is still a draft, with publication
 remaining a separate decision.
+The [visual review](data-systems-visuals.md) collects the eight scenes being
+developed from that manuscript, with editable images and a standalone gallery.
 The [rejected first trial](data-systems-trade-offs-trial-v1.md) is preserved as
 editorial evidence, not a model to copy.
 

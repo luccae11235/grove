@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Atualização do relatório — Aflora</title>
+  <link rel="stylesheet" href="./visual.css">
+  <style>
+    .update-visual .controls { display:flex; gap:.5rem; flex-wrap:wrap; margin:1rem 0; }
+    .update-visual button { min-height:44px; }
+    .update-visual button[aria-pressed="true"] { border-color:var(--accent); background:var(--soft); font-weight:700; }
+    .update-visual .flow { display:grid; gap:.8rem; margin:1.5rem auto 1rem; max-width:26rem; }
+    .update-visual .record-state { border-left:3px solid var(--ink); padding:.4rem 0 .4rem 1rem; }
+    .update-visual h2 { font-size:1rem; font-weight:500; color:var(--muted); margin:0 0 .4rem; }
+    .update-visual .record-state p { margin:.2rem 0; }
+    .update-visual .value { font-size:1.35rem; font-weight:700; }
+    .update-visual .propagation { margin-left:1rem; display:grid; grid-template-columns:1rem 1fr; column-gap:.7rem; align-items:center; }
+    .update-visual .propagation::before { content:'↓'; font-size:1.6rem; grid-row:1 / 3; }
+    .update-visual .propagation h2 { margin:0; }
+    .update-visual #propagation-state { margin:.2rem 0; min-height:1.5em; }
+    .update-visual [data-pending="true"] #propagation-state { font-weight:700; text-decoration:underline; text-underline-offset:.2em; color:var(--warm); }
+    .update-visual #explanation { min-height:4.5em; margin:1.5rem 0 0; font-weight:600; }
+    .update-visual figcaption { border-top:1px solid var(--line); padding-top:1rem; color:var(--muted); font-size:.9rem; }
+  </style>
+</head>
+<body>
+<main class="visual update-visual">
+  <h1>Quando o cancelamento chega ao relatório?</h1>
+  <div class="controls" role="group" aria-label="Momento da atualização">
+    <button type="button" data-step="0" aria-pressed="true">1. Antes</button>
+    <button type="button" data-step="1" aria-pressed="false">2. Cancelar</button>
+    <button type="button" data-step="2" aria-pressed="false">3. Atualizar relatório</button>
+  </div>
+  <figure aria-describedby="update-caption">
+    <div class="flow" data-pending="false">
+      <section class="record-state" aria-labelledby="origin-heading">
+        <h2 id="origin-heading">Origem</h2><p>Reserva 104</p><p class="value" id="origin-state">confirmada</p>
+      </section>
+      <section class="propagation" aria-labelledby="update-heading">
+        <h2 id="update-heading">Atualização</h2><p id="propagation-state">Sem mudança pendente</p>
+      </section>
+      <section class="record-state" aria-labelledby="report-heading">
+        <h2 id="report-heading">Relatório analítico</h2><p>Reserva 104</p><p class="value" id="report-state">confirmada</p>
+      </section>
+    </div>
+    <p id="explanation" role="status" aria-live="polite" aria-atomic="true">A origem e o relatório mostram a reserva confirmada.</p>
+    <figcaption id="update-caption">O intervalo não tem duração definida neste exemplo. Para prometer a última ferramenta, a operação precisa de informação adequada à confirmação da reserva.</figcaption>
+  </figure>
+  <noscript><p>Depois do cancelamento, a origem mostra “cancelada” enquanto o relatório ainda mostra “confirmada”. Após a propagação, ambos mostram “cancelada”.</p></noscript>
+</main>
+<script>
+  const states = [
+    { origin:'confirmada', report:'confirmada', update:'Sem mudança pendente', pending:false, explanation:'A origem e o relatório mostram a reserva confirmada.' },
+    { origin:'cancelada', report:'confirmada', update:'Cancelamento pendente', pending:true, explanation:'O cancelamento já foi registrado na origem. O relatório ainda mostra a versão anterior.' },
+    { origin:'cancelada', report:'cancelada', update:'Cancelamento propagado', pending:false, explanation:'A atualização chegou ao relatório. Ambos mostram a reserva cancelada.' }
+  ];
+  document.querySelectorAll('[data-step]').forEach(button => button.addEventListener('click', () => {
+    const state = states[Number(button.dataset.step)];
+    document.getElementById('origin-state').textContent = state.origin;
+    document.getElementById('report-state').textContent = state.report;
+    document.getElementById('propagation-state').textContent = state.update;
+    document.querySelector('.flow').dataset.pending = String(state.pending);
+    document.getElementById('explanation').textContent = state.explanation;
+    document.querySelectorAll('[data-step]').forEach(choice => choice.setAttribute('aria-pressed', String(choice === button)));
+  }));
+</script>
+<script src="frame.js"></script>
+</body>
+</html>

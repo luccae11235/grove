@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="510" viewBox="0 0 360 510" role="img" aria-labelledby="title desc">
+  <title id="title">O que sabemos sem resposta?</title>
+  <desc id="desc">Dois percursos têm a mesma observação do cliente: sem confirmação. No primeiro, o pedido não chegou ao servidor e a reserva não foi registrada. No segundo, o servidor registrou a reserva, mas a resposta se perdeu. A ausência de confirmação, sozinha, não distingue os dois estados.</desc>
+  <style>text{font-family:system-ui,sans-serif;fill:#17231e;font-size:17px}.title{font-size:23px;font-weight:700}.heading{font-size:18px;font-weight:700}.label{fill:#53645b;font-size:15px}.state{font-weight:700}.server{fill:#157451;font-weight:700}.note{fill:#53645b;font-size:15px}</style>
+  <rect width="360" height="510" fill="white"/>
+  <text class="title" x="20" y="36">O que sabemos</text><text class="title" x="20" y="65">sem resposta?</text>
+  <path d="M20 90H340" stroke="#d9e2dc"/>
+  <text class="heading" x="20" y="122">1. O pedido não chega</text>
+  <text class="label" x="20" y="158">Cliente</text><text class="label" x="201" y="158">Servidor</text>
+  <text class="state" x="20" y="186">Sem</text><text class="state" x="20" y="209">confirmação</text>
+  <text class="server" x="201" y="186">Reserva não</text><text class="server" x="201" y="209">registrada</text>
+  <text class="note" x="20" y="246">O pedido não chegou ao servidor.</text>
+  <path d="M20 270H340" stroke="#d9e2dc"/>
+  <text class="heading" x="20" y="302">2. A resposta se perde</text>
+  <text class="label" x="20" y="338">Cliente</text><text class="label" x="201" y="338">Servidor</text>
+  <text class="state" x="20" y="366">Sem</text><text class="state" x="20" y="389">confirmação</text>
+  <text class="server" x="201" y="366">Reserva</text><text class="server" x="201" y="389">registrada</text>
+  <text class="note" x="20" y="426">O servidor registrou a reserva,</text><text class="note" x="20" y="447">mas a resposta não chegou ao cliente.</text>
+  <text x="20" y="486">Mesma observação, estados diferentes.</text>
+</svg>

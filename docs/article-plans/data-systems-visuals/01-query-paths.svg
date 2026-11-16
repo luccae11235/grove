@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="869" viewBox="0 0 360 869" role="img" aria-labelledby="title desc">
+<title id="title">Quais dados cada pergunta precisa?</title>
+<desc id="desc">O mesmo histórico aparece em duas consultas. A reserva 104 destaca uma linha. A comparação das confirmadas de março usa tipo, mês e situação de várias reservas: três furadeiras e duas serras. A reserva 103, cancelada, não entra na contagem. Os destaques não representam varreduras físicas ou desempenho.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#17231e;font-size:14px}.title{font-size:19px;font-weight:700}.heading{font-size:16px;font-weight:700}.muted{fill:#53645b}.strong{font-weight:700}.warm{fill:#986a30}</style>
+<rect width="360" height="100%" fill="#fff"/>
+<text x="20" y="30" class="title" >Quais dados cada</text>
+<text x="20" y="54" class="title" >pergunta precisa?</text>
+<text x="20" y="98" class="heading" >Reserva 104</text>
+<text x="26" y="127" class="muted" >ID</text>
+<text x="68" y="127" class="muted" >Tipo</text>
+<text x="161" y="127" class="muted" >Mês</text>
+<text x="213" y="127" class="muted" >Situação</text>
+<text x="26" y="159" class="" >101</text>
+<text x="68" y="159" class="" >furadeira</text>
+<text x="161" y="159" class="" >mar.</text>
+<text x="213" y="159" class="" >confirmada</text>
+<line x1="20" y1="171" x2="340" y2="171" stroke="#d9e2dc" stroke-width="1"/>
+<text x="26" y="194" class="" >102</text>
+<text x="68" y="194" class="" >furadeira</text>
+<text x="161" y="194" class="" >mar.</text>
+<text x="213" y="194" class="" >confirmada</text>
+<line x1="20" y1="206" x2="340" y2="206" stroke="#d9e2dc" stroke-width="1"/>
+<text x="26" y="229" class="" >103</text>
+<text x="68" y="229" class="" >furadeira</text>
+<text x="161" y="229" class="" >mar.</text>
+<text x="213" y="229" class="" >cancelada</text>
+<line x1="20" y1="241" x2="340" y2="241" stroke="#d9e2dc" stroke-width="1"/>
+<rect x="20" y="241" width="320" height="35" fill="#edf5f0" stroke="none" stroke-width="1"/>
+<line x1="20" y1="241" x2="340" y2="241" stroke="#157451" stroke-width="2"/>
+<line x1="20" y1="276" x2="340" y2="276" stroke="#157451" stroke-width="2"/>
+<text x="26" y="264" class="strong" >104</text>
+<text x="68" y="264" class="strong" >furadeira</text>
+<text x="161" y="264" class="strong" >mar.</text>
+<text x="213" y="264" class="strong" >confirmada</text>
+<line x1="20" y1="276" x2="340" y2="276" stroke="#d9e2dc" stroke-width="1"/>
+<text x="26" y="299" class="" >105</text>
+<text x="68" y="299" class="" >serra</text>
+<text x="161" y="299" class="" >mar.</text>
+<text x="213" y="299" class="" >confirmada</text>
+<line x1="20" y1="311" x2="340" y2="311" stroke="#d9e2dc" stroke-width="1"/>
+<text x="26" y="334" class="" >106</text>
+<text x="68" y="334" class="" >serra</text>
+<text x="161" y="334" class="" >mar.</text>
+<text x="213" y="334" class="" >confirmada</text>
+<line x1="20" y1="346" x2="340" y2="346" stroke="#d9e2dc" stroke-width="1"/>
+<text x="20" y="398" class="heading" >Confirmadas por tipo em março</text>
+<text x="26" y="427" class="muted" >ID</text>
+<text x="68" y="427" class="muted" >Tipo</text>
+<text x="161" y="427" class="muted" >Mês</text>
+<text x="213" y="427" class="muted" >Situação</text>
+<rect x="61" y="436" width="279" height="35" fill="#edf5f0" stroke="none" stroke-width="1"/>
+<text x="26" y="459" class="" >101</text>
+<text x="68" y="459" class="" >furadeira</text>
+<text x="161" y="459" class="" >mar.</text>
+<text x="213" y="459" class="strong" >confirmada</text>
+<line x1="20" y1="471" x2="340" y2="471" stroke="#d9e2dc" stroke-width="1"/>
+<rect x="61" y="471" width="279" height="35" fill="#edf5f0" stroke="none" stroke-width="1"/>
+<text x="26" y="494" class="" >102</text>
+<text x="68" y="494" class="" >furadeira</text>
+<text x="161" y="494" class="" >mar.</text>
+<text x="213" y="494" class="strong" >confirmada</text>
+<line x1="20" y1="506" x2="340" y2="506" stroke="#d9e2dc" stroke-width="1"/>
+<rect x="61" y="506" width="279" height="35" fill="#edf5f0" stroke="none" stroke-width="1"/>
+<text x="26" y="529" class="" >103</text>
+<text x="68" y="529" class="" >furadeira</text>
+<text x="161" y="529" class="" >mar.</text>
+<text x="213" y="529" class="strong" text-decoration="line-through">cancelada</text>
+<line x1="20" y1="541" x2="340" y2="541" stroke="#d9e2dc" stroke-width="1"/>
+<rect x="61" y="541" width="279" height="35" fill="#edf5f0" stroke="none" stroke-width="1"/>
+<text x="26" y="564" class="" >104</text>
+<text x="68" y="564" class="" >furadeira</text>
+<text x="161" y="564" class="" >mar.</text>
+<text x="213" y="564" class="strong" >confirmada</text>
+<line x1="20" y1="576" x2="340" y2="576" stroke="#d9e2dc" stroke-width="1"/>
+<rect x="61" y="576" width="279" height="35" fill="#edf5f0" stroke="none" stroke-width="1"/>
+<text x="26" y="599" class="" >105</text>
+<text x="68" y="599" class="" >serra</text>
+<text x="161" y="599" class="" >mar.</text>
+<text x="213" y="599" class="strong" >confirmada</text>
+<line x1="20" y1="611" x2="340" y2="611" stroke="#d9e2dc" stroke-width="1"/>
+<rect x="61" y="611" width="279" height="35" fill="#edf5f0" stroke="none" stroke-width="1"/>
+<text x="26" y="634" class="" >106</text>
+<text x="68" y="634" class="" >serra</text>
+<text x="161" y="634" class="" >mar.</text>
+<text x="213" y="634" class="strong" >confirmada</text>
+<line x1="20" y1="646" x2="340" y2="646" stroke="#d9e2dc" stroke-width="1"/>
+<text x="20" y="694" class="muted" >Somente confirmadas</text>
+<text x="20" y="729" class="" >Furadeiras</text>
+<rect x="111" y="714" width="172.0" height="20" fill="#157451" stroke="none" stroke-width="1"/>
+<text x="295" y="729" class="strong" >3</text>
+<text x="20" y="764" class="" >Serras</text>
+<rect x="111" y="749" width="114.66666666666666" height="20" fill="#157451" stroke="none" stroke-width="1"/>
+<text x="295" y="764" class="strong" >2</text>
+<text x="20" y="810" class="" >Tipo, mês e situação combinam registros.</text>
+<text x="20" y="834" class="muted" >Destaque ≠ percurso físico ou tempo.</text>
+</svg>

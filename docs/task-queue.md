@@ -96,8 +96,15 @@ references for longer-term editorial direction.
     [Portuguese manuscript](article-plans/data-systems-trade-offs-draft-pt-br.md)
     as the official working draft, separately from its structure. Verify that
     the text, eight visual placeholders and historical preparations are unchanged.
-  - [ ] Develop and review the planned images, animations and playground, applying
-    one pedagogical question per visual and the repository's simplicity principles.
+  - [x] Develop and locally review the eight planned visuals with three parallel
+    agents, applying one pedagogical question per visual and simplicity first.
+    [Review gallery and assets](article-plans/data-systems-visuals.md) include
+    editable SVGs, PNG previews and seven interactive/stepped comparisons.
+    Desktop/mobile, keyboard, reduced-motion states, data and export bounds pass;
+    a separate simulated reader prompted two focused simplifications.
+    The official text and its placeholders remain intact.
+  - [ ] Review the visual candidates with the editor and incorporate the approved
+    versions into the article. These prototypes do not imply publication approval.
   - [ ] Review the complete learning experience and applicable integration gates.
   - Preparation depends on PRs #246 and #248. Publication remains separate.
   - Completion check: the official manuscript and its visual explanations are

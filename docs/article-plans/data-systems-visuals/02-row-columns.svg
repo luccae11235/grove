@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="827" viewBox="0 0 360 827" role="img" aria-labelledby="title desc">
+<title id="title">Quais valores ficam juntos?</title>
+<desc id="desc">As mesmas seis reservas de março são agrupadas por linhas e por colunas. Por linhas, cada contorno contém ID, tipo, mês e situação da mesma reserva. Por colunas, cada contorno contém os seis valores de um atributo, na ordem dos IDs 101 a 106. Tipo e mês são marcados nos dois arranjos. Todos os campos são preservados. Este é um esquema de armazenamento, sem alegação de desempenho.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#17231e;font-size:14px}.title{font-size:19px;font-weight:700}.heading{font-size:16px;font-weight:700}.muted{fill:#53645b}.strong{font-weight:700}.warm{fill:#986a30}</style>
+<rect width="360" height="100%" fill="#fff"/>
+<text x="20" y="30" class="title" >Quais valores ficam juntos?</text>
+<text x="20" y="61" class="muted" >Cada contorno é um agrupamento.</text>
+<text x="20" y="105" class="heading" >Por linhas</text>
+<text x="20" y="128" class="muted" >Campos da mesma reserva</text>
+<text x="26" y="158" class="muted" >ID</text>
+<text x="68" y="158" class="muted" >Tipo</text>
+<text x="161" y="158" class="muted" >Mês</text>
+<text x="213" y="158" class="muted" >Situação</text>
+<rect x="20" y="173" width="320" height="29" fill="none" stroke="#17231e" stroke-width="1.5"/>
+<text x="26" y="193" class="" >101</text>
+<text x="68" y="193" class="" text-decoration="underline">furadeira</text>
+<text x="161" y="193" class="" text-decoration="underline">mar.</text>
+<text x="213" y="193" class="" >confirmada</text>
+<rect x="20" y="208" width="320" height="29" fill="none" stroke="#17231e" stroke-width="1.5"/>
+<text x="26" y="228" class="" >102</text>
+<text x="68" y="228" class="" text-decoration="underline">furadeira</text>
+<text x="161" y="228" class="" text-decoration="underline">mar.</text>
+<text x="213" y="228" class="" >confirmada</text>
+<rect x="20" y="243" width="320" height="29" fill="none" stroke="#17231e" stroke-width="1.5"/>
+<text x="26" y="263" class="" >103</text>
+<text x="68" y="263" class="" text-decoration="underline">furadeira</text>
+<text x="161" y="263" class="" text-decoration="underline">mar.</text>
+<text x="213" y="263" class="" >cancelada</text>
+<rect x="20" y="278" width="320" height="29" fill="none" stroke="#17231e" stroke-width="1.5"/>
+<text x="26" y="298" class="" >104</text>
+<text x="68" y="298" class="" text-decoration="underline">furadeira</text>
+<text x="161" y="298" class="" text-decoration="underline">mar.</text>
+<text x="213" y="298" class="" >confirmada</text>
+<rect x="20" y="313" width="320" height="29" fill="none" stroke="#17231e" stroke-width="1.5"/>
+<text x="26" y="333" class="" >105</text>
+<text x="68" y="333" class="" text-decoration="underline">serra</text>
+<text x="161" y="333" class="" text-decoration="underline">mar.</text>
+<text x="213" y="333" class="" >confirmada</text>
+<rect x="20" y="348" width="320" height="29" fill="none" stroke="#17231e" stroke-width="1.5"/>
+<text x="26" y="368" class="" >106</text>
+<text x="68" y="368" class="" text-decoration="underline">serra</text>
+<text x="161" y="368" class="" text-decoration="underline">mar.</text>
+<text x="213" y="368" class="" >confirmada</text>
+<text x="20" y="431" class="heading" >Por colunas</text>
+<text x="20" y="454" class="muted" >Mesma ordem: reservas 101 a 106</text>
+<text x="25" y="488" class="muted" >ID</text>
+<rect x="20" y="503" width="34" height="213" fill="none" stroke="#17231e" stroke-width="1.5"/>
+<text x="25" y="526" class="" >101</text>
+<text x="25" y="560" class="" >102</text>
+<text x="25" y="594" class="" >103</text>
+<text x="25" y="628" class="" >104</text>
+<text x="25" y="662" class="" >105</text>
+<text x="25" y="696" class="" >106</text>
+<text x="65" y="488" class="muted" >Tipo</text>
+<rect x="60" y="503" width="90" height="213" fill="#edf5f0" stroke="#17231e" stroke-width="2"/>
+<text x="65" y="526" class="" >furadeira</text>
+<text x="65" y="560" class="" >furadeira</text>
+<text x="65" y="594" class="" >furadeira</text>
+<text x="65" y="628" class="" >furadeira</text>
+<text x="65" y="662" class="" >serra</text>
+<text x="65" y="696" class="" >serra</text>
+<text x="161" y="488" class="muted" >Mês</text>
+<rect x="156" y="503" width="49" height="213" fill="#edf5f0" stroke="#17231e" stroke-width="2"/>
+<text x="161" y="526" class="" >mar.</text>
+<text x="161" y="560" class="" >mar.</text>
+<text x="161" y="594" class="" >mar.</text>
+<text x="161" y="628" class="" >mar.</text>
+<text x="161" y="662" class="" >mar.</text>
+<text x="161" y="696" class="" >mar.</text>
+<text x="216" y="488" class="muted" >Situação</text>
+<rect x="211" y="503" width="129" height="213" fill="none" stroke="#17231e" stroke-width="1.5"/>
+<text x="216" y="526" class="" >confirmada</text>
+<text x="216" y="560" class="" >confirmada</text>
+<text x="216" y="594" class="" >cancelada</text>
+<text x="216" y="628" class="" >confirmada</text>
+<text x="216" y="662" class="" >confirmada</text>
+<text x="216" y="696" class="" >confirmada</text>
+<text x="20" y="753" class="muted" >Tipo e mês marcados nos dois arranjos.</text>
+<text x="20" y="782" class="" >Selecionar colunas na tela não muda</text>
+<text x="20" y="803" class="" >o agrupamento no armazenamento.</text>
+</svg>
