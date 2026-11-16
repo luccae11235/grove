@@ -3,8 +3,12 @@
 Issue: [#240](https://github.com/luccae11235/grove/issues/240). Owner selected
 GitHub Pages with a public repository on 2026-11-14. This runbook supersedes the
 Railway/newsletter launch instructions **for the static migration**. Historical
-runbooks and runtime code remain available for recovery; existing production
-continues to use them until cutover.
+runbooks and runtime code remain available for recovery.
+
+**Completed 2026-11-15.** The execution record below is the current state.
+Checklist sections explicitly labelled **reference** are reusable procedures,
+not open migration tasks. Optional domain ownership hardening and LinkedIn Post
+Inspector checks are identified separately; neither is a publication gate.
 
 ## Cost and choice
 
@@ -65,7 +69,7 @@ Distribution is the article URL posted on LinkedIn. Existing Open Graph title,
 description and 1200×630 image remain in HTML for crawlers. No LinkedIn account URL
 has been assumed or added. RSS is the optional follow mechanism.
 
-## Before making the repository public
+## Disclosure review checklist (reference)
 
 - [ ] Review **all branches, history, issues, PRs and Actions logs/artifacts** for
       disclosure. Public source includes article drafts and internal operational
@@ -89,16 +93,17 @@ has been assumed or added. RSS is the optional follow mechanism.
       public visibility; the remaining gate is disclosure review, not choosing
       the provider again. GitHub visibility changes expose historical content.
 
-## Prepare Pages and release
+## Prepare Pages and release (reference)
 
 - [ ] Complete the feature PR into `develop`, all checks and staging review.
-- [ ] Verify ownership of `aflora.page` in the account Pages settings before DNS
-      cutover. Preserve the existing registrar/DNS zone and export its records.
+- [x] Preserve the existing registrar/DNS zone and export its records.
+- [ ] Optional hardening: verify ownership of `aflora.page` in the account Pages
+      settings in addition to the active repository custom-domain association.
 - [x] Repository Settings → Pages → Source: **GitHub Actions**. Set custom domain
       `aflora.page` in Pages settings; an Actions deployment does not use a CNAME
       file as its domain configuration. Actions source and `aflora.page` were
-      configured on 2026-11-14; DNS still points to Railway and no Pages artifact
-      has been deployed.
+      configured on 2026-11-14. The approved production artifact was deployed by
+      run `43628322160`; DNS was switched on 2026-11-15.
 - [ ] Configure the `github-pages` environment to permit only `main` deployments;
       add owner review protection if available. Keep `STATIC_HOSTING_ENABLED`
       unset/false until the approved production release is ready.
@@ -147,9 +152,59 @@ PLAYWRIGHT_STATIC_URL=https://grove-web-staging.up.railway.app/ pnpm test:static
 
 Railway's normal `develop` autodeploy may replace this temporary artifact after
 integration; the deployment ID and artifact SHA above are the immutable review
-evidence. Production still requires its own approved release and Pages deployment.
+evidence. The production approval and publication evidence is recorded below.
 
 ## DNS cutover and verification
+
+### Execution record — 2026-11-15
+
+- Feature PR #241 merged into `develop`; release #243 received explicit owner
+  approval and the `production-approved` label before merging into `main`.
+- Production SHA: `d8009c63579a08b9bfa643a684f0e9f099156e6b`.
+  Quality checks run `43627931553` passed all seven jobs; Pages publication
+  `43628322160` deployed its tested artifact. `STATIC_HOSTING_ENABLED=true`.
+- Namecheap BasicDNS now has the four documented apex A records and
+  `www CNAME luccae11235.github.io`, each with a one-minute TTL. Both authoritative
+  nameservers and public resolvers confirm them. Mail records were preserved.
+  The original 14-record DNS snapshot is in the private backup folder.
+- Final production/staging archives are dated `20261115T135542Z`. Both were
+  decrypted and fully restored into temporary staging databases; all 15 public
+  tables' row counts matched. Temporary restore databases were removed.
+- An additional detached historical production volume was exported as a cold
+  PostgreSQL directory archive dated `20261115T135529Z`; decryption and all 1,281
+  file hashes were verified. This is a cold archive, separate from the two
+  application dumps that passed full database restoration.
+- Backup location: the owner's `Documents/Aflora Backups` folder, outside Git,
+  owner-only permissions. Passphrase: macOS Keychain item
+  `aflora-newsletter-backup`; never put it in issues, logs or this repository.
+- Completed: valid TLS for apex and `www` (certificate expires 2027-02-13),
+  HTTPS enforcement and canonical redirects. All six remote browser scenarios
+  passed on `https://aflora.page`; desktop/mobile visual review also passed.
+  Both privacy pages match the configured public contact. Sharing title/image
+  metadata was checked in the browser suite; LinkedIn posting was not performed.
+- `STATIC_DNS_LIVE=true`; Pages run `43628322160`, attempt 3, passed the public
+  exact-revision probe after publication. `STATIC_HOSTING_ENABLED=true` also
+  keeps the old newsletter delivery workflow disabled.
+- Resend: zero active/scheduled broadcasts; removed both retired webhooks and
+  the `grove-staging` / `aflora-production` keys. Both old keys subsequently
+  returned `API key is invalid`. Contacts, consent backups and sent history were
+  preserved; no email was sent. The unrelated Onboarding key was left in place.
+- Removed six obsolete GitHub repository secrets and revoked/removed the temporary
+  SSH backup identity. Mail DNS was preserved; `api` and the three Railway
+  verification records were removed after retirement.
+- Railway accepted project deletion at 2026-11-15T14:21:22Z, scheduled for permanent
+  deletion at 2026-11-17T14:21:22Z. The CLI reports the project as deleted. Billing
+  shows the Hobby subscription already cancelled, active only until 2026-11-21;
+  no renewal was requested. Previously accrued usage may still be invoiced.
+- The owner separately authorized deleting the other shared-workspace project.
+  Its two database archives were fully restored and its configuration encrypted.
+  Object storage returned `AccessDenied`; after being told the object counts and
+  sizes, the owner explicitly authorized disposal of those files and historical
+  backups without copy. That deletion is scheduled for 2026-11-17T14:03:48Z.
+- Recovery instructions and private verification/cancellation receipts are in the
+  same owner-only backup folder. Do not publish subscriber counts or config dumps.
+
+### Reusable cutover procedure (reference)
 
 Keep Railway running through this stage. Configure the custom domain on GitHub
 **before** pointing DNS at it. For apex `aflora.page`, replace Railway web records
@@ -168,9 +223,10 @@ Propagation can take up to 24 hours. Verify from a clean browser/network:
       interactions; no forms/API calls or console errors; unknown URLs return 404.
 - [ ] `/rss.xml`, `/pt-br/rss.xml`, sitemap, robots, canonical/hreflang and OG image.
 - [ ] Existing newsletter web issues and old token/action URLs explain retirement.
-- [ ] LinkedIn Post Inspector sees correct title/image for a shared article URL.
+- [ ] Optional LinkedIn-specific check: inspect a shared article in Post Inspector.
+      The automated suite already verifies its HTML sharing title/image metadata.
 
-## Retire recurring costs (only after verification)
+## Retirement procedure (reference; only after verification)
 
 - [ ] Pause old subscription ingress and cancel **all scheduled** Resend broadcasts,
       provider automations and external jobs. Do not send a final email implicitly.
@@ -204,10 +260,10 @@ The legacy runtime build is `pnpm build`; static mode is explicit. After deletio
 rollback requires rebuilding services and restoring the encrypted backup. Prefer
 redeploying the previous tested static release through a reviewed release PR.
 
-## Current boundary
+## Current production state
 
-Implementation, tests, public repository and Pages configuration prepare the
-migration. The production-approved release, remote staging review, DNS/TLS checks,
-verified backups and actual service /
-subscription cancellation must be recorded separately. A green PR alone does not
-prove Railway billing stopped.
+Aflora serves the approved static release on GitHub Pages with valid, enforced
+HTTPS. Railway project deletion was accepted and no deployments remain active;
+permanent deletion is scheduled for 2026-11-17. The Hobby subscription is cancelled,
+with the current period ending 2026-11-21. The execution record distinguishes
+these provider dates from completed site, backup and integration verification.

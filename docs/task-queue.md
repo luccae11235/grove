@@ -15,34 +15,6 @@ references for longer-term editorial direction.
 - Update the relevant phase checklist and completion check whenever its state
   changes; move completed cards to **Done** rather than deleting them.
 
-## Hosting migration — requested 2026-11-14
-
-- [ ] **Move Aflora to GitHub Pages Free and retire Railway** — In progress
-  - Issue: [#240](https://github.com/luccae11235/grove/issues/240).
-  - Owner chose GitHub Pages with a public repository; retain `aflora.page`.
-  - Implement and verify an API-free static build, localized RSS calls to action,
-    honest legacy subscription pages, CI artifacts and quality-gated deployment.
-  - Implemented: explicit static build, API-free localized reading and legacy
-    subscription notices, RSS, Pages workflow, CI review artifacts and runbook.
-  - Local verification: root and `/grove/` browser checks, desktop/mobile review,
-    type checks, unit tests, project validation, legacy newsletter artifacts,
-    actionlint and Gitleaks history review. No real credential identified.
-  - Repository made public as explicitly selected by the owner, after source,
-    history and issue/PR-discussion credential scans. Pages Actions source and
-    `aflora.page` domain prepared; no DNS change or production deployment.
-  - Remote CI passed on `c1301cf`; Railway authentication restored 2026-11-14.
-    The exact CI static artifact `05e0cb0` was deployed to staging (deployment
-    `c19d3402-f13c-458c-b8c2-638cc737874f`) and all six remote browser scenarios
-    passed, including responsive images, bilingual navigation and lab hydration.
-  - Pending: integrate the reviewed feature and obtain production release approval;
-    DNS cutover, recoverable backups and provider/billing retirement remain open.
-  - Runbook: [static hosting migration](static-hosting-migration.md).
-  - Completion check: reviewed staging and green checks; owner-approved production
-    release; public repository and Pages configured; DNS/HTTPS and exact revision
-    verified; recoverable backup; Railway services and billing retired.
-  - Existing newsletter launch work is superseded by this requested retirement;
-    no broadcast or subscriber deletion is authorized by the migration.
-
 ## Delivery gate status
 
 | Phase | Gate | Status | Depends on |
@@ -54,11 +26,25 @@ references for longer-term editorial direction.
 | 5 | Formalize publication | Done | Phases 2–4 |
 | 6 | Prove the newsletter in staging | Done | Phase 3 |
 | 7 | Configure the `aflora.page` domain | Done | Stable Railway services |
-| 8 | Open the newsletter | In progress | Phases 6 and 7 |
-| 9 | Protect operations | In progress | First encrypted local backup |
+| 8 | Open the newsletter | Retired by #240 | Static RSS publication |
+| 9 | Protect operations | Done for static retirement | Verified encrypted backups and live Pages probe |
 | 10 | Prepare future visualizations | Backlog | Current performance baseline |
 
 ## In progress
+
+### Static navigation
+
+- [ ] **Remove visible RSS/XML invitations — issue #249**
+  - [x] Remove feed links from desktop/mobile navigation, homepages, shared signup
+    areas and retired newsletter pages in both languages.
+  - [x] Preserve RSS files and feed autodiscovery for applications; six browser
+    scenarios pass at both `/` and `/grove/`, and all generated pages have no
+    RSS navigation anchors. Full unit tests and type checks pass.
+  - [ ] Complete CI and exact-artifact staging review; integrate into develop
+    and prepare the production release for separate owner approval.
+  - Completion check: root/subpath browser checks, legacy newsletter checks and
+    exact-artifact staging review pass; integrate through develop and prepare
+    the separately approved production release.
 
 ### Publishing and content
 
@@ -207,9 +193,86 @@ references for longer-term editorial direction.
   - Completion check: focused checks and the full repository gate pass, and
     representative desktop, tablet, and mobile layouts are visually verified.
 
-### Release and platform readiness
+## Backlog
 
-- [ ] **Phase 8 — Open the newsletter**
+### Delivery phases
+
+- [ ] **Phase 10 — Prepare future visualizations**
+  - Define bundle and performance budgets, lazy loading, Web Worker boundaries,
+    weak-device fallbacks, and the evolution toward remote training.
+  - Completion check: new visuals have measurable budgets and graceful execution
+    paths across devices.
+
+### Content and learning experience
+
+- [ ] **Translate the categorical-feature article into Brazilian Portuguese — follow-up to #235**
+  - The 2026-10-31 publication contains only the reviewed English article.
+    Prepare and review a matched translation separately, preserving the examples,
+    label-separation rules, figures, interactions, and immutable article ID.
+  - Completion check: a separately approved Portuguese article, locale links,
+    metadata, and desktop/mobile interactions pass the release workflow.
+
+- [ ] **Publish the next curriculum articles**
+  - Prioritize the next article from `docs/curriculum-plan.md`; create a task per
+    article when it is ready to be scoped.
+
+### Operations and quality
+
+- [ ] **Add an accessibility and responsive-design review pass**
+  - Audit published routes and interactive visuals for keyboard access, screen
+    reader semantics, contrast, reduced motion, and small-screen behavior.
+
+## Done
+
+### Static public-release readiness — 2026-11-15
+
+- [x] **Replace newsletter-only release essentials with static publication requirements**
+  - Sender postal details and other newsletter sending placeholders are
+    superseded by #240; email delivery is retired.
+  - Both static privacy pages expose the configured public historical-data
+    contact, and existing licensing links remain valid. These were verified
+    against the public HTTPS site; this records product checks, not a new legal review.
+  - Completion check: no retired email requirement blocks static publication;
+    the site's public privacy contact and licensing links are verified.
+
+### Static hosting retirement — 2026-11-15
+
+- [x] **Move Aflora to GitHub Pages Free and retire Railway** — issue [#240](https://github.com/luccae11235/grove/issues/240).
+  - Public repository and API-free static publication at `https://aflora.page`;
+    RSS replaces email signup and old subscription URLs explain retirement.
+  - Feature PR #241 and owner-approved release #243 merged. All seven quality
+    jobs passed; Pages run `43628322160`, attempt 3, passed the live exact-SHA probe.
+    Production: `d8009c63579a08b9bfa643a684f0e9f099156e6b`, `mode=static`.
+  - Namecheap apex and `www` now point to GitHub Pages. Both names have valid
+    TLS, HTTPS enforcement is on, and the old API/Railway DNS records are removed.
+    Mail records were preserved.
+  - Six remote browser scenarios passed on production, with desktop/mobile visual
+    review, both locales, labs, images, RSS, archives, retirement links and sharing
+    metadata. The historical privacy contact matches the configured address.
+  - Production/staging database archives were encrypted and fully restored;
+    all 15 tables matched, including a final source comparison before deletion.
+    The detached historical volume was also archived and hash-verified.
+    Backups and recovery instructions are in the owner's private backup folder.
+  - Retired both Resend webhooks and both application keys; contacts and sent
+    history remain. Removed six obsolete repository secrets and the temporary SSH
+    backup identity. No email was sent or scheduled.
+  - Railway accepted deletion of both Aflora environments, services and volumes;
+    permanent deletion is scheduled for 2026-11-17. The shared Hobby subscription
+    is already cancelled, with the current period ending 2026-11-21. Historical
+    usage may still appear on the final invoice. No renewal was requested.
+  - The owner also authorized retirement of the other shared-workspace project:
+    its database backups passed full restoration; inaccessible object files and
+    historical object backups were explicitly authorized for disposal without copy.
+  - Runbook: [static hosting migration](static-hosting-migration.md).
+  - Completion check: reviewed staging, green checks, approved production release,
+    public exact-SHA HTTPS verification, recoverable backups, provider retirement
+    accepted and subscription cancellation verified.
+
+### Historical runtime retirement
+
+- [x] **Retire the Phase 8 newsletter platform** — 2026-11-15
+  - Superseded by #240. The checklist below is historical; its unfinished email
+    improvements were not implemented or authorized for delivery by this migration.
   - [x] Configure postal/contact details and the production segment.
   - [x] Publish Issue 001, perform an internal send, and verify its report.
   - [x] Review Gmail, mobile rendering, and plain text.
@@ -249,7 +312,9 @@ references for longer-term editorial direction.
   - Completion check: real readers can subscribe, confirm, receive, and
     unsubscribe safely.
 
-- [ ] **Phase 9 — Protect operations**
+- [x] **Phase 9 — Protect operations** — static retirement completed 2026-11-15
+  - The final database archives passed full restoration; Pages now checks the
+    exact public SHA after deployment. The prior runtime checklist below is historical.
   - [x] Run an exact-SHA production smoke after releases and every six hours.
   - [x] Open or update one actionable GitHub incident on failure and close it
     after recovery.
@@ -264,46 +329,6 @@ references for longer-term editorial direction.
   - Completion check: failures are detected and data can be restored through a
     tested procedure.
 
-## Ready
-
-### Public release
-
-- [ ] **Finalize public-release essentials**
-  - Replace publication placeholders required for newsletter sending, including
-    the postal address, and verify privacy/contact information.
-  - Done when the repository and published site have complete, consistent legal
-    and contact information.
-
-## Backlog
-
-### Delivery phases
-
-- [ ] **Phase 10 — Prepare future visualizations**
-  - Define bundle and performance budgets, lazy loading, Web Worker boundaries,
-    weak-device fallbacks, and the evolution toward remote training.
-  - Completion check: new visuals have measurable budgets and graceful execution
-    paths across devices.
-
-### Content and learning experience
-
-- [ ] **Translate the categorical-feature article into Brazilian Portuguese — follow-up to #235**
-  - The 2026-10-31 publication contains only the reviewed English article.
-    Prepare and review a matched translation separately, preserving the examples,
-    label-separation rules, figures, interactions, and immutable article ID.
-  - Completion check: a separately approved Portuguese article, locale links,
-    metadata, and desktop/mobile interactions pass the release workflow.
-
-- [ ] **Publish the next curriculum articles**
-  - Prioritize the next article from `docs/curriculum-plan.md`; create a task per
-    article when it is ready to be scoped.
-
-### Operations and quality
-
-- [ ] **Add an accessibility and responsive-design review pass**
-  - Audit published routes and interactive visuals for keyboard access, screen
-    reader semantics, contrast, reduced motion, and small-screen behavior.
-
-## Done
 
 ### Publishing and content
 

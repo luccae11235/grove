@@ -31,7 +31,7 @@ const formatDate = (date?: Date) => date?.toLocaleDateString("en", {
     </p>
     <div class="hero-actions">
       <a class="button-link" href={`${base}/articles`}>Browse articles by topic <span aria-hidden="true">→</span></a>
-      <a class="quiet-link" href={`${base}/${staticSite ? "rss.xml" : "newsletter"}`}>{staticSite ? "Follow via RSS" : "Get the next article by email"}</a>
+      {!staticSite && <a class="quiet-link" href={`${base}/newsletter`}>Get the next article by email</a>}
     </div>
     <p class="publication-note"><span aria-hidden="true"></span>Recently planted. New articles are published deliberately.</p>
   </section>
