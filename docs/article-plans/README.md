@@ -17,6 +17,37 @@ Keep the existing Notion progression: **Ideas → Selection → Research → Bui
 
 The article should read as connected reasoning with specific examples. Avoid mechanical paragraph expansion, repeated formulas that add no insight, and generic AI phrasing. The approved structure guides the argument; it is not a sentence-by-sentence script. See [template.md](template.md) for a new preparation.
 
+## Structure assistance
+
+Use the repository-local `$aflora-article-structure` skill to research and develop
+a story of ideas, learning scope and bracketed structure from an idea or partial
+preparation. It develops conceptual and visual progression while preserving the
+editor's order and scope; substantial changes are proposed separately. Complex
+topics may use focused parallel research followed by synthesis. Its scope ends
+at structure review.
+The [data-systems preparation](data-systems-trade-offs.md) preserves the structure
+and its original proposal metadata. On 2026-11-15 the editor explicitly approved
+the current structure for a drafting test. The resulting
+[Portuguese first draft](data-systems-trade-offs-draft-pt-br.md) is saved separately
+for editorial review; this is not approval of the manuscript or publication.
+The [rejected first trial](data-systems-trade-offs-trial-v1.md) is preserved as
+editorial evidence, not a model to copy.
+
+## Drafting assistance
+
+After explicit structure approval, use the repository-local
+`$aflora-article-draft` skill to turn conceptual instructions into a complete first
+draft. It preserves the approved scope, explanatory order, headings and literal
+visual placeholders while developing natural, connected prose. Supply the article
+language when it differs from the plan; headings can be translated faithfully,
+but placeholders remain unchanged. Existing approval in the conversation is enough.
+
+For example: `$aflora-article-draft Redija em português a estrutura aprovada em
+<arquivo>, usando o learning scope e os exemplos de escrita anexados.` The draft
+remains outside the publication collection unless implementation is separately
+requested. Invoking the skill does not itself approve a structure or implement
+its visuals.
+
 ## Historical examples
 
 | Preparation | Article ID in the current content collection | Source state |

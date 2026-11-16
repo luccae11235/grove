@@ -1,0 +1,4 @@
+interface:
+  display_name: "Redação de artigos Aflora"
+  short_description: "Transforme a estrutura aprovada em um draft fluido"
+  default_prompt: "Use $aflora-article-draft para redigir o primeiro draft a partir desta estrutura aprovada, preservando o escopo e os placeholders visuais."
